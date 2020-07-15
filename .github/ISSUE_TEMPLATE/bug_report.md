@@ -41,6 +41,6 @@ assignees: ''
 
 > [How to enable debug mode](https://awslabs.github.io/aws-lambda-powertools-java/#debug-mode)**
 
-```python
+```java
 # paste logs here
 ```

@@ -9,11 +9,30 @@ A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray,
 
 ### Installation
 
-With [pip](https://pip.pypa.io/en/latest/index.html) installed, run: ``pip install aws-lambda-powertools``
+Powertools is available in Maven Central. You can use your favourite dependency management tool to install it
 
-## Example
+* [maven](https://maven.apache.org/):
+```xml
+<dependencies>
+    ...
+    <dependency>
+        <groupId>com.amazonaws</groupId>
+        <artifactId>aws-lambda-powertools-java</artifactId>
+        <version>YOUR_REQUIRED_VERSION</version>
+    </dependency>
+    ...
+</dependencies>
+```
+* [gradle](https://gradle.org/):
+```
+repositories {
+    mavenCentral()
+}
 
-See **[example](./example/README.md)** of all features, testing, and a SAM template with all Powertools env vars. All features also provide full docs, and code completion for VSCode and PyCharm.
+dependencies {
+    powertools 'com.amazonaws:aws-lambda-powertools-java:YOUR_REQUIRED_VERSION'
+}
+```
 
 ## Credits
 
