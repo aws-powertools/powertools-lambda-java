@@ -1,0 +1,25 @@
+{
+    "scripts": {
+        "start": "gatsby develop",
+        "build": "gatsby build --prefix-paths"
+    },
+    "dependencies": {
+        "@aws-amplify/analytics": "^3.2.0",
+        "antd": "^4.2.4",
+        "aws-amplify": "^3.0.17",
+        "gatsby": "^2.22.9",
+        "gatsby-plugin-antd": "^2.2.0",
+        "gatsby-plugin-catch-links": "^2.3.2",
+        "gatsby-plugin-sitemap": "^2.4.3",
+        "gatsby-remark-autolink-headers": "^2.3.3",
+        "gatsby-theme-apollo-docs": "^4.2.3",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1"
+    },
+    "keywords": [],
+    "license": "MIT-0",
+    "repository": "https://github.com/awslabs/aws-lambda-powertools-java",
+    "name": "aws-lambda-powertools-java",
+    "description": "Powertools is a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.",
+    "devDependencies": {}
+}

@@ -1,0 +1,37 @@
+name: Docs
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+      # Disabled until docs support versioning per branch/release
+      # - develop
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: borales/actions-yarn@v2.0.0
+      - name: Set up Python
+        uses: actions/setup-python@v1
+        with:
+          python-version: "3.8"
+      - name: Capture branch and tag
+        id: branch_name
+        run: |
+          echo ::set-env name=SOURCE_BRANCH::${GITHUB_REF#refs/heads/}
+          echo ::set-env name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
+
+      - name: install dependencies
+        run: make dev-docs
+      - name: Build docs website
+        run: make build-docs-website
+      - name: Deploy all docs
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
