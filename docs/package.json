@@ -12,7 +12,9 @@
         "gatsby-plugin-catch-links": "^2.3.2",
         "gatsby-plugin-sitemap": "^2.4.3",
         "gatsby-remark-autolink-headers": "^2.3.3",
-        "gatsby-theme-apollo-docs": "^4.2.3",
+        "gatsby-theme-apollo-docs": "^4.3.5",
+        "semver": "^4.3.2",
+        "bl": ">=0.9.5",
         "react": "^16.13.1",
         "react-dom": "^16.13.1"
     },
