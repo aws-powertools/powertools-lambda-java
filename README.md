@@ -23,6 +23,35 @@ Powertools is available in Maven Central. You can use your favourite dependency 
     ...
 </dependencies>
 ```
+
+And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project:
+
+```xml
+        <plugin>
+             <groupId>com.nickwongdev</groupId>
+             <artifactId>aspectj-maven-plugin</artifactId>
+             <version>1.12.1</version>
+             <configuration>
+                 <source>1.8</source>
+                 <target>1.8</target>
+                 <complianceLevel>1.8</complianceLevel>
+                 <aspectLibraries>
+                     <aspectLibrary>
+                         <groupId>software.aws.lambda</groupId>
+                         <artifactId>aws-lambda-powertools-java</artifactId>
+                     </aspectLibrary>
+                 </aspectLibraries>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>compile</goal>
+                     </goals>
+                 </execution>
+             </executions>
+        </plugin>
+
+```
 * [gradle](https://gradle.org/):
 ```
 repositories {
