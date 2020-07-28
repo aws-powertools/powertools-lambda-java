@@ -22,12 +22,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static java.time.Instant.ofEpochMilli;
+import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 @Plugin(name = "LambdaJsonLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public class LambdaJsonLayout extends AbstractJacksonLayout {
@@ -206,9 +208,6 @@ public class LambdaJsonLayout extends AbstractJacksonLayout {
         private final LogEvent logEvent;
         private final Map<String, Object> additionalFields;
 
-        static final String ISO8601_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
-        static final DateFormat iso8601DateFormat = new SimpleDateFormat(ISO8601_TIMESTAMP_FORMAT);
-
         public LogEventWithAdditionalFields(LogEvent logEvent, Map<String, Object> additionalFields) {
             this.logEvent = logEvent;
             this.additionalFields = additionalFields;
@@ -226,7 +225,7 @@ public class LambdaJsonLayout extends AbstractJacksonLayout {
 
         @JsonGetter("timestamp")
         public String getTimestamp() {
-            return iso8601DateFormat.format(new Date(logEvent.getTimeMillis()));
+            return ISO_ZONED_DATE_TIME.format(ZonedDateTime.from(ofEpochMilli(logEvent.getTimeMillis()).atZone(ZoneId.systemDefault())));
         }
     }
 }

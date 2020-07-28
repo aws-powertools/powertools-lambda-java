@@ -1,5 +1,13 @@
 package helloworld;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -8,14 +16,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import software.aws.lambda.logging.DefaultLambdaFields;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Handler for requests to Lambda function.
