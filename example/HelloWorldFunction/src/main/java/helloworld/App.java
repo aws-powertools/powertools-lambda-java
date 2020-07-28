@@ -14,7 +14,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.aws.lambda.logging.LambdaJsonAppender;
+import org.apache.logging.log4j.ThreadContext;
+import software.aws.lambda.logging.DefaultLambdaFields;
 
 /**
  * Handler for requests to Lambda function.
@@ -24,7 +25,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     Logger log = LogManager.getLogger();
 
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-        LambdaJsonAppender.loadContextKeys(context);
+        ThreadContext.putAll(DefaultLambdaFields.values(context));
 
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -37,6 +38,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             log.info(pageContents);
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
+            log.info("After output");
             return response
                     .withStatusCode(200)
                     .withBody(output);
