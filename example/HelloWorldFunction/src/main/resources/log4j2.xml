@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
     <Appenders>
-        <LambdaJsonAppender name="LambdaJsonAppender" />
+        <Console name="JsonAppender" target="SYSTEM_OUT">
+            <LambdaJsonLayout compact="true" eventEol="true"/>
+        </Console>
+<!--        <Lambda name="JsonAppender">-->
+<!--            <LambdaJsonLayout compact="true" eventEol="true"/>-->
+<!--        </Lambda>-->
     </Appenders>
     <Loggers>
+        <Logger name="JsonLogger" level="INFO" additivity="false">
+            <AppenderRef ref="JsonAppender"/>
+        </Logger>
         <Root level="info">
-            <AppenderRef ref="LambdaJsonAppender" />
+            <AppenderRef ref="JsonAppender"/>
         </Root>
     </Loggers>
 </Configuration>

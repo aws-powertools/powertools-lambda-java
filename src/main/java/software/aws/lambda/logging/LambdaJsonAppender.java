@@ -78,6 +78,7 @@ public class LambdaJsonAppender extends AbstractAppender {
      * @param event log4j event
      */
     public void append(LogEvent event) {
+
         LogEntry logEntry = LogEntry.builder()
                 .level(event.getLevel().name())
                 .message(event.getMessage().getFormattedMessage())
