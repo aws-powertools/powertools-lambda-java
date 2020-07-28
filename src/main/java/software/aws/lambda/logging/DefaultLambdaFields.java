@@ -1,4 +1,4 @@
-package org.apache.logging.log4j.core.layout;
+package software.aws.lambda.logging;
 
 import com.amazonaws.services.lambda.runtime.Context;
 

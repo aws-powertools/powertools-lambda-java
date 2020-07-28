@@ -67,13 +67,6 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <!-- TODO - MS is this the correct scope? -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
