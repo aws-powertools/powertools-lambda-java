@@ -1,10 +1,16 @@
 package software.aws.lambda.logging;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +55,7 @@ class LambdaAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowerLogToolEnabledForStream();
 
-        requestStreamHandler.handleRequest(null, null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
@@ -62,13 +68,13 @@ class LambdaAspectTest {
 
     @Test
     void shouldSetColdStartFlag() throws IOException {
-        requestStreamHandler.handleRequest(null, null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
                 .containsEntry("coldStart", "true");
 
-        requestStreamHandler.handleRequest(null, null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
@@ -103,6 +109,33 @@ class LambdaAspectTest {
 
         assertThat(ThreadContext.getImmutableContext())
                 .isEmpty();
+    }
+
+    @Test
+    void shouldLogEventForHandler() {
+        requestHandler = new PowerToolLogEventEnabled();
+
+        requestHandler.handleRequest(new Object(), context);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(5);
+    }
+
+    @Test
+    void shouldLogEventForStreamAndLambdaStreamIsValid() throws IOException {
+        requestStreamHandler = new PowerToolLogEventEnabledForStream();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        Map<String, String> testPayload = new HashMap<>();
+        testPayload.put("test", "payload");
+
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(testPayload)), output, context);
+
+        assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
+                .isEqualTo("{\"test\":\"payload\"}");
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(5);
     }
 
     private void setupContext() {

@@ -23,7 +23,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowerToolsLogging
+    @PowerToolsLogging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
