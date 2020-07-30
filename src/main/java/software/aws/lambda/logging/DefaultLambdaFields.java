@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum DefaultLambdaFields {
+enum DefaultLambdaFields {
     FUNCTION_NAME("functionName"),
     FUNCTION_VERSION("functionVersion"),
     FUNCTION_ARN("functionArn"),
@@ -17,7 +17,7 @@ public enum DefaultLambdaFields {
         this.name = name;
     }
 
-    public static Map<String, String> values(Context context) {
+    static Map<String, String> values(Context context) {
         Map<String, String> hashMap = new HashMap<>();
 
         hashMap.put(FUNCTION_NAME.name, context.getFunctionName());

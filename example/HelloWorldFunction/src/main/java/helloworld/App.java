@@ -14,8 +14,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import software.aws.lambda.logging.DefaultLambdaFields;
+import software.aws.lambda.logging.PowerToolsLogging;
 
 /**
  * Handler for requests to Lambda function.
@@ -24,9 +23,8 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
+    @PowerToolsLogging
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-        ThreadContext.putAll(DefaultLambdaFields.values(context));
-
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
@@ -49,9 +47,9 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         }
     }
 
-    private String getPageContents(String address) throws IOException{
+    private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
             return br.lines().collect(Collectors.joining(System.lineSeparator()));
         }
     }
