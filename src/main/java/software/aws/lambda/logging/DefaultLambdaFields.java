@@ -17,6 +17,10 @@ enum DefaultLambdaFields {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     static Map<String, String> values(Context context) {
         Map<String, String> hashMap = new HashMap<>();
 
