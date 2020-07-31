@@ -5,6 +5,7 @@ import java.io.OutputStream;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import software.aws.lambda.logging.client.PowerToolsLogging;
 
 public class PowerLogToolEnabledForStream implements RequestStreamHandler {
 

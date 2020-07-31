@@ -1,5 +1,15 @@
 package org.apache.logging.log4j.core.layout;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonRootName;
@@ -18,22 +28,11 @@ import org.apache.logging.log4j.core.jackson.XmlConstants;
 import org.apache.logging.log4j.core.util.KeyValuePair;
 import org.apache.logging.log4j.util.Strings;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import static java.time.Instant.ofEpochMilli;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 @Plugin(name = "LambdaJsonLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public class LambdaJsonLayout extends AbstractJacksonLayout {
-
     private static final String DEFAULT_FOOTER = "]";
 
     private static final String DEFAULT_HEADER = "[";

@@ -21,6 +21,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import software.aws.lambda.logging.client.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;

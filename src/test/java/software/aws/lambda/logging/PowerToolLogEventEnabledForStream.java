@@ -8,6 +8,7 @@ import java.util.Map;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import software.aws.lambda.logging.client.PowerToolsLogging;
 
 public class PowerToolLogEventEnabledForStream implements RequestStreamHandler {
 
