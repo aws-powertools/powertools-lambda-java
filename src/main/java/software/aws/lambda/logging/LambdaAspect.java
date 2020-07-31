@@ -26,15 +26,13 @@ public final class LambdaAspect {
     public Object around(ProceedingJoinPoint pjp,
                          PowerToolsLogging powerToolsLogging) throws Throwable {
 
-        if (powerToolsLogging.injectContextInfo()) {
-            extractContext(pjp)
-                    .ifPresent(context -> {
-                        ThreadContext.putAll(DefaultLambdaFields.values(context));
-                        ThreadContext.put("coldStart", null == IS_COLD_START ? "true" : "false");
-                    });
+        extractContext(pjp)
+                .ifPresent(context -> {
+                    ThreadContext.putAll(DefaultLambdaFields.values(context));
+                    ThreadContext.put("coldStart", null == IS_COLD_START ? "true" : "false");
+                });
 
-            IS_COLD_START = false;
-        }
+        IS_COLD_START = false;
 
 
         return pjp.proceed();

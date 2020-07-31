@@ -8,7 +8,6 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 public class PowerLogToolDisabledForStream implements RequestStreamHandler {
 
-    @PowerToolsLogging(injectContextInfo = false)
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) {
 
