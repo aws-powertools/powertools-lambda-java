@@ -1,11 +1,22 @@
 package software.aws.lambda.logging;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Map;
 import java.util.Optional;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.util.IOUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -17,14 +28,16 @@ import static java.util.Optional.of;
 @Aspect
 public final class LambdaAspect {
     static Boolean IS_COLD_START = null;
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @Pointcut("@annotation(powerToolsLogging)")
     public void callAt(PowerToolsLogging powerToolsLogging) {
     }
 
-    @Around(value = "callAt(powerToolsLogging)")
+    @Around(value = "callAt(powerToolsLogging)", argNames = "pjp,powerToolsLogging")
     public Object around(ProceedingJoinPoint pjp,
                          PowerToolsLogging powerToolsLogging) throws Throwable {
+        Object[] proceedArgs = pjp.getArgs();
 
         extractContext(pjp)
                 .ifPresent(context -> {
@@ -34,24 +47,84 @@ public final class LambdaAspect {
 
         IS_COLD_START = false;
 
+        if (powerToolsLogging.logEvent()) {
+            proceedArgs = logEvent(pjp);
+        }
 
-        return pjp.proceed();
+        return pjp.proceed(proceedArgs);
     }
 
     private Optional<Context> extractContext(ProceedingJoinPoint pjp) {
 
-        if ("handleRequest".equals(pjp.getSignature().getName())) {
-            if (RequestHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
-                    && pjp.getArgs().length == 2 && pjp.getArgs()[1] instanceof Context) {
+        if (isHandlerMethod(pjp)) {
+            if (placedOnRequestHandler(pjp)) {
                 return of((Context) pjp.getArgs()[1]);
             }
 
-            if (RequestStreamHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
-                    && pjp.getArgs().length == 3 && pjp.getArgs()[2] instanceof Context) {
+            if (placedOnStreamHandler(pjp)) {
                 return of((Context) pjp.getArgs()[2]);
             }
         }
 
         return empty();
+    }
+
+    private Object[] logEvent(ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
+
+        if (isHandlerMethod(pjp)) {
+            if (placedOnRequestHandler(pjp)) {
+                Logger log = logger(pjp);
+                log.info(pjp.getArgs()[0]);
+            }
+
+            if (placedOnStreamHandler(pjp)) {
+                args = logFromInputStream(pjp);
+            }
+        }
+
+        return args;
+    }
+
+    private Object[] logFromInputStream(ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
+
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             OutputStreamWriter writer = new OutputStreamWriter(out);
+             InputStreamReader reader = new InputStreamReader((InputStream) pjp.getArgs()[0])) {
+
+            IOUtils.copy(reader, writer);
+            writer.flush();
+            byte[] bytes = out.toByteArray();
+            args[0] = new ByteArrayInputStream(bytes);
+
+            Logger log = logger(pjp);
+            log.info(mapper.readValue(bytes, Map.class));
+
+        } catch (IOException e) {
+            Logger log = logger(pjp);
+            log.debug("Failed to log event from supplied input stream.", e);
+        }
+
+        return args;
+    }
+
+    private Logger logger(ProceedingJoinPoint pjp) {
+        return LogManager.getLogger(pjp.getSignature().getDeclaringType());
+    }
+
+    private boolean isHandlerMethod(ProceedingJoinPoint pjp) {
+        return "handleRequest".equals(pjp.getSignature().getName());
+    }
+
+    private boolean placedOnRequestHandler(ProceedingJoinPoint pjp) {
+        return RequestHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
+                && pjp.getArgs().length == 2 && pjp.getArgs()[1] instanceof Context;
+    }
+
+    private boolean placedOnStreamHandler(ProceedingJoinPoint pjp) {
+        return RequestStreamHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
+                && pjp.getArgs().length == 3 && pjp.getArgs()[0] instanceof InputStream
+                && pjp.getArgs()[2] instanceof Context;
     }
 }
