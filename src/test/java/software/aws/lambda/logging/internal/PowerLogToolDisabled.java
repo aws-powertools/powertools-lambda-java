@@ -1,11 +1,10 @@
-package software.aws.lambda.logging;
+package software.aws.lambda.logging.internal;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-public class PowerToolLogEventEnabled implements RequestHandler<Object, Object> {
+public class PowerLogToolDisabled implements RequestHandler<Object, Object> {
 
-    @PowerToolsLogging(logEvent = true)
     @Override
     public Object handleRequest(Object input, Context context) {
         return null;

@@ -1,4 +1,4 @@
-package software.aws.lambda.logging;
+package software.aws.lambda.logging.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,6 +8,7 @@ import java.util.Map;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import software.aws.lambda.logging.PowerToolsLogging;
 
 public class PowerToolLogEventEnabledForStream implements RequestStreamHandler {
 

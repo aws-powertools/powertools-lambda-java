@@ -1,4 +1,4 @@
-package software.aws.lambda.logging;
+package software.aws.lambda.logging.internal;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
