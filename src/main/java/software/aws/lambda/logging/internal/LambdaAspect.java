@@ -1,4 +1,4 @@
-package software.aws.lambda.logging;
+package software.aws.lambda.logging.internal;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,7 +21,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.aws.lambda.logging.client.PowerToolsLogging;
+import software.aws.lambda.logging.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;

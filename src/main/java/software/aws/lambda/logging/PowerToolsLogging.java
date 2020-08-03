@@ -1,4 +1,4 @@
-package software.aws.lambda.logging.client;
+package software.aws.lambda.logging;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

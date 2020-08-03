@@ -1,4 +1,4 @@
-package software.aws.lambda.logging.client;
+package software.aws.lambda.logging;
 
 import org.apache.logging.log4j.ThreadContext;
 

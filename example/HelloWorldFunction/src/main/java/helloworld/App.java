@@ -14,8 +14,8 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.aws.lambda.logging.client.PowerLogger;
-import software.aws.lambda.logging.client.PowerToolsLogging;
+import software.aws.lambda.logging.PowerLogger;
+import software.aws.lambda.logging.PowerToolsLogging;
 
 /**
  * Handler for requests to Lambda function.
