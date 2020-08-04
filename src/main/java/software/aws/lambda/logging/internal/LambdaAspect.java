@@ -35,7 +35,7 @@ public final class LambdaAspect {
     public void callAt(PowerToolsLogging powerToolsLogging) {
     }
 
-    @Around(value = "callAt(powerToolsLogging)", argNames = "pjp,powerToolsLogging")
+    @Around(value = "callAt(powerToolsLogging) && execution(@PowerToolsLogging * *.*(..))", argNames = "pjp,powerToolsLogging")
     public Object around(ProceedingJoinPoint pjp,
                          PowerToolsLogging powerToolsLogging) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();

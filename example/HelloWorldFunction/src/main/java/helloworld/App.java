@@ -12,10 +12,17 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.aws.lambda.logging.PowerLogger;
 import software.aws.lambda.logging.PowerToolsLogging;
+import software.aws.lambda.tracing.PowerToolTracing;
+import software.aws.lambda.tracing.PowerTracer;
+
+import static software.aws.lambda.tracing.PowerTracer.putMetadata;
+import static software.aws.lambda.tracing.PowerTracer.withEntitySubsegment;
 
 /**
  * Handler for requests to Lambda function.
@@ -25,6 +32,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     Logger log = LogManager.getLogger();
 
     @PowerToolsLogging(logEvent = true)
+    @PowerToolTracing
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -37,21 +45,60 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         try {
             final String pageContents = this.getPageContents("https://checkip.amazonaws.com");
             log.info(pageContents);
+            PowerTracer.putAnnotation("Test", "New");
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
+
+            PowerTracer.withSubsegment("loggingResponse", subsegment -> {
+                String sampled = "log something out";
+                log.info(sampled);
+                log.info(output);
+            });
+
+            threadOption1();
+
+            threadOption2();
 
             log.info("After output");
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             return response
                     .withBody("{}")
                     .withStatusCode(500);
         }
     }
 
+    private void threadOption1() throws InterruptedException {
+        Entity traceEntity = AWSXRay.getTraceEntity();
+        Thread thread = new Thread(() -> {
+            AWSXRay.setTraceEntity(traceEntity);
+            log();
+        });
+        thread.start();
+        thread.join();
+    }
+
+    private void threadOption2() throws InterruptedException {
+        Entity traceEntity = AWSXRay.getTraceEntity();
+        Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment -> {
+            String var = "somethingToProcess";
+            log.info("inside threaded logging inline {}", var);
+        }));
+        anotherThread.start();
+        anotherThread.join();
+    }
+
+    @PowerToolTracing
+    private void log() {
+        log.info("inside threaded logging for function");
+    }
+
+
+    @PowerToolTracing(namespace = "getPageContents", captureResponse = false, captureError = false)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
+        putMetadata("getPageContents", address);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
             return br.lines().collect(Collectors.joining(System.lineSeparator()));
         }
