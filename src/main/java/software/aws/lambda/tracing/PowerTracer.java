@@ -36,7 +36,7 @@ public final class PowerTracer {
         Subsegment segment = AWSXRay.beginSubsegment("## " + name);
         try {
             subsegment.accept(segment);
-        }finally {
+        } finally {
             AWSXRay.endSubsegment();
         }
     }
