@@ -8,7 +8,7 @@ import com.amazonaws.xray.entities.Subsegment;
 
 public final class PowerTracer {
     public static final String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
-            ? System.getenv("POWERTOOLS_SERVICE_NAME") : "default";
+            ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
 
     public static void putAnnotation(String key, String value) {
         AWSXRay.getCurrentSubsegmentOptional()
