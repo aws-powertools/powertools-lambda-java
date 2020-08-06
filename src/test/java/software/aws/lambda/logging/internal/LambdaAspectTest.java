@@ -55,7 +55,7 @@ class LambdaAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowerLogToolEnabledForStream();
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
@@ -68,13 +68,13 @@ class LambdaAspectTest {
 
     @Test
     void shouldSetColdStartFlag() throws IOException {
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
                 .containsEntry("coldStart", "true");
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)

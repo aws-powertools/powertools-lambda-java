@@ -9,6 +9,9 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.aws.lambda.tracing.PowerToolTracing;
 
+import static software.aws.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.aws.lambda.tracing.PowerTracer.SERVICE_NAME;
 
 @Aspect
@@ -29,18 +32,20 @@ public final class LambdaTracingAspect {
         segment = AWSXRay.beginSubsegment("## " + pjp.getSignature().getName());
         segment.setNamespace(namespace(powerToolsTracing));
 
-        if (placedOnHandlerMethod(pjp)) {
+        boolean placedOnHandlerMethod = placedOnHandlerMethod(pjp);
+
+        if (placedOnHandlerMethod) {
             segment.putAnnotation("ColdStart", IS_COLD_START == null);
         }
 
         IS_COLD_START = false;
 
         try {
-            Object proceed = pjp.proceed(proceedArgs);
+            Object methodReturn = pjp.proceed(proceedArgs);
             if (powerToolsTracing.captureResponse()) {
-                segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", proceed);
+                segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", response(pjp, methodReturn));
             }
-            return proceed;
+            return methodReturn;
         } catch (Exception e) {
             if (powerToolsTracing.captureError()) {
                 segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " error", e);
@@ -51,12 +56,21 @@ public final class LambdaTracingAspect {
         }
     }
 
+    private Object response(ProceedingJoinPoint pjp, Object methodReturn) {
+        // TODO should we try to parse output stream? or just not support it?
+        if (placedOnStreamHandler(pjp)) {
+
+        }
+
+        return methodReturn;
+    }
+
     private String namespace(PowerToolTracing powerToolsTracing) {
         return powerToolsTracing.namespace().isEmpty() ? SERVICE_NAME : powerToolsTracing.namespace();
     }
 
-    // TODO enrich to check more like inherited class
     private boolean placedOnHandlerMethod(ProceedingJoinPoint pjp) {
-        return "handleRequest".equals(pjp.getSignature().getName());
+        return isHandlerMethod(pjp)
+                && (placedOnRequestHandler(pjp) || placedOnStreamHandler(pjp));
     }
 }

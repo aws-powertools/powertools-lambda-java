@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,6 +23,9 @@ import software.aws.lambda.logging.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 
 @Aspect
 public final class LambdaAspect {
@@ -112,20 +113,5 @@ public final class LambdaAspect {
 
     private Logger logger(ProceedingJoinPoint pjp) {
         return LogManager.getLogger(pjp.getSignature().getDeclaringType());
-    }
-
-    private boolean isHandlerMethod(ProceedingJoinPoint pjp) {
-        return "handleRequest".equals(pjp.getSignature().getName());
-    }
-
-    private boolean placedOnRequestHandler(ProceedingJoinPoint pjp) {
-        return RequestHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
-                && pjp.getArgs().length == 2 && pjp.getArgs()[1] instanceof Context;
-    }
-
-    private boolean placedOnStreamHandler(ProceedingJoinPoint pjp) {
-        return RequestStreamHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
-                && pjp.getArgs().length == 3 && pjp.getArgs()[0] instanceof InputStream
-                && pjp.getArgs()[2] instanceof Context;
     }
 }
