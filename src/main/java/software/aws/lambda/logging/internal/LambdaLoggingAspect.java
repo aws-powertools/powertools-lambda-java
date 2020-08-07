@@ -10,8 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,17 +23,20 @@ import software.aws.lambda.logging.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 
 @Aspect
-public final class LambdaAspect {
-    static Boolean IS_COLD_START = null;
+public final class LambdaLoggingAspect {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Pointcut("@annotation(powerToolsLogging)")
     public void callAt(PowerToolsLogging powerToolsLogging) {
     }
 
-    @Around(value = "callAt(powerToolsLogging)", argNames = "pjp,powerToolsLogging")
+    @Around(value = "callAt(powerToolsLogging) && execution(@PowerToolsLogging * *.*(..))", argNames = "pjp,powerToolsLogging")
     public Object around(ProceedingJoinPoint pjp,
                          PowerToolsLogging powerToolsLogging) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
@@ -46,13 +47,15 @@ public final class LambdaAspect {
                     ThreadContext.put("coldStart", null == IS_COLD_START ? "true" : "false");
                 });
 
-        IS_COLD_START = false;
 
         if (powerToolsLogging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 
-        return pjp.proceed(proceedArgs);
+        Object proceed = pjp.proceed(proceedArgs);
+
+        IS_COLD_START = false;
+        return proceed;
     }
 
     private Optional<Context> extractContext(ProceedingJoinPoint pjp) {
@@ -112,20 +115,5 @@ public final class LambdaAspect {
 
     private Logger logger(ProceedingJoinPoint pjp) {
         return LogManager.getLogger(pjp.getSignature().getDeclaringType());
-    }
-
-    private boolean isHandlerMethod(ProceedingJoinPoint pjp) {
-        return "handleRequest".equals(pjp.getSignature().getName());
-    }
-
-    private boolean placedOnRequestHandler(ProceedingJoinPoint pjp) {
-        return RequestHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
-                && pjp.getArgs().length == 2 && pjp.getArgs()[1] instanceof Context;
-    }
-
-    private boolean placedOnStreamHandler(ProceedingJoinPoint pjp) {
-        return RequestStreamHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
-                && pjp.getArgs().length == 3 && pjp.getArgs()[0] instanceof InputStream
-                && pjp.getArgs()[2] instanceof Context;
     }
 }

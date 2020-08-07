@@ -15,12 +15,13 @@ import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import software.aws.lambda.internal.LambdaHandlerProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-class LambdaAspectTest {
+class LambdaLoggingAspectTest {
 
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
@@ -32,7 +33,7 @@ class LambdaAspectTest {
     void setUp() {
         initMocks(this);
         ThreadContext.clearAll();
-        LambdaAspect.IS_COLD_START = null;
+        LambdaHandlerProcessor.IS_COLD_START = null;
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();
@@ -55,7 +56,7 @@ class LambdaAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowerLogToolEnabledForStream();
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
@@ -68,13 +69,13 @@ class LambdaAspectTest {
 
     @Test
     void shouldSetColdStartFlag() throws IOException {
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
                 .containsEntry("coldStart", "true");
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), null, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(5)
