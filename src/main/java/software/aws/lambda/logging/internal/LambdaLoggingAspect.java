@@ -28,7 +28,7 @@ import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnReques
 import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 
 @Aspect
-public final class LambdaAspect {
+public final class LambdaLoggingAspect {
     static Boolean IS_COLD_START = null;
     private static final ObjectMapper mapper = new ObjectMapper();
 

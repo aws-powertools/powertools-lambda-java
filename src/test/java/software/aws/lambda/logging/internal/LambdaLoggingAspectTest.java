@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-class LambdaAspectTest {
+class LambdaLoggingAspectTest {
 
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
@@ -32,7 +32,7 @@ class LambdaAspectTest {
     void setUp() {
         initMocks(this);
         ThreadContext.clearAll();
-        LambdaAspect.IS_COLD_START = null;
+        LambdaLoggingAspect.IS_COLD_START = null;
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();
