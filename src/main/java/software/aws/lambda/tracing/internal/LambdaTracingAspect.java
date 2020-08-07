@@ -9,6 +9,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.aws.lambda.tracing.PowerToolTracing;
 
+import static software.aws.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
 import static software.aws.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
@@ -16,7 +17,6 @@ import static software.aws.lambda.tracing.PowerTracer.SERVICE_NAME;
 
 @Aspect
 public final class LambdaTracingAspect {
-    static Boolean IS_COLD_START = null;
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Pointcut("@annotation(powerToolsTracing)")
@@ -38,13 +38,15 @@ public final class LambdaTracingAspect {
             segment.putAnnotation("ColdStart", IS_COLD_START == null);
         }
 
-        IS_COLD_START = false;
 
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
             if (powerToolsTracing.captureResponse()) {
                 segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", response(pjp, methodReturn));
             }
+
+            IS_COLD_START = false;
+
             return methodReturn;
         } catch (Exception e) {
             if (powerToolsTracing.captureError()) {
