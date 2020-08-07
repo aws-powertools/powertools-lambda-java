@@ -15,6 +15,7 @@ import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import software.aws.lambda.internal.LambdaHandlerProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
@@ -32,7 +33,7 @@ class LambdaLoggingAspectTest {
     void setUp() {
         initMocks(this);
         ThreadContext.clearAll();
-        LambdaLoggingAspect.IS_COLD_START = null;
+        LambdaHandlerProcessor.IS_COLD_START = null;
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();

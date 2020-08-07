@@ -9,6 +9,8 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 public final class LambdaHandlerProcessor {
+    public static Boolean IS_COLD_START = null;
+
     public static boolean isHandlerMethod(ProceedingJoinPoint pjp) {
         return "handleRequest".equals(pjp.getSignature().getName());
     }

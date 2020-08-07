@@ -38,13 +38,15 @@ public final class LambdaTracingAspect {
             segment.putAnnotation("ColdStart", IS_COLD_START == null);
         }
 
-        IS_COLD_START = false;
 
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
             if (powerToolsTracing.captureResponse()) {
                 segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", response(pjp, methodReturn));
             }
+
+            IS_COLD_START = false;
+
             return methodReturn;
         } catch (Exception e) {
             if (powerToolsTracing.captureError()) {

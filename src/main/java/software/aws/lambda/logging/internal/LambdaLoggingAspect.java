@@ -23,13 +23,13 @@ import software.aws.lambda.logging.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static software.aws.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
 import static software.aws.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.aws.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 
 @Aspect
 public final class LambdaLoggingAspect {
-    static Boolean IS_COLD_START = null;
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Pointcut("@annotation(powerToolsLogging)")
@@ -47,13 +47,15 @@ public final class LambdaLoggingAspect {
                     ThreadContext.put("coldStart", null == IS_COLD_START ? "true" : "false");
                 });
 
-        IS_COLD_START = false;
 
         if (powerToolsLogging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 
-        return pjp.proceed(proceedArgs);
+        Object proceed = pjp.proceed(proceedArgs);
+
+        IS_COLD_START = false;
+        return proceed;
     }
 
     private Optional<Context> extractContext(ProceedingJoinPoint pjp) {
