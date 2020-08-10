@@ -14,7 +14,6 @@
         "gatsby-remark-autolink-headers": "^2.3.3",
         "gatsby-theme-apollo-docs": "^4.3.5",
         "semver": "^4.3.2",
-        "dot-prop": "^5.1.1",
         "bl": ">=0.9.5",
         "react": "^16.13.1",
         "react-dom": "^16.13.1"

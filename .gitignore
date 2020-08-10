@@ -89,7 +89,6 @@ Desktop.ini
 ######################
 # Others
 ######################
-*.class
 *.*~
 *~
 .merge_file*
@@ -97,3 +96,5 @@ Desktop.ini
 docs/node_modules
 docs/.cache
 docs/public
+/example/.aws-sam/
+/example/HelloWorldFunction/.aws-sam/
