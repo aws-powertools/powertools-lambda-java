@@ -42,7 +42,7 @@ public final class LambdaTracingAspect {
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
             if (powerToolsTracing.captureResponse()) {
-                segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", response(pjp, methodReturn));
+                segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", methodReturn);
             }
 
             IS_COLD_START = false;
@@ -56,15 +56,6 @@ public final class LambdaTracingAspect {
         } finally {
             AWSXRay.endSubsegment();
         }
-    }
-
-    private Object response(ProceedingJoinPoint pjp, Object methodReturn) {
-        // TODO should we try to parse output stream? or just not support it?
-        if (placedOnStreamHandler(pjp)) {
-
-        }
-
-        return methodReturn;
     }
 
     private String namespace(PowerToolTracing powerToolsTracing) {

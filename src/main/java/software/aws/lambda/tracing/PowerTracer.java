@@ -29,11 +29,21 @@ public final class PowerTracer {
 
     public static void withEntitySubsegment(String name, Entity entity, Consumer<Subsegment> subsegment) {
         AWSXRay.setTraceEntity(entity);
-        withSubsegment(name, subsegment);
+        withEntitySubsegment(SERVICE_NAME, name, entity, subsegment);
+    }
+
+    public static void withEntitySubsegment(String namespace, String name, Entity entity, Consumer<Subsegment> subsegment) {
+        AWSXRay.setTraceEntity(entity);
+        withSubsegment(namespace, name, subsegment);
     }
 
     public static void withSubsegment(String name, Consumer<Subsegment> subsegment) {
+        withSubsegment(SERVICE_NAME, name, subsegment);
+    }
+
+    public static void withSubsegment(String namespace, String name, Consumer<Subsegment> subsegment) {
         Subsegment segment = AWSXRay.beginSubsegment("## " + name);
+        segment.setNamespace(namespace);
         try {
             subsegment.accept(segment);
         } finally {
