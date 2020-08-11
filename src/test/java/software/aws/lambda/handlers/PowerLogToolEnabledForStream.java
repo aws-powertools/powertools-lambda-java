@@ -1,4 +1,4 @@
-package software.aws.lambda.logging.internal;
+package software.aws.lambda.handlers;
 
 import java.io.InputStream;
 import java.io.OutputStream;

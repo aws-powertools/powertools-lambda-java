@@ -1,9 +1,9 @@
-package software.aws.lambda.logging.internal;
+package software.aws.lambda.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-public class PowerLogToolDisabled implements RequestHandler<Object, Object> {
+public class PowerToolDisabled implements RequestHandler<Object, Object> {
 
     @Override
     public Object handleRequest(Object input, Context context) {
