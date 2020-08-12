@@ -15,6 +15,12 @@ import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import software.aws.lambda.handlers.PowerToolDisabled;
+import software.aws.lambda.handlers.PowerToolDisabledForStream;
+import software.aws.lambda.handlers.PowerLogToolEnabled;
+import software.aws.lambda.handlers.PowerLogToolEnabledForStream;
+import software.aws.lambda.handlers.PowerToolLogEventEnabled;
+import software.aws.lambda.handlers.PowerToolLogEventEnabledForStream;
 import software.aws.lambda.internal.LambdaHandlerProcessor;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -84,7 +90,7 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldNotSetLambdaContextWhenDisabled() {
-        requestHandler = new PowerLogToolDisabled();
+        requestHandler = new PowerToolDisabled();
 
         requestHandler.handleRequest(new Object(), context);
 
@@ -94,7 +100,7 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldNotSetLambdaContextForStreamHandlerWhenDisabled() throws IOException {
-        requestStreamHandler = new PowerLogToolDisabledForStream();
+        requestStreamHandler = new PowerToolDisabledForStream();
 
         requestStreamHandler.handleRequest(null, null, context);
 
