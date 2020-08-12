@@ -16,6 +16,11 @@
         "react": "^16.13.1",
         "react-dom": "^16.13.1"
     },
+    "resolutions": {
+        "gatsby/*/*/dot-prop": "^5.1.1",
+        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^1.0.1",
+        "gatsby-theme-apollo-docs/*/*/*/*/semver": "^4.3.2"
+    },
     "keywords": [],
     "license": "MIT-0",
     "repository": "https://github.com/awslabs/aws-lambda-powertools-java",
