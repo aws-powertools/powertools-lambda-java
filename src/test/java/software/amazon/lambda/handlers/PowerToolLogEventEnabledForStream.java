@@ -1,4 +1,4 @@
-package helloworld;
+package software.amazon.lambda.handlers;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,14 +10,12 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.lambda.logging.PowerToolsLogging;
 
-public class AppStream implements RequestStreamHandler {
-    private static final ObjectMapper mapper = new ObjectMapper();
+public class PowerToolLogEventEnabledForStream implements RequestStreamHandler {
 
-    @Override
     @PowerToolsLogging(logEvent = true)
+    @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        Map map = mapper.readValue(input, Map.class);
-
-        System.out.println(map.size());
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(output, mapper.readValue(input, Map.class));
     }
 }

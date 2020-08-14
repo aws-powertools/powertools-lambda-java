@@ -14,7 +14,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>software.aws.lambda</groupId>
+            <groupId>software.amazon.lambda</groupId>
             <artifactId>aws-lambda-powertools-java</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
@@ -65,7 +65,7 @@
                  <complianceLevel>${maven.compiler.target}</complianceLevel>
                  <aspectLibraries>
                      <aspectLibrary>
-                         <groupId>software.aws.lambda</groupId>
+                         <groupId>software.amazon.lambda</groupId>
                          <artifactId>aws-lambda-powertools-java</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
