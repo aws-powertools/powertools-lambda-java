@@ -16,7 +16,7 @@ Powertools is available in Maven Central. You can use your favourite dependency 
 <dependencies>
     ...
     <dependency>
-        <groupId>software.aws.lambda</groupId>
+        <groupId>software.amazon.lambda</groupId>
         <artifactId>aws-lambda-powertools-java</artifactId>
         <version>YOUR_REQUIRED_VERSION</version>
     </dependency>
@@ -37,7 +37,7 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
                  <complianceLevel>1.8</complianceLevel>
                  <aspectLibraries>
                      <aspectLibrary>
-                         <groupId>software.aws.lambda</groupId>
+                         <groupId>software.amazon.lambda</groupId>
                          <artifactId>aws-lambda-powertools-java</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
@@ -59,7 +59,7 @@ repositories {
 }
 
 dependencies {
-    powertools 'software.aws.lambda:aws-lambda-powertools-java:YOUR_REQUIRED_VERSION'
+    powertools 'software.amazon.lambda:aws-lambda-powertools-java:YOUR_REQUIRED_VERSION'
 }
 ```
 
