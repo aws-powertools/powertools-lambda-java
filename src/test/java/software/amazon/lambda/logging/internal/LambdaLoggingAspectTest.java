@@ -50,12 +50,13 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(new Object(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(5)
+                .hasSize(6)
                 .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
                 .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
                 .containsEntry(DefaultLambdaFields.FUNCTION_NAME.getName(), "testFunction")
-                .containsKey("coldStart");
+                .containsKey("coldStart")
+                .containsKey("service");
     }
 
     @Test
@@ -65,12 +66,13 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(5)
+                .hasSize(6)
                 .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
                 .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
                 .containsEntry(DefaultLambdaFields.FUNCTION_NAME.getName(), "testFunction")
-                .containsKey("coldStart");
+                .containsKey("coldStart")
+                .containsKey("service");
     }
 
     @Test
@@ -78,13 +80,13 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(5)
+                .hasSize(6)
                 .containsEntry("coldStart", "true");
 
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(5)
+                .hasSize(6)
                 .containsEntry("coldStart", "false");
     }
 
@@ -125,7 +127,7 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(new Object(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(5);
+                .hasSize(6);
     }
 
     @Test
@@ -142,7 +144,16 @@ class LambdaLoggingAspectTest {
                 .isEqualTo("{\"test\":\"payload\"}");
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(5);
+                .hasSize(6);
+    }
+
+    @Test
+    void shouldLogServiceNameWhenEnvVarSet() {
+        requestHandler.handleRequest(new Object(), context);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(6)
+                .containsEntry("service", "testService");
     }
 
     private void setupContext() {

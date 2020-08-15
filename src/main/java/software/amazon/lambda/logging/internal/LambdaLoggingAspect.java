@@ -24,6 +24,7 @@ import software.amazon.lambda.logging.PowerToolsLogging;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.SERVICE_NAME;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
@@ -45,6 +46,7 @@ public final class LambdaLoggingAspect {
                 .ifPresent(context -> {
                     ThreadContext.putAll(DefaultLambdaFields.values(context));
                     ThreadContext.put("coldStart", null == IS_COLD_START ? "true" : "false");
+                    ThreadContext.put("service", SERVICE_NAME);
                 });
 
 
