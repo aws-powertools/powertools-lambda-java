@@ -7,7 +7,7 @@ import software.amazon.lambda.tracing.PowerToolsTracing;
 public class PowerTracerToolEnabledWithException implements RequestHandler<Object, Object> {
 
     @Override
-    @PowerToolsTracing(namespace = "lambdaHandler")
+    @PowerToolsTracing(namespace = "lambdaHandler", captureError = true)
     public Object handleRequest(Object input, Context context) {
         throw new RuntimeException("I am failing!");
     }

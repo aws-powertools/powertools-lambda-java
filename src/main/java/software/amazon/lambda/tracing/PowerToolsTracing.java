@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface PowerToolsTracing {
     String namespace() default "";
-    boolean captureResponse() default true;
-    boolean captureError() default true;
+    boolean captureResponse() default false;
+    boolean captureError() default false;
 }
