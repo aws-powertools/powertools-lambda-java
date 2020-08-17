@@ -10,7 +10,7 @@ import software.amazon.lambda.tracing.PowerToolsTracing;
 public class PowerTracerToolEnabledForStreamWithNoMetaData implements RequestStreamHandler {
 
     @Override
-    @PowerToolsTracing(captureResponse = false, captureError = false)
+    @PowerToolsTracing
     public void handleRequest(InputStream input, OutputStream output, Context context) {
 
     }
