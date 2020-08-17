@@ -7,7 +7,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.tracing.PowerToolTracing;
+import software.amazon.lambda.tracing.PowerToolsTracing;
 
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.isColdStart;
@@ -21,12 +21,12 @@ public final class LambdaTracingAspect {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Pointcut("@annotation(powerToolsTracing)")
-    public void callAt(PowerToolTracing powerToolsTracing) {
+    public void callAt(PowerToolsTracing powerToolsTracing) {
     }
 
-    @Around(value = "callAt(powerToolsTracing) && execution(@PowerToolTracing * *.*(..))", argNames = "pjp,powerToolsTracing")
+    @Around(value = "callAt(powerToolsTracing) && execution(@PowerToolsTracing * *.*(..))", argNames = "pjp,powerToolsTracing")
     public Object around(ProceedingJoinPoint pjp,
-                         PowerToolTracing powerToolsTracing) throws Throwable {
+                         PowerToolsTracing powerToolsTracing) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
         Subsegment segment;
 
@@ -58,7 +58,7 @@ public final class LambdaTracingAspect {
         }
     }
 
-    private String namespace(PowerToolTracing powerToolsTracing) {
+    private String namespace(PowerToolsTracing powerToolsTracing) {
         return powerToolsTracing.namespace().isEmpty() ? serviceName() : powerToolsTracing.namespace();
     }
 
