@@ -1,0 +1,16 @@
+---
+title: Tracer
+description: Core utility
+---
+
+import Note from "../../src/components/Note"
+
+Tracer is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/).
+
+![Tracer showcase](../media/tracer_utility_showcase.png)
+
+**Key features**
+
+* Capture cold start as annotation, and responses as well as full exceptions as metadata
+* Run functions locally with SAM CLI without code change to disable tracing
+* Support tracing async methods
