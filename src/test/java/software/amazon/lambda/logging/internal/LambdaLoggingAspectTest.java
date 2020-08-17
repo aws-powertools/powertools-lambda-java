@@ -29,6 +29,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 class LambdaLoggingAspectTest {
 
+    private static final int EXPECTED_CONTEXT_SIZE = 6;
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
 
@@ -50,7 +51,7 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(new Object(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6)
+                .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
                 .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
@@ -66,7 +67,7 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6)
+                .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
                 .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
@@ -86,7 +87,7 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6)
+                .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("coldStart", "false");
     }
 
@@ -127,7 +128,7 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(new Object(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6);
+                .hasSize(EXPECTED_CONTEXT_SIZE);
     }
 
     @Test
@@ -144,15 +145,16 @@ class LambdaLoggingAspectTest {
                 .isEqualTo("{\"test\":\"payload\"}");
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6);
+                .hasSize(EXPECTED_CONTEXT_SIZE);
     }
 
     @Test
     void shouldLogServiceNameWhenEnvVarSet() {
+        LambdaHandlerProcessor.SERVICE_NAME = "testService";
         requestHandler.handleRequest(new Object(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6)
+                .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("service", "testService");
     }
 
