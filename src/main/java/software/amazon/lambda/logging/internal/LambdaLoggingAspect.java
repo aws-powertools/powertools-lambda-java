@@ -11,9 +11,12 @@ import java.util.Optional;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.util.IOUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -32,6 +35,16 @@ import static software.amazon.lambda.internal.LambdaHandlerProcessor.serviceName
 
 @Aspect
 public final class LambdaLoggingAspect {
+    private static String LOG_LEVEL = System.getenv("LOG_LEVEL");
+
+    static {
+        if (LOG_LEVEL != null) {
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.getLevel(LOG_LEVEL));
+            ctx.updateLoggers();
+        }
+    }
+
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Pointcut("@annotation(powerToolsLogging)")

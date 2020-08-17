@@ -6,9 +6,14 @@ import java.io.OutputStream;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 public final class LambdaHandlerProcessor {
+    // Purposefully not final to enable testing
     private static String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
             ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
     private static Boolean IS_COLD_START = null;
