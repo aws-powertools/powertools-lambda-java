@@ -14,13 +14,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import software.amazon.lambda.handlers.PowerToolDisabled;
 import software.amazon.lambda.handlers.PowerToolDisabledForStream;
-import software.amazon.lambda.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
-import software.amazon.lambda.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.handlers.PowerTracerToolEnabled;
 import software.amazon.lambda.handlers.PowerTracerToolEnabledForStream;
+import software.amazon.lambda.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
+import software.amazon.lambda.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.handlers.PowerTracerToolEnabledWithNoMetaData;
 import software.amazon.lambda.internal.LambdaHandlerProcessor;
 
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.when;
@@ -34,9 +35,9 @@ class LambdaTracingAspectTest {
     private Context context;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IllegalAccessException {
         initMocks(this);
-        LambdaHandlerProcessor.IS_COLD_START = null;
+        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
         requestHandler = new PowerTracerToolEnabled();
         streamHandler = new PowerTracerToolEnabledForStream();

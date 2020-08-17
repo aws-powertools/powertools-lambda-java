@@ -7,13 +7,14 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.tracing.PowerToolTracing;
 
-import static software.amazon.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.coldStartDone;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.serviceName;
 
 @Aspect
 public final class LambdaTracingAspect {
@@ -35,7 +36,7 @@ public final class LambdaTracingAspect {
         boolean placedOnHandlerMethod = placedOnHandlerMethod(pjp);
 
         if (placedOnHandlerMethod) {
-            segment.putAnnotation("ColdStart", IS_COLD_START == null);
+            segment.putAnnotation("ColdStart", isColdStart() == null);
         }
 
 
@@ -45,8 +46,7 @@ public final class LambdaTracingAspect {
                 segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", methodReturn);
             }
 
-            IS_COLD_START = false;
-
+            coldStartDone();
             return methodReturn;
         } catch (Exception e) {
             if (powerToolsTracing.captureError()) {
@@ -59,7 +59,7 @@ public final class LambdaTracingAspect {
     }
 
     private String namespace(PowerToolTracing powerToolsTracing) {
-        return powerToolsTracing.namespace().isEmpty() ? LambdaHandlerProcessor.SERVICE_NAME : powerToolsTracing.namespace();
+        return powerToolsTracing.namespace().isEmpty() ? serviceName() : powerToolsTracing.namespace();
     }
 
     private boolean placedOnHandlerMethod(ProceedingJoinPoint pjp) {

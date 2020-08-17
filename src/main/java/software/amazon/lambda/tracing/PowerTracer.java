@@ -6,7 +6,7 @@ import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 
-import static software.amazon.lambda.internal.LambdaHandlerProcessor.SERVICE_NAME;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.serviceName;
 
 public final class PowerTracer {
 
@@ -17,7 +17,7 @@ public final class PowerTracer {
 
     public static void putMetadata(String key, Object value) {
         String namespace = AWSXRay.getCurrentSubsegmentOptional()
-                .map(Subsegment::getNamespace).orElse(SERVICE_NAME);
+                .map(Subsegment::getNamespace).orElse(serviceName());
 
         putMetadata(namespace, key, value);
     }
@@ -29,7 +29,7 @@ public final class PowerTracer {
 
     public static void withEntitySubsegment(String name, Entity entity, Consumer<Subsegment> subsegment) {
         AWSXRay.setTraceEntity(entity);
-        withEntitySubsegment(SERVICE_NAME, name, entity, subsegment);
+        withEntitySubsegment(serviceName(), name, entity, subsegment);
     }
 
     public static void withEntitySubsegment(String namespace, String name, Entity entity, Consumer<Subsegment> subsegment) {
@@ -38,7 +38,7 @@ public final class PowerTracer {
     }
 
     public static void withSubsegment(String name, Consumer<Subsegment> subsegment) {
-        withSubsegment(SERVICE_NAME, name, subsegment);
+        withSubsegment(serviceName(), name, subsegment);
     }
 
     public static void withSubsegment(String namespace, String name, Consumer<Subsegment> subsegment) {
