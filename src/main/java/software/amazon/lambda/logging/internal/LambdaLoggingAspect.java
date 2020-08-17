@@ -23,11 +23,12 @@ import software.amazon.lambda.logging.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
-import static software.amazon.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
-import static software.amazon.lambda.internal.LambdaHandlerProcessor.SERVICE_NAME;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.coldStartDone;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.placedOnStreamHandler;
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.serviceName;
 
 @Aspect
 public final class LambdaLoggingAspect {
@@ -45,8 +46,8 @@ public final class LambdaLoggingAspect {
         extractContext(pjp)
                 .ifPresent(context -> {
                     ThreadContext.putAll(DefaultLambdaFields.values(context));
-                    ThreadContext.put("coldStart", null == IS_COLD_START ? "true" : "false");
-                    ThreadContext.put("service", SERVICE_NAME);
+                    ThreadContext.put("coldStart", null == isColdStart() ? "true" : "false");
+                    ThreadContext.put("service", serviceName());
                 });
 
 
@@ -56,7 +57,7 @@ public final class LambdaLoggingAspect {
 
         Object proceed = pjp.proceed(proceedArgs);
 
-        IS_COLD_START = false;
+        coldStartDone();
         return proceed;
     }
 
