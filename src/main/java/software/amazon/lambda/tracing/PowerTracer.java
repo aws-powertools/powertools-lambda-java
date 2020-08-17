@@ -6,9 +6,9 @@ import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 
+import static software.amazon.lambda.internal.LambdaHandlerProcessor.SERVICE_NAME;
+
 public final class PowerTracer {
-    public static final String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
-            ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
 
     public static void putAnnotation(String key, String value) {
         AWSXRay.getCurrentSubsegmentOptional()

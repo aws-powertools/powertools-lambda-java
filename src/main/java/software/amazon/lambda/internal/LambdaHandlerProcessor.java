@@ -9,7 +9,8 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import org.aspectj.lang.ProceedingJoinPoint;
 
 public final class LambdaHandlerProcessor {
-    public static String SERVICE_NAME = System.getenv("POWERTOOLS_SERVICE_NAME");
+    public static String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
+            ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
     public static Boolean IS_COLD_START = null;
 
     public static boolean isHandlerMethod(ProceedingJoinPoint pjp) {

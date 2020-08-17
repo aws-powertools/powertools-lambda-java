@@ -7,8 +7,8 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.tracing.PowerToolTracing;
-import software.amazon.lambda.tracing.PowerTracer;
 
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.IS_COLD_START;
 import static software.amazon.lambda.internal.LambdaHandlerProcessor.isHandlerMethod;
@@ -59,7 +59,7 @@ public final class LambdaTracingAspect {
     }
 
     private String namespace(PowerToolTracing powerToolsTracing) {
-        return powerToolsTracing.namespace().isEmpty() ? PowerTracer.SERVICE_NAME : powerToolsTracing.namespace();
+        return powerToolsTracing.namespace().isEmpty() ? LambdaHandlerProcessor.SERVICE_NAME : powerToolsTracing.namespace();
     }
 
     private boolean placedOnHandlerMethod(ProceedingJoinPoint pjp) {
