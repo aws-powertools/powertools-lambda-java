@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface PowerToolTracing {
+public @interface PowerToolsTracing {
     String namespace() default "";
     boolean captureResponse() default true;
     boolean captureError() default true;
