@@ -7,7 +7,7 @@ import software.amazon.lambda.tracing.PowerToolsTracing;
 public class PowerTracerToolEnabled implements RequestHandler<Object, Object> {
 
     @Override
-    @PowerToolsTracing(namespace = "lambdaHandler", captureResponse = true, captureError = true)
+    @PowerToolsTracing(namespace = "lambdaHandler")
     public Object handleRequest(Object input, Context context) {
         return null;
     }

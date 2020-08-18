@@ -10,7 +10,7 @@ import software.amazon.lambda.tracing.PowerToolsTracing;
 public class PowerTracerToolEnabledForStream implements RequestStreamHandler {
 
     @Override
-    @PowerToolsTracing(namespace = "streamHandler", captureResponse = true, captureError = true)
+    @PowerToolsTracing(namespace = "streamHandler")
     public void handleRequest(InputStream input, OutputStream output, Context context) {
 
     }
