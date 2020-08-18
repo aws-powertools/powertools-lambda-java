@@ -14,6 +14,6 @@ public class PowerLogToolEnabled implements RequestHandler<Object, Object> {
 
     @PowerToolsLogging
     public void anotherMethod() {
-
+        System.out.println("test");
     }
 }

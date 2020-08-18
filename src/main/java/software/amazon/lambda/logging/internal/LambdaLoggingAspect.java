@@ -34,6 +34,7 @@ import static software.amazon.lambda.internal.LambdaHandlerProcessor.serviceName
 public final class LambdaLoggingAspect {
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    @SuppressWarnings({"EmptyMethod", "unused"})
     @Pointcut("@annotation(powerToolsLogging)")
     public void callAt(PowerToolsLogging powerToolsLogging) {
     }

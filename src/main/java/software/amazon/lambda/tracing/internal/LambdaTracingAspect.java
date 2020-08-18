@@ -2,7 +2,6 @@ package software.amazon.lambda.tracing.internal;
 
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -18,8 +17,8 @@ import static software.amazon.lambda.internal.LambdaHandlerProcessor.serviceName
 
 @Aspect
 public final class LambdaTracingAspect {
-    private static final ObjectMapper mapper = new ObjectMapper();
 
+    @SuppressWarnings({"EmptyMethod", "unused"})
     @Pointcut("@annotation(powerToolsTracing)")
     public void callAt(PowerToolsTracing powerToolsTracing) {
     }
