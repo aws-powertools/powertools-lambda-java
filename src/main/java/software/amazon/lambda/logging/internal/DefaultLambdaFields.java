@@ -11,7 +11,7 @@ enum DefaultLambdaFields {
     FUNCTION_ARN("functionArn"),
     FUNCTION_MEMORY_SIZE("functionMemorySize");
 
-    private String name;
+    private final String name;
 
     DefaultLambdaFields(String name) {
         this.name = name;
