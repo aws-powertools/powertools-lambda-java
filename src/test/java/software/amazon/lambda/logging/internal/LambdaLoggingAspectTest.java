@@ -15,14 +15,15 @@ import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import software.amazon.lambda.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.handlers.PowerToolDisabled;
-import software.amazon.lambda.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.handlers.PowerLogToolEnabledForStream;
+import software.amazon.lambda.handlers.PowerToolDisabled;
+import software.amazon.lambda.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.handlers.PowerToolLogEventEnabled;
 import software.amazon.lambda.handlers.PowerToolLogEventEnabledForStream;
+import software.amazon.lambda.internal.LambdaHandlerProcessor;
 
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -37,10 +38,10 @@ class LambdaLoggingAspectTest {
     private Context context;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IllegalAccessException {
         initMocks(this);
         ThreadContext.clearAll();
-        LambdaHandlerProcessor.IS_COLD_START = null;
+        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();
@@ -149,8 +150,8 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    void shouldLogServiceNameWhenEnvVarSet() {
-        LambdaHandlerProcessor.SERVICE_NAME = "testService";
+    void shouldLogServiceNameWhenEnvVarSet() throws IllegalAccessException {
+        writeStaticField(LambdaHandlerProcessor.class, "SERVICE_NAME", "testService", true);
         requestHandler.handleRequest(new Object(), context);
 
         assertThat(ThreadContext.getImmutableContext())

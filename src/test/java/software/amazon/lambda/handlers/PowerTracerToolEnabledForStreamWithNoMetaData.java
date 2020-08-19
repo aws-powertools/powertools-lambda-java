@@ -5,12 +5,12 @@ import java.io.OutputStream;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import software.amazon.lambda.tracing.PowerToolTracing;
+import software.amazon.lambda.tracing.PowerToolsTracing;
 
 public class PowerTracerToolEnabledForStreamWithNoMetaData implements RequestStreamHandler {
 
     @Override
-    @PowerToolTracing(captureResponse = false, captureError = false)
+    @PowerToolsTracing(captureResponse = false, captureError = false)
     public void handleRequest(InputStream input, OutputStream output, Context context) {
 
     }

@@ -39,7 +39,7 @@ public class LambdaJsonLayout extends AbstractJacksonLayout {
 
     static final String CONTENT_TYPE = "application/json";
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public static class Builder<B extends Builder<B>> extends AbstractJacksonLayout.Builder<B>
             implements org.apache.logging.log4j.core.util.Builder<LambdaJsonLayout> {
