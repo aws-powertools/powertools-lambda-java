@@ -25,7 +25,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 class LambdaJsonLayoutTest {
 
-    private RequestHandler<Object, Object> handler = new PowerLogToolEnabled();
+    private final RequestHandler<Object, Object> handler = new PowerLogToolEnabled();
 
     @Mock
     private Context context;

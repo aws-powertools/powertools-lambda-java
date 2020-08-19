@@ -16,7 +16,7 @@ class PowerLoggerTest {
 
     @Test
     void shouldSetCustomKeyOnThreadContext() {
-        PowerLogger.customKey("test", "value");
+        PowerLogger.appendKey("test", "value");
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(1)

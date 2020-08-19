@@ -114,7 +114,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
 ## Appending additional keys
 
-You can append your own keys to your existing Logger via `customKey`.
+You can append your own keys to your existing Logger via `appendKey`.
 
 ```java:title=App.java
 package helloworld;
@@ -135,7 +135,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     @PowerToolsLogging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         ...
-        PowerLogger.customKey("test", "willBeLogged");
+        PowerLogger.appendKey("test", "willBeLogged");
         ...
     }
 }
