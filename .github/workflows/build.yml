@@ -5,6 +5,8 @@ on:
     branches:
       - master
   push:
+    branches:
+      - master
 
 jobs:
   build:
@@ -25,4 +27,4 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
       - name: Build with Maven
-        run: mvn -B package --file pom.xml -P release
+        run: mvn -B package -P !build-extras -Dmaven.javadoc.skip=true --file pom.xml
