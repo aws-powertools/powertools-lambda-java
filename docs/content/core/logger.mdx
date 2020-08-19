@@ -50,6 +50,11 @@ Key | Type | Example | Description
 **coldStart** | Boolean | true| ColdStart value.
 **service** | String | "payment" | Service name defined. "service_undefined" will be used if unknown
 **message** | String |  "Collecting payment" | Log statement value. Unserializable JSON values will be casted to string
+**functionName**| String | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
+**functionVersion**| String | "12"
+**functionMemorySize**| String | "128"
+**functionArn**| String | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
+
 
 ## Capturing context Lambda info
 
@@ -71,7 +76,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowerToolsLogging()
+    @PowerToolsLogging
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
      ...
     }
@@ -106,15 +111,6 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     }
 }
 ```
-
-When used, this will include the following keys:
-
-Key | Type | Example
-------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-**functionName**| String | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
-**functionVersion**| String | "12"
-**functionMemorySize**| String | "128"
-**functionArn**| String | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
 
 ## Appending additional keys
 
