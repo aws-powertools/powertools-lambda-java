@@ -1,14 +1,12 @@
 name: Docs
 
 on:
-  pull_request:
-    branches:
-      - master
   push:
     branches:
       - master
-      # Disabled until docs support versioning per branch/release
-      # - develop
+  release:
+    types:
+      - published
 
 jobs:
   docs:
