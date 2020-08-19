@@ -8,7 +8,8 @@ export const onRouteUpdate = ({ location, prevLocation }) => {
         data: {
             url: window.location.href,
             section: location.pathname,
-            previous: prevLocation ? prevLocation.pathname : null
+            previous: prevLocation ? prevLocation.pathname : null,
+            language: 'java'
         },
         streamName: awsconfig.aws_kinesis_firehose_stream_name
     }, 'AWSKinesisFirehose')

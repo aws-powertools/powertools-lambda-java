@@ -1,0 +1,142 @@
+---
+title: Logger
+description: Core utility
+---
+
+import Note from "../../src/components/Note"
+
+Logger provides an opinionated logger with output structured as JSON.
+
+**Key features**
+
+* Capture key fields from Lambda context, cold start and structures logging output as JSON
+* Log Lambda event when instructed (disabled by default)
+    - Enable explicitly via annotation param
+* Append additional keys to structured log at any point in time
+
+## Initialization
+
+Powertools extends the functionality of Log4J. Below is an example log4j2.xml file, with the LambdaJsonLayout configured.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
+    <Appenders>
+        <Console name="JsonAppender" target="SYSTEM_OUT">
+            <LambdaJsonLayout compact="true" eventEol="true"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="JsonLogger" level="INFO" additivity="false">
+            <AppenderRef ref="JsonAppender"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="JsonAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
+```
+
+You can also explicitly set a service name via `POWERTOOLS_SERVICE_NAME` env var. This sets **service** key that will be present across all log statements.
+
+## Standard structured keys
+
+Your Logger will always include the following keys to your structured logging:
+
+Key | Type | Example | Description
+------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------
+**timestamp** | String | "2020-05-24 18:17:33,774" | Timestamp of actual log statement
+**level** | String | "INFO" | Logging level
+**coldStart** | Boolean | true| ColdStart value.
+**service** | String | "payment" | Service name defined. "service_undefined" will be used if unknown
+**message** | String |  "Collecting payment" | Log statement value. Unserializable JSON values will be casted to string
+**functionName**| String | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
+**functionVersion**| String | "12"
+**functionMemorySize**| String | "128"
+**functionArn**| String | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
+
+
+## Capturing context Lambda info
+
+You can enrich your structured logs with key Lambda context information via `logEvent` annotation parameter.
+
+```java:title=App.java
+package helloworld;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.logging.PowerLogger;
+import software.amazon.lambda.logging.PowerToolsLogging;
+...
+
+/**
+ * Handler for requests to Lambda function.
+ */
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    Logger log = LogManager.getLogger();
+
+    @PowerToolsLogging
+    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+     ...
+    }
+}
+```
+
+You can also explicitly log any incoming event using `logEvent` param.
+
+<Note type="warning">
+  This is disabled by default to prevent sensitive info being logged.
+</Note><br/>
+
+```java:title=App.java
+package helloworld;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.logging.PowerLogger;
+import software.amazon.lambda.logging.PowerToolsLogging;
+...
+
+/**
+ * Handler for requests to Lambda function.
+ */
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    Logger log = LogManager.getLogger();
+    
+    @PowerToolsLogging(logEvent = true)
+    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+     ...
+    }
+}
+```
+
+## Appending additional keys
+
+You can append your own keys to your existing Logger via `customKey`.
+
+```java:title=App.java
+package helloworld;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.logging.PowerLogger;
+import software.amazon.lambda.logging.PowerToolsLogging;
+...
+
+/**
+ * Handler for requests to Lambda function.
+ */
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    Logger log = LogManager.getLogger();
+
+    @PowerToolsLogging(logEvent = true)
+    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+        ...
+        PowerLogger.customKey("test", "willBeLogged");
+        ...
+    }
+}
+```

@@ -17,15 +17,15 @@ module.exports = {
                 menuTitle: 'Helpful resources',
                 githubRepo: 'awslabs/aws-lambda-powertools-java',
                 baseUrl: `${docsWebsite}`,
-                algoliaApiKey: 'a8491b576861e819fd50d567134eb9ce',
-                algoliaIndexName: 'aws-lambda-powertools-java',
                 logoLink: `${docsWebsite}`,
                 sidebarCategories: {
                     null: [
                         'index'
                     ],
-                    'Core utilities': [],
-                    'Utilities': [],
+                    'Core utilities': [
+                        'core/tracer',
+                        'core/logger'
+                    ]
                 },
                 navConfig: {
                     'Serverless Best Practices video': {
@@ -46,10 +46,6 @@ module.exports = {
                     }
                 },
                 footerNavConfig: {
-                    /*'API Reference': {
-                        href: 'https://awslabs.github.io/aws-lambda-powertools-java/api/',
-                        target: '_blank'
-                    },*/
                     Serverless: {
                         href: 'https://aws.amazon.com/serverless/'
                     },
