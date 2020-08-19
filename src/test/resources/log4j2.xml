@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
     <Appenders>
-        <Console name="JsonAppender" target="SYSTEM_OUT">
+        <File name="JsonAppender" fileName="target/logfile.json">
             <LambdaJsonLayout compact="true" eventEol="true"/>
-        </Console>
+        </File>
     </Appenders>
     <Loggers>
         <Logger name="JsonLogger" level="INFO" additivity="false">
