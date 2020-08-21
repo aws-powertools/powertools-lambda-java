@@ -5,14 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powertools-core</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>0.1.0-SNAPSHOT</version>
-        <relativePath>../powertools-parent/pom.xml</relativePath>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <name>AWS Lambda Powertools Java library Core</name>

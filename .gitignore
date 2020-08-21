@@ -98,3 +98,4 @@ docs/.cache
 docs/public
 /example/.aws-sam/
 /example/HelloWorldFunction/.aws-sam/
+.flattened-pom.xml
