@@ -16,7 +16,12 @@ Powertools is available in Maven Central. You can use your favourite dependency 
     ...
     <dependency>
         <groupId>software.amazon.lambda</groupId>
-        <artifactId>aws-lambda-powertools-java</artifactId>
+        <artifactId>powertools-tracing</artifactId>
+        <version>YOUR_REQUIRED_VERSION</version>
+    </dependency>
+    <dependency>
+        <groupId>software.amazon.lambda</groupId>
+        <artifactId>powertools-logging</artifactId>
         <version>YOUR_REQUIRED_VERSION</version>
     </dependency>
     ...
@@ -40,7 +45,11 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
                  <aspectLibraries>
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
-                         <artifactId>aws-lambda-powertools-java</artifactId>
+                         <artifactId>powertools-logging</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-tracing</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
              </configuration>
