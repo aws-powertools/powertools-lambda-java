@@ -65,8 +65,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowerLogger;
-import software.amazon.lambda.logging.PowerToolsLogging;
+import software.amazon.lambda.logging.PowertoolsLogger;
+import software.amazon.lambda.logging.PowertoolsLogging;
 ...
 
 /**
@@ -76,7 +76,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowerToolsLogging
+    @PowertoolsLogging
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
      ...
     }
@@ -94,8 +94,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowerLogger;
-import software.amazon.lambda.logging.PowerToolsLogging;
+import software.amazon.lambda.logging.PowertoolsLogger;
+import software.amazon.lambda.logging.PowertoolsLogging;
 ...
 
 /**
@@ -105,7 +105,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
     
-    @PowerToolsLogging(logEvent = true)
+    @PowertoolsLogging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
      ...
     }
@@ -121,8 +121,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowerLogger;
-import software.amazon.lambda.logging.PowerToolsLogging;
+import software.amazon.lambda.logging.PowertoolsLogger;
+import software.amazon.lambda.logging.PowertoolsLogging;
 ...
 
 /**
@@ -132,10 +132,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowerToolsLogging(logEvent = true)
+    @PowertoolsLogging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         ...
-        PowerLogger.appendKey("test", "willBeLogged");
+        PowertoolsLogger.appendKey("test", "willBeLogged");
         ...
     }
 }
