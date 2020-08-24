@@ -60,13 +60,13 @@ public final class LambdaLoggingAspect {
     }
 
     @SuppressWarnings({"EmptyMethod", "unused"})
-    @Pointcut("@annotation(powerToolsLogging)")
-    public void callAt(PowertoolsLogging powerToolsLogging) {
+    @Pointcut("@annotation(powertoolsLogging)")
+    public void callAt(PowertoolsLogging powertoolsLogging) {
     }
 
-    @Around(value = "callAt(powerToolsLogging) && execution(@PowerToolsLogging * *.*(..))", argNames = "pjp,powerToolsLogging")
+    @Around(value = "callAt(powertoolsLogging) && execution(@PowertoolsLogging * *.*(..))", argNames = "pjp,powertoolsLogging")
     public Object around(ProceedingJoinPoint pjp,
-                         PowertoolsLogging powerToolsLogging) throws Throwable {
+                         PowertoolsLogging powertoolsLogging) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         extractContext(pjp)
@@ -77,7 +77,7 @@ public final class LambdaLoggingAspect {
                 });
 
 
-        if (powerToolsLogging.logEvent()) {
+        if (powertoolsLogging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 
