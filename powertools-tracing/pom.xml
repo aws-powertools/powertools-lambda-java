@@ -10,7 +10,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>${revision}</version>
+        <version>0.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
