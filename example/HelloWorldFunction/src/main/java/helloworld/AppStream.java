@@ -8,7 +8,7 @@ import java.util.Map;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import software.amazon.lambda.logging.PowerToolsLogging;
+import software.amazon.lambda.powertools.logging.PowerToolsLogging;
 
 public class AppStream implements RequestStreamHandler {
     private static final ObjectMapper mapper = new ObjectMapper();

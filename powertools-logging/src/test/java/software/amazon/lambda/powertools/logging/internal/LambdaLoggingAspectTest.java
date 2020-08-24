@@ -1,3 +1,16 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package software.amazon.lambda.powertools.logging.internal;
 
 import java.io.ByteArrayInputStream;
@@ -11,14 +24,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.logging.log4j.ThreadContext;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
@@ -26,6 +35,11 @@ import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledForStream;
+
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 class LambdaLoggingAspectTest {
 
@@ -38,9 +52,9 @@ class LambdaLoggingAspectTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        MockitoAnnotations.initMocks(this);
+        initMocks(this);
         ThreadContext.clearAll();
-        FieldUtils.writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();
@@ -50,7 +64,7 @@ class LambdaLoggingAspectTest {
     void shouldSetLambdaContextWhenEnabled() {
         requestHandler.handleRequest(new Object(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
@@ -66,7 +80,7 @@ class LambdaLoggingAspectTest {
 
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
@@ -80,13 +94,13 @@ class LambdaLoggingAspectTest {
     void shouldSetColdStartFlag() throws IOException {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(6)
                 .containsEntry("coldStart", "true");
 
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("coldStart", "false");
     }
@@ -97,7 +111,7 @@ class LambdaLoggingAspectTest {
 
         requestHandler.handleRequest(new Object(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .isEmpty();
     }
 
@@ -107,7 +121,7 @@ class LambdaLoggingAspectTest {
 
         requestStreamHandler.handleRequest(null, null, context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .isEmpty();
     }
 
@@ -117,7 +131,7 @@ class LambdaLoggingAspectTest {
 
         handler.anotherMethod();
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .isEmpty();
     }
 
@@ -127,7 +141,7 @@ class LambdaLoggingAspectTest {
 
         requestHandler.handleRequest(new Object(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE);
     }
 
@@ -141,27 +155,27 @@ class LambdaLoggingAspectTest {
 
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(testPayload)), output, context);
 
-        Assertions.assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
+        assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
                 .isEqualTo("{\"test\":\"payload\"}");
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE);
     }
 
     @Test
     void shouldLogServiceNameWhenEnvVarSet() throws IllegalAccessException {
-        FieldUtils.writeStaticField(LambdaHandlerProcessor.class, "SERVICE_NAME", "testService", true);
+        writeStaticField(LambdaHandlerProcessor.class, "SERVICE_NAME", "testService", true);
         requestHandler.handleRequest(new Object(), context);
 
-        Assertions.assertThat(ThreadContext.getImmutableContext())
+        assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("service", "testService");
     }
 
     private void setupContext() {
-        Mockito.when(context.getFunctionName()).thenReturn("testFunction");
-        Mockito.when(context.getInvokedFunctionArn()).thenReturn("testArn");
-        Mockito.when(context.getFunctionVersion()).thenReturn("1");
-        Mockito.when(context.getMemoryLimitInMB()).thenReturn(10);
+        when(context.getFunctionName()).thenReturn("testFunction");
+        when(context.getInvokedFunctionArn()).thenReturn("testArn");
+        when(context.getFunctionVersion()).thenReturn("1");
+        when(context.getMemoryLimitInMB()).thenReturn(10);
     }
 }
