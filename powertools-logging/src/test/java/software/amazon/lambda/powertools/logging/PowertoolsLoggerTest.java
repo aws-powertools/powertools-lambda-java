@@ -14,22 +14,25 @@
 package software.amazon.lambda.powertools.logging;
 
 import org.apache.logging.log4j.ThreadContext;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-/**
- * A class of helper functions to add additional functionality to PowerToolsLogging.
- *
- * {@see PowerToolsLogging}
- */
-public class PowerLogger {
+import static org.assertj.core.api.Assertions.assertThat;
 
-    /**
-     * Appends an additional key and value to each log entry made. Duplicate values
-     * for the same key will be replaced with the latest.
-     *
-     * @param key The name of the key to be logged
-     * @param value The value to be logged
-     */
-    public static void appendKey(String key, String value) {
-        ThreadContext.put(key, value);
+
+class PowertoolsLoggerTest {
+
+    @BeforeEach
+    void setUp() {
+        ThreadContext.clearAll();
+    }
+
+    @Test
+    void shouldSetCustomKeyOnThreadContext() {
+        PowertoolsLogger.appendKey("test", "value");
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(1)
+                .containsEntry("test", "value");
     }
 }

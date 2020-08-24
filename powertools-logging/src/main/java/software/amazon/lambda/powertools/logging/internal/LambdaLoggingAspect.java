@@ -13,6 +13,21 @@
  */
 package software.amazon.lambda.powertools.logging.internal;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.util.IOUtils;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -21,18 +36,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Optional;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.util.IOUtils;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.logging.PowerToolsLogging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -46,15 +49,24 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 @Aspect
 public final class LambdaLoggingAspect {
     private static final ObjectMapper mapper = new ObjectMapper();
+    private static final String LOG_LEVEL = System.getenv("LOG_LEVEL");
 
-    @SuppressWarnings({"EmptyMethod", "unused"})
-    @Pointcut("@annotation(powerToolsLogging)")
-    public void callAt(PowerToolsLogging powerToolsLogging) {
+    static {
+        if (LOG_LEVEL != null) {
+            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.getLevel(LOG_LEVEL));
+            ctx.updateLoggers();
+        }
     }
 
-    @Around(value = "callAt(powerToolsLogging) && execution(@PowerToolsLogging * *.*(..))", argNames = "pjp,powerToolsLogging")
+    @SuppressWarnings({"EmptyMethod", "unused"})
+    @Pointcut("@annotation(powertoolsLogging)")
+    public void callAt(PowertoolsLogging powertoolsLogging) {
+    }
+
+    @Around(value = "callAt(powertoolsLogging) && execution(@PowertoolsLogging * *.*(..))", argNames = "pjp,powertoolsLogging")
     public Object around(ProceedingJoinPoint pjp,
-                         PowerToolsLogging powerToolsLogging) throws Throwable {
+                         PowertoolsLogging powertoolsLogging) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         extractContext(pjp)
@@ -65,7 +77,7 @@ public final class LambdaLoggingAspect {
                 });
 
 
-        if (powerToolsLogging.logEvent()) {
+        if (powertoolsLogging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 
