@@ -16,7 +16,12 @@ Powertools is available in Maven Central. You can use your favourite dependency 
     ...
     <dependency>
         <groupId>software.amazon.lambda</groupId>
-        <artifactId>aws-lambda-powertools-java</artifactId>
+        <artifactId>powertools-tracing</artifactId>
+        <version>YOUR_REQUIRED_VERSION</version>
+    </dependency>
+    <dependency>
+        <groupId>software.amazon.lambda</groupId>
+        <artifactId>powertools-logging</artifactId>
         <version>YOUR_REQUIRED_VERSION</version>
     </dependency>
     ...
@@ -40,7 +45,11 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
                  <aspectLibraries>
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
-                         <artifactId>aws-lambda-powertools-java</artifactId>
+                         <artifactId>powertools-logging</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-tracing</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
              </configuration>
@@ -86,3 +95,10 @@ Powertools extends the functionality of Log4J. Below is an example `log4j2.xml` 
 ## License
 
 This library is licensed under the Apache License, Version 2.0. See the LICENSE file.
+
+
+
+Cold Start
+
+946.58 ms - original
+943.96 ms - power tools

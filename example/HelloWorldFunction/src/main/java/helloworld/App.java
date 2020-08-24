@@ -16,13 +16,13 @@ import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowerLogger;
-import software.amazon.lambda.logging.PowerToolsLogging;
-import software.amazon.lambda.tracing.PowerToolsTracing;
-import software.amazon.lambda.tracing.PowerTracer;
+import software.amazon.lambda.powertools.logging.PowerLogger;
+import software.amazon.lambda.powertools.logging.PowerToolsLogging;
+import software.amazon.lambda.powertools.tracing.PowerToolsTracing;
+import software.amazon.lambda.powertools.tracing.PowerTracer;
 
-import static software.amazon.lambda.tracing.PowerTracer.putMetadata;
-import static software.amazon.lambda.tracing.PowerTracer.withEntitySubsegment;
+import static software.amazon.lambda.powertools.tracing.PowerTracer.putMetadata;
+import static software.amazon.lambda.powertools.tracing.PowerTracer.withEntitySubsegment;
 
 /**
  * Handler for requests to Lambda function.
