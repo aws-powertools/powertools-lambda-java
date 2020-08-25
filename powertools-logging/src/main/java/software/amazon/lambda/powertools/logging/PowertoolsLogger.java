@@ -13,6 +13,8 @@
  */
 package software.amazon.lambda.powertools.logging;
 
+import java.util.Map;
+
 import org.apache.logging.log4j.ThreadContext;
 
 /**
@@ -31,5 +33,16 @@ public class PowertoolsLogger {
      */
     public static void appendKey(String key, String value) {
         ThreadContext.put(key, value);
+    }
+
+
+    /**
+     * Appends additional key and value to each log entry made. Duplicate values
+     * for the same key will be replaced with the latest.
+     *
+     * @param customKeys Map of custom keys values to be appended to logs
+     */
+    public static void appendKeys(Map<String, String> customKeys) {
+        ThreadContext.putAll(customKeys);
     }
 }

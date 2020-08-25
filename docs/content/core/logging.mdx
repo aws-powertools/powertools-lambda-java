@@ -37,6 +37,20 @@ Powertools extends the functionality of Log4J. Below is an example log4j2.xml fi
 </Configuration>
 ```
 
+You can also override log level by setting `LOG_LEVEL` env var  - Here is an example using AWS Serverless Application Model (SAM)
+
+```yaml:title=template.yaml
+Resources:
+    HelloWorldFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+        ...
+        Runtime: java8
+        Environment:
+            Variables:
+                LOG_LEVEL: DEBUG # highlight-line
+```
+
 You can also explicitly set a service name via `POWERTOOLS_SERVICE_NAME` env var. This sets **service** key that will be present across all log statements.
 
 ## Standard structured keys
@@ -136,6 +150,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         ...
         PowertoolsLogger.appendKey("test", "willBeLogged");
+        ...
+
+        ...
+         Map<String, String> customKeys = new HashMap<>();
+         customKeys.put("test", "value");
+         customKeys.put("test1", "value1");
+
+         PowertoolsLogger.appendKeys(customKeys);
         ...
     }
 }

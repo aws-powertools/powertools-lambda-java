@@ -26,6 +26,7 @@ public class PowerLogToolEnabled implements RequestHandler<Object, Object> {
     @PowertoolsLogging
     public Object handleRequest(Object input, Context context) {
         LOG.info("Test event");
+        LOG.debug("Test debug event");
         return null;
     }
 
