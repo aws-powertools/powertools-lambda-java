@@ -137,6 +137,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         ...
         PowertoolsLogger.appendKey("test", "willBeLogged");
         ...
+
+        ...
+         Map<String, String> customKeys = new HashMap<>();
+         customKeys.put("test", "value");
+         customKeys.put("test1", "value1");
+
+         PowertoolsLogger.appendKeys(customKeys);
+        ...
     }
 }
 ```

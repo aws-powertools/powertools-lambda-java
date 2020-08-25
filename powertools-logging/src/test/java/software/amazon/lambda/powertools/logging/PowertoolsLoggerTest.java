@@ -13,6 +13,9 @@
  */
 package software.amazon.lambda.powertools.logging;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,5 +37,19 @@ class PowertoolsLoggerTest {
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(1)
                 .containsEntry("test", "value");
+    }
+
+    @Test
+    void shouldSetCustomKeyAsMapOnThreadContext() {
+        Map<String, String> customKeys = new HashMap<>();
+        customKeys.put("test", "value");
+        customKeys.put("test1", "value1");
+
+        PowertoolsLogger.appendKeys(customKeys);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(2)
+                .containsEntry("test", "value")
+                .containsEntry("test1", "value1");
     }
 }
