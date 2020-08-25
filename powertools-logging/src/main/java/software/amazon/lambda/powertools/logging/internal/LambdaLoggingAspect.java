@@ -49,9 +49,13 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 @Aspect
 public final class LambdaLoggingAspect {
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final String LOG_LEVEL = System.getenv("LOG_LEVEL");
+    private static String LOG_LEVEL = System.getenv("LOG_LEVEL");
 
     static {
+        resetLogLevels();
+    }
+
+    private static void resetLogLevels() {
         if (LOG_LEVEL != null) {
             LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
             Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.getLevel(LOG_LEVEL));
@@ -59,7 +63,7 @@ public final class LambdaLoggingAspect {
         }
     }
 
-    @SuppressWarnings({"EmptyMethod", "unused"})
+    @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(powertoolsLogging)")
     public void callAt(PowertoolsLogging powertoolsLogging) {
     }

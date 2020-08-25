@@ -14,6 +14,8 @@
 package org.apache.logging.log4j.core.layout;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -28,8 +30,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
+import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 
 import static java.util.Collections.emptyMap;
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.when;
@@ -43,11 +47,13 @@ class LambdaJsonLayoutTest {
     private Context context;
 
     @BeforeEach
-    void setUp() throws IOException {
+    void setUp() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         initMocks(this);
         setupContext();
         //Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        writeStaticField(LambdaLoggingAspect.class, "LOG_LEVEL", "INFO", true);
+        resetLogLevel();
     }
 
     @Test
@@ -64,6 +70,32 @@ class LambdaJsonLayoutTest {
                         .containsKey("timestamp")
                         .containsKey("message")
                         .containsKey("service"));
+    }
+
+    @Test
+    void shouldModifyLogLevelBasedOnEnvVariable() throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
+        writeStaticField(LambdaLoggingAspect.class, "LOG_LEVEL", "DEBUG", true);
+        resetLogLevel();
+
+        handler.handleRequest("test", context);
+
+        assertThat(Files.lines(Paths.get("target/logfile.json")))
+                .hasSize(2)
+                .satisfies(line -> {
+                    assertThat(parseToMap(line.get(0)))
+                            .containsEntry("level", "INFO")
+                            .containsEntry("message", "Test event");
+
+                    assertThat(parseToMap(line.get(1)))
+                            .containsEntry("level", "DEBUG")
+                            .containsEntry("message", "Test debug event");
+                });
+    }
+
+    private void resetLogLevel() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels");
+        resetLogLevels.setAccessible(true);
+        resetLogLevels.invoke(null);
     }
 
     private Map<String, Object> parseToMap(String stringAsJson) {

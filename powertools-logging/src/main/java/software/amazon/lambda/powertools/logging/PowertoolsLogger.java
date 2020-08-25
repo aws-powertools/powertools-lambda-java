@@ -37,7 +37,7 @@ public class PowertoolsLogger {
 
 
     /**
-     * Appends an additional key and value to each log entry made. Duplicate values
+     * Appends additional key and value to each log entry made. Duplicate values
      * for the same key will be replaced with the latest.
      *
      * @param customKeys Map of custom keys values to be appended to logs
