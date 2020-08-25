@@ -1,0 +1,58 @@
+---
+title: Tracing
+description: Core utility
+---
+
+import Note from "../../src/components/Note"
+
+Powertools tracing is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/)
+a provides functionality to reduce the overhead of performing common tracing tasks.
+
+ ** Key Features
+
+ * Capture cold start as annotation, and responses as well as full exceptions as metadata
+ * Helper methods to improve the developer experience of creating new X-Ray subsegments.
+ * Better developer experience when developing with multiple threads.
+
+Initialization
+Your AWS Lambda function must have permission to send traces to AWS X-Ray - Here is an example using AWS Serverless Application Model (SAM)
+
+```yaml:title=template.yaml
+Resources:
+    HelloWorldFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+        ...
+        Runtime: java8
+
+        Tracing: Active
+        Environment:
+            Variables:
+                POWERTOOLS_SERVICE_NAME: example
+```
+
+The Powertools service name is used as the X-Ray namespace. This can be set using the environment variable
+`POWERTOOLS_SERVICE_NAME`
+
+To enable Powertools tracing to your function add the @PowertoolsTracing annotation to your handleRequest method.
+
+```java
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    @PowertoolsTracing
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    ...
+    }
+```
+
+By default this annotation will automatically record method responses and exceptions. To disable these features set the
+parameter to false in the annotation.
+
+```java
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    @PowertoolsTracing(captureError = false, captureResponse = false)
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    ...
+    }
+```

@@ -10,8 +10,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.PowertoolsLogger;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
-import software.amazon.lambda.powertools.tracing.PowerToolsTracing;
 import software.amazon.lambda.powertools.tracing.PowerTracer;
+import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,7 +32,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     Logger log = LogManager.getLogger();
 
     @PowertoolsLogging(logEvent = true)
-    @PowerToolsTracing
+    @PowertoolsTracing(captureError = false, captureResponse = false)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
@@ -90,13 +90,13 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         anotherThread.join();
     }
 
-    @PowerToolsTracing
+    @PowertoolsTracing
     private void log() {
         log.info("inside threaded logging for function");
     }
 
 
-    @PowerToolsTracing(namespace = "getPageContents", captureResponse = false, captureError = false)
+    @PowertoolsTracing(namespace = "getPageContents", captureResponse = false, captureError = false)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
         putMetadata("getPageContents", address);
