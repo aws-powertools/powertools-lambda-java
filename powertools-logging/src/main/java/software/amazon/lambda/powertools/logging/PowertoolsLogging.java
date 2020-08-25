@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  *
  * <p>{@code PowertoolsLogging} provides an opinionated logger with output structured as JSON.</p>
  *
- * <p>{@code PowertoolsLogging} should be used with handleRequest method of a class
+ * <p>{@code PowertoolsLogging} should be used with the handleRequest method of a class
  * which implements either
  * {@code com.amazonaws.services.lambda.runtime.RequestHandler} or
  * {@code com.amazonaws.services.lambda.runtime.RequestStreamHandler}.</p>

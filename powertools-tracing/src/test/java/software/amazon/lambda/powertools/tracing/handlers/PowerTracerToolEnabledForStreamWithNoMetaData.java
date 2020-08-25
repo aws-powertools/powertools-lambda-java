@@ -13,17 +13,17 @@
  */
 package software.amazon.lambda.powertools.tracing.handlers;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import software.amazon.lambda.powertools.tracing.PowerToolsTracing;
+import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class PowerTracerToolEnabledForStreamWithNoMetaData implements RequestStreamHandler {
 
     @Override
-    @PowerToolsTracing(captureResponse = false, captureError = false)
+    @PowertoolsTracing(captureResponse = false, captureError = false)
     public void handleRequest(InputStream input, OutputStream output, Context context) {
 
     }

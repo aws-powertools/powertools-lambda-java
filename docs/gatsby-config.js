@@ -23,8 +23,8 @@ module.exports = {
                         'index'
                     ],
                     'Core utilities': [
-                        'core/tracer',
-                        'core/logger'
+                        'core/logging',
+                        'core/tracing'
                     ]
                 },
                 navConfig: {

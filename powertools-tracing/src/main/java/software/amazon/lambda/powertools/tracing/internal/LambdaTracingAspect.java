@@ -19,7 +19,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.tracing.PowerToolsTracing;
+import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
@@ -33,24 +33,20 @@ public final class LambdaTracingAspect {
 
     @SuppressWarnings({"EmptyMethod", "unused"})
     @Pointcut("@annotation(powerToolsTracing)")
-    public void callAt(PowerToolsTracing powerToolsTracing) {
+    public void callAt(PowertoolsTracing powerToolsTracing) {
     }
 
-    @Around(value = "callAt(powerToolsTracing) && execution(@PowerToolsTracing * *.*(..))", argNames = "pjp,powerToolsTracing")
+    @Around(value = "callAt(powerToolsTracing) && execution(@PowertoolsTracing * *.*(..))", argNames = "pjp,powerToolsTracing")
     public Object around(ProceedingJoinPoint pjp,
-                         PowerToolsTracing powerToolsTracing) throws Throwable {
+                         PowertoolsTracing powerToolsTracing) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
-        Subsegment segment;
 
-        segment = AWSXRay.beginSubsegment("## " + pjp.getSignature().getName());
+        Subsegment segment = AWSXRay.beginSubsegment("## " + pjp.getSignature().getName());
         segment.setNamespace(namespace(powerToolsTracing));
 
-        boolean placedOnHandlerMethod = placedOnHandlerMethod(pjp);
-
-        if (placedOnHandlerMethod) {
+        if (placedOnHandlerMethod(pjp)) {
             segment.putAnnotation("ColdStart", isColdStart() == null);
         }
-
 
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
@@ -70,7 +66,7 @@ public final class LambdaTracingAspect {
         }
     }
 
-    private String namespace(PowerToolsTracing powerToolsTracing) {
+    private String namespace(PowertoolsTracing powerToolsTracing) {
         return powerToolsTracing.namespace().isEmpty() ? serviceName() : powerToolsTracing.namespace();
     }
 
