@@ -31,7 +31,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 @Aspect
 public final class LambdaTracingAspect {
 
-    @SuppressWarnings({"EmptyMethod", "unused"})
+    @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(powerToolsTracing)")
     public void callAt(PowerToolsTracing powerToolsTracing) {
     }
@@ -63,6 +63,7 @@ public final class LambdaTracingAspect {
         } catch (Exception e) {
             if (powerToolsTracing.captureError()) {
                 segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " error", e);
+                segment.addException(e);
             }
             throw e;
         } finally {

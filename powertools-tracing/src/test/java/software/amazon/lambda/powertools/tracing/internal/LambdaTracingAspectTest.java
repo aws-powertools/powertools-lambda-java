@@ -25,6 +25,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled;
@@ -32,7 +33,6 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaData;
-import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -99,6 +99,14 @@ class LambdaTracingAspectTest {
                     assertThat(subsegment.getMetadata().get("lambdaHandler"))
                             .satisfies(stringObjectMap -> assertThat(stringObjectMap)
                                     .containsEntry("handleRequest error", exception));
+
+                    assertThat(subsegment.isFault())
+                            .isTrue();
+
+                    assertThat(subsegment.getCause().getExceptions())
+                            .hasSize(1)
+                            .allSatisfy(ex -> assertThat(ex.getThrowable())
+                                    .isEqualTo(exception));
                 });
     }
 
