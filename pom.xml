@@ -31,6 +31,7 @@
         <module>powertools-logging</module>
         <module>powertools-tracing</module>
         <module>powertools-sqs</module>
+        <module>powertools-metrics</module>
     </modules>
 
     <scm>
@@ -67,6 +68,7 @@
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
+        <aws-embedded-metrics.version>0.1.0-beta</aws-embedded-metrics.version>
     </properties>
 
     <distributionManagement>
@@ -142,6 +144,11 @@
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-xray-recorder-sdk-aws-sdk-v2-instrumentor</artifactId>
                 <version>${aws.xray.recorder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.cloudwatchlogs</groupId>
+                <artifactId>aws-embedded-metrics</artifactId>
+                <version>${aws-embedded-metrics.version}</version>
             </dependency>
 
             <!-- Test dependencies -->
