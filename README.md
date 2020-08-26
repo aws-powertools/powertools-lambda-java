@@ -35,9 +35,9 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
     <plugins>
         ...
         <plugin>
-             <groupId>com.nickwongdev</groupId>
+             <groupId>org.codehaus.mojo</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.12.1</version>
+             <version>1.11</version>
              <configuration>
                  <source>1.8</source>
                  <target>1.8</target>
@@ -65,6 +65,7 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
     </plugins>
 </build>
 ```
+**Note:** If you are working with Lambda on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
 
 ### Logging Configuration
 Powertools extends the functionality of Log4J. Below is an example `log4j2.xml` file, with the `LambdaJsonLayout` configured.
