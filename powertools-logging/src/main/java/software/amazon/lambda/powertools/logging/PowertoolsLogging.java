@@ -44,6 +44,8 @@ import java.lang.annotation.Target;
  * <ul>
  *     <li>coldStart - True if this is the first invocation of this Lambda execution environment; else False</li>
  *     <li>service - The value of the 'POWER_TOOLS_SERVICE_NAME' environment variable or 'service_undefined'</li>
+ *     <li>samplingRate - The value of the 'POWERTOOLS_LOGGER_SAMPLE_RATE' environment variable or value of samplingRate field or 0.
+ *     Valid value is from 0.0 to 1.0. Value outside this range is silently ignored.</li>
  * </ul>
  *
  * <p>These keys and values will be joined with the existing Log4J log event and written as JSON.</p>
@@ -53,6 +55,9 @@ import java.lang.annotation.Target;
  * <p>By default {@code PowertoolsLogging} will not log the event which has trigger the invoke of the Lambda function.
  * This can be enabled using {@code @PowertoolsLogging(logEvent = true)}.</p>
  *
+ * <p>By default {@code PowertoolsLogging} all debug loggs will follow log4j2 configuration unless configured via
+ * POWERTOOLS_LOGGER_SAMPLE_RATE environment variable {@code @PowertoolsLogging(samplingRate = <0.0-1.0>)}.</p>
+ *
  * <p>To append additional keys to each log entry you can use {@link PowertoolsLogger#appendKey(String, String)}</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
@@ -60,4 +65,6 @@ import java.lang.annotation.Target;
 public @interface PowertoolsLogging {
 
     boolean logEvent() default false;
+
+    double samplingRate() default 0;
 }

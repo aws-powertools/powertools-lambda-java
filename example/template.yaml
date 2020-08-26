@@ -39,7 +39,7 @@ Resources:
       Tracing: Active
       Environment:
         Variables:
-          PARAM1: VALUE
+          POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
       Events:
         HelloWorld:
           Type: Api

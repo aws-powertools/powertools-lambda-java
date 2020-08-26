@@ -26,10 +26,12 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolSamplingEnabled;
 import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 
 import static java.util.Collections.emptyMap;
@@ -41,7 +43,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 class LambdaJsonLayoutTest {
 
-    private final RequestHandler<Object, Object> handler = new PowerLogToolEnabled();
+    private RequestHandler<Object, Object> handler = new PowerLogToolEnabled();
 
     @Mock
     private Context context;
@@ -52,8 +54,7 @@ class LambdaJsonLayoutTest {
         setupContext();
         //Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-        writeStaticField(LambdaLoggingAspect.class, "LOG_LEVEL", "INFO", true);
-        resetLogLevel();
+        resetLogLevel(Level.INFO);
     }
 
     @Test
@@ -74,8 +75,7 @@ class LambdaJsonLayoutTest {
 
     @Test
     void shouldModifyLogLevelBasedOnEnvVariable() throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
-        writeStaticField(LambdaLoggingAspect.class, "LOG_LEVEL", "DEBUG", true);
-        resetLogLevel();
+        resetLogLevel(Level.DEBUG);
 
         handler.handleRequest("test", context);
 
@@ -92,10 +92,34 @@ class LambdaJsonLayoutTest {
                 });
     }
 
-    private void resetLogLevel() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels");
+    @Test
+    void shouldModifyLogLevelBasedOnSamplingRule() throws IOException {
+        handler = new PowerLogToolSamplingEnabled();
+
+        handler.handleRequest("test", context);
+
+        assertThat(Files.lines(Paths.get("target/logfile.json")))
+                .hasSize(3)
+                .satisfies(line -> {
+                    assertThat(parseToMap(line.get(0)))
+                            .containsEntry("level", "DEBUG")
+                            .containsEntry("loggerName", LambdaLoggingAspect.class.getCanonicalName());
+
+                    assertThat(parseToMap(line.get(1)))
+                            .containsEntry("level", "INFO")
+                            .containsEntry("message", "Test event");
+
+                    assertThat(parseToMap(line.get(2)))
+                            .containsEntry("level", "DEBUG")
+                            .containsEntry("message", "Test debug event");
+                });
+    }
+
+    private void resetLogLevel(Level level) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels", Level.class);
         resetLogLevels.setAccessible(true);
-        resetLogLevels.invoke(null);
+        resetLogLevels.invoke(null, level);
+        writeStaticField(LambdaLoggingAspect.class, "LEVEL_AT_INITIALISATION", level, true);
     }
 
     private Map<String, Object> parseToMap(String stringAsJson) {

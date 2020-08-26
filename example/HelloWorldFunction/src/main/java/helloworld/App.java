@@ -31,7 +31,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowertoolsLogging(logEvent = true)
+    @PowertoolsLogging(logEvent = true, samplingRate = 0.7)
     @PowertoolsTracing(captureError = false, captureResponse = false)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
