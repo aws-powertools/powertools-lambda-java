@@ -13,12 +13,21 @@
  */
 package software.amazon.lambda.powertools.logging.internal;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.util.IOUtils;
@@ -28,15 +37,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Map;
-import java.util.Optional;
-
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
@@ -45,22 +45,26 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.logging.PowertoolsLogger.appendKey;
+import static software.amazon.lambda.powertools.logging.PowertoolsLogger.appendKeys;
 
 @Aspect
 public final class LambdaLoggingAspect {
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private static String LOG_LEVEL = System.getenv("LOG_LEVEL");
+    private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final Random SAMPLER = new Random();
+
+    private static final String LOG_LEVEL = System.getenv("LOG_LEVEL");
+    private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
+
+    private static Level LEVEL_AT_INITIALISATION;
 
     static {
-        resetLogLevels();
-    }
-
-    private static void resetLogLevels() {
-        if (LOG_LEVEL != null) {
-            LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-            Configurator.setAllLevels(LogManager.getRootLogger().getName(), Level.getLevel(LOG_LEVEL));
-            ctx.updateLoggers();
+        if (null != LOG_LEVEL) {
+            resetLogLevels(Level.getLevel(LOG_LEVEL));
         }
+
+        LEVEL_AT_INITIALISATION = LOG.getLevel();
     }
 
     @SuppressWarnings({"EmptyMethod"})
@@ -73,11 +77,13 @@ public final class LambdaLoggingAspect {
                          PowertoolsLogging powertoolsLogging) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
+        setLogLevelBasedOnSamplingRate(pjp, powertoolsLogging);
+
         extractContext(pjp)
                 .ifPresent(context -> {
-                    ThreadContext.putAll(DefaultLambdaFields.values(context));
-                    ThreadContext.put("coldStart", null == isColdStart() ? "true" : "false");
-                    ThreadContext.put("service", serviceName());
+                    appendKeys(DefaultLambdaFields.values(context));
+                    appendKey("coldStart", null == isColdStart() ? "true" : "false");
+                    appendKey("service", serviceName());
                 });
 
 
@@ -91,7 +97,49 @@ public final class LambdaLoggingAspect {
         return proceed;
     }
 
-    private Optional<Context> extractContext(ProceedingJoinPoint pjp) {
+    private static void resetLogLevels(Level logLevel) {
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configurator.setAllLevels(LogManager.getRootLogger().getName(), logLevel);
+        ctx.updateLoggers();
+    }
+
+    private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
+                                                final PowertoolsLogging powertoolsLogging) {
+        if (isHandlerMethod(pjp)) {
+            float sample = SAMPLER.nextFloat();
+            double samplingRate = samplingRate(powertoolsLogging);
+
+            if (samplingRate < 0 || samplingRate > 1) {
+                LOG.debug("Skipping sampling rate configuration because of invalid value. Sampling rate: {}", samplingRate);
+                return;
+            }
+
+            appendKey("samplingRate", String.valueOf(samplingRate));
+
+            if (samplingRate > sample) {
+                resetLogLevels(Level.DEBUG);
+
+                LOG.debug("Changed log level to DEBUG based on Sampling configuration. " +
+                        "Sampling Rate: {}, Sampler Value: {}.", samplingRate, sample);
+            } else if (LEVEL_AT_INITIALISATION != LOG.getLevel()) {
+                resetLogLevels(LEVEL_AT_INITIALISATION);
+            }
+        }
+    }
+
+    private double samplingRate(final PowertoolsLogging powertoolsLogging) {
+        if (null != SAMPLING_RATE) {
+            try {
+                return Double.parseDouble(SAMPLING_RATE);
+            } catch (NumberFormatException e) {
+                LOG.debug("Skipping sampling rate on environment variable configuration because of invalid " +
+                        "value. Sampling rate: {}", SAMPLING_RATE);
+            }
+        }
+        return powertoolsLogging.samplingRate();
+    }
+
+    private Optional<Context> extractContext(final ProceedingJoinPoint pjp) {
 
         if (isHandlerMethod(pjp)) {
             if (placedOnRequestHandler(pjp)) {
@@ -106,7 +154,7 @@ public final class LambdaLoggingAspect {
         return empty();
     }
 
-    private Object[] logEvent(ProceedingJoinPoint pjp) {
+    private Object[] logEvent(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
 
         if (isHandlerMethod(pjp)) {
@@ -123,7 +171,7 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
-    private Object[] logFromInputStream(ProceedingJoinPoint pjp) {
+    private Object[] logFromInputStream(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -136,7 +184,7 @@ public final class LambdaLoggingAspect {
             args[0] = new ByteArrayInputStream(bytes);
 
             Logger log = logger(pjp);
-            log.info(mapper.readValue(bytes, Map.class));
+            log.info(MAPPER.readValue(bytes, Map.class));
 
         } catch (IOException e) {
             Logger log = logger(pjp);
@@ -146,7 +194,7 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
-    private Logger logger(ProceedingJoinPoint pjp) {
+    private Logger logger(final ProceedingJoinPoint pjp) {
         return LogManager.getLogger(pjp.getSignature().getDeclaringType());
     }
 }

@@ -43,7 +43,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 class LambdaLoggingAspectTest {
 
-    private static final int EXPECTED_CONTEXT_SIZE = 6;
+    private static final int EXPECTED_CONTEXT_SIZE = 7;
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
 
@@ -95,7 +95,7 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
         assertThat(ThreadContext.getImmutableContext())
-                .hasSize(6)
+                .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("coldStart", "true");
 
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
