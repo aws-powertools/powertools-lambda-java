@@ -1,10 +1,9 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
@@ -25,9 +24,7 @@ import software.amazon.lambda.powertools.sqs.LargeMessageHandler;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static java.util.Optional.ofNullable;
+import static java.lang.String.format;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 
 @Aspect
@@ -48,62 +45,50 @@ public class SqsMessageAspect {
 
         if (isHandlerMethod(pjp)
                 && placedOnSqsEventRequestHandler(pjp)) {
-            List<PayloadS3Pointer> payloadS3Pointers = collectPayloadPointers(proceedArgs);
+            List<PayloadS3Pointer> pointersToDelete = rewriteMessages(proceedArgs);
 
-            Object[] rewrittenArgs = rewriteMessages(proceedArgs);
-            Object proceed = pjp.proceed(rewrittenArgs);
+            Object proceed = pjp.proceed(proceedArgs);
 
-            payloadS3Pointers.forEach(this::deleteMessageFromS3);
+            pointersToDelete.forEach(this::deleteMessageFromS3);
             return proceed;
         }
 
         return pjp.proceed(proceedArgs);
     }
 
-    private List<PayloadS3Pointer> collectPayloadPointers(Object[] args) {
+    private List<PayloadS3Pointer> rewriteMessages(Object[] args) {
         SQSEvent sqsEvent = (SQSEvent) args[0];
-
-        return sqsEvent.getRecords().stream()
-                .filter(record -> isBodyLargeMessagePointer(record.getBody()))
-                .map(record -> PayloadS3Pointer.fromJson(record.getBody()))
-                .collect(Collectors.toList());
-    }
-
-    private Object[] rewriteMessages(Object[] args) {
-        SQSEvent sqsEvent = (SQSEvent) args[0];
+        List<PayloadS3Pointer> s3Pointers = new ArrayList<>();
 
         for (SQSMessage sqsMessage : sqsEvent.getRecords()) {
             if (isBodyLargeMessagePointer(sqsMessage.getBody())) {
                 PayloadS3Pointer s3Pointer = PayloadS3Pointer.fromJson(sqsMessage.getBody());
 
-                Optional<S3Object> s3Object = callS3Gracefully(s3Pointer, pointer -> {
+                S3Object s3Object = callS3Gracefully(s3Pointer, pointer -> {
                     S3Object object = amazonS3.getObject(pointer.getS3BucketName(), pointer.getS3Key());
                     LOG.debug("Object downloaded with key: " + s3Pointer.getS3Key());
                     return object;
                 });
 
-                s3Object.flatMap(this::readStringFromS3Object)
-                        .ifPresent(sqsMessage::setBody);
+                sqsMessage.setBody(readStringFromS3Object(s3Object));
+                s3Pointers.add(s3Pointer);
             }
         }
 
-        args[0] = sqsEvent;
-
-        return args;
+        return s3Pointers;
     }
 
     private boolean isBodyLargeMessagePointer(String record) {
         return record.startsWith("[\"software.amazon.payloadoffloading.PayloadS3Pointer\"");
     }
 
-    private Optional<String> readStringFromS3Object(S3Object object) {
+    private String readStringFromS3Object(S3Object object) {
         try (S3ObjectInputStream is = object.getObjectContent()) {
-            return of(IOUtils.toString(is));
+            return IOUtils.toString(is);
         } catch (IOException e) {
             LOG.error("Error converting S3 object to String", e);
+            throw new FailedProcessingLargePayloadException(format("Failed processing S3 record with [Bucket Name: %s Bucket Key: %s]", object.getBucketName(), object.getKey()), e);
         }
-
-        return empty();
     }
 
     private void deleteMessageFromS3(PayloadS3Pointer s3Pointer) {
@@ -114,22 +99,28 @@ public class SqsMessageAspect {
         });
     }
 
-    private <R> Optional<R> callS3Gracefully(final PayloadS3Pointer pointer,
-                                             final Function<PayloadS3Pointer, R> function) {
+    private <R> R callS3Gracefully(final PayloadS3Pointer pointer,
+                                   final Function<PayloadS3Pointer, R> function) {
         try {
-            return ofNullable(function.apply(pointer));
+            return function.apply(pointer);
         } catch (AmazonServiceException e) {
             LOG.error("A service exception", e);
+            throw new FailedProcessingLargePayloadException(format("Failed processing S3 record with [Bucket Name: %s Bucket Key: %s]", pointer.getS3BucketName(), pointer.getS3Key()), e);
         } catch (SdkClientException e) {
             LOG.error("Some sort of client exception", e);
+            throw new FailedProcessingLargePayloadException(format("Failed processing S3 record with [Bucket Name: %s Bucket Key: %s]", pointer.getS3BucketName(), pointer.getS3Key()), e);
         }
-
-        return empty();
     }
 
     public static boolean placedOnSqsEventRequestHandler(ProceedingJoinPoint pjp) {
         return pjp.getArgs().length == 2
                 && pjp.getArgs()[0] instanceof SQSEvent
                 && pjp.getArgs()[1] instanceof Context;
+    }
+
+    static class FailedProcessingLargePayloadException extends RuntimeException {
+        public FailedProcessingLargePayloadException(String message, Throwable cause) {
+            super(message, cause);
+        }
     }
 }

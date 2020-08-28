@@ -22,10 +22,12 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
+import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.FailedProcessingLargePayloadException;
 
 public class SqsMessageAspectTest {
 
@@ -65,24 +67,20 @@ public class SqsMessageAspectTest {
 
     @ParameterizedTest
     @MethodSource("exception")
-    public void shouldKeepOriginalBodyIfFailedDownloadingFromS3(RuntimeException exception) {
+    public void shouldFailEntireBatchIfFailedDownloadingFromS3(RuntimeException exception) {
         String bucketName = "ms-extended-sqs-client";
         String bucketKey = "c71eb2ae-37e0-4265-8909-32f4153faddf";
-        S3Object s3Response = new S3Object();
-        s3Response.setObjectContent(new ByteArrayInputStream("A big message".getBytes()));
 
         when(amazonS3.getObject(bucketName, bucketKey)).thenThrow(exception);
 
         String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + bucketName + "\",\"s3Key\":\"" + bucketKey + "\"}]";
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
-        String response = requestHandler.handleRequest(sqsEvent, context);
+        assertThatExceptionOfType(FailedProcessingLargePayloadException.class)
+                .isThrownBy(() -> requestHandler.handleRequest(sqsEvent, context))
+                .withCause(exception);
 
-        assertThat(response)
-                .isEqualTo(messageBody);
-
-        //TODO we need to fix the logic since object should not be deleted if we never managed to download it from S3 for any reason
-        //verify(amazonS3, never()).deleteObject(bucketName, bucketKey);
+        verify(amazonS3, never()).deleteObject(bucketName, bucketKey);
     }
 
     private static Stream<Arguments> exception() {
