@@ -103,7 +103,7 @@ public class SqsMessageAspect {
     private void deleteMessageFromS3(PayloadS3Pointer s3Pointer) {
         callS3Gracefully(s3Pointer, pointer -> {
             amazonS3.deleteObject(s3Pointer.getS3BucketName(), s3Pointer.getS3Key());
-            LOG.debug("Object downloaded with key: " + s3Pointer.getS3Key());
+            LOG.info("Message deleted from S3: " + s3Pointer.toJson());
             return null;
         });
     }
