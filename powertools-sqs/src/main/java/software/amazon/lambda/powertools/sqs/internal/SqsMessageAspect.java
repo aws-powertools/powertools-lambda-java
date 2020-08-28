@@ -1,8 +1,10 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
@@ -22,6 +24,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.sqs.LargeMessageHandler;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -45,28 +48,31 @@ public class SqsMessageAspect {
 
         if (isHandlerMethod(pjp)
                 && placedOnSqsEventRequestHandler(pjp)) {
+            List<PayloadS3Pointer> payloadS3Pointers = collectPayloadPointers(proceedArgs);
+
             Object[] rewrittenArgs = rewriteMessages(proceedArgs);
             Object proceed = pjp.proceed(rewrittenArgs);
-            deletePayloadPointers(proceedArgs);
+
+            payloadS3Pointers.forEach(this::deleteMessageFromS3);
             return proceed;
         }
 
         return pjp.proceed(proceedArgs);
     }
 
-    private void deletePayloadPointers(Object[] args) {
+    private List<PayloadS3Pointer> collectPayloadPointers(Object[] args) {
         SQSEvent sqsEvent = (SQSEvent) args[0];
 
-        sqsEvent.getRecords().stream()
+        return sqsEvent.getRecords().stream()
                 .filter(record -> isBodyLargeMessagePointer(record.getBody()))
                 .map(record -> PayloadS3Pointer.fromJson(record.getBody()))
-                .forEach(this::deleteMessageFromS3);
+                .collect(Collectors.toList());
     }
 
     private Object[] rewriteMessages(Object[] args) {
         SQSEvent sqsEvent = (SQSEvent) args[0];
 
-        for (SQSEvent.SQSMessage sqsMessage : sqsEvent.getRecords()) {
+        for (SQSMessage sqsMessage : sqsEvent.getRecords()) {
             if (isBodyLargeMessagePointer(sqsMessage.getBody())) {
                 PayloadS3Pointer s3Pointer = PayloadS3Pointer.fromJson(sqsMessage.getBody());
 
