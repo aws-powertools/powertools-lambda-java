@@ -14,7 +14,6 @@
 package software.amazon.lambda.powertools.sqs;
 
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -39,12 +38,28 @@ public class PowertoolsSqs {
     /**
      * This is a utility method when you want to avoid using {@code LargeMessageHandler} annotation.
      * Gives you access to enriched messages from S3 in the SQS event produced via extended client lib.
+     * If all the large S3 payload are successfully retrieved, it will delete them from S3 post success.
      *
      * @param sqsEvent        Event received from SQS Extended client library
      * @param messageFunction Function to execute you business logic which provides access to enriched messages from S3 when needed.
-     * @return                Return value from the function.
+     * @return Return value from the function.
      */
     public static <R> R enrichedMessageFromS3(final SQSEvent sqsEvent,
+                                              final Function<List<SQSMessage>, R> messageFunction) {
+        return enrichedMessageFromS3(sqsEvent, true, messageFunction);
+    }
+
+    /**
+     * This is a utility method when you want to avoid using {@code LargeMessageHandler} annotation.
+     * Gives you access to enriched messages from S3 in the SQS event produced via extended client lib.
+     * if all the large S3 payload are successfully retrieved, Control if it will delete payload from S3 post success.
+     *
+     * @param sqsEvent        Event received from SQS Extended client library
+     * @param messageFunction Function to execute you business logic which provides access to enriched messages from S3 when needed.
+     * @return Return value from the function.
+     */
+    public static <R> R enrichedMessageFromS3(final SQSEvent sqsEvent,
+                                              final boolean deleteS3Payload,
                                               final Function<List<SQSMessage>, R> messageFunction) {
 
         List<SQSMessage> sqsMessages = sqsEvent.getRecords().stream()
@@ -55,7 +70,9 @@ public class PowertoolsSqs {
 
         R returnValue = messageFunction.apply(sqsMessages);
 
-        s3Pointers.forEach(SqsMessageAspect::deleteMessage);
+        if (deleteS3Payload) {
+            s3Pointers.forEach(SqsMessageAspect::deleteMessage);
+        }
 
         return returnValue;
     }

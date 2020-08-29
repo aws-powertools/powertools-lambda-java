@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect;
 
@@ -66,6 +67,31 @@ class PowertoolsSqsTest {
                 .containsEntry("Message", "A big message");
 
         verify(amazonS3).deleteObject(BUCKET_NAME, BUCKET_KEY);
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    public void testLargeMessageDeleteFromS3Toggle(boolean deleteS3Payload) {
+        S3Object s3Response = new S3Object();
+        s3Response.setObjectContent(new ByteArrayInputStream("A big message".getBytes()));
+
+        when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3Response);
+        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
+
+        Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, deleteS3Payload, sqsMessages -> {
+            Map<String, String> someBusinessLogic = new HashMap<>();
+            someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
+            return someBusinessLogic;
+        });
+
+        assertThat(sqsMessage)
+                .hasSize(1)
+                .containsEntry("Message", "A big message");
+        if (deleteS3Payload) {
+            verify(amazonS3).deleteObject(BUCKET_NAME, BUCKET_KEY);
+        } else {
+            verify(amazonS3, never()).deleteObject(BUCKET_NAME, BUCKET_KEY);
+        }
     }
 
     @Test
