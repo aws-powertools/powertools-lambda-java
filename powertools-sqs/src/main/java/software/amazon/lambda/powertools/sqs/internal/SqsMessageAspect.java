@@ -59,9 +59,13 @@ public class SqsMessageAspect {
     }
 
     private List<PayloadS3Pointer> rewriteMessages(SQSEvent sqsEvent) {
-        List<PayloadS3Pointer> s3Pointers = new ArrayList<>();
+        List<SQSMessage> records = sqsEvent.getRecords();
+        return processMessages(records);
+    }
 
-        for (SQSMessage sqsMessage : sqsEvent.getRecords()) {
+    public static List<PayloadS3Pointer> processMessages(final List<SQSMessage> records) {
+        List<PayloadS3Pointer> s3Pointers = new ArrayList<>();
+        for (SQSMessage sqsMessage : records) {
             if (isBodyLargeMessagePointer(sqsMessage.getBody())) {
                 PayloadS3Pointer s3Pointer = PayloadS3Pointer.fromJson(sqsMessage.getBody());
 
@@ -79,11 +83,11 @@ public class SqsMessageAspect {
         return s3Pointers;
     }
 
-    private boolean isBodyLargeMessagePointer(String record) {
+    private static boolean isBodyLargeMessagePointer(String record) {
         return record.startsWith("[\"software.amazon.payloadoffloading.PayloadS3Pointer\"");
     }
 
-    private String readStringFromS3Object(S3Object object) {
+    private static String readStringFromS3Object(S3Object object) {
         try (S3ObjectInputStream is = object.getObjectContent()) {
             return IOUtils.toString(is);
         } catch (IOException e) {
@@ -100,7 +104,15 @@ public class SqsMessageAspect {
         });
     }
 
-    private <R> R callS3Gracefully(final PayloadS3Pointer pointer,
+    public static void deleteMessage(PayloadS3Pointer s3Pointer) {
+        callS3Gracefully(s3Pointer, pointer -> {
+            amazonS3.deleteObject(s3Pointer.getS3BucketName(), s3Pointer.getS3Key());
+            LOG.info("Message deleted from S3: " + s3Pointer.toJson());
+            return null;
+        });
+    }
+
+    private static <R> R callS3Gracefully(final PayloadS3Pointer pointer,
                                    final Function<PayloadS3Pointer, R> function) {
         try {
             return function.apply(pointer);
@@ -119,7 +131,7 @@ public class SqsMessageAspect {
                 && pjp.getArgs()[1] instanceof Context;
     }
 
-    static class FailedProcessingLargePayloadException extends RuntimeException {
+    public static class FailedProcessingLargePayloadException extends RuntimeException {
         public FailedProcessingLargePayloadException(String message, Throwable cause) {
             super(message, cause);
         }
