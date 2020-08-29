@@ -1,10 +1,5 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -22,6 +17,11 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.sqs.LargeMessageHandler;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.lang.String.format;
@@ -49,7 +49,9 @@ public class SqsMessageAspect {
 
             Object proceed = pjp.proceed(proceedArgs);
 
-            pointersToDelete.forEach(this::deleteMessageFromS3);
+            if (largeMessageHandler.deletePayloads()) {
+                pointersToDelete.forEach(this::deleteMessageFromS3);
+            }
             return proceed;
         }
 

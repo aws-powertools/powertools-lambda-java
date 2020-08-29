@@ -1,8 +1,5 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
-import java.io.ByteArrayInputStream;
-import java.util.stream.Stream;
-
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -17,6 +14,10 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandler;
+import software.amazon.lambda.powertools.sqs.handlers.SqsNoDeleteMessageHandler;
+
+import java.io.ByteArrayInputStream;
+import java.util.stream.Stream;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.util.Collections.singletonList;
@@ -39,6 +40,9 @@ public class SqsMessageAspectTest {
     @Mock
     private AmazonS3 amazonS3;
 
+    private static final String BUCKET_NAME = "bucketname";
+    private static final String BUCKET_KEY = "c71eb2ae-37e0-4265-8909-32f4153faddf";
+
     @BeforeEach
     void setUp() throws IllegalAccessException {
         initMocks(this);
@@ -49,38 +53,50 @@ public class SqsMessageAspectTest {
 
     @Test
     public void testLargeMessage() {
-        String bucketName = "ms-extended-sqs-client";
-        String bucketKey = "c71eb2ae-37e0-4265-8909-32f4153faddf";
-        S3Object s3Response = new S3Object();
-        s3Response.setObjectContent(new ByteArrayInputStream("A big message".getBytes()));
-
-        when(amazonS3.getObject(bucketName, bucketKey)).thenReturn(s3Response);
-        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + bucketName + "\",\"s3Key\":\"" + bucketKey + "\"}]");
+        when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3ObjectWithLargeMessage());
+        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         String response = requestHandler.handleRequest(sqsEvent, context);
 
         assertThat(response)
                 .isEqualTo("A big message");
 
-        verify(amazonS3).deleteObject(bucketName, bucketKey);
+        verify(amazonS3).deleteObject(BUCKET_NAME, BUCKET_KEY);
     }
 
     @ParameterizedTest
     @MethodSource("exception")
     public void shouldFailEntireBatchIfFailedDownloadingFromS3(RuntimeException exception) {
-        String bucketName = "ms-extended-sqs-client";
-        String bucketKey = "c71eb2ae-37e0-4265-8909-32f4153faddf";
+        when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenThrow(exception);
 
-        when(amazonS3.getObject(bucketName, bucketKey)).thenThrow(exception);
-
-        String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + bucketName + "\",\"s3Key\":\"" + bucketKey + "\"}]";
+        String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
         assertThatExceptionOfType(FailedProcessingLargePayloadException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(sqsEvent, context))
                 .withCause(exception);
 
-        verify(amazonS3, never()).deleteObject(bucketName, bucketKey);
+        verify(amazonS3, never()).deleteObject(BUCKET_NAME, BUCKET_KEY);
+    }
+
+    @Test
+    public void testLargeMessageWithDeletionOff() {
+        requestHandler = new SqsNoDeleteMessageHandler();
+
+        when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3ObjectWithLargeMessage());
+        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
+
+        String response = requestHandler.handleRequest(sqsEvent, context);
+
+        assertThat(response).isEqualTo("A big message");
+
+        verify(amazonS3, never()).deleteObject(BUCKET_NAME, BUCKET_KEY);
+    }
+
+    private S3Object s3ObjectWithLargeMessage() {
+        S3Object s3Response = new S3Object();
+        s3Response.setObjectContent(new ByteArrayInputStream("A big message".getBytes()));
+        return s3Response;
     }
 
     private static Stream<Arguments> exception() {
