@@ -45,7 +45,7 @@ public class SqsMessageAspect {
 
         if (isHandlerMethod(pjp)
                 && placedOnSqsEventRequestHandler(pjp)) {
-            List<PayloadS3Pointer> pointersToDelete = rewriteMessages(proceedArgs);
+            List<PayloadS3Pointer> pointersToDelete = rewriteMessages((SQSEvent) proceedArgs[0]);
 
             Object proceed = pjp.proceed(proceedArgs);
 
@@ -56,8 +56,7 @@ public class SqsMessageAspect {
         return pjp.proceed(proceedArgs);
     }
 
-    private List<PayloadS3Pointer> rewriteMessages(Object[] args) {
-        SQSEvent sqsEvent = (SQSEvent) args[0];
+    private List<PayloadS3Pointer> rewriteMessages(SQSEvent sqsEvent) {
         List<PayloadS3Pointer> s3Pointers = new ArrayList<>();
 
         for (SQSMessage sqsMessage : sqsEvent.getRecords()) {
