@@ -1,5 +1,10 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -17,11 +22,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.sqs.LargeMessageHandler;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.lang.String.format;
@@ -45,7 +45,7 @@ public class SqsMessageAspect {
 
         if (isHandlerMethod(pjp)
                 && placedOnSqsEventRequestHandler(pjp)) {
-            List<PayloadS3Pointer> pointersToDelete = rewriteMessages(proceedArgs);
+            List<PayloadS3Pointer> pointersToDelete = rewriteMessages((SQSEvent) proceedArgs[0]);
 
             Object proceed = pjp.proceed(proceedArgs);
 
@@ -58,8 +58,7 @@ public class SqsMessageAspect {
         return pjp.proceed(proceedArgs);
     }
 
-    private List<PayloadS3Pointer> rewriteMessages(Object[] args) {
-        SQSEvent sqsEvent = (SQSEvent) args[0];
+    private List<PayloadS3Pointer> rewriteMessages(SQSEvent sqsEvent) {
         List<PayloadS3Pointer> s3Pointers = new ArrayList<>();
 
         for (SQSMessage sqsMessage : sqsEvent.getRecords()) {
