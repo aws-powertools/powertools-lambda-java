@@ -25,7 +25,10 @@ module.exports = {
                     'Core utilities': [
                         'core/logging',
                         'core/tracing'
-                    ]
+                    ],
+                    'Utilities': [
+                        'utilities/large_message_handling'
+                    ],
                 },
                 navConfig: {
                     'Serverless Best Practices video': {
