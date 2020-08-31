@@ -55,7 +55,7 @@ import java.lang.annotation.Target;
  * <p>By default {@code PowertoolsLogging} will not log the event which has trigger the invoke of the Lambda function.
  * This can be enabled using {@code @PowertoolsLogging(logEvent = true)}.</p>
  *
- * <p>By default {@code PowertoolsLogging} all debug loggs will follow log4j2 configuration unless configured via
+ * <p>By default {@code PowertoolsLogging} all debug logs will follow log4j2 configuration unless configured via
  * POWERTOOLS_LOGGER_SAMPLE_RATE environment variable {@code @PowertoolsLogging(samplingRate = <0.0-1.0>)}.</p>
  *
  * <p>To append additional keys to each log entry you can use {@link PowertoolsLogger#appendKey(String, String)}</p>

@@ -13,6 +13,22 @@
  */
 package org.apache.logging.log4j.core.layout;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonRootName;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.DefaultConfiguration;
+import org.apache.logging.log4j.core.config.Node;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
+import org.apache.logging.log4j.core.jackson.XmlConstants;
+import org.apache.logging.log4j.core.util.KeyValuePair;
+import org.apache.logging.log4j.util.Strings;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -22,24 +38,6 @@ import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonRootName;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.core.config.Configuration;
-import org.apache.logging.log4j.core.config.DefaultConfiguration;
-import org.apache.logging.log4j.core.config.Node;
-import org.apache.logging.log4j.core.config.plugins.Plugin;
-import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
-import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
-import org.apache.logging.log4j.core.jackson.Log4jJsonObjectMapper;
-import org.apache.logging.log4j.core.jackson.XmlConstants;
-import org.apache.logging.log4j.core.util.KeyValuePair;
-import org.apache.logging.log4j.util.Strings;
 
 import static java.time.Instant.ofEpochMilli;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
@@ -51,8 +49,6 @@ public class LambdaJsonLayout extends AbstractJacksonLayout {
     private static final String DEFAULT_HEADER = "[";
 
     static final String CONTENT_TYPE = "application/json";
-
-    private final ObjectMapper objectMapper;
 
     public static class Builder<B extends Builder<B>> extends AbstractJacksonLayout.Builder<B>
             implements org.apache.logging.log4j.core.util.Builder<LambdaJsonLayout> {
@@ -113,7 +109,6 @@ public class LambdaJsonLayout extends AbstractJacksonLayout {
                 PatternLayout.newSerializerBuilder().setConfiguration(config).setPattern(footerPattern).setDefaultPattern(DEFAULT_FOOTER).build(),
                 includeNullDelimiter,
                 additionalFields);
-        this.objectMapper = new Log4jJsonObjectMapper(encodeThreadContextAsList, includeStacktrace, stacktraceAsString, objectMessageAsJsonObject);
     }
 
     /**

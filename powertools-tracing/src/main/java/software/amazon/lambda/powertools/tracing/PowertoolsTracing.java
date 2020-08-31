@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * <p>By default {@code PowertoolsTracing} will capture responses and add them
  * to a sub segment named after the method.</p>
  *
- * <p>To disable this functionality you can specify {@code @PowertoolsTracing( captureRespones = false)}</p>
+ * <p>To disable this functionality you can specify {@code @PowertoolsTracing( captureResponse = false)}</p>
  *
  * <p>By default {@code PowertoolsTracing} will capture errors and add them
  * to a sub segment named after the method.</p>
