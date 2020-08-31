@@ -8,6 +8,8 @@ import Note from "../../src/components/Note"
 Powertools tracing is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/)
 a provides functionality to reduce the overhead of performing common tracing tasks.
 
+![Tracer showcase](../media/tracer_utility_showcase.png)
+
  ** Key Features
 
  * Capture cold start as annotation, and responses as well as full exceptions as metadata
@@ -34,21 +36,40 @@ Resources:
 The Powertools service name is used as the X-Ray namespace. This can be set using the environment variable
 `POWERTOOLS_SERVICE_NAME`
 
-To enable Powertools tracing to your function add the @PowertoolsTracing annotation to your handleRequest method.
+To enable Powertools tracing to your function add the @PowertoolsTracing annotation to your handleRequest method or on
+any method will capture the method as a separate subsegment automatically.
 
-```java
+```java:title=LambdaHandler.java
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     @PowertoolsTracing
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-    ...
+        businessLogic1();
+
+        businessLogic2();
     }
+
+    @PowertoolsTracing
+    public void businessLogic1(){
+
+    }
+
+    @PowertoolsTracing
+    public void businessLogic2(){
+
+    }
+}
 ```
 
-By default this annotation will automatically record method responses and exceptions. To disable these features set the
-parameter to false in the annotation.
+By default this annotation will automatically record method responses and exceptions.
 
-```java
+<Note type="warning">
+  <strong>Returning sensitive information from your Lambda handler or functions, where Tracer is used?</strong>
+  <br/><br/>
+  You can disable Tracer from capturing their responses and exception as tracing metadata with <strong><code>captureResponse=false</code></strong> and <strong><code>captureError=false</code></strong>
+</Note><br/>
+
+```java:title=HandlerWithoutCapturingResponseOrError.java
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     @PowertoolsTracing(captureError = false, captureResponse = false)
@@ -56,3 +77,74 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     ...
     }
 ```
+
+### Annotations
+
+Annotations are key-values indexed by AWS X-Ray on a per trace basis. You can use them to filter traces as well as to create [Trace Groups](https://aws.amazon.com/about-aws/whats-new/2018/11/aws-xray-adds-the-ability-to-group-traces/).
+
+You can add annotations using `putAnnotation()` method from PowerTracer and it will be correctly inject for the subsegment in concern.
+
+```java
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    @PowertoolsTracing
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        PowerTracer.putAnnotation("annotation", "value");
+    }
+}
+```
+
+### Metadata
+
+Metadata are non-indexed values that can add additional context for an operation.
+
+You can add metadata using `putMetadata()` method from PowerTracer and it will be correctly inject for the subsegment in concern.
+
+```java
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    @PowertoolsTracing
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        PowerTracer.putMetadata("content", "value");
+    }
+}
+```
+
+## Utilities
+
+Tracer modules comes with certain utility method when you don't want to use annotation for capturing a code block
+under a subsegment, or you are doing multithreaded programming. Refer examples below.
+
+```java:title=InlineSubsegmentCapture.java
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+         PowerTracer.withSubsegment("loggingResponse", subsegment -> {
+            // Some business logic
+         });
+
+         PowerTracer.withSubsegment("localNamespace", "loggingResponse", subsegment -> {
+            // Some business logic
+         });
+    }
+}
+```
+
+```java:title=ThreadedProgramming.java
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        // Extract existing trace data
+        Entity traceEntity = AWSXRay.getTraceEntity();
+
+        Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment -> {
+            // Business logic in sperate thread
+        }));
+    }
+}
+```
+
+## Instrumenting SDK clients and HTTP calls
+
+User should make sure to instrument the SDK clients explicitly based on the function dependency. Refer details on
+[how to instrument SDK client with Xray](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-awssdkclients.html) and [outgoing http calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-httpclients.html).

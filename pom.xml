@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.0-beta</version>
     <packaging>pom</packaging>
 
     <name>AWS Lambda Powertools Java library Parent</name>
@@ -323,7 +323,7 @@
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <serverId>sonatype-nexus-staging</serverId>
+                    <serverId>ossrh</serverId>
                     <nexusUrl>https://aws.oss.sonatype.org</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>

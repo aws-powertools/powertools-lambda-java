@@ -17,12 +17,12 @@ Powertools is available in Maven Central. You can use your favourite dependency 
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>YOUR_REQUIRED_VERSION</version>
+        <version>0.1.0-beta</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>YOUR_REQUIRED_VERSION</version>
+        <version>0.1.0-beta</version>
     </dependency>
     ...
 </dependencies>

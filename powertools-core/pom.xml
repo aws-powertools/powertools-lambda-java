@@ -10,7 +10,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0-beta</version>
     </parent>
 
     <name>AWS Lambda Powertools Java library Core</name>
