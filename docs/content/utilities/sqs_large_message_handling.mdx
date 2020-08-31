@@ -85,6 +85,7 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
     // process messages
 
     return "ok";
+    }
 }
 ```
 
@@ -102,4 +103,6 @@ To disable deletion of payloads setting the following annotation parameter:
 
 ```java
 @LargeMessageHandler(deletePayloads=false)
+public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
+}
 ```
