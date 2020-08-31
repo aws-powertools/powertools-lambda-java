@@ -20,6 +20,7 @@ jobs:
     env:
       OS: ${{ matrix.os }}
       JAVA: ${{ matrix.java-version }}
+      AWS_REGION: eu-west-1
     steps:
       - uses: actions/checkout@v2
       - name: Setup java

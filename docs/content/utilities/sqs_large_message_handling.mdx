@@ -1,0 +1,105 @@
+---
+title: SQS Large Message Handling
+description: Utility
+---
+
+The large message handling utility handles SQS messages which have had their payloads
+offloaded to S3 due to them being larger than the SQS maximum.
+
+The utility automatically retrieves messages which have been offloaded to S3 using the
+[amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-java-extended-client-lib)
+client library. Once the message payloads have been processed successful the
+utility can delete the message payloads from S3.
+
+This utility is compatible with versions *1.1.0+* of amazon-sqs-java-extended-client-lib.</p>
+
+```xml
+<dependency>
+    <groupId>com.amazonaws</groupId>
+    <artifactId>amazon-sqs-java-extended-client-lib</artifactId>
+    <version>1.1.0</version>
+</dependency>
+```
+
+## Install
+
+To install this utility, add the following dependency to your project.
+
+```xml
+<dependency>
+    <groupId>software.amazon.lambda</groupId>
+    <artifactId>powertools-sqs</artifactId>
+    <version>0.1.0-beta</version>
+</dependency>
+```
+
+And configure the aspectj-maven-plugin to compile-time weave (CTW) the
+aws-lambda-powertools-java aspects into your project. You may already have this
+plugin in your pom. In that case add the depenedency to the `aspectLibraries`
+section.
+
+```xml
+<build>
+    <plugins>
+        ...
+        <plugin>
+             <groupId>org.codehaus.mojo</groupId>
+             <artifactId>aspectj-maven-plugin</artifactId>
+             <version>1.11</version>
+             <configuration>
+                 <source>1.8</source>
+                 <target>1.8</target>
+                 <complianceLevel>1.8</complianceLevel>
+                 <aspectLibraries>
+                     ...
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-sqs</artifactId>
+                     </aspectLibrary>
+                     ...
+                 </aspectLibraries>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>compile</goal>
+                     </goals>
+                 </execution>
+             </executions>
+        </plugin>
+        ...
+    </plugins>
+</build>
+```
+
+The annotation `@LargeMessageHandler` should be used with the handleRequest method of a class
+which implements `com.amazonaws.services.lambda.runtime.RequestHandler` with
+`com.amazonaws.services.lambda.runtime.events.SQSEvent` as the first parameter.
+
+```java
+public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
+
+    @Override
+    @LargeMessageHandler
+    public String handleRequest(SQSEvent sqsEvent, Context context) {
+    // process messages
+
+    return "ok";
+}
+```
+
+`@LargeMessageHandler` creates a default S3 Client `AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient()`.
+When the Lambda function is invoked with an event from SQS, each record received
+in the SQSEvent will be checked to see if it's body contains a payload which has
+been offloaded to S3. If it does then `getObject(bucket, key)` will be called,
+and the payload retrieved. If there is an error during this process then the
+function will fail with a `FailedProcessingLargePayloadException` exception.
+
+If the request handler method returns without error then each payload will be
+deleted from S3 using `deleteObject(bucket, key)`
+
+To disable deletion of payloads setting the following annotation parameter:
+
+```java
+@LargeMessageHandler(deletePayloads=false)
+```
