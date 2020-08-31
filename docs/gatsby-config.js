@@ -27,7 +27,7 @@ module.exports = {
                         'core/tracing'
                     ],
                     'Utilities': [
-                        'utilities/large_message_handling'
+                        'utilities/sqs_large_message_handling'
                     ],
                 },
                 navConfig: {
