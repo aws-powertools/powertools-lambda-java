@@ -4,9 +4,19 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - 'powertools-core/**'
+      - 'powertools-logging/**'
+      - 'powertools-sqs/**'
+      - 'powertools-tracing/**'
   push:
     branches:
       - master
+    paths:
+      - 'powertools-core/**'
+      - 'powertools-logging/**'
+      - 'powertools-sqs/**'
+      - 'powertools-tracing/**'
 
 jobs:
   build:
