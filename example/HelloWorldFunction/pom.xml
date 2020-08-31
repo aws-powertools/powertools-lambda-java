@@ -16,12 +16,12 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-tracing</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0-beta</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>0.1.0-beta</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
