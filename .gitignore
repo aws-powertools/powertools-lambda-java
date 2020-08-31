@@ -96,5 +96,5 @@ Desktop.ini
 docs/node_modules
 docs/.cache
 docs/public
-/example/.aws-sam/
-/example/HelloWorldFunction/.aws-sam/
+/maven-example/.aws-sam/
+/maven-example/HelloWorldFunction/.aws-sam/
