@@ -97,7 +97,7 @@ and the payload retrieved.
 *Note*: Retrieving payloads from S3 will increase the duration of the Lambda function.
 
 If the request handler method returns without error then each payload will be
-deleted from S3 using `deleteObject(bucket, key)}`
+deleted from S3 using `deleteObject(bucket, key)`
 
 To disable deletion of payloads setting the following annotation parameter:
 
