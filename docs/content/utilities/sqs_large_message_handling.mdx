@@ -29,7 +29,7 @@ To install this utility, add the following dependency to your project.
 <dependency>
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-sqs</artifactId>
-    <version>x.x.x</version>
+    <version>0.1.0-beta</version>
 </dependency>
 ```
 
@@ -92,9 +92,8 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
 When the Lambda function is invoked with an event from SQS, each record received
 in the SQSEvent will be checked to see if it's body contains a payload which has
 been offloaded to S3. If it does then `getObject(bucket, key)` will be called,
-and the payload retrieved.
-
-*Note*: Retrieving payloads from S3 will increase the duration of the Lambda function.
+and the payload retrieved. If there is an error during this process then the
+function will fail with a `FailedProcessingLargePayloadException` exception.
 
 If the request handler method returns without error then each payload will be
 deleted from S3 using `deleteObject(bucket, key)`
