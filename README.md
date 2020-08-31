@@ -96,10 +96,3 @@ Powertools extends the functionality of Log4J. Below is an example `log4j2.xml` 
 ## License
 
 This library is licensed under the Apache License, Version 2.0. See the LICENSE file.
-
-
-
-Cold Start
-
-946.58 ms - original
-943.96 ms - power tools
