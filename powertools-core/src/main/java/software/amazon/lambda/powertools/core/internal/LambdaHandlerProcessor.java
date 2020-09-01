@@ -13,30 +13,34 @@
  */
 package software.amazon.lambda.powertools.core.internal;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import org.aspectj.lang.ProceedingJoinPoint;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public final class LambdaHandlerProcessor {
     private static String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
             ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
     private static Boolean IS_COLD_START = null;
 
-    public static boolean isHandlerMethod(ProceedingJoinPoint pjp) {
+    private LambdaHandlerProcessor() {
+        // Hide default constructor
+    }
+
+    public static boolean isHandlerMethod(final ProceedingJoinPoint pjp) {
         return "handleRequest".equals(pjp.getSignature().getName());
     }
 
-    public static boolean placedOnRequestHandler(ProceedingJoinPoint pjp) {
+    public static boolean placedOnRequestHandler(final ProceedingJoinPoint pjp) {
         return RequestHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
                 && pjp.getArgs().length == 2
                 && pjp.getArgs()[1] instanceof Context;
     }
 
-    public static boolean placedOnStreamHandler(ProceedingJoinPoint pjp) {
+    public static boolean placedOnStreamHandler(final ProceedingJoinPoint pjp) {
         return RequestStreamHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
                 && pjp.getArgs().length == 3
                 && pjp.getArgs()[0] instanceof InputStream

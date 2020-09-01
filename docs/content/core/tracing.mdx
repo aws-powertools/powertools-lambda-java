@@ -138,7 +138,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         Entity traceEntity = AWSXRay.getTraceEntity();
 
         Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment -> {
-            // Business logic in sperate thread
+            // Business logic in separate thread
         }));
     }
 }
