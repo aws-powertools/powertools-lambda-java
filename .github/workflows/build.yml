@@ -9,6 +9,7 @@ on:
       - 'powertools-logging/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'
+      - 'pom.xml'
   push:
     branches:
       - master
@@ -17,6 +18,7 @@ on:
       - 'powertools-logging/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'
+      - 'pom.xml'
 
 jobs:
   build:
