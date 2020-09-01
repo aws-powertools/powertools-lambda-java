@@ -67,28 +67,6 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 ```
 **Note:** If you are working with Lambda on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
 
-### Logging Configuration
-Powertools extends the functionality of Log4J. Below is an example `log4j2.xml` file, with the `LambdaJsonLayout` configured.
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
-    <Appenders>
-        <Console name="JsonAppender" target="SYSTEM_OUT">
-            <LambdaJsonLayout compact="true" eventEol="true"/>
-        </Console>
-    </Appenders>
-    <Loggers>
-        <Logger name="JsonLogger" level="INFO" additivity="false">
-            <AppenderRef ref="JsonAppender"/>
-        </Logger>
-        <Root level="info">
-            <AppenderRef ref="JsonAppender"/>
-        </Root>
-    </Loggers>
-</Configuration>
-```
-
 ## Credits
 
 * [Gatsby Apollo Theme for Docs](https://github.com/apollographql/gatsby-theme-apollo/tree/master/packages/gatsby-theme-apollo-docs)
