@@ -67,6 +67,10 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 ```
 **Note:** If you are working with Lambda on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
 
+## Example
+
+See **[example](./example/README.md)** of all features, and a SAM template with all Powertools env vars.
+
 ## Credits
 
 * [Gatsby Apollo Theme for Docs](https://github.com/apollographql/gatsby-theme-apollo/tree/master/packages/gatsby-theme-apollo-docs)
