@@ -1,9 +1,16 @@
-name: Docs
+name: Build Docs
 
 on:
-  release:
-    types:
-      - published
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
+  push:
+    branches:
+      - master
+    paths:
+      - 'docs/**'
 
 jobs:
   docs:
@@ -25,8 +32,3 @@ jobs:
         run: make dev-docs
       - name: Build docs website
         run: make build-docs-website
-      - name: Deploy all docs
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
