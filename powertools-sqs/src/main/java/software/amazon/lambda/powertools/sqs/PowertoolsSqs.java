@@ -31,9 +31,12 @@ import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.pr
  * <p>
  * {@see PowertoolsLogging}
  */
-public class PowertoolsSqs {
+public final class PowertoolsSqs {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private PowertoolsSqs() {
+    }
 
     /**
      * This is a utility method when you want to avoid using {@code LargeMessageHandler} annotation.
@@ -77,7 +80,7 @@ public class PowertoolsSqs {
         return returnValue;
     }
 
-    private static SQSMessage clonedMessage(SQSMessage sqsMessage) {
+    private static SQSMessage clonedMessage(final SQSMessage sqsMessage) {
         try {
             return objectMapper
                     .readValue(objectMapper.writeValueAsString(sqsMessage), SQSMessage.class);

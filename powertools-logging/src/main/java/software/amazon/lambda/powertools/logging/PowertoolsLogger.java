@@ -22,7 +22,10 @@ import org.apache.logging.log4j.ThreadContext;
  *
  * {@see PowertoolsLogging}
  */
-public class PowertoolsLogger {
+public final class PowertoolsLogger {
+
+    private PowertoolsLogger() {
+    }
 
     /**
      * Appends an additional key and value to each log entry made. Duplicate values
