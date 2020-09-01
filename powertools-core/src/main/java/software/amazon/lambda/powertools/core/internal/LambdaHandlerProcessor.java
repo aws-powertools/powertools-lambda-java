@@ -13,18 +13,22 @@
  */
 package software.amazon.lambda.powertools.core.internal;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import org.aspectj.lang.ProceedingJoinPoint;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
+
 public final class LambdaHandlerProcessor {
-    private static String SERVICE_NAME = System.getenv("POWERTOOLS_SERVICE_NAME") != null
-            ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
+    private static String SERVICE_NAME = Optional.ofNullable(System.getenv("POWERTOOLS_SERVICE_NAME")).orElse("service_undefined");
     private static Boolean IS_COLD_START = null;
+
+    private LambdaHandlerProcessor() {
+        // Hide default constructor
+    }
 
     public static boolean isHandlerMethod(ProceedingJoinPoint pjp) {
         return "handleRequest".equals(pjp.getSignature().getName());
