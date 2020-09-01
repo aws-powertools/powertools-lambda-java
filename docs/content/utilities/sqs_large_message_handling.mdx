@@ -104,5 +104,50 @@ To disable deletion of payloads setting the following annotation parameter:
 ```java
 @LargeMessageHandler(deletePayloads=false)
 public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
+
+}
+```
+
+## Utility
+
+If you want to avoid using annotation and have control over error that can happen during payload enrichment.
+
+`PowertoolsSqs.enrichedMessageFromS3()` provides you access with list of `SQSMessage` object enriched from S3 payload.
+Original `SQSEvent` object is never mutated. You can also control if the S3 payload should be deleted after successful
+processing. You can enrich messages from S3 with below code:
+
+```java
+public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
+
+    @Override
+    public String handleRequest(SQSEvent sqsEvent, Context context) {
+
+         Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
+            // Some business logic
+            Map<String, String> someBusinessLogic = new HashMap<>();
+            someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
+            return someBusinessLogic;
+        });
+
+         // Do not delete payload after processing.
+         Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, false, sqsMessages -> {
+            // Some business logic
+            Map<String, String> someBusinessLogic = new HashMap<>();
+            someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
+            return someBusinessLogic;
+        });
+
+         // Better control over exception during enrichment
+         try {
+               // Do not delete payload after processing.
+            PowertoolsSqs.enrichedMessageFromS3(sqsEvent, false, sqsMessages -> {
+                // Some business logic
+            });
+         } catch (FailedProcessingLargePayloadException e) {
+             // handle any exception.
+         }
+
+        return "ok";
+    }
 }
 ```
