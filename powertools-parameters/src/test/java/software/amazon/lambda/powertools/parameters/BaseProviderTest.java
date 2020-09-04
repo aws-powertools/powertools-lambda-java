@@ -1,3 +1,16 @@
+/*
+ * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package software.amazon.lambda.powertools.parameters;
 
 
@@ -47,6 +60,45 @@ public class BaseProviderTest {
         String foo = provider.get("foo");
         assertEquals("bar", foo);
         verify(provider, times(1)).getValue("foo");
+    }
+
+    @Test
+    public void get_changedMaxAge_shouldRestoreMaxAgeForNextGet() throws InterruptedException {
+        doReturn("bar").when(provider).getValue("foo");
+        doReturn("titi").when(provider).getValue("toto");
+
+        provider.withMaxAge(2).get("foo");
+        provider.get("toto"); // default max age = 5 sec
+
+        Thread.sleep(4000);
+        assertTrue(provider.hasNotExpired("toto"));
+        assertFalse(provider.hasNotExpired("foo"));
+    }
+
+    @Test
+    public void get_changeDefaultMaxAge_shouldRestoreMaxAgeForNextGet() throws InterruptedException {
+        doReturn("bar").when(provider).getValue("foo");
+        doReturn("titi").when(provider).getValue("toto");
+
+        provider.defaultMaxAge(4).get("foo");
+        provider.get("toto"); // default max age = 4 sec
+
+        Thread.sleep(4040);
+        assertFalse(provider.hasNotExpired("toto"));
+        assertFalse(provider.hasNotExpired("foo"));
+    }
+
+    @Test
+    public void get_changeDefaultMaxAgeAndCustomMaxAge_shouldUseCustomMaxAgeForNextGet() throws InterruptedException {
+        doReturn("bar").when(provider).getValue("foo");
+        doReturn("titi").when(provider).getValue("toto");
+
+        provider.defaultMaxAge(4).get("foo");
+        provider.withMaxAge(2).get("toto");
+
+        Thread.sleep(2020);
+        assertFalse(provider.hasNotExpired("toto"));
+        assertTrue(provider.hasNotExpired("foo"));
     }
 
     @Test
