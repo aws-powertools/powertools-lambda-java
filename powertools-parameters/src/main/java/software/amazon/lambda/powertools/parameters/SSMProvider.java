@@ -58,13 +58,18 @@ public class SSMProvider extends BaseProvider {
                                         .name(key)
                                         .withDecryption(decrypt)
                                         .build();
-
         return client.getParameter(request).parameter().value();
     }
 
     public <T extends BaseProvider> BaseProvider withDecryption(boolean decrypt) {
         this.decrypt = decrypt;
         return this;
+    }
+
+    @Override
+    protected void resetToDefaults() {
+        super.resetToDefaults();
+        decrypt = false;
     }
 
     /**

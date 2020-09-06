@@ -171,7 +171,7 @@ public abstract class BaseProvider {
         return store.hasNotExpired(key);
     }
 
-    private void resetToDefaults() {
+    protected void resetToDefaults() {
         transformerClass = null;
         maxAge = defaultMaxAge;
     }

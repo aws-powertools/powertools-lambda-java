@@ -32,7 +32,7 @@ public class SecretsProvider extends BaseProvider {
      * Use the {@link Builder} to create an instance of it.
      */
     SecretsProvider() {
-        this.client = SecretsManagerClient.create();
+        this(SecretsManagerClient.create());
     }
 
     /**
