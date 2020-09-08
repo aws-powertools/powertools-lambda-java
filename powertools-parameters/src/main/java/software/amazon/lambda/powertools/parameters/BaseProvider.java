@@ -51,10 +51,10 @@ public abstract class BaseProvider {
      * @param maxAgeinSec Maximum time (in seconds) to cache the parameter, before calling the underlying parameter store.
      * @return the provider itself in order to chain calls (eg. <code>provider.defaultMaxAge(10).get("key")</code>).
      */
-    public <T extends BaseProvider> BaseProvider defaultMaxAge(int maxAgeinSec) {
+    public <T extends BaseProvider> T defaultMaxAge(int maxAgeinSec) {
         this.defaultMaxAge = maxAgeinSec;
         this.maxAge = maxAgeinSec;
-        return this;
+        return (T) this;
     }
 
     /**
@@ -69,9 +69,9 @@ public abstract class BaseProvider {
      * @param maxAgeinSec Maximum time (in seconds) to cache the parameter, before calling the underlying parameter store.
      * @return the provider itself in order to chain calls (eg. <code>provider.withMaxAge(10).get("key")</code>).
      */
-    public <T extends BaseProvider> BaseProvider withMaxAge(int maxAgeinSec) {
+    public <T extends BaseProvider> T withMaxAge(int maxAgeinSec) {
         this.maxAge = maxAgeinSec;
-        return this;
+        return (T) this;
     }
 
     /**
@@ -87,9 +87,26 @@ public abstract class BaseProvider {
      * @param transformerClass Class of the transformer to apply. For convenience, you can use {@link Transformer#json} or {@link Transformer#base64} shortcuts.
      * @return the provider itself in order to chain calls (eg. <code>provider.withTransformation(json).get("key", MyObject.class)</code>).
      */
-    public <T extends BaseProvider> BaseProvider withTransformation(Class<? extends Transformer> transformerClass) {
+    public <T extends BaseProvider> T withTransformation(Class<? extends Transformer> transformerClass) {
         this.transformerClass = transformerClass;
-        return this;
+        return (T) this;
+    }
+
+    /**
+     * Abstract method to tell to retrieve parameters recursively. Only available for {@link SSMProvider}.
+     * @param <T>
+     * @return
+     */
+    public <T extends BaseProvider> T recursive() {
+        return (T) this;
+    }
+
+    /**
+     * Abstract method to tell to decrypt parameters. Only available for {@link SSMProvider}.
+     * @return
+     */
+    public <T extends BaseProvider> T withDecryption() {
+        return (T) this;
     }
 
     /**
