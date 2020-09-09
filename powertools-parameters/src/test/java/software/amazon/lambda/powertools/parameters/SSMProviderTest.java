@@ -20,13 +20,12 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.*;
-import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -57,9 +56,9 @@ public class SSMProviderTest {
 
         String value = provider.getValue(key);
 
-        assertEquals(expectedValue, value);
-        assertEquals(key, paramCaptor.getValue().name());
-        assertFalse(paramCaptor.getValue().withDecryption());
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().name()).isEqualTo(key);
+        assertThat(paramCaptor.getValue().withDecryption()).isFalse();
     }
 
     @Test
@@ -70,9 +69,9 @@ public class SSMProviderTest {
 
         String value = provider.withDecryption().getValue(key);
 
-        assertEquals(expectedValue, value);
-        assertEquals(key, paramCaptor.getValue().name());
-        assertTrue(paramCaptor.getValue().withDecryption());
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().name()).isEqualTo(key);
+        assertThat(paramCaptor.getValue().withDecryption()).isTrue();
     }
 
     @Test
@@ -85,13 +84,13 @@ public class SSMProviderTest {
         when(client.getParametersByPath(paramByPathCaptor.capture())).thenReturn(response);
 
         Map<String, String> params = provider.getMultiple("/prod/app1");
-        assertEquals("foo1", params.get("key1"));
-        assertEquals("foo2", params.get("key2"));
-        assertEquals("foo3", params.get("key3"));
+        assertThat(params.get("key1")).isEqualTo("foo1");
+        assertThat(params.get("key2")).isEqualTo("foo2");
+        assertThat(params.get("key3")).isEqualTo("foo3");
 
-        assertEquals("/prod/app1", paramByPathCaptor.getValue().path());
-        assertFalse(paramByPathCaptor.getValue().withDecryption());
-        assertFalse(paramByPathCaptor.getValue().recursive());
+        assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
+        assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
+        assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
     }
 
     @Test
@@ -109,23 +108,23 @@ public class SSMProviderTest {
 
         Map<String, String> params = provider.getMultiple("/prod/app1");
 
-        assertEquals("foo1", params.get("key1"));
-        assertEquals("foo2", params.get("key2"));
-        assertEquals("foo3", params.get("key3"));
+        assertThat(params.get("key1")).isEqualTo("foo1");
+        assertThat(params.get("key2")).isEqualTo("foo2");
+        assertThat(params.get("key3")).isEqualTo("foo3");
 
         List<GetParametersByPathRequest> requestParams = paramByPathCaptor.getAllValues();
         GetParametersByPathRequest request1 = requestParams.get(0);
         GetParametersByPathRequest request2 = requestParams.get(1);
 
-        assertEquals("/prod/app1", request1.path());
-        assertNull(request1.nextToken());
-        assertFalse(request1.withDecryption());
-        assertFalse(request1.recursive());
+        assertThat(request1.path()).isEqualTo("/prod/app1");
+        assertThat(request1.nextToken()).isNull();
+        assertThat(request1.withDecryption()).isFalse();
+        assertThat(request1.recursive()).isFalse();
 
-        assertEquals("/prod/app1", request2.path());
-        assertEquals("123abc", request2.nextToken());
-        assertFalse(request2.withDecryption());
-        assertFalse(request2.recursive());
+        assertThat(request2.path()).isEqualTo("/prod/app1");
+        assertThat(request2.nextToken()).isEqualTo("123abc");
+        assertThat(request2.withDecryption()).isFalse();
+        assertThat(request2.recursive()).isFalse();
     }
 
     private void initMock(String expectedValue) {

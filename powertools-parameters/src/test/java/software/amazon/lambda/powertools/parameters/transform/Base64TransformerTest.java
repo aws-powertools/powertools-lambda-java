@@ -18,8 +18,8 @@ import software.amazon.lambda.powertools.parameters.exception.TransformationExce
 
 import java.util.Base64;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class Base64TransformerTest {
 
@@ -29,13 +29,13 @@ public class Base64TransformerTest {
 
         String s = transformer.applyTransformation(Base64.getEncoder().encodeToString("foobar".getBytes()));
 
-        assertEquals("foobar", s);
+        assertThat(s).isEqualTo("foobar");
     }
 
     @Test
     public void transform_base64WrongFormat_shouldThrowException() {
         Base64Transformer transformer = new Base64Transformer();
 
-        assertThrows(TransformationException.class, () -> transformer.applyTransformation("foobarbaz"));
+        assertThatExceptionOfType(TransformationException.class).isThrownBy(() -> transformer.applyTransformation("foobarbaz"));
     }
 }

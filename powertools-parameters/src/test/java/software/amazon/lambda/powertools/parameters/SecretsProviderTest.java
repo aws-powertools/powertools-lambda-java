@@ -26,8 +26,7 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 
 import java.util.Base64;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class SecretsProviderTest {
@@ -55,20 +54,21 @@ public class SecretsProviderTest {
 
         String value = provider.getValue(key);
 
-        assertEquals(expectedValue, value);
-        assertEquals(key, paramCaptor.getValue().secretId());
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
     }
 
     @Test
     public void getValueBase64() {
         String key = "Key2";
-        byte[] expectedValue = Base64.getEncoder().encode("Value2".getBytes());
-        GetSecretValueResponse response = GetSecretValueResponse.builder().secretBinary(SdkBytes.fromByteArray(expectedValue)).build();
+        String expectedValue = "Value2";
+        byte[] valueb64 = Base64.getEncoder().encode(expectedValue.getBytes());
+        GetSecretValueResponse response = GetSecretValueResponse.builder().secretBinary(SdkBytes.fromByteArray(valueb64)).build();
         Mockito.when(client.getSecretValue(paramCaptor.capture())).thenReturn(response);
 
         String value = provider.getValue(key);
 
-        assertEquals("Value2", value);
-        assertEquals(key, paramCaptor.getValue().secretId());
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
     }
 }

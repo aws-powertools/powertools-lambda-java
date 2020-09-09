@@ -74,8 +74,7 @@ public class SSMProvider extends BaseProvider {
      * Valid both for get and getMultiple.
      * @return the provider itself in order to chain calls (eg. <code>provider.withDecryption().get("key")</code>).
      */
-    @Override
-    public SSMProvider withDecryption() {
+    public BaseProvider withDecryption() {
         this.decrypt = true;
         return this;
     }
@@ -85,8 +84,7 @@ public class SSMProvider extends BaseProvider {
      * Only used with {@link #getMultiple(String)}.
      * @return the provider itself in order to chain calls (eg. <code>provider.recursive().getMultiple("key")</code>).
      */
-    @Override
-    public SSMProvider recursive() {
+    public BaseProvider recursive() {
         this.recursive = true;
         return this;
     }

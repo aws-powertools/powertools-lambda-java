@@ -29,15 +29,15 @@ public class DataStore {
 
     static class ValueNode {
         public final Object value;
-        public final long time;
+        public final Instant time;
 
-        public ValueNode(Object value, long time){
+        public ValueNode(Object value, Instant time){
             this.value = value;
             this.time = time;
         }
     }
 
-    public void put(String key, Object value, long time){
+    public void put(String key, Object value, Instant time){
         store.put(key, new ValueNode(value, time));
     }
 
@@ -45,21 +45,21 @@ public class DataStore {
         store.remove(Key);
     }
 
-    public void clear(){
-        store.clear();
-    }
-
     public Object get(String key) {
         return store.containsKey(key)?store.get(key).value:null;
     }
 
-    public boolean hasNotExpired(String key) {
-        boolean hasNotExpired = store.containsKey(key) && store.get(key).time >= Instant.now().toEpochMilli();
+    public boolean hasExpired(String key) {
+        boolean hasExpired = !store.containsKey(key) || now().isAfter(store.get(key).time);
         // Auto-clean if the parameter has expired
-        if (!hasNotExpired) {
+        if (hasExpired) {
             remove(key);
         }
-        return hasNotExpired;
+        return hasExpired;
+    }
+
+    Instant now() {
+        return Instant.now();
     }
 
 }

@@ -24,7 +24,7 @@ import software.amazon.lambda.powertools.parameters.exception.TransformationExce
  */
 public class JsonTransformer<T> implements Transformer<T> {
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public T applyTransformation(String value, Class<T> targetClass) throws TransformationException {

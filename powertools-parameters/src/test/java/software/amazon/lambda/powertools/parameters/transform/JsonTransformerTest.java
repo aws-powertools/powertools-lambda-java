@@ -18,8 +18,8 @@ import software.amazon.lambda.powertools.parameters.exception.TransformationExce
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 public class JsonTransformerTest {
 
@@ -28,9 +28,9 @@ public class JsonTransformerTest {
         JsonTransformer<ObjectToDeserialize> transformation = new JsonTransformer<>();
 
         ObjectToDeserialize objectToDeserialize = transformation.applyTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}", ObjectToDeserialize.class);
-        assertEquals("Foo", objectToDeserialize.getFoo());
-        assertEquals(42, objectToDeserialize.getBar());
-        assertEquals(123456789, objectToDeserialize.getBaz());
+        assertThat(objectToDeserialize.getFoo()).isEqualTo("Foo");
+        assertThat(objectToDeserialize.getBar()).isEqualTo(42);
+        assertThat(objectToDeserialize.getBaz()).isEqualTo(123456789);
     }
 
     @Test
@@ -38,15 +38,15 @@ public class JsonTransformerTest {
         JsonTransformer<Map> transformation = new JsonTransformer<>();
 
         Map<String, Object> map = transformation.applyTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}", Map.class);
-        assertEquals("Foo", map.get("foo"));
-        assertEquals(42, map.get("bar"));
-        assertEquals(123456789, map.get("baz"));
+        assertThat(map.get("foo")).isEqualTo("Foo");
+        assertThat(map.get("bar")).isEqualTo(42);
+        assertThat(map.get("baz")).isEqualTo(123456789);
     }
 
     @Test
     public void transform_badJson_shouldThrowException() {
         JsonTransformer<ObjectToDeserialize> transformation = new JsonTransformer<>();
 
-        assertThrows(TransformationException.class, () -> transformation.applyTransformation("{\"fo\":\"Foo\", \"bat\":42, \"bau\":123456789}", ObjectToDeserialize.class));
+        assertThatExceptionOfType(TransformationException.class).isThrownBy(() -> transformation.applyTransformation("{\"fo\":\"Foo\", \"bat\":42, \"bau\":123456789}", ObjectToDeserialize.class));
     }
 }

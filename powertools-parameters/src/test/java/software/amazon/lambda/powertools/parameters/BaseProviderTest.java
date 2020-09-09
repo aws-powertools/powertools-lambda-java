@@ -22,9 +22,11 @@ import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserializ
 
 import java.util.Base64;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.parameters.BaseProvider.DEFAULT_MAX_AGE_SECS;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
@@ -41,10 +43,9 @@ public class BaseProviderTest {
     public void get_notCached_shouldGetValue() {
         doReturn("bar").when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
         String foo = provider.get("foo");
 
-        assertEquals("bar", foo);
+        assertThat(foo).isEqualTo("bar");
         verify(provider, times(1)).getValue("foo");
     }
 
@@ -52,13 +53,12 @@ public class BaseProviderTest {
     public void get_cached_shouldGetFromCache() {
         doReturn("bar").when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
-
         provider.get("foo");
-        assertTrue(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isFalse();
 
         String foo = provider.get("foo");
-        assertEquals("bar", foo);
+
+        assertThat(foo).isEqualTo("bar");
         verify(provider, times(1)).getValue("foo");
     }
 
@@ -67,12 +67,12 @@ public class BaseProviderTest {
         doReturn("bar").when(provider).getValue("foo");
         doReturn("titi").when(provider).getValue("toto");
 
-        provider.withMaxAge(2).get("foo");
+        provider.withMaxAge(2, SECONDS).get("foo");
         provider.get("toto"); // default max age = 5 sec
 
         Thread.sleep(4000);
-        assertTrue(provider.hasNotExpired("toto"));
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("toto")).isFalse();
+        assertThat(provider.hasExpired("foo")).isTrue();
     }
 
     @Test
@@ -80,12 +80,12 @@ public class BaseProviderTest {
         doReturn("bar").when(provider).getValue("foo");
         doReturn("titi").when(provider).getValue("toto");
 
-        provider.defaultMaxAge(4).get("foo");
+        provider.defaultMaxAge(4, SECONDS).get("foo");
         provider.get("toto"); // default max age = 4 sec
 
         Thread.sleep(4040);
-        assertFalse(provider.hasNotExpired("toto"));
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("toto")).isTrue();
+        assertThat(provider.hasExpired("foo")).isTrue();
     }
 
     @Test
@@ -93,28 +93,28 @@ public class BaseProviderTest {
         doReturn("bar").when(provider).getValue("foo");
         doReturn("titi").when(provider).getValue("toto");
 
-        provider.defaultMaxAge(4).get("foo");
-        provider.withMaxAge(2).get("toto");
+        provider.defaultMaxAge(4, SECONDS).get("foo");
+        provider.withMaxAge(2, SECONDS).get("toto");
 
         Thread.sleep(2020);
-        assertFalse(provider.hasNotExpired("toto"));
-        assertTrue(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("toto")).isTrue();
+        assertThat(provider.hasExpired("foo")).isFalse();
     }
 
     @Test
     public void get_TTLExpired_shouldGetValue() throws InterruptedException {
         doReturn("bar").when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
 
         provider.get("foo");
 
-        Thread.sleep(BaseProvider.DEFAULT_MAX_AGE_SECS * 1010);
+        Thread.sleep(DEFAULT_MAX_AGE_SECS.toMillis());
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
         String foo = provider.get("foo");
 
-        assertEquals("bar", foo);
+        assertThat(foo).isEqualTo("bar");
         verify(provider, times(2)).getValue("foo");
     }
 
@@ -122,16 +122,16 @@ public class BaseProviderTest {
     public void get_customTTLExpired_shouldGetValue() throws InterruptedException {
         doReturn("bar").when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
 
-        provider.withMaxAge(2).get("foo");
+        provider.withMaxAge(2, SECONDS).get("foo");
 
         Thread.sleep( 2020);
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
 
         String foo = provider.get("foo");
-        assertEquals("bar", foo);
+        assertThat(foo).isEqualTo("bar");
         verify(provider, times(2)).getValue("foo");
     }
 
@@ -139,16 +139,16 @@ public class BaseProviderTest {
     public void get_customTTLCached_shouldGetFromCache() throws InterruptedException {
         doReturn("bar").when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
 
-        provider.withMaxAge(2).get("foo");
+        provider.withMaxAge(2, SECONDS).get("foo");
 
         Thread.sleep( 1400);
 
-        assertTrue(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isFalse();
         String foo = provider.get("foo");
 
-        assertEquals("bar", foo);
+        assertThat(foo).isEqualTo("bar");
         verify(provider, times(1)).getValue("foo");
     }
 
@@ -158,14 +158,14 @@ public class BaseProviderTest {
 
         String foo = provider.withTransformation(base64).get("foo");
 
-        assertEquals("bar", foo);
+        assertThat(foo).isEqualTo("bar");
     }
 
     @Test
     public void get_basicTransformationWithWrongTransformer_shouldThrowException() {
         doReturn(Base64.getEncoder().encodeToString("bar".getBytes())).when(provider).getValue("foo");
 
-        assertThrows(IllegalArgumentException.class, () -> provider.withTransformation(json).get("foo"));
+        assertThatIllegalArgumentException().isThrownBy(() -> provider.withTransformation(json).get("foo"));
     }
 
     @Test
@@ -174,36 +174,36 @@ public class BaseProviderTest {
 
         ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
 
-        assertEquals("Foo", objectToDeserialize.getFoo());
-        assertEquals(42, objectToDeserialize.getBar());
-        assertEquals(123456789, objectToDeserialize.getBaz());
+        assertThat(objectToDeserialize.getFoo()).isEqualTo("Foo");
+        assertThat(objectToDeserialize.getBar()).isEqualTo(42);
+        assertThat(objectToDeserialize.getBaz()).isEqualTo(123456789);
     }
 
     @Test
     public void get_complexTransformationWithNoTransformer_shouldThrowException() {
         doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
 
-        assertThrows(IllegalArgumentException.class, () -> provider.get("foo", ObjectToDeserialize.class));
+        assertThatIllegalArgumentException().isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
     }
 
     @Test
     public void get_complexTransformationWithWrongTransformer_shouldThrowException() {
         doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
 
-        assertThrows(TransformationException.class, () -> provider.withTransformation(base64).get("foo", ObjectToDeserialize.class));
+        assertThatExceptionOfType(TransformationException.class).isThrownBy(() -> provider.withTransformation(base64).get("foo", ObjectToDeserialize.class));
     }
 
     @Test
     public void get_basicTransformationCached_shouldTransformInStringAndGetFromCache() {
         doReturn(Base64.getEncoder().encodeToString("bar".getBytes())).when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
 
         provider.withTransformation(base64).get("foo");
-        assertTrue(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isFalse();
 
         String foo = provider.withTransformation(base64).get("foo");
-        assertEquals("bar", foo);
+        assertThat(foo).isEqualTo("bar");
         verify(provider, times(1)).getValue("foo");
     }
 
@@ -211,15 +211,15 @@ public class BaseProviderTest {
     public void get_complexTransformationCached_shouldTransformInObjectAndGetFromCache() {
         doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
 
-        assertFalse(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isTrue();
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
-        assertTrue(provider.hasNotExpired("foo"));
+        assertThat(provider.hasExpired("foo")).isFalse();
 
         ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
-        assertEquals("Foo", objectToDeserialize.getFoo());
-        assertEquals(42, objectToDeserialize.getBar());
-        assertEquals(123456789, objectToDeserialize.getBaz());
+        assertThat(objectToDeserialize.getFoo()).isEqualTo("Foo");
+        assertThat(objectToDeserialize.getBar()).isEqualTo(42);
+        assertThat(objectToDeserialize.getBaz()).isEqualTo(123456789);
 
         verify(provider, times(1)).getValue("foo");
     }
