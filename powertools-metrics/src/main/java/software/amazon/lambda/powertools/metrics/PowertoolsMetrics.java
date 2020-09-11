@@ -10,4 +10,5 @@ import java.lang.annotation.Target;
 public @interface PowertoolsMetrics {
     String namespace() default "";
     String service() default "";
+    boolean captureColdStart() default false;
 }
