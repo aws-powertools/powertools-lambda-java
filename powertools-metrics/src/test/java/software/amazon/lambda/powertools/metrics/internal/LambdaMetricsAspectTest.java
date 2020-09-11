@@ -15,7 +15,7 @@ import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.cloudwatchlogs.emf.model.Unit.BYTES;
 
 public class LambdaMetricsAspectTest {
@@ -30,7 +30,7 @@ public class LambdaMetricsAspectTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        initMocks(this);
+        openMocks(this);
         setupContext();
         writeStaticField(PowertoolsMetricsLogger.class, "metricsLogger", logger, true);
         requestHandler = new PowertoolsMetricsEnabledHandler();
