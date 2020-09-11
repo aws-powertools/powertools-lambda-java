@@ -20,10 +20,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Random;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -37,9 +35,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
@@ -137,21 +134,6 @@ public final class LambdaLoggingAspect {
             }
         }
         return powertoolsLogging.samplingRate();
-    }
-
-    private Optional<Context> extractContext(final ProceedingJoinPoint pjp) {
-
-        if (isHandlerMethod(pjp)) {
-            if (placedOnRequestHandler(pjp)) {
-                return of((Context) pjp.getArgs()[1]);
-            }
-
-            if (placedOnStreamHandler(pjp)) {
-                return of((Context) pjp.getArgs()[2]);
-            }
-        }
-
-        return empty();
     }
 
     private Object[] logEvent(final ProceedingJoinPoint pjp) {
