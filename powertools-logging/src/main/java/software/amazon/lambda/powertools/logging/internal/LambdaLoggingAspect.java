@@ -79,7 +79,7 @@ public final class LambdaLoggingAspect {
         extractContext(pjp)
                 .ifPresent(context -> {
                     appendKeys(DefaultLambdaFields.values(context));
-                    appendKey("coldStart", null == isColdStart() ? "true" : "false");
+                    appendKey("coldStart", isColdStart() ? "true" : "false");
                     appendKey("service", serviceName());
                 });
 

@@ -31,7 +31,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 @Aspect
 public final class LambdaTracingAspect {
 
-    @SuppressWarnings({"EmptyMethod", "unused"})
+    @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(powerToolsTracing)")
     public void callAt(PowertoolsTracing powerToolsTracing) {
     }
@@ -45,7 +45,7 @@ public final class LambdaTracingAspect {
         segment.setNamespace(namespace(powerToolsTracing));
 
         if (placedOnHandlerMethod(pjp)) {
-            segment.putAnnotation("ColdStart", isColdStart() == null);
+            segment.putAnnotation("ColdStart", isColdStart());
         }
 
         try {

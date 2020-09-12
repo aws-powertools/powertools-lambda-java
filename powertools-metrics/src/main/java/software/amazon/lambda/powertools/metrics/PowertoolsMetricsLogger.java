@@ -8,7 +8,7 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 public final class PowertoolsMetricsLogger {
     private static MetricsLogger metricsLogger = new MetricsLogger();
 
-    public static MetricsLogger logger() {
+    public static MetricsLogger metricsLogger() {
         return metricsLogger;
     }
 

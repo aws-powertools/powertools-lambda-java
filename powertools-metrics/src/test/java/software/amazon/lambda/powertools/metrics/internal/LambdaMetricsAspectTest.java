@@ -17,6 +17,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.cloudwatchlogs.emf.model.Unit.BYTES;
+import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
 
 public class LambdaMetricsAspectTest {
 
@@ -40,7 +41,7 @@ public class LambdaMetricsAspectTest {
     public void testHandler() {
         requestHandler.handleRequest("input", context);
 
-        MetricsLogger logger = PowertoolsMetricsLogger.logger();
+        MetricsLogger logger = metricsLogger();
 
         verify(logger).setDimensions(any(DimensionSet.class));
         verify(logger).setNamespace("ExampleApplication");

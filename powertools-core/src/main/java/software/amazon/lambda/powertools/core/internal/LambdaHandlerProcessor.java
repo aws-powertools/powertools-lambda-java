@@ -71,8 +71,8 @@ public final class LambdaHandlerProcessor {
         return SERVICE_NAME;
     }
 
-    public static Boolean isColdStart() {
-        return IS_COLD_START;
+    public static boolean isColdStart() {
+        return IS_COLD_START == null;
     }
 
     public static void coldStartDone() {

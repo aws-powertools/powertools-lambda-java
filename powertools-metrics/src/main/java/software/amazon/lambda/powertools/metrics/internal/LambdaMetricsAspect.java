@@ -19,7 +19,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.logger;
+import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
 
 @Aspect
 public class LambdaMetricsAspect {
@@ -39,7 +39,7 @@ public class LambdaMetricsAspect {
                 && (placedOnRequestHandler(pjp)
                 || placedOnStreamHandler(pjp))) {
 
-            MetricsLogger logger = logger();
+            MetricsLogger logger = metricsLogger();
 
             logger.setNamespace(namespace(powertoolsMetrics))
                     .setDimensions(DimensionSet.of("service", service(powertoolsMetrics)));
@@ -57,7 +57,7 @@ public class LambdaMetricsAspect {
                     coldStartLogger = new MetricsLogger();
 
                     coldStartLogger.putDimensions(DimensionSet.of("function_name", context.getFunctionName()))
-                            .putDimensions(DimensionSet.of("service", service(powertoolsMetrics)))
+                            .setDimensions(DimensionSet.of("service", service(powertoolsMetrics)))
                             .setNamespace(namespace(powertoolsMetrics))
                             .putMetric("ColdStart", 1, Unit.COUNT);
                 }
