@@ -15,7 +15,8 @@
 
     <name>AWS Lambda Powertools Java library Metrics</name>
     <description>
-        A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+        A suite of utilities for AWS Lambda Functions that make creating custom metrics via AWS Embedded Metric Format
+        asynchronously easier.
     </description>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>

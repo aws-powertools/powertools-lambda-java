@@ -1,58 +1,190 @@
 package software.amazon.lambda.powertools.metrics.internal;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Map;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.Spy;
-import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
-import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger;
+import org.mockito.MockedStatic;
+import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsColdStartEnabledHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledStreamHandler;
 
+import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.cloudwatchlogs.emf.model.Unit.BYTES;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
 
 public class LambdaMetricsAspectTest {
-
     @Mock
     private Context context;
 
-    @Spy
-    private MetricsLogger logger;
-
+    private final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    private final PrintStream originalOut = System.out;
+    private final ObjectMapper mapper = new ObjectMapper();
     private RequestHandler<Object, Object> requestHandler;
+    private RequestStreamHandler streamHandler;
+
+
+    @BeforeAll
+    static void beforeAll() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        }
+    }
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
         openMocks(this);
         setupContext();
-        writeStaticField(PowertoolsMetricsLogger.class, "metricsLogger", logger, true);
+        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        System.setOut(new PrintStream(out));
         requestHandler = new PowertoolsMetricsEnabledHandler();
     }
 
-    @Test
-    public void testHandler() {
-        requestHandler.handleRequest("input", context);
-
-        MetricsLogger logger = metricsLogger();
-
-        verify(logger).setDimensions(any(DimensionSet.class));
-        verify(logger).setNamespace("ExampleApplication");
-        verify(logger).putMetric("Metric1", 1, BYTES);
-        verify(logger).flush();
+    @AfterEach
+    void tearDown() {
+        System.setOut(originalOut);
     }
+
+    @Test
+    public void metricsWithoutColdStart() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+                    });
+        }
+    }
+
+    @Test
+    public void metricsWithColdStart() {
+        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString().split("\n"))
+                    .hasSize(2)
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
+
+                        assertThat(logAsJson)
+                                .doesNotContainKey("Metric1")
+                                .containsEntry("ColdStart", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+
+                        logAsJson = readAsJson(s[1]);
+
+                        assertThat(logAsJson)
+                                .doesNotContainKey("ColdStart")
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+                    });
+        }
+    }
+
+    @Test
+    public void noColdStartMetricsWhenColdStartDone() {
+        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            requestHandler.handleRequest("input", context);
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString().split("\n"))
+                    .hasSize(3)
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
+
+                        assertThat(logAsJson)
+                                .doesNotContainKey("Metric1")
+                                .containsEntry("ColdStart", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+
+                        logAsJson = readAsJson(s[1]);
+
+                        assertThat(logAsJson)
+                                .doesNotContainKey("ColdStart")
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+
+                        logAsJson = readAsJson(s[2]);
+
+                        assertThat(logAsJson)
+                                .doesNotContainKey("ColdStart")
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+                    });
+        }
+    }
+
+    @Test
+    public void metricsWithStreamHandler() throws IOException {
+        streamHandler = new PowertoolsMetricsEnabledStreamHandler();
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            streamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("service", "booking")
+                                .containsKey("_aws");
+                    });
+        }
+    }
+
 
     private void setupContext() {
         when(context.getFunctionName()).thenReturn("testFunction");
         when(context.getInvokedFunctionArn()).thenReturn("testArn");
         when(context.getFunctionVersion()).thenReturn("1");
         when(context.getMemoryLimitInMB()).thenReturn(10);
+    }
+
+    private Map<String, Object> readAsJson(String s) {
+        try {
+            return mapper.readValue(s, Map.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return emptyMap();
     }
 }

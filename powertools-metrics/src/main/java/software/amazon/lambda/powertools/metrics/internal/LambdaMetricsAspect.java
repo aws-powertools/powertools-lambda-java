@@ -20,6 +20,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.withSingleMetric;
 
 @Aspect
 public class LambdaMetricsAspect {
@@ -42,32 +43,11 @@ public class LambdaMetricsAspect {
             MetricsLogger logger = metricsLogger();
 
             logger.setNamespace(namespace(powertoolsMetrics))
-                    .setDimensions(DimensionSet.of("service", service(powertoolsMetrics)));
+                    .putDimensions(DimensionSet.of("service", service(powertoolsMetrics)));
 
-            MetricsLogger coldStartLogger = null;
-
-            if (powertoolsMetrics.captureColdStart()
-                    && isColdStart()) {
-
-                Optional<Context> contextOptional = extractContext(pjp);
-
-                if (contextOptional.isPresent()) {
-                    Context context = contextOptional.orElseThrow(() -> new IllegalStateException("Context not found"));
-
-                    coldStartLogger = new MetricsLogger();
-
-                    coldStartLogger.putDimensions(DimensionSet.of("function_name", context.getFunctionName()))
-                            .setDimensions(DimensionSet.of("service", service(powertoolsMetrics)))
-                            .setNamespace(namespace(powertoolsMetrics))
-                            .putMetric("ColdStart", 1, Unit.COUNT);
-                }
-            }
+            coldStartSingleMetricIfApplicable(pjp, powertoolsMetrics);
 
             Object proceed = pjp.proceed(proceedArgs);
-
-            if (null != coldStartLogger) {
-                coldStartLogger.flush();
-            }
 
             coldStartDone();
             logger.flush();
@@ -75,6 +55,23 @@ public class LambdaMetricsAspect {
         }
 
         return pjp.proceed(proceedArgs);
+    }
+
+    private void coldStartSingleMetricIfApplicable(final ProceedingJoinPoint pjp,
+                                                   final PowertoolsMetrics powertoolsMetrics) {
+        if (powertoolsMetrics.captureColdStart()
+                && isColdStart()) {
+
+            Optional<Context> contextOptional = extractContext(pjp);
+
+            if (contextOptional.isPresent()) {
+                Context context = contextOptional.orElseThrow(() -> new IllegalStateException("Context not found"));
+
+                withSingleMetric("ColdStart", 1, Unit.COUNT, namespace(powertoolsMetrics), (logger) ->
+                        logger.setDimensions(DimensionSet.of("service", service(powertoolsMetrics)),
+                                DimensionSet.of("function_name", context.getFunctionName())));
+            }
+        }
     }
 
     private String namespace(PowertoolsMetrics powertoolsMetrics) {
