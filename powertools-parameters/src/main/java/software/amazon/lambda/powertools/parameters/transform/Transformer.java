@@ -23,12 +23,12 @@ import software.amazon.lambda.powertools.parameters.exception.TransformationExce
 public interface Transformer<T> {
 
     /**
-     * Convenient access to {@link JsonTransformer}, to use in providers (<code>provider.withTransformation(json)</code>)
+     * Convenient access to {@link JsonTransformer}, to use in providers (<pre>provider.withTransformation(json)</pre>)
      */
     Class<JsonTransformer> json = JsonTransformer.class;
 
     /**
-     * Convenient access to {@link Base64Transformer}, to use in providers (<code>provider.withTransformation(base64)</code>)
+     * Convenient access to {@link Base64Transformer}, to use in providers (<pre>provider.withTransformation(base64)</pre>)
      */
     Class<Base64Transformer> base64 = Base64Transformer.class;
 

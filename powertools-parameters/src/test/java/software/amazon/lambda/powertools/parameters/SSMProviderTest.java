@@ -18,8 +18,11 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.*;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.cache.NowProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,18 +37,24 @@ public class SSMProviderTest {
     @Mock
     SsmClient client;
 
+    @Spy
+    NowProvider nowProvider;
+
     @Captor
     ArgumentCaptor<GetParameterRequest> paramCaptor;
 
     @Captor
     ArgumentCaptor<GetParametersByPathRequest> paramByPathCaptor;
 
+    CacheManager cacheManager;
+
     SSMProvider provider;
 
     @BeforeEach
     public void init() {
         openMocks(this);
-        provider = new SSMProvider(client);
+        cacheManager = new CacheManager(nowProvider);
+        provider = new SSMProvider(cacheManager, client);
     }
 
     @Test

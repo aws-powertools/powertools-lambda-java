@@ -15,14 +15,13 @@ package software.amazon.lambda.powertools.parameters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.cache.NowProvider;
 
 import java.util.Base64;
 
@@ -34,15 +33,21 @@ public class SecretsProviderTest {
     @Mock
     SecretsManagerClient client;
 
+    @Spy
+    NowProvider nowProvider;
+
     @Captor
     ArgumentCaptor<GetSecretValueRequest> paramCaptor;
+
+    CacheManager cacheManager;
 
     SecretsProvider provider;
 
     @BeforeEach
     public void init() {
         openMocks(this);
-        provider = new SecretsProvider(client);
+        cacheManager = new CacheManager(nowProvider);
+        provider = new SecretsProvider(cacheManager, client);
     }
 
     @Test

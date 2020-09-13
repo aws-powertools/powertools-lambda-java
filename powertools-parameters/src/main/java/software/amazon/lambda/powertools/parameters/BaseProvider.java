@@ -14,30 +14,28 @@
 package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.annotations.NotThreadSafe;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
-import software.amazon.lambda.powertools.parameters.internal.DataStore;
 import software.amazon.lambda.powertools.parameters.transform.BasicTransformer;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
-import java.lang.reflect.InvocationTargetException;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
+import java.util.Optional;
 
 /**
  * Base class for all parameter providers.
  */
 @NotThreadSafe
-public abstract class BaseProvider {
+public abstract class BaseProvider implements ParamProvider {
 
-    static final Duration DEFAULT_MAX_AGE_SECS = Duration.of(5, SECONDS);
+    private final CacheManager cacheManager;
+    private TransformationManager transformationManager;
 
-    private final DataStore store = new DataStore();
-    private Duration defaultMaxAge = DEFAULT_MAX_AGE_SECS;
-    private Duration maxAge = defaultMaxAge;
-    private Class<? extends Transformer> transformerClass;
+    public BaseProvider(CacheManager cacheManager) {
+        this.cacheManager = cacheManager;
+    }
 
     /**
      * Retrieve the parameter value from the underlying parameter store.<br />
@@ -46,20 +44,20 @@ public abstract class BaseProvider {
      * @param key key of the parameter
      * @return the value of the parameter identified by the key
      */
-    abstract String getValue(String key);
+    protected abstract String getValue(String key);
 
     /**
      * (Optional) Set the default max age for the cache of all parameters. Override the default 5 seconds.<br/>
-     * If for some parameters, you need to set a different maxAge, use {@link #withMaxAge(int, ChronoUnit)}.
+     * If for some parameters, you need to set a different maxAge, use {@link #withMaxAge(int, ChronoUnit)}.<br />
+     * Use {@link #withMaxAge(int, ChronoUnit)} after {#defaultMaxAge(int, ChronoUnit)} in the chain.
      *
      * @param maxAge Maximum time to cache the parameter, before calling the underlying parameter store.
-     * @param unit Unit of time
-     * @return the provider itself in order to chain calls (eg. <code>provider.defaultMaxAge(10, SECONDS).get("key")</code>).
+     * @param unit   Unit of time
+     * @return the provider itself in order to chain calls (eg. <pre>provider.defaultMaxAge(10, SECONDS).get("key")</pre>).
      */
-    public BaseProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
+    protected BaseProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
         Duration duration = Duration.of(maxAge, unit);
-        this.defaultMaxAge = duration;
-        this.maxAge = duration;
+        cacheManager.setDefaultExpirationTime(duration);
         return this;
     }
 
@@ -73,18 +71,18 @@ public abstract class BaseProvider {
      * can lead to unwanted cache time for some parameters.<br/>
      *
      * @param maxAge Maximum time to cache the parameter, before calling the underlying parameter store.
-     * @param unit Unit of time
-     * @return the provider itself in order to chain calls (eg. <code>provider.withMaxAge(10, SECONDS).get("key")</code>).
+     * @param unit   Unit of time
+     * @return the provider itself in order to chain calls (eg. <pre>provider.withMaxAge(10, SECONDS).get("key")</pre>).
      */
     public BaseProvider withMaxAge(int maxAge, ChronoUnit unit) {
-        this.maxAge = Duration.of(maxAge, unit);
+        cacheManager.setExpirationTime(Duration.of(maxAge, unit));
         return this;
     }
 
     /**
      * Builder method to call before {@link #get(String)} (Optional) or {@link #get(String, Class)} (Mandatory).
      * to provide a {@link Transformer} that will transform the String parameter into something else (String, Object, ...)<br/><br/>
-     *
+     * <p>
      * {@link software.amazon.lambda.powertools.parameters.transform.Base64Transformer} and {@link software.amazon.lambda.powertools.parameters.transform.JsonTransformer}
      * are provided for respectively base64 and json content. You can also write your own (see {@link Transformer}).
      *
@@ -92,26 +90,13 @@ public abstract class BaseProvider {
      * can lead to errors (one Transformer for the wrong target type)<br/>
      *
      * @param transformerClass Class of the transformer to apply. For convenience, you can use {@link Transformer#json} or {@link Transformer#base64} shortcuts.
-     * @return the provider itself in order to chain calls (eg. <code>provider.withTransformation(json).get("key", MyObject.class)</code>).
+     * @return the provider itself in order to chain calls (eg. <pre>provider.withTransformation(json).get("key", MyObject.class)</pre>).
      */
-    public BaseProvider withTransformation(Class<? extends Transformer> transformerClass) {
-        this.transformerClass = transformerClass;
-        return this;
-    }
-
-    /**
-     * Abstract method to tell to retrieve parameters recursively. Only available for {@link SSMProvider}.
-     * @return the provider itself in order to chain calls
-     */
-    public BaseProvider recursive() {
-        return this;
-    }
-
-    /**
-     * Abstract method to tell to decrypt parameters. Only available for {@link SSMProvider}.
-     * @return the provider itself in order to chain calls
-     */
-    public BaseProvider withDecryption() {
+    protected BaseProvider withTransformation(Class<? extends Transformer> transformerClass) {
+        if (transformationManager == null) {
+            throw new IllegalStateException("Trying to add transformation while no TransformationManager has been provided.");
+        }
+        transformationManager.setTransformer(transformerClass);
         return this;
     }
 
@@ -122,37 +107,33 @@ public abstract class BaseProvider {
      * If you need a more complex transformation (to Object), use {@link #get(String, Class)} method instead of this one. <br/>
      *
      * @param key key of the parameter
-     * @throws IllegalArgumentException if a wrong transformer class is provided through {@link #withTransformation(Class)}. Needs to be a {@link BasicTransformer}.
-     * @throws TransformationException if the transformation could not be done, because of a wrong format or an error during transformation.
      * @return the String value of the parameter
+     * @throws IllegalArgumentException if a wrong transformer class is provided through {@link #withTransformation(Class)}. Needs to be a {@link BasicTransformer}.
+     * @throws TransformationException  if the transformation could not be done, because of a wrong format or an error during transformation.
      */
+    @Override
     public String get(String key) {
-        if (!hasExpired(key)) {
+        try {
+            Optional<String> valueInCache = cacheManager.getIfNotExpired(key);
+            if (valueInCache.isPresent()) {
+                return valueInCache.get();
+            }
+
+            String value = getValue(key);
+
+            String transformedValue = value;
+            if (transformationManager != null && transformationManager.shouldTransform()) {
+                transformedValue = transformationManager.performBasicTransformation(value);
+            }
+
+            cacheManager.putInCache(key, transformedValue);
+
+            return transformedValue;
+
+        } finally {
+            // in all case, we reset options to default, for next call
             resetToDefaults();
-            return (String) store.get(key);
         }
-
-        String value = getValue(key);
-
-        String transformedValue = value;
-        if (transformerClass != null) {
-            if (!BasicTransformer.class.isAssignableFrom(transformerClass)) {
-                resetToDefaults();
-                throw new IllegalArgumentException("Wrong Transformer for a String, choose a BasicTransformer");
-            }
-            try {
-                BasicTransformer transformer = (BasicTransformer) transformerClass.getDeclaredConstructor().newInstance(null);
-                transformedValue = transformer.applyTransformation(value);
-            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                resetToDefaults();
-                throw new TransformationException(e);
-            }
-        }
-
-        store.put(key, transformedValue, Instant.now().plus(maxAge));
-
-        resetToDefaults();
-        return transformedValue;
     }
 
     /**
@@ -163,43 +144,43 @@ public abstract class BaseProvider {
      *
      * @param key         key of the parameter
      * @param targetClass class of the target Object (after transformation)
-     * @throws IllegalArgumentException if no transformation class was provided through {@link #withTransformation(Class)}
-     * @throws TransformationException if the transformation could not be done, because of a wrong format or an error during transformation.
      * @return the Object (T) value of the parameter
+     * @throws IllegalArgumentException if no transformation class was provided through {@link #withTransformation(Class)}
+     * @throws TransformationException  if the transformation could not be done, because of a wrong format or an error during transformation.
      */
+    @Override
     public <T> T get(String key, Class<T> targetClass) {
-        if (! hasExpired(key)) {
-            resetToDefaults();
-            return (T) store.get(key);
-        }
-
-        String value = getValue(key);
-
-        if (transformerClass == null) {
-            resetToDefaults();
-            throw new IllegalArgumentException("transformer is null, use withTransformation to specify a transformer");
-        }
-        Transformer<T> transformer;
         try {
-            transformer = transformerClass.getDeclaredConstructor().newInstance(null);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            Optional<T> valueInCache = cacheManager.getIfNotExpired(key);
+            if (valueInCache.isPresent()) {
+                return valueInCache.get();
+            }
+
+            String value = getValue(key);
+
+            if (transformationManager == null) {
+                throw new IllegalStateException("Trying to transform value while no TransformationManager has been provided.");
+            }
+            T transformedValue = transformationManager.performComplexTransformation(value, targetClass);
+
+            cacheManager.putInCache(key, transformedValue);
+
+            return transformedValue;
+
+        } finally {
+            // in all case, we reset options to default, for next call
             resetToDefaults();
-            throw new TransformationException(e);
         }
-        T transformedValue = transformer.applyTransformation(value, targetClass);
-
-        store.put(key, transformedValue, Instant.now().plus(maxAge));
-
-        resetToDefaults();
-        return transformedValue;
-    }
-
-    boolean hasExpired(String key) {
-        return store.hasExpired(key);
     }
 
     protected void resetToDefaults() {
-        transformerClass = null;
-        maxAge = defaultMaxAge;
+        cacheManager.resetExpirationtime();
+        if (transformationManager != null) {
+            transformationManager.setTransformer(null);
+        }
+    }
+
+    protected void setTransformationManager(TransformationManager transformationManager) {
+        this.transformationManager = transformationManager;
     }
 }

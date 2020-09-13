@@ -13,164 +13,177 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Spy;
-import software.amazon.lambda.powertools.parameters.exception.TransformationException;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.cache.NowProvider;
 import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.parameters.BaseProvider.DEFAULT_MAX_AGE_SECS;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 public class BaseProviderTest {
+
     @Spy
-    SSMProvider provider;
+    NowProvider nowProvider;
+
+    CacheManager cacheManager;
+    TransformationManager transformationManager;
+    BasicProvider provider;
+
+    boolean getFromStore = false;
+
+    class BasicProvider extends BaseProvider {
+
+        public BasicProvider(CacheManager cacheManager) {
+            super(cacheManager);
+        }
+
+        private String value = "valueFromStore";
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        @Override
+        protected String getValue(String key) {
+            getFromStore = true;
+            return value;
+        }
+    }
 
     @BeforeEach
-    public void init() {
+    public void setup() {
         openMocks(this);
+
+        cacheManager = new CacheManager(nowProvider);
+        provider = new BasicProvider(cacheManager);
+        transformationManager = new TransformationManager();
+        provider.setTransformationManager(transformationManager);
     }
 
     @Test
     public void get_notCached_shouldGetValue() {
-        doReturn("bar").when(provider).getValue("foo");
+        String foo = provider.get("toto");
 
-        String foo = provider.get("foo");
-
-        assertThat(foo).isEqualTo("bar");
-        verify(provider, times(1)).getValue("foo");
+        assertThat(foo).isEqualTo("valueFromStore");
+        assertThat(getFromStore).isTrue();
     }
 
     @Test
     public void get_cached_shouldGetFromCache() {
-        doReturn("bar").when(provider).getValue("foo");
-
         provider.get("foo");
-        assertThat(provider.hasExpired("foo")).isFalse();
+        getFromStore = false;
 
         String foo = provider.get("foo");
-
-        assertThat(foo).isEqualTo("bar");
-        verify(provider, times(1)).getValue("foo");
+        assertThat(foo).isEqualTo("valueFromStore");
+        assertThat(getFromStore).isFalse();
     }
 
     @Test
-    public void get_changedMaxAge_shouldRestoreMaxAgeForNextGet() throws InterruptedException {
-        doReturn("bar").when(provider).getValue("foo");
-        doReturn("titi").when(provider).getValue("toto");
+    public void get_expired_shouldGetValue() {
+        provider.get("bar");
+        getFromStore = false;
 
-        provider.withMaxAge(2, SECONDS).get("foo");
-        provider.get("toto"); // default max age = 5 sec
+        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
 
-        Thread.sleep(4000);
-        assertThat(provider.hasExpired("toto")).isFalse();
-        assertThat(provider.hasExpired("foo")).isTrue();
+        provider.get("bar");
+        assertThat(getFromStore).isTrue();
     }
 
     @Test
-    public void get_changeDefaultMaxAge_shouldRestoreMaxAgeForNextGet() throws InterruptedException {
-        doReturn("bar").when(provider).getValue("foo");
-        doReturn("titi").when(provider).getValue("toto");
+    public void get_customTTL_cached_shouldGetFromCache() {
+        provider.withMaxAge(12, ChronoUnit.MINUTES).get("key");
+        getFromStore = false;
 
-        provider.defaultMaxAge(4, SECONDS).get("foo");
-        provider.get("toto"); // default max age = 4 sec
+        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
 
-        Thread.sleep(4040);
-        assertThat(provider.hasExpired("toto")).isTrue();
-        assertThat(provider.hasExpired("foo")).isTrue();
+        provider.get("key");
+        assertThat(getFromStore).isFalse();
     }
 
     @Test
-    public void get_changeDefaultMaxAgeAndCustomMaxAge_shouldUseCustomMaxAgeForNextGet() throws InterruptedException {
-        doReturn("bar").when(provider).getValue("foo");
-        doReturn("titi").when(provider).getValue("toto");
+    public void get_customTTL_expired_shouldGetValue() {
+        provider.withMaxAge(2, ChronoUnit.MINUTES).get("mykey");
+        getFromStore = false;
 
-        provider.defaultMaxAge(4, SECONDS).get("foo");
-        provider.withMaxAge(2, SECONDS).get("toto");
+        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
 
-        Thread.sleep(2020);
-        assertThat(provider.hasExpired("toto")).isTrue();
-        assertThat(provider.hasExpired("foo")).isFalse();
+        provider.get("mykey");
+        assertThat(getFromStore).isTrue();
     }
 
     @Test
-    public void get_TTLExpired_shouldGetValue() throws InterruptedException {
-        doReturn("bar").when(provider).getValue("foo");
+    public void get_customDefaultTTL_cached_shouldGetFromCache() {
+        provider.defaultMaxAge(12, ChronoUnit.MINUTES).get("foobar");
+        getFromStore = false;
 
-        assertThat(provider.hasExpired("foo")).isTrue();
+        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
 
-        provider.get("foo");
-
-        Thread.sleep(DEFAULT_MAX_AGE_SECS.toMillis());
-
-        assertThat(provider.hasExpired("foo")).isTrue();
-        String foo = provider.get("foo");
-
-        assertThat(foo).isEqualTo("bar");
-        verify(provider, times(2)).getValue("foo");
+        provider.get("foobar");
+        assertThat(getFromStore).isFalse();
     }
 
     @Test
-    public void get_customTTLExpired_shouldGetValue() throws InterruptedException {
-        doReturn("bar").when(provider).getValue("foo");
+    public void get_customDefaultTTL_expired_shouldGetValue() {
+        provider.defaultMaxAge(2, ChronoUnit.MINUTES).get("barbaz");
+        getFromStore = false;
 
-        assertThat(provider.hasExpired("foo")).isTrue();
+        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
 
-        provider.withMaxAge(2, SECONDS).get("foo");
-
-        Thread.sleep( 2020);
-
-        assertThat(provider.hasExpired("foo")).isTrue();
-
-        String foo = provider.get("foo");
-        assertThat(foo).isEqualTo("bar");
-        verify(provider, times(2)).getValue("foo");
+        provider.get("barbaz");
+        assertThat(getFromStore).isTrue();
     }
 
     @Test
-    public void get_customTTLCached_shouldGetFromCache() throws InterruptedException {
-        doReturn("bar").when(provider).getValue("foo");
+    public void get_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
+        provider.defaultMaxAge(12, ChronoUnit.MINUTES)
+                .withMaxAge(5, ChronoUnit.SECONDS)
+                .get("foobaz");
+        getFromStore = false;
 
-        assertThat(provider.hasExpired("foo")).isTrue();
+        when(nowProvider.now()).thenReturn(Instant.now().plus(4, ChronoUnit.SECONDS));
 
-        provider.withMaxAge(2, SECONDS).get("foo");
+        provider.get("foobaz");
+        assertThat(getFromStore).isFalse();
+    }
 
-        Thread.sleep( 1400);
+    @Test
+    public void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
+        provider.defaultMaxAge(2, ChronoUnit.MINUTES)
+                .withMaxAge(5, ChronoUnit.SECONDS)
+                .get("bariton");
+        getFromStore = false;
 
-        assertThat(provider.hasExpired("foo")).isFalse();
-        String foo = provider.get("foo");
+        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
 
-        assertThat(foo).isEqualTo("bar");
-        verify(provider, times(1)).getValue("foo");
+        provider.get("bariton");
+        assertThat(getFromStore).isTrue();
     }
 
     @Test
     public void get_basicTransformation_shouldTransformInString() {
-        doReturn(Base64.getEncoder().encodeToString("bar".getBytes())).when(provider).getValue("foo");
+        provider.setValue(Base64.getEncoder().encodeToString("bar".getBytes()));
 
-        String foo = provider.withTransformation(base64).get("foo");
+        String value = provider.withTransformation(Transformer.base64).get("base64");
 
-        assertThat(foo).isEqualTo("bar");
-    }
-
-    @Test
-    public void get_basicTransformationWithWrongTransformer_shouldThrowException() {
-        doReturn(Base64.getEncoder().encodeToString("bar".getBytes())).when(provider).getValue("foo");
-
-        assertThatIllegalArgumentException().isThrownBy(() -> provider.withTransformation(json).get("foo"));
+        assertThat(value).isEqualTo("bar");
     }
 
     @Test
     public void get_complexTransformation_shouldTransformInObject() {
-        doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
 
@@ -180,47 +193,168 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_complexTransformationWithNoTransformer_shouldThrowException() {
-        doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
+    public void getObject_notCached_shouldGetValue() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
-        assertThatIllegalArgumentException().isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
+        ObjectToDeserialize foo = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+
+        assertThat(foo).isNotNull();
+        assertThat(getFromStore).isTrue();
     }
 
     @Test
-    public void get_complexTransformationWithWrongTransformer_shouldThrowException() {
-        doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
-
-        assertThatExceptionOfType(TransformationException.class).isThrownBy(() -> provider.withTransformation(base64).get("foo", ObjectToDeserialize.class));
-    }
-
-    @Test
-    public void get_basicTransformationCached_shouldTransformInStringAndGetFromCache() {
-        doReturn(Base64.getEncoder().encodeToString("bar".getBytes())).when(provider).getValue("foo");
-
-        assertThat(provider.hasExpired("foo")).isTrue();
-
-        provider.withTransformation(base64).get("foo");
-        assertThat(provider.hasExpired("foo")).isFalse();
-
-        String foo = provider.withTransformation(base64).get("foo");
-        assertThat(foo).isEqualTo("bar");
-        verify(provider, times(1)).getValue("foo");
-    }
-
-    @Test
-    public void get_complexTransformationCached_shouldTransformInObjectAndGetFromCache() {
-        doReturn("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}").when(provider).getValue("foo");
-
-        assertThat(provider.hasExpired("foo")).isTrue();
+    public void getObject_cached_shouldGetFromCache() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
-        assertThat(provider.hasExpired("foo")).isFalse();
+        getFromStore = false;
 
-        ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
-        assertThat(objectToDeserialize.getFoo()).isEqualTo("Foo");
-        assertThat(objectToDeserialize.getBar()).isEqualTo(42);
-        assertThat(objectToDeserialize.getBaz()).isEqualTo(123456789);
+        ObjectToDeserialize foo = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(foo).isNotNull();
+        assertThat(getFromStore).isFalse();
+    }
 
-        verify(provider, times(1)).getValue("foo");
+    @Test
+    public void getObject_expired_shouldGetValue() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void getObject_customTTL_cached_shouldGetFromCache() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.withMaxAge(12, ChronoUnit.MINUTES)
+                .withTransformation(json)
+                .get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isFalse();
+    }
+
+    @Test
+    public void getObject_customTTL_expired_shouldGetValue() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.withMaxAge(2, ChronoUnit.MINUTES)
+                .withTransformation(json)
+                .get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void getObject_customDefaultTTL_cached_shouldGetFromCache() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.defaultMaxAge(12, ChronoUnit.MINUTES)
+                .withTransformation(json)
+                .get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isFalse();
+    }
+
+    @Test
+    public void getObject_customDefaultTTL_expired_shouldGetValue() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.defaultMaxAge(2, ChronoUnit.MINUTES)
+                .withTransformation(json)
+                .get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void getObject_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.defaultMaxAge(12, ChronoUnit.MINUTES)
+                .withMaxAge(5, ChronoUnit.SECONDS)
+                .withTransformation(json)
+                .get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(4, ChronoUnit.SECONDS));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isFalse();
+    }
+
+    @Test
+    public void getObject_customDefaultTTLAndTTL_expired_shouldGetValue() {
+        provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.defaultMaxAge(2, ChronoUnit.MINUTES)
+                .withMaxAge(5, ChronoUnit.SECONDS)
+                .withTransformation(json)
+                .get("foo", ObjectToDeserialize.class);
+        getFromStore = false;
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+
+        provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void get_noTransformationManager_shouldThrowException() {
+        provider.setTransformationManager(null);
+
+        assertThatIllegalStateException().isThrownBy(() -> provider.withTransformation(base64).get("foo"));
+    }
+
+    @Test
+    public void getObject_noTransformationManager_shouldThrowException() {
+        provider.setTransformationManager(null);
+
+        assertThatIllegalStateException().isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
+    }
+
+    @Test
+    public void getTwoParams_shouldResetTTLOptionsInBetween() {
+        provider.withMaxAge(50, ChronoUnit.SECONDS).get("foo50");
+
+        provider.get("foo5");
+
+        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+        getFromStore = false;
+
+        provider.get("foo5");
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void getTwoParams_shouldResetTransformationOptionsInBetween() {
+        provider.setValue(Base64.getEncoder().encodeToString("base64encoded".getBytes()));
+        String foob64 = provider.withTransformation(base64).get("foob64");
+
+        provider.setValue("string");
+        String foostr = provider.get("foostr");
+
+        assertThat(foob64).isEqualTo("base64encoded");
+        assertThat(foostr).isEqualTo("string");
     }
 }

@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.parameters.internal;
+package software.amazon.lambda.powertools.parameters.cache;
 
 import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,8 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DataStore {
 
     private final ConcurrentHashMap<String, ValueNode> store;
+    private final NowProvider nowProvider;
 
-    public DataStore() {
+    public DataStore(NowProvider nowProvider) {
+        this.nowProvider = nowProvider;
         this.store = new ConcurrentHashMap<>();
     }
 
@@ -50,16 +52,11 @@ public class DataStore {
     }
 
     public boolean hasExpired(String key) {
-        boolean hasExpired = !store.containsKey(key) || now().isAfter(store.get(key).time);
+        boolean hasExpired = !store.containsKey(key) || nowProvider.now().isAfter(store.get(key).time);
         // Auto-clean if the parameter has expired
         if (hasExpired) {
             remove(key);
         }
         return hasExpired;
     }
-
-    Instant now() {
-        return Instant.now();
-    }
-
 }

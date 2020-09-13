@@ -15,12 +15,19 @@ package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.cache.NowProvider;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 /**
  * Utility class to retrieve instances of parameter providers.
  * Each instance is unique (singleton).
  */
 public final class ParamManager {
+
+    private static final NowProvider nowProvider = new NowProvider();
+    private static final CacheManager cacheManager = new CacheManager(nowProvider);
+    private static final TransformationManager transformationManager = new TransformationManager();
 
     private static SecretsProvider secretsProvider;
     private static SSMProvider ssmProvider;
@@ -32,7 +39,10 @@ public final class ParamManager {
      */
     public static SecretsProvider getSecretsProvider() {
         if (secretsProvider == null) {
-            secretsProvider = SecretsProvider.create();
+            secretsProvider = SecretsProvider.builder()
+                                    .withCacheManager(cacheManager)
+                                    .withTransformationManager(transformationManager)
+                                    .build();
         }
         return secretsProvider;
     }
@@ -44,7 +54,10 @@ public final class ParamManager {
      */
     public static SSMProvider getSsmProvider() {
         if (ssmProvider == null) {
-            ssmProvider = SSMProvider.create();
+            ssmProvider = SSMProvider.builder()
+                            .withCacheManager(cacheManager)
+                            .withTransformationManager(transformationManager)
+                            .build();
         }
         return ssmProvider;
     }
@@ -56,7 +69,11 @@ public final class ParamManager {
      */
     public static SecretsProvider getSecretsProvider(SecretsManagerClient client) {
         if (secretsProvider == null) {
-            secretsProvider = SecretsProvider.builder().withClient(client).build();
+            secretsProvider = SecretsProvider.builder()
+                                    .withClient(client)
+                                    .withCacheManager(cacheManager)
+                                    .withTransformationManager(transformationManager)
+                                    .build();
         }
         return secretsProvider;
     }
@@ -68,7 +85,11 @@ public final class ParamManager {
      */
     public static SSMProvider getSsmProvider(SsmClient client) {
         if (ssmProvider == null) {
-            ssmProvider = SSMProvider.builder().withClient(client).build();
+            ssmProvider = SSMProvider.builder()
+                                .withClient(client)
+                                .withCacheManager(cacheManager)
+                                .withTransformationManager(transformationManager)
+                                .build();
         }
         return ssmProvider;
     }

@@ -18,16 +18,56 @@ import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * AWS Systems Manager Parameter Store Provider
+ * AWS System Manager Parameter Store Provider <br/><br/>
+ *
+ * <u>Samples:</u>
+ * <pre>
+ *     SSMProvider provider = ParamManager.getSsmProvider();
+ *
+ *     String value = provider.get("key");
+ *     System.out.println(value);
+ *     >>> "value"
+ *
+ *     // Get a value and cache it for 30 seconds (all others values will now be cached for 30 seconds)
+ *     String value = provider.defaultMaxAge(30, ChronoUnit.SECONDS).get("key");
+ *
+ *     // Get a value and cache it for 1 minute (all others values are cached for 5 seconds by default)
+ *     String value = provider.withMaxAge(1, ChronoUnit.MINUTES).get("key");
+ *
+ *     // Get a base64 encoded value, decoded into a String, and store it in the cache
+ *     String value = provider.withTransformation(Transformer.base64).get("key");
+ *
+ *     // Get a json value, transform it into an Object, and store it in the cache
+ *     TargetObject = provider.withTransformation(Transformer.json).get("key", TargetObject.class);
+ *
+ *     // Get a decrypted value, and store it in the cache
+ *     String value = provider.withDecryption().get("key");
+ *
+ *     // Get multiple parameter values starting with the same path
+ *     Map<String, String> params = provider.getMultiple("/path/to/paramters");
+ *     >>> /path/to/parameters/key1 -> value1
+ *     >>> /path/to/parameters/key2 -> value2
+ *
+ *     // Get multiple parameter values starting with the same path and recursively
+ *     Map<String, String> params = provider.recursive().getMultiple("/path/to/paramters");
+ *     >>> /path/to/parameters/key1 -> value1
+ *     >>> /path/to/parameters/key2 -> value2
+ *     >>> /path/to/parameters/others/key3 -> value3
+ * </pre>
  */
 public class SSMProvider extends BaseProvider {
 
     private final SsmClient client;
+
     private boolean decrypt = false;
     private boolean recursive = false;
 
@@ -37,8 +77,8 @@ public class SSMProvider extends BaseProvider {
      * <p>
      * Use the {@link SSMProvider.Builder} to create an instance of it.
      */
-    SSMProvider() {
-        this(SsmClient.create());
+    SSMProvider(CacheManager cacheManager) {
+        this(cacheManager, SsmClient.create());
     }
 
     /**
@@ -49,7 +89,8 @@ public class SSMProvider extends BaseProvider {
      *
      * @param client custom client you would like to use.
      */
-    SSMProvider(SsmClient client) {
+    SSMProvider(CacheManager cacheManager, SsmClient client) {
+        super(cacheManager);
         this.client = client;
     }
 
@@ -60,7 +101,7 @@ public class SSMProvider extends BaseProvider {
      * @return the value of the parameter identified by the key
      */
     @Override
-    String getValue(String key) {
+    public String getValue(String key) {
         GetParameterRequest request = GetParameterRequest.builder()
                 .name(key)
                 .withDecryption(decrypt)
@@ -69,12 +110,40 @@ public class SSMProvider extends BaseProvider {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SSMProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
+        super.defaultMaxAge(maxAge, unit);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SSMProvider withMaxAge(int maxAge, ChronoUnit unit) {
+        super.withMaxAge(maxAge, unit);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SSMProvider withTransformation(Class<? extends Transformer> transformerClass) {
+        super.withTransformation(transformerClass);
+        return this;
+    }
+
+    /**
      * Tells System Manager Parameter Store to decrypt the parameter value.<br/>
      * By default, parameter values are not decrypted.<br/>
      * Valid both for get and getMultiple.
-     * @return the provider itself in order to chain calls (eg. <code>provider.withDecryption().get("key")</code>).
+     *
+     * @return the provider itself in order to chain calls (eg. <pre>provider.withDecryption().get("key")</pre>).
      */
-    public BaseProvider withDecryption() {
+    public SSMProvider withDecryption() {
         this.decrypt = true;
         return this;
     }
@@ -82,9 +151,10 @@ public class SSMProvider extends BaseProvider {
     /**
      * Tells System Manager Parameter Store to retrieve all parameters starting with a path (all levels)<br/>
      * Only used with {@link #getMultiple(String)}.
-     * @return the provider itself in order to chain calls (eg. <code>provider.recursive().getMultiple("key")</code>).
+     *
+     * @return the provider itself in order to chain calls (eg. <pre>provider.recursive().getMultiple("key")</pre>).
      */
-    public BaseProvider recursive() {
+    public SSMProvider recursive() {
         this.recursive = true;
         return this;
     }
@@ -145,17 +215,8 @@ public class SSMProvider extends BaseProvider {
     @Override
     protected void resetToDefaults() {
         super.resetToDefaults();
-        decrypt = false;
         recursive = false;
-    }
-
-    /**
-     * Use this static method to create an instance of {@link SSMProvider} with default {@link SsmClient}
-     *
-     * @return a new instance of {@link SSMProvider}
-     */
-    public static SSMProvider create() {
-        return builder().build();
+        decrypt = false;
     }
 
     /**
@@ -163,12 +224,14 @@ public class SSMProvider extends BaseProvider {
      *
      * @return a new instance of {@link SSMProvider.Builder}
      */
-    public static Builder builder() {
-        return new Builder();
+    public static SSMProvider.Builder builder() {
+        return new SSMProvider.Builder();
     }
 
     static class Builder {
         private SsmClient client;
+        private CacheManager cacheManager;
+        private TransformationManager transformationManager;
 
         /**
          * Create a {@link SSMProvider} instance.
@@ -176,10 +239,19 @@ public class SSMProvider extends BaseProvider {
          * @return a {@link SSMProvider}
          */
         public SSMProvider build() {
-            if (client != null) {
-                return new SSMProvider(client);
+            if (cacheManager == null) {
+                throw new IllegalStateException("No CacheManager provided, please provide one");
             }
-            return new SSMProvider();
+            SSMProvider provider;
+            if (client != null) {
+                provider = new SSMProvider(cacheManager, client);
+            } else {
+                provider = new SSMProvider(cacheManager);
+            }
+            if (transformationManager != null) {
+                provider.setTransformationManager(transformationManager);
+            }
+            return provider;
         }
 
         /**
@@ -187,10 +259,32 @@ public class SSMProvider extends BaseProvider {
          * Use it if you want to customize the region or any other part of the client.
          *
          * @param client Custom client
-         * @return the builder to chain calls (eg. <code>builder.withClient().build()</code>)
+         * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
          */
-        public Builder withClient(SsmClient client) {
+        public SSMProvider.Builder withClient(SsmClient client) {
             this.client = client;
+            return this;
+        }
+
+        /**
+         * <b>Mandatory</b>. Provide a CacheManager to the {@link SSMProvider}
+         *
+         * @param cacheManager the manager that will handle the cache of parameters
+         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
+         */
+        public SSMProvider.Builder withCacheManager(CacheManager cacheManager) {
+            this.cacheManager = cacheManager;
+            return this;
+        }
+
+        /**
+         * Provide a transformationManager to the {@link SSMProvider}
+         *
+         * @param transformationManager the manager that will handle transformation of parameters
+         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
+         */
+        public SSMProvider.Builder withTransformationManager(TransformationManager transformationManager) {
+            this.transformationManager = transformationManager;
             return this;
         }
     }

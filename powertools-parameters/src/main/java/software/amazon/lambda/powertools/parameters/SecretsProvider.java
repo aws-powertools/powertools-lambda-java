@@ -15,11 +15,36 @@ package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 
 /**
- * AWS Secrets Manager Parameter Provider
+ * AWS Secrets Manager Parameter Provider<br/><br/>
+ *
+ * <u>Samples:</u>
+ * <pre>
+ *     SecretsProvider provider = ParamManager.getSecretsProvider();
+ *
+ *     String value = provider.get("key");
+ *     System.out.println(value);
+ *     >>> "value"
+ *
+ *     // Get a value and cache it for 30 seconds (all others values will now be cached for 30 seconds)
+ *     String value = provider.defaultMaxAge(30, ChronoUnit.SECONDS).get("key");
+ *
+ *     // Get a value and cache it for 1 minute (all others values are cached for 5 seconds by default)
+ *     String value = provider.withMaxAge(1, ChronoUnit.MINUTES).get("key");
+ *
+ *     // Get a base64 encoded value, decoded into a String, and store it in the cache
+ *     String value = provider.withTransformation(Transformer.base64).get("key");
+ *
+ *     // Get a json value, transform it into an Object, and store it in the cache
+ *     TargetObject = provider.withTransformation(Transformer.json).get("key", TargetObject.class);
+ * </pre>
  */
 public class SecretsProvider extends BaseProvider {
 
@@ -31,8 +56,8 @@ public class SecretsProvider extends BaseProvider {
      *
      * Use the {@link Builder} to create an instance of it.
      */
-    SecretsProvider() {
-        this(SecretsManagerClient.create());
+    SecretsProvider(CacheManager cacheManager) {
+        this(cacheManager, SecretsManagerClient.create());
     }
 
     /**
@@ -43,7 +68,8 @@ public class SecretsProvider extends BaseProvider {
      *
      * @param client custom client you would like to use.
      */
-    SecretsProvider(SecretsManagerClient client) {
+    SecretsProvider(CacheManager cacheManager, SecretsManagerClient client) {
+        super(cacheManager);
         this.client = client;
     }
 
@@ -54,7 +80,7 @@ public class SecretsProvider extends BaseProvider {
      * @return the value of the parameter identified by the key
      */
     @Override
-    String getValue(String key) {
+    protected String getValue(String key) {
         GetSecretValueRequest request = GetSecretValueRequest.builder().secretId(key).build();
 
         String secretValue = client.getSecretValue(request).secretString();
@@ -65,18 +91,36 @@ public class SecretsProvider extends BaseProvider {
     }
 
     /**
-     * Use this static method to create an instance of {@link SecretsProvider} with default {@link SecretsManagerClient}
-     *
-     * @return a new instance of {@link SecretsProvider}
+     * {@inheritDoc}
      */
-    public static SecretsProvider create() {
-        return builder().build();
+    @Override
+    public SecretsProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
+        super.defaultMaxAge(maxAge, unit);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SecretsProvider withMaxAge(int maxAge, ChronoUnit unit) {
+        super.withMaxAge(maxAge, unit);
+        return this;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public SecretsProvider withTransformation(Class<? extends Transformer> transformerClass) {
+        super.withTransformation(transformerClass);
+        return this;
     }
 
     /**
      * Create a builder that can be used to configure and create a {@link SecretsProvider}.
      *
-     * @return a new instance of {@link Builder}
+     * @return a new instance of {@link SecretsProvider.Builder}
      */
     public static Builder builder() {
         return new Builder();
@@ -85,6 +129,8 @@ public class SecretsProvider extends BaseProvider {
     static class Builder {
 
         private SecretsManagerClient client;
+        private CacheManager cacheManager;
+        private TransformationManager transformationManager;
 
         /**
          * Create a {@link SecretsProvider} instance.
@@ -92,10 +138,19 @@ public class SecretsProvider extends BaseProvider {
          * @return a {@link SecretsProvider}
          */
         public SecretsProvider build() {
-            if (client != null) {
-                return new SecretsProvider(client);
+            if (cacheManager == null) {
+                throw new IllegalStateException("No CacheManager provided, please provide one");
             }
-            return new SecretsProvider();
+            SecretsProvider provider;
+            if (client != null) {
+                provider = new SecretsProvider(cacheManager, client);
+            } else {
+                provider = new SecretsProvider(cacheManager);
+            }
+            if (transformationManager != null) {
+                provider.setTransformationManager(transformationManager);
+            }
+            return provider;
         }
 
         /**
@@ -103,10 +158,32 @@ public class SecretsProvider extends BaseProvider {
          * Use it if you want to customize the region or any other part of the client.
          *
          * @param client Custom client
-         * @return the builder to chain calls (eg. <code>builder.withClient().build()</code>)
+         * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
          */
         public Builder withClient(SecretsManagerClient client) {
             this.client = client;
+            return this;
+        }
+
+        /**
+         * <b>Mandatory</b>. Provide a CacheManager to the {@link SecretsProvider}
+         *
+         * @param cacheManager the manager that will handle the cache of parameters
+         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
+         */
+        public Builder withCacheManager(CacheManager cacheManager) {
+            this.cacheManager = cacheManager;
+            return this;
+        }
+
+        /**
+         * Provide a transformationManager to the {@link SecretsProvider}
+         *
+         * @param transformationManager the manager that will handle transformation of parameters
+         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
+         */
+        public Builder withTransformationManager(TransformationManager transformationManager) {
+            this.transformationManager = transformationManager;
             return this;
         }
     }
