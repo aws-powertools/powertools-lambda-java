@@ -26,6 +26,10 @@ import java.lang.annotation.Target;
  * </br>This will create a metric with the key {@code "ColdStart"} and the unit type {@code COUNT}.
  * </p>
  *
+ * <p>To raise exception if no metrics are emitted, use {@code @PowertoolsMetrics(raiseOnEmptyMetrics = true)}.
+ * </br>This will create a create a exception of type {@link ValidationException}. By default its value is set to false.
+ * </p>
+ *
  * <p>By default the service name associated with metrics created will be
  * "service_undefined". This can be overridden with the environment variable {@code POWERTOOLS_SERVICE_NAME}
  * or the annotation variable {@code @PowertoolsMetrics(service = "Service Name")}.
@@ -42,4 +46,5 @@ public @interface PowertoolsMetrics {
     String namespace() default "";
     String service() default "";
     boolean captureColdStart() default false;
+    boolean raiseOnEmptyMetrics() default false;
 }

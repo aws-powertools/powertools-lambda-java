@@ -1,5 +1,6 @@
 package software.amazon.lambda.powertools.metrics.internal;
 
+import java.lang.reflect.Field;
 import java.util.Optional;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -9,9 +10,13 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
+import software.amazon.lambda.powertools.metrics.ValidationException;
 
+import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
+import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.hasNoMetrics;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
@@ -47,11 +52,19 @@ public class LambdaMetricsAspect {
 
             coldStartSingleMetricIfApplicable(pjp, powertoolsMetrics);
 
-            Object proceed = pjp.proceed(proceedArgs);
+            try {
+                Object proceed = pjp.proceed(proceedArgs);
 
-            coldStartDone();
-            logger.flush();
-            return proceed;
+                coldStartDone();
+
+                validateBeforeFlushingMetrics(powertoolsMetrics);
+
+                logger.flush();
+                return proceed;
+
+            } finally {
+                refreshMetricsContext();
+            }
         }
 
         return pjp.proceed(proceedArgs);
@@ -74,11 +87,32 @@ public class LambdaMetricsAspect {
         }
     }
 
+    private void validateBeforeFlushingMetrics(PowertoolsMetrics powertoolsMetrics) {
+        if (powertoolsMetrics.raiseOnEmptyMetrics() && hasNoMetrics()) {
+            throw new ValidationException("No metrics captured, at least one metrics must be emitted");
+        }
+
+        if (dimensionsCount() == 0 || dimensionsCount() > 10) {
+            throw new ValidationException(String.format("Number of Dimensions must be in range of 1-10." +
+                    " Actual size: %d.", dimensionsCount()));
+        }
+    }
+
     private String namespace(PowertoolsMetrics powertoolsMetrics) {
         return !"".equals(powertoolsMetrics.namespace()) ? powertoolsMetrics.namespace() : NAMESPACE;
     }
 
     private String service(PowertoolsMetrics powertoolsMetrics) {
         return !"".equals(powertoolsMetrics.service()) ? powertoolsMetrics.service() : serviceName();
+    }
+
+    private static void refreshMetricsContext() {
+        try {
+            Field f = metricsLogger().getClass().getDeclaredField("context");
+            f.setAccessible(true);
+            f.set(metricsLogger(), new MetricsContext());
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

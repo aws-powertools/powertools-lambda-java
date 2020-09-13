@@ -19,13 +19,19 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.ValidationException;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsColdStartEnabledHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledStreamHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsExceptionWhenNoMetricsHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoDimensionsHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoExceptionWhenNoMetricsHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsTooManyDimensionsHandler;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -171,6 +177,61 @@ public class LambdaMetricsAspectTest {
         }
     }
 
+    @Test
+    public void exceptionWhenNoMetricsEmitted() {
+        requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            assertThatExceptionOfType(ValidationException.class)
+                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                    .withMessage("No metrics captured, at least one metrics must be emitted");
+        }
+    }
+
+    @Test
+    public void noExceptionWhenNoMetricsEmitted() {
+        requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        assertThat(logAsJson)
+                                .containsEntry("service", "booking")
+                                .doesNotContainKey("_aws");
+                    });
+        }
+    }
+
+    @Test
+    public void exceptionWhenNoDimensionsSet() {
+        requestHandler = new PowertoolsMetricsNoDimensionsHandler();
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            assertThatExceptionOfType(ValidationException.class)
+                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                    .withMessage("Number of Dimensions must be in range of 1-10. Actual size: 0.");
+        }
+    }
+
+    @Test
+    public void exceptionWhenTooManyDimensionsSet() {
+        requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            assertThatExceptionOfType(ValidationException.class)
+                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                    .withMessage("Number of Dimensions must be in range of 1-10. Actual size: 14.");
+        }
+    }
 
     private void setupContext() {
         when(context.getFunctionName()).thenReturn("testFunction");

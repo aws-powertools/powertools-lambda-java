@@ -1,9 +1,9 @@
 package software.amazon.lambda.powertools.metrics;
 
+import java.util.function.Consumer;
+
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-
-import java.util.function.Consumer;
 
 /**
  * A class used to retrieve the instance of the {@code MetricsLogger} used by
@@ -13,6 +13,9 @@ import java.util.function.Consumer;
  */
 public final class PowertoolsMetricsLogger {
     private static final MetricsLogger metricsLogger = new MetricsLogger();
+
+    private PowertoolsMetricsLogger() {
+    }
 
     /**
      * The instance of the {@code MetricsLogger} used by {@code PowertoolsMetrics}.
