@@ -16,7 +16,7 @@ public class AppStream implements RequestStreamHandler {
 
     @Override
     @PowertoolsLogging(logEvent = true)
-    @PowertoolsMetrics(namespace = "EMF", captureColdStart = true)
+    @PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
         Map map = mapper.readValue(input, Map.class);
 

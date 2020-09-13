@@ -38,7 +38,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     @PowertoolsLogging(logEvent = true, samplingRate = 0.7)
     @PowertoolsTracing(captureError = false, captureResponse = false)
-    @PowertoolsMetrics(namespace = "EMF", captureColdStart = true)
+    @PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
