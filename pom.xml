@@ -68,7 +68,7 @@
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
-        <aws-embedded-metrics.version>0.1.0-beta</aws-embedded-metrics.version>
+        <aws-embedded-metrics.version>1.0.0</aws-embedded-metrics.version>
     </properties>
 
     <distributionManagement>
