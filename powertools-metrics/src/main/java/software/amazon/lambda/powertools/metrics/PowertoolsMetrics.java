@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  * or the annotation variable {@code @PowertoolsMetrics(service = "Service Name")}.
  * If both are specified then the value of the annotation variable will be used.</p>
  *
- * <p>By default the namespace associated with metrics created will be "XXXXXXXXX".
+ * <p>By default the namespace associated with metrics created will be "aws-embedded-metrics".
  * This can be overridden with the environment variable {@code POWERTOOLS_METRICS_NAMESPACE}
  * or the annotation variable {@code @PowertoolsMetrics(namespace = "Namespace")}.
  * If both are specified then the value of the annotation variable will be used.</p>
