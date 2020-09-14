@@ -48,7 +48,7 @@ public class LambdaMetricsAspect {
             MetricsLogger logger = metricsLogger();
 
             logger.setNamespace(namespace(powertoolsMetrics))
-                    .putDimensions(DimensionSet.of("service", service(powertoolsMetrics)));
+                    .putDimensions(DimensionSet.of("Service", service(powertoolsMetrics)));
 
             coldStartSingleMetricIfApplicable(pjp, powertoolsMetrics);
 
@@ -81,7 +81,7 @@ public class LambdaMetricsAspect {
                 Context context = contextOptional.orElseThrow(() -> new IllegalStateException("Context not found"));
 
                 withSingleMetric("ColdStart", 1, Unit.COUNT, namespace(powertoolsMetrics), (logger) ->
-                        logger.setDimensions(DimensionSet.of("service", service(powertoolsMetrics), "function_name", context.getFunctionName())));
+                        logger.setDimensions(DimensionSet.of("Service", service(powertoolsMetrics), "FunctionName", context.getFunctionName())));
             }
         }
     }

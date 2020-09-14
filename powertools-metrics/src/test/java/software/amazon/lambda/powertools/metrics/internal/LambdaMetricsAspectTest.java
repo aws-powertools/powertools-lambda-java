@@ -80,7 +80,7 @@ public class LambdaMetricsAspectTest {
 
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
                     });
         }
@@ -103,7 +103,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .doesNotContainKey("Metric1")
                                 .containsEntry("ColdStart", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
 
                         logAsJson = readAsJson(s[1]);
@@ -111,7 +111,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .doesNotContainKey("ColdStart")
                                 .containsEntry("Metric1", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
                     });
         }
@@ -134,7 +134,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .doesNotContainKey("Metric1")
                                 .containsEntry("ColdStart", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
 
                         logAsJson = readAsJson(s[1]);
@@ -142,7 +142,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .doesNotContainKey("ColdStart")
                                 .containsEntry("Metric1", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
 
                         logAsJson = readAsJson(s[2]);
@@ -150,7 +150,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .doesNotContainKey("ColdStart")
                                 .containsEntry("Metric1", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
                     });
         }
@@ -171,7 +171,7 @@ public class LambdaMetricsAspectTest {
 
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .containsKey("_aws");
                     });
         }
@@ -202,7 +202,7 @@ public class LambdaMetricsAspectTest {
                         Map<String, Object> logAsJson = readAsJson(s);
 
                         assertThat(logAsJson)
-                                .containsEntry("service", "booking")
+                                .containsEntry("Service", "booking")
                                 .doesNotContainKey("_aws");
                     });
         }
