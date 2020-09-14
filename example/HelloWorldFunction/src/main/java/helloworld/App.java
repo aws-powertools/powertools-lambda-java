@@ -47,9 +47,9 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
         metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
 
-        withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (logger) -> {
-            logger.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-            logger.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+        withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
+            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
 
         PowertoolsLogger.appendKey("test", "willBeLogged");

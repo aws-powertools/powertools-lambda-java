@@ -81,8 +81,7 @@ public class LambdaMetricsAspect {
                 Context context = contextOptional.orElseThrow(() -> new IllegalStateException("Context not found"));
 
                 withSingleMetric("ColdStart", 1, Unit.COUNT, namespace(powertoolsMetrics), (logger) ->
-                        logger.setDimensions(DimensionSet.of("service", service(powertoolsMetrics)),
-                                DimensionSet.of("function_name", context.getFunctionName())));
+                        logger.setDimensions(DimensionSet.of("service", service(powertoolsMetrics), "function_name", context.getFunctionName())));
             }
         }
     }
