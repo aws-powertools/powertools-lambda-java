@@ -25,11 +25,11 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.*;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -57,16 +57,8 @@ public class ParamManagerIntegrationTest {
     public void setup() throws NoSuchFieldException, IllegalAccessException {
         openMocks(this);
 
-        // A bit dirty but necessary as everything is static in ParamManager
-        Field ssmProviderField = ParamManager.class.getDeclaredField("ssmProvider");
-        ssmProviderField.setAccessible(true);
-        ssmProviderField.set(null, null);
-        ssmProviderField.setAccessible(false);
-
-        Field secretsProviderField = ParamManager.class.getDeclaredField("secretsProvider");
-        secretsProviderField.setAccessible(true);
-        secretsProviderField.set(null, null);
-        secretsProviderField.setAccessible(false);
+        writeStaticField(ParamManager.class, "ssmProvider", null, true);
+        writeStaticField(ParamManager.class, "secretsProvider", null, true);
     }
 
     @Test
