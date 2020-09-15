@@ -46,14 +46,16 @@ public class TransformationManagerTest {
 
     @Test
     public void performBasicTransformation_noTransformer_shouldThrowException() {
-        assertThatIllegalStateException().isThrownBy(() -> manager.performBasicTransformation("value"));
+        assertThatIllegalStateException()
+                .isThrownBy(() -> manager.performBasicTransformation("value"));
     }
 
     @Test
     public void performBasicTransformation_notBasicTransformer_shouldThrowException() {
         manager.setTransformer(json);
 
-        assertThatIllegalStateException().isThrownBy(() -> manager.performBasicTransformation("value"));
+        assertThatIllegalStateException()
+                .isThrownBy(() -> manager.performBasicTransformation("value"));
     }
 
     @Test
@@ -68,7 +70,8 @@ public class TransformationManagerTest {
 
     @Test
     public void performComplexTransformation_noTransformer_shouldThrowException() {
-        assertThatIllegalStateException().isThrownBy(() -> manager.performComplexTransformation("value", ObjectToDeserialize.class));
+        assertThatIllegalStateException()
+                .isThrownBy(() -> manager.performComplexTransformation("value", ObjectToDeserialize.class));
     }
 
     @Test

@@ -13,7 +13,9 @@
  */
 package software.amazon.lambda.powertools.parameters.cache;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
@@ -22,17 +24,15 @@ public class CacheManager {
     static final Duration DEFAULT_MAX_AGE_SECS = Duration.of(5, SECONDS);
 
     private final DataStore store;
-    private final NowProvider nowProvider;
     private Duration defaultMaxAge = DEFAULT_MAX_AGE_SECS;
     private Duration maxAge = defaultMaxAge;
 
-    public CacheManager(NowProvider nowProvider) {
-        this.nowProvider = nowProvider;
-        store = new DataStore(nowProvider);
+    public CacheManager() {
+        store = new DataStore();
     }
 
-    public <T> Optional<T> getIfNotExpired(String key) {
-        if (store.hasExpired(key)) {
+    public <T> Optional<T> getIfNotExpired(String key, Instant now) {
+        if (store.hasExpired(key, now)) {
             return Optional.empty();
         }
         return Optional.of((T) store.get(key));
@@ -48,7 +48,7 @@ public class CacheManager {
     }
 
     public <T> void putInCache(String key, T value) {
-        store.put(key, value, nowProvider.now().plus(maxAge));
+        store.put(key, value, Clock.systemDefaultZone().instant().plus(maxAge));
     }
 
     public void resetExpirationtime() {

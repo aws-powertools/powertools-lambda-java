@@ -36,6 +36,7 @@ public class Base64TransformerTest {
     public void transform_base64WrongFormat_shouldThrowException() {
         Base64Transformer transformer = new Base64Transformer();
 
-        assertThatExceptionOfType(TransformationException.class).isThrownBy(() -> transformer.applyTransformation("foobarbaz"));
+        assertThatExceptionOfType(TransformationException.class)
+                .isThrownBy(() -> transformer.applyTransformation("foobarbaz"));
     }
 }

@@ -13,32 +13,29 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.*;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-import software.amazon.lambda.powertools.parameters.cache.NowProvider;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class SSMProviderTest {
 
     @Mock
     SsmClient client;
-
-    @Spy
-    NowProvider nowProvider;
 
     @Captor
     ArgumentCaptor<GetParameterRequest> paramCaptor;
@@ -53,7 +50,7 @@ public class SSMProviderTest {
     @BeforeEach
     public void init() {
         openMocks(this);
-        cacheManager = new CacheManager(nowProvider);
+        cacheManager = new CacheManager();
         provider = new SSMProvider(cacheManager, client);
     }
 
@@ -93,13 +90,38 @@ public class SSMProviderTest {
         when(client.getParametersByPath(paramByPathCaptor.capture())).thenReturn(response);
 
         Map<String, String> params = provider.getMultiple("/prod/app1");
-        assertThat(params.get("key1")).isEqualTo("foo1");
-        assertThat(params.get("key2")).isEqualTo("foo2");
-        assertThat(params.get("key3")).isEqualTo("foo3");
+        assertThat(params).contains(
+                MapEntry.entry("key1", "foo1"),
+                MapEntry.entry("key2", "foo2"),
+                MapEntry.entry("key3", "foo3"));
+        assertThat(provider.get("/prod/app1/key1")).isEqualTo("foo1");
+        assertThat(provider.get("/prod/app1/key2")).isEqualTo("foo2");
+        assertThat(provider.get("/prod/app1/key3")).isEqualTo("foo3");
 
         assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
         assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
         assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
+    }
+
+    @Test
+    public void getMultiple_cached_shouldNotCallSSM() {
+        List<Parameter> parameters = new ArrayList<>();
+        parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
+        parameters.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
+        parameters.add(Parameter.builder().name("/prod/app1/key3").value("foo3").build());
+        GetParametersByPathResponse response = GetParametersByPathResponse.builder().parameters(parameters).build();
+        when(client.getParametersByPath(paramByPathCaptor.capture())).thenReturn(response);
+
+        provider.getMultiple("/prod/app1");
+
+        // should get the following from cache
+        provider.getMultiple("/prod/app1");
+        provider.get("/prod/app1/key1");
+        provider.get("/prod/app1/key2");
+        provider.get("/prod/app1/key3");
+
+        verify(client, times(1)).getParametersByPath(any(GetParametersByPathRequest.class));
+
     }
 
     @Test
@@ -117,23 +139,23 @@ public class SSMProviderTest {
 
         Map<String, String> params = provider.getMultiple("/prod/app1");
 
-        assertThat(params.get("key1")).isEqualTo("foo1");
-        assertThat(params.get("key2")).isEqualTo("foo2");
-        assertThat(params.get("key3")).isEqualTo("foo3");
+        assertThat(params).contains(
+                MapEntry.entry("key1", "foo1"),
+                MapEntry.entry("key2", "foo2"),
+                MapEntry.entry("key3", "foo3"));
 
         List<GetParametersByPathRequest> requestParams = paramByPathCaptor.getAllValues();
         GetParametersByPathRequest request1 = requestParams.get(0);
         GetParametersByPathRequest request2 = requestParams.get(1);
 
-        assertThat(request1.path()).isEqualTo("/prod/app1");
-        assertThat(request1.nextToken()).isNull();
-        assertThat(request1.withDecryption()).isFalse();
-        assertThat(request1.recursive()).isFalse();
+        assertThat(asList(request1, request2)).allSatisfy(req -> {
+            assertThat(req.path()).isEqualTo("/prod/app1");
+            assertThat(req.withDecryption()).isFalse();
+            assertThat(req.recursive()).isFalse();
+        });
 
-        assertThat(request2.path()).isEqualTo("/prod/app1");
+        assertThat(request1.nextToken()).isNull();
         assertThat(request2.nextToken()).isEqualTo("123abc");
-        assertThat(request2.withDecryption()).isFalse();
-        assertThat(request2.recursive()).isFalse();
     }
 
     private void initMock(String expectedValue) {

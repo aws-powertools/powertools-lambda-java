@@ -22,10 +22,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DataStore {
 
     private final ConcurrentHashMap<String, ValueNode> store;
-    private final NowProvider nowProvider;
 
-    public DataStore(NowProvider nowProvider) {
-        this.nowProvider = nowProvider;
+    public DataStore() {
         this.store = new ConcurrentHashMap<>();
     }
 
@@ -51,8 +49,8 @@ public class DataStore {
         return store.containsKey(key)?store.get(key).value:null;
     }
 
-    public boolean hasExpired(String key) {
-        boolean hasExpired = !store.containsKey(key) || nowProvider.now().isAfter(store.get(key).time);
+    public boolean hasExpired(String key, Instant now) {
+        boolean hasExpired = !store.containsKey(key) ||  now.isAfter(store.get(key).time);
         // Auto-clean if the parameter has expired
         if (hasExpired) {
             remove(key);

@@ -15,26 +15,24 @@ package software.amazon.lambda.powertools.parameters.cache;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
+import java.time.Clock;
 import java.time.Instant;
 
+import static java.time.Clock.offset;
+import static java.time.Duration.of;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 public class DataStoreTest {
 
-    @Mock
-    NowProvider nowProvider;
-
+    Clock clock;
     DataStore store;
 
     @BeforeEach
     public void setup() {
-        openMocks(this);
-        store = new DataStore(nowProvider);
+        clock = Clock.systemDefaultZone();
+        store = new DataStore();
     }
 
     @Test
@@ -50,29 +48,25 @@ public class DataStoreTest {
 
     @Test
     public void hasExpired_invalidKey_shouldReturnTrue() {
-        assertThat(store.hasExpired("key")).isTrue();
+        assertThat(store.hasExpired("key", clock.instant())).isTrue();
     }
 
     @Test
     public void hasExpired_notExpired_shouldReturnFalse() {
         Instant now = Instant.now();
 
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(5, SECONDS));
-
         store.put("key", "value", now.plus(10, SECONDS));
 
-        assertThat(store.hasExpired("key")).isFalse();
+        assertThat(store.hasExpired("key", offset(clock, of(5, SECONDS)).instant())).isFalse();
     }
 
     @Test
     public void hasExpired_expired_shouldReturnTrueAndRemoveElement() {
         Instant now = Instant.now();
 
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(11, SECONDS));
-
         store.put("key", "value", now.plus(10, SECONDS));
 
-        assertThat(store.hasExpired("key")).isTrue();
+        assertThat(store.hasExpired("key", offset(clock, of(11, SECONDS)).instant())).isTrue();
         assertThat(store.get("key")).isNull();
     }
 }

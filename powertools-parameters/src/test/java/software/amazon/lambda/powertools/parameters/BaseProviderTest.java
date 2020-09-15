@@ -15,29 +15,28 @@ package software.amazon.lambda.powertools.parameters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Spy;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-import software.amazon.lambda.powertools.parameters.cache.NowProvider;
 import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
-import java.time.Instant;
+import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 
+import static java.time.Clock.offset;
+import static java.time.Duration.of;
+import static java.time.temporal.ChronoUnit.MINUTES;
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 public class BaseProviderTest {
 
-    @Spy
-    NowProvider nowProvider;
-
+    Clock clock;
     CacheManager cacheManager;
     TransformationManager transformationManager;
     BasicProvider provider;
@@ -67,7 +66,8 @@ public class BaseProviderTest {
     public void setup() {
         openMocks(this);
 
-        cacheManager = new CacheManager(nowProvider);
+        clock = Clock.systemDefaultZone();
+        cacheManager = new CacheManager();
         provider = new BasicProvider(cacheManager);
         transformationManager = new TransformationManager();
         provider.setTransformationManager(transformationManager);
@@ -96,7 +96,7 @@ public class BaseProviderTest {
         provider.get("bar");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(6, SECONDS)));
 
         provider.get("bar");
         assertThat(getFromStore).isTrue();
@@ -107,7 +107,7 @@ public class BaseProviderTest {
         provider.withMaxAge(12, ChronoUnit.MINUTES).get("key");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(10, MINUTES)));
 
         provider.get("key");
         assertThat(getFromStore).isFalse();
@@ -118,7 +118,7 @@ public class BaseProviderTest {
         provider.withMaxAge(2, ChronoUnit.MINUTES).get("mykey");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(3, MINUTES)));
 
         provider.get("mykey");
         assertThat(getFromStore).isTrue();
@@ -129,7 +129,7 @@ public class BaseProviderTest {
         provider.defaultMaxAge(12, ChronoUnit.MINUTES).get("foobar");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(10, MINUTES)));
 
         provider.get("foobar");
         assertThat(getFromStore).isFalse();
@@ -140,7 +140,7 @@ public class BaseProviderTest {
         provider.defaultMaxAge(2, ChronoUnit.MINUTES).get("barbaz");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(3, MINUTES)));
 
         provider.get("barbaz");
         assertThat(getFromStore).isTrue();
@@ -149,11 +149,11 @@ public class BaseProviderTest {
     @Test
     public void get_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
         provider.defaultMaxAge(12, ChronoUnit.MINUTES)
-                .withMaxAge(5, ChronoUnit.SECONDS)
+                .withMaxAge(5, SECONDS)
                 .get("foobaz");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(4, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(4, SECONDS)));
 
         provider.get("foobaz");
         assertThat(getFromStore).isFalse();
@@ -162,11 +162,11 @@ public class BaseProviderTest {
     @Test
     public void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
         provider.defaultMaxAge(2, ChronoUnit.MINUTES)
-                .withMaxAge(5, ChronoUnit.SECONDS)
+                .withMaxAge(5, SECONDS)
                 .get("bariton");
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(6, SECONDS)));
 
         provider.get("bariton");
         assertThat(getFromStore).isTrue();
@@ -187,9 +187,10 @@ public class BaseProviderTest {
 
         ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
 
-        assertThat(objectToDeserialize.getFoo()).isEqualTo("Foo");
-        assertThat(objectToDeserialize.getBar()).isEqualTo(42);
-        assertThat(objectToDeserialize.getBaz()).isEqualTo(123456789);
+        assertThat(objectToDeserialize).matches(
+                         o -> o.getFoo().equals("Foo")
+                        && o.getBar() == 42
+                        && o.getBaz() == 123456789);
     }
 
     @Test
@@ -221,7 +222,7 @@ public class BaseProviderTest {
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(6, SECONDS)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isTrue();
@@ -236,7 +237,7 @@ public class BaseProviderTest {
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(10, MINUTES)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isFalse();
@@ -251,7 +252,7 @@ public class BaseProviderTest {
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(3, MINUTES)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isTrue();
@@ -266,7 +267,7 @@ public class BaseProviderTest {
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(10, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(10, MINUTES)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isFalse();
@@ -281,7 +282,7 @@ public class BaseProviderTest {
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(3, ChronoUnit.MINUTES));
+        provider.setClock(offset(clock, of(3, MINUTES)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isTrue();
@@ -292,12 +293,12 @@ public class BaseProviderTest {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.defaultMaxAge(12, ChronoUnit.MINUTES)
-                .withMaxAge(5, ChronoUnit.SECONDS)
+                .withMaxAge(5, SECONDS)
                 .withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(4, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(4, SECONDS)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isFalse();
@@ -308,12 +309,12 @@ public class BaseProviderTest {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.defaultMaxAge(2, ChronoUnit.MINUTES)
-                .withMaxAge(5, ChronoUnit.SECONDS)
+                .withMaxAge(5, SECONDS)
                 .withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(6, SECONDS)));
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
         assertThat(getFromStore).isTrue();
@@ -323,23 +324,26 @@ public class BaseProviderTest {
     public void get_noTransformationManager_shouldThrowException() {
         provider.setTransformationManager(null);
 
-        assertThatIllegalStateException().isThrownBy(() -> provider.withTransformation(base64).get("foo"));
+        assertThatIllegalStateException()
+                .isThrownBy(() -> provider.withTransformation(base64).get("foo"));
     }
 
     @Test
     public void getObject_noTransformationManager_shouldThrowException() {
         provider.setTransformationManager(null);
 
-        assertThatIllegalStateException().isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
+        assertThatIllegalStateException()
+                .isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
     }
 
     @Test
     public void getTwoParams_shouldResetTTLOptionsInBetween() {
-        provider.withMaxAge(50, ChronoUnit.SECONDS).get("foo50");
+        provider.withMaxAge(50, SECONDS).get("foo50");
 
         provider.get("foo5");
 
-        when(nowProvider.now()).thenReturn(Instant.now().plus(6, ChronoUnit.SECONDS));
+        provider.setClock(offset(clock, of(6, SECONDS)));
+
         getFromStore = false;
 
         provider.get("foo5");

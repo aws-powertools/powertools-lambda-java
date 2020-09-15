@@ -15,110 +15,90 @@ package software.amazon.lambda.powertools.parameters.cache;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.mockito.Spy;
 
-import java.time.Duration;
-import java.time.Instant;
+import java.time.Clock;
 import java.util.Optional;
 
+import static java.time.Clock.offset;
+import static java.time.Duration.of;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 public class CacheManagerTest {
 
-    @Spy
-    NowProvider nowProvider;
-
     CacheManager manager;
+
+    Clock clock;
 
     @BeforeEach
     public void setup() {
-        openMocks(this);
-        manager = new CacheManager(nowProvider);
+        clock = Clock.systemDefaultZone();
+        manager = new CacheManager();
     }
 
     @Test
     public void getIfNotExpired_notExpired_shouldReturnValue() {
         manager.putInCache("key", "value");
 
-        Optional<String> value = manager.getIfNotExpired("key");
+        Optional<String> value = manager.getIfNotExpired("key", clock.instant());
 
-        assertThat(value.isPresent()).isTrue();
-        assertThat(value.get()).isEqualTo("value");
+        assertThat(value).isPresent().contains("value");
     }
 
     @Test
     public void getIfNotExpired_expired_shouldReturnNothing() {
         manager.putInCache("key", "value");
 
-        Instant now = Instant.now();
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(6, SECONDS));
+        Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(6, SECONDS)).instant());
 
-        Optional<String> value = manager.getIfNotExpired("key");
-
-        assertThat(value.isPresent()).isFalse();
+        assertThat(value).isNotPresent();
     }
 
     @Test
     public void getIfNotExpired_withCustomExpirationTime_notExpired_shouldReturnValue() {
-        manager.setExpirationTime(Duration.of(42, SECONDS));
+        manager.setExpirationTime(of(42, SECONDS));
         manager.putInCache("key", "value");
 
-        Instant now = Instant.now();
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(40, SECONDS));
+        Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(40, SECONDS)).instant());
 
-        Optional<String> value = manager.getIfNotExpired("key");
-
-        assertThat(value.isPresent()).isTrue();
-        assertThat(value.get()).isEqualTo("value");
+        assertThat(value).isPresent().contains("value");
     }
 
     @Test
     public void getIfNotExpired_withCustomDefaultExpirationTime_notExpired_shouldReturnValue() {
-        manager.setDefaultExpirationTime(Duration.of(42, SECONDS));
+        manager.setDefaultExpirationTime(of(42, SECONDS));
         manager.putInCache("key", "value");
 
-        Instant now = Instant.now();
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(40, SECONDS));
 
-        Optional<String> value = manager.getIfNotExpired("key");
+        Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(40, SECONDS)).instant());
 
-        assertThat(value.isPresent()).isTrue();
-        assertThat(value.get()).isEqualTo("value");
+        assertThat(value).isPresent().contains("value");
     }
 
     @Test
     public void getIfNotExpired_customDefaultExpirationTime_customExpirationTime_shouldUseExpirationTime() {
-        manager.setDefaultExpirationTime(Duration.of(42, SECONDS));
-        manager.setExpirationTime(Duration.of(2, SECONDS));
+        manager.setDefaultExpirationTime(of(42, SECONDS));
+        manager.setExpirationTime(of(2, SECONDS));
         manager.putInCache("key", "value");
 
-        Instant now = Instant.now();
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(40, SECONDS));
+        Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(40, SECONDS)).instant());
 
-        Optional<String> value = manager.getIfNotExpired("key");
-
-        assertThat(value.isPresent()).isFalse();
+        assertThat(value).isNotPresent();
     }
 
     @Test
     public void getIfNotExpired_resetExpirationTime_shouldUseDefaultExpirationTime() {
-        manager.setDefaultExpirationTime(Duration.of(42, SECONDS));
-        manager.setExpirationTime(Duration.of(2, SECONDS));
+        manager.setDefaultExpirationTime(of(42, SECONDS));
+        manager.setExpirationTime(of(2, SECONDS));
         manager.putInCache("key", "value");
         manager.resetExpirationtime();
         manager.putInCache("key2", "value2");
 
-        Instant now = Instant.now();
-        Mockito.when(nowProvider.now()).thenReturn(now.plus(40, SECONDS));
+        Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(40, SECONDS)).instant());
+        Optional<String> value2 = manager.getIfNotExpired("key2", offset(clock, of(40, SECONDS)).instant());
 
-        Optional<String> value = manager.getIfNotExpired("key");
-        Optional<String> value2 = manager.getIfNotExpired("key2");
-
-        assertThat(value.isPresent()).isFalse();
-        assertThat(value2.isPresent()).isTrue();
+        assertThat(value).isNotPresent();
+        assertThat(value2).isPresent().contains("value2");
     }
 
 }

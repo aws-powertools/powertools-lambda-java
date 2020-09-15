@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.parameters;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-import software.amazon.lambda.powertools.parameters.cache.NowProvider;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 /**
@@ -25,8 +24,7 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
  */
 public final class ParamManager {
 
-    private static final NowProvider nowProvider = new NowProvider();
-    private static final CacheManager cacheManager = new CacheManager(nowProvider);
+    private static final CacheManager cacheManager = new CacheManager();
     private static final TransformationManager transformationManager = new TransformationManager();
 
     private static SecretsProvider secretsProvider;

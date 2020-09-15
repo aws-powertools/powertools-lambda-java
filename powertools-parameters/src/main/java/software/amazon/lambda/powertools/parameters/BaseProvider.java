@@ -20,9 +20,10 @@ import software.amazon.lambda.powertools.parameters.transform.BasicTransformer;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+import java.time.Clock;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
 /**
  * Base class for all parameter providers.
@@ -30,8 +31,9 @@ import java.util.Optional;
 @NotThreadSafe
 public abstract class BaseProvider implements ParamProvider {
 
-    private final CacheManager cacheManager;
+    protected final CacheManager cacheManager;
     private TransformationManager transformationManager;
+    private Clock clock;
 
     public BaseProvider(CacheManager cacheManager) {
         this.cacheManager = cacheManager;
@@ -108,28 +110,24 @@ public abstract class BaseProvider implements ParamProvider {
      *
      * @param key key of the parameter
      * @return the String value of the parameter
-     * @throws IllegalArgumentException if a wrong transformer class is provided through {@link #withTransformation(Class)}. Needs to be a {@link BasicTransformer}.
+     * @throws IllegalStateException if a wrong transformer class is provided through {@link #withTransformation(Class)}. Needs to be a {@link BasicTransformer}.
      * @throws TransformationException  if the transformation could not be done, because of a wrong format or an error during transformation.
      */
     @Override
-    public String get(String key) {
+    public String get(final String key) {
         try {
-            Optional<String> valueInCache = cacheManager.getIfNotExpired(key);
-            if (valueInCache.isPresent()) {
-                return valueInCache.get();
-            }
+            return (String) cacheManager.getIfNotExpired(key, now()).orElseGet(() -> {
+                String value = getValue(key);
 
-            String value = getValue(key);
+                String transformedValue = value;
+                if (transformationManager != null && transformationManager.shouldTransform()) {
+                    transformedValue = transformationManager.performBasicTransformation(value);
+                }
 
-            String transformedValue = value;
-            if (transformationManager != null && transformationManager.shouldTransform()) {
-                transformedValue = transformationManager.performBasicTransformation(value);
-            }
+                cacheManager.putInCache(key, transformedValue);
 
-            cacheManager.putInCache(key, transformedValue);
-
-            return transformedValue;
-
+                return transformedValue;
+            });
         } finally {
             // in all case, we reset options to default, for next call
             resetToDefaults();
@@ -145,32 +143,35 @@ public abstract class BaseProvider implements ParamProvider {
      * @param key         key of the parameter
      * @param targetClass class of the target Object (after transformation)
      * @return the Object (T) value of the parameter
-     * @throws IllegalArgumentException if no transformation class was provided through {@link #withTransformation(Class)}
+     * @throws IllegalStateException if no transformation class was provided through {@link #withTransformation(Class)}
      * @throws TransformationException  if the transformation could not be done, because of a wrong format or an error during transformation.
      */
     @Override
-    public <T> T get(String key, Class<T> targetClass) {
+    public <T> T get(final String key, final Class<T> targetClass) {
         try {
-            Optional<T> valueInCache = cacheManager.getIfNotExpired(key);
-            if (valueInCache.isPresent()) {
-                return valueInCache.get();
-            }
+            return (T) cacheManager.getIfNotExpired(key, now()).orElseGet(() -> {
+                String value = getValue(key);
 
-            String value = getValue(key);
+                if (transformationManager == null) {
+                    throw new IllegalStateException("Trying to transform value while no TransformationManager has been provided.");
+                }
+                T transformedValue = transformationManager.performComplexTransformation(value, targetClass);
 
-            if (transformationManager == null) {
-                throw new IllegalStateException("Trying to transform value while no TransformationManager has been provided.");
-            }
-            T transformedValue = transformationManager.performComplexTransformation(value, targetClass);
+                cacheManager.putInCache(key, transformedValue);
 
-            cacheManager.putInCache(key, transformedValue);
-
-            return transformedValue;
-
+                return transformedValue;
+            });
         } finally {
             // in all case, we reset options to default, for next call
             resetToDefaults();
         }
+    }
+
+    protected Instant now() {
+        if (clock == null) {
+            clock = Clock.systemDefaultZone();
+        }
+        return clock.instant();
     }
 
     protected void resetToDefaults() {
@@ -182,5 +183,13 @@ public abstract class BaseProvider implements ParamProvider {
 
     protected void setTransformationManager(TransformationManager transformationManager) {
         this.transformationManager = transformationManager;
+    }
+
+    /**
+     * For test purpose
+     * @param clock
+     */
+    void setClock(Clock clock) {
+        this.clock = clock;
     }
 }

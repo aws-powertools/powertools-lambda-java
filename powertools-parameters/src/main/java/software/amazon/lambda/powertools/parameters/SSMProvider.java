@@ -164,6 +164,7 @@ public class SSMProvider extends BaseProvider {
      * Retrieve all parameters starting with the path provided in parameter.<br/>
      * eg. getMultiple("/foo/bar") will retrieve /foo/bar/baz, foo/bar/biz<br/>
      * Using {@link #recursive()}, getMultiple("/foo/bar") will retrieve /foo/bar/baz, foo/bar/biz and foo/bar/buz/boz<br/>
+     * Cache all values with the 'path' as the key and also individually to be able to {@link #get(String)} a single value later<br/>
      * <i>Does not support transformation.</i>
      *
      * @param path path of the parameter
@@ -171,7 +172,19 @@ public class SSMProvider extends BaseProvider {
      * eg. getMultiple("/foo/bar") will retrieve [key="baz", value="valuebaz"] for parameter "/foo/bar/baz"
      */
     public Map<String, String> getMultiple(String path) {
-        return getMultipleBis(path, null);
+        try {
+            return (Map<String, String>) cacheManager.getIfNotExpired(path, now()).orElseGet(() -> {
+                Map<String, String> params = getMultipleBis(path, null);
+
+                cacheManager.putInCache(path, params);
+
+                params.forEach((k, v) -> cacheManager.putInCache(path + "/" + k, v));
+
+                return params;
+            });
+        } finally {
+            resetToDefaults();
+        }
     }
 
     /**

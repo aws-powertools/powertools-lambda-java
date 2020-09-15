@@ -20,6 +20,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.data.MapEntry.entry;
 
 public class JsonTransformerTest {
 
@@ -28,9 +29,10 @@ public class JsonTransformerTest {
         JsonTransformer<ObjectToDeserialize> transformation = new JsonTransformer<>();
 
         ObjectToDeserialize objectToDeserialize = transformation.applyTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}", ObjectToDeserialize.class);
-        assertThat(objectToDeserialize.getFoo()).isEqualTo("Foo");
-        assertThat(objectToDeserialize.getBar()).isEqualTo(42);
-        assertThat(objectToDeserialize.getBaz()).isEqualTo(123456789);
+        assertThat(objectToDeserialize).matches(
+                o -> o.getFoo().equals("Foo")
+                && o.getBar() == 42
+                && o.getBaz() == 123456789);
     }
 
     @Test
@@ -38,15 +40,17 @@ public class JsonTransformerTest {
         JsonTransformer<Map> transformation = new JsonTransformer<>();
 
         Map<String, Object> map = transformation.applyTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}", Map.class);
-        assertThat(map.get("foo")).isEqualTo("Foo");
-        assertThat(map.get("bar")).isEqualTo(42);
-        assertThat(map.get("baz")).isEqualTo(123456789);
+        assertThat(map).contains(
+                entry("foo", "Foo"),
+                entry("bar", 42),
+                entry("baz", 123456789));
     }
 
     @Test
     public void transform_badJson_shouldThrowException() {
         JsonTransformer<ObjectToDeserialize> transformation = new JsonTransformer<>();
 
-        assertThatExceptionOfType(TransformationException.class).isThrownBy(() -> transformation.applyTransformation("{\"fo\":\"Foo\", \"bat\":42, \"bau\":123456789}", ObjectToDeserialize.class));
+        assertThatExceptionOfType(TransformationException.class)
+                .isThrownBy(() -> transformation.applyTransformation("{\"fo\":\"Foo\", \"bat\":42, \"bau\":123456789}", ObjectToDeserialize.class));
     }
 }
