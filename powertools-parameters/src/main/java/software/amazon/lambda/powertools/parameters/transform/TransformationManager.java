@@ -75,9 +75,8 @@ public class TransformationManager {
             throw new IllegalStateException("You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
         }
 
-        Transformer<T> complexTransformer;
         try {
-            complexTransformer = transformer.getDeclaredConstructor().newInstance(null);
+            Transformer<T> complexTransformer = transformer.getDeclaredConstructor().newInstance(null);
             return complexTransformer.applyTransformation(value, targetClass);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new TransformationException(e);
