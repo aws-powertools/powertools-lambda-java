@@ -91,7 +91,7 @@ public class CacheManagerTest {
         manager.setDefaultExpirationTime(of(42, SECONDS));
         manager.setExpirationTime(of(2, SECONDS));
         manager.putInCache("key", "value");
-        manager.resetExpirationtime();
+        manager.resetExpirationTime();
         manager.putInCache("key2", "value2");
 
         Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(40, SECONDS)).instant());

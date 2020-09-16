@@ -51,7 +51,7 @@ public class CacheManager {
         store.put(key, value, Clock.systemDefaultZone().instant().plus(maxAge));
     }
 
-    public void resetExpirationtime() {
+    public void resetExpirationTime() {
         maxAge = defaultMaxAge;
     }
 }

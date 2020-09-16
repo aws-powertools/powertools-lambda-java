@@ -175,7 +175,7 @@ public abstract class BaseProvider implements ParamProvider {
     }
 
     protected void resetToDefaults() {
-        cacheManager.resetExpirationtime();
+        cacheManager.resetExpirationTime();
         if (transformationManager != null) {
             transformationManager.setTransformer(null);
         }

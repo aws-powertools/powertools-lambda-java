@@ -54,7 +54,7 @@ public class ParamManagerIntegrationTest {
 
 
     @BeforeEach
-    public void setup() throws NoSuchFieldException, IllegalAccessException {
+    public void setup() throws IllegalAccessException {
         openMocks(this);
 
         writeStaticField(ParamManager.class, "ssmProvider", null, true);
