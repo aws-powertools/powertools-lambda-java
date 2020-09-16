@@ -105,6 +105,7 @@ public class LambdaMetricsAspect {
         return !"".equals(powertoolsMetrics.service()) ? powertoolsMetrics.service() : serviceName();
     }
 
+    // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed
     private static void refreshMetricsContext() {
         try {
             Field f = metricsLogger().getClass().getDeclaredField("context");
