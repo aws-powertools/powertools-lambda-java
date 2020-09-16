@@ -98,3 +98,5 @@ docs/.cache
 docs/public
 /example/.aws-sam/
 /example/HelloWorldFunction/.aws-sam/
+/gradle-example/HelloWorldFunction/.gradle/
+/gradle-example/HelloWorldFunction/src/main/.aws-sam/build/

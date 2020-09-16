@@ -1,0 +1,39 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://plugins.gradle.org/m2/'
+        }
+    }
+
+    dependencies {
+        classpath 'gradle.plugin.de:AspectjGradlePlugin:0.0.3'
+    }
+}
+
+project.ext {
+    aspectjVersion = '1.9.6'
+}
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'aspectj.AspectjGradlePlugin'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'software.amazon.lambda:powertools-tracing:0.2.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-tracing:0.2.0-beta'
+
+    compile 'software.amazon.lambda:powertools-logging:0.2.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-logging:0.2.0-beta'
+
+    implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
+    implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
+
+    compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.13.3'
+    compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.13.3'
+
+    testImplementation 'junit:junit:4.12'
+}
