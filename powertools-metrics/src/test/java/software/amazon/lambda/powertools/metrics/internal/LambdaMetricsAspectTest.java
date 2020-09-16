@@ -216,7 +216,7 @@ public class LambdaMetricsAspectTest {
 
             assertThatExceptionOfType(ValidationException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 1-10. Actual size: 0.");
+                    .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 0.");
         }
     }
 
@@ -229,7 +229,7 @@ public class LambdaMetricsAspectTest {
 
             assertThatExceptionOfType(ValidationException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 1-10. Actual size: 14.");
+                    .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 14.");
         }
     }
 
