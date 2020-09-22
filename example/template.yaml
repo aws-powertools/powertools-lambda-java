@@ -21,6 +21,8 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           POWERTOOLS_SERVICE_NAME: "Payment Service"
+          LOG_LEVEL: INFO
+      Tracing: Active
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
@@ -39,6 +41,7 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
+          LOG_LEVEL: INFO
       Events:
         HelloWorld:
           Type: Api
