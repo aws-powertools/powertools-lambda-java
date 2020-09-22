@@ -20,6 +20,10 @@ import org.aspectj.lang.ProceedingJoinPoint;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Optional;
+
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
 
 public final class LambdaHandlerProcessor {
     private static String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
@@ -48,12 +52,27 @@ public final class LambdaHandlerProcessor {
                 && pjp.getArgs()[2] instanceof Context;
     }
 
+    public static Optional<Context> extractContext(final ProceedingJoinPoint pjp) {
+
+        if (isHandlerMethod(pjp)) {
+            if (placedOnRequestHandler(pjp)) {
+                return of((Context) pjp.getArgs()[1]);
+            }
+
+            if (placedOnStreamHandler(pjp)) {
+                return of((Context) pjp.getArgs()[2]);
+            }
+        }
+
+        return empty();
+    }
+
     public static String serviceName() {
         return SERVICE_NAME;
     }
 
-    public static Boolean isColdStart() {
-        return IS_COLD_START;
+    public static boolean isColdStart() {
+        return IS_COLD_START == null;
     }
 
     public static void coldStartDone() {

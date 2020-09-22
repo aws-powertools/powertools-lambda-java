@@ -1,0 +1,154 @@
+---
+title: Metrics
+description: Core utility
+---
+
+Metrics creates custom metrics asynchronously by logging metrics to standard output following Amazon CloudWatch Embedded Metric Format (EMF).
+
+These metrics can be visualized through [Amazon CloudWatch Console](https://console.aws.amazon.com/cloudwatch/).
+
+**Key features**
+
+* Aggregate up to 100 metrics using a single CloudWatch EMF object (large JSON blob)
+* Validate against common metric definitions mistakes (metric unit, values, max dimensions, max metrics, etc)
+* Metrics are created asynchronously by the CloudWatch service, no custom stacks needed
+* Context manager to create a one off metric with a different dimension
+
+## Initialization
+
+Set `POWERTOOLS_SERVICE_NAME` and `POWERTOOLS_METRICS_NAMESPACE` env vars as a start - Here is an example using AWS Serverless Application Model (SAM)
+
+```yaml:title=template.yaml
+Resources:
+    HelloWorldFunction:
+        Type: AWS::Serverless::Function
+        Properties:
+        ...
+        Runtime: java8
+        Environment:
+            Variables:
+                POWERTOOLS_SERVICE_NAME: payment # highlight-line
+                POWERTOOLS_METRICS_NAMESPACE: ServerlessAirline # highlight-line
+```
+
+We recommend you use your application or main service as a metric namespace.
+You can explicitly set a namespace name an annotation variable `namespace` param or via `POWERTOOLS_METRICS_NAMESPACE` env var.
+
+This sets **namespace** key that will be used for all metrics.
+You can also pass a service name via `service` param or `POWERTOOLS_SERVICE_NAME` env var. This will create a dimension with the service name.
+
+```java:title=Handler.java
+package example;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
+import software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger;
+
+public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, Object> {
+
+    MetricsLogger metricsLogger = PowertoolsMetricsLogger.metricsLogger();
+
+    @Override
+    @PowertoolsMetrics(namespace = "ExampleApplication", service = "booking")
+    public Object handleRequest(Object input, Context context) {
+        ...
+    }
+}
+```
+
+You can initialize Metrics anywhere in your code as many times as you need - It'll keep track of your aggregate metrics in memory.
+
+## Creating metrics
+
+You can create metrics using `putMetric`, and manually create dimensions for all your aggregate metrics using `add_dimension`.
+
+```java:title=app.py
+public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, Object> {
+
+    MetricsLogger metricsLogger = PowertoolsMetricsLogger.metricsLogger();
+
+    @Override
+    @PowertoolsMetrics(namespace = "ExampleApplication", service = "booking")
+    public Object handleRequest(Object input, Context context) {
+        # highlight-start
+        metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
+        metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
+        # highlight-end
+        ...
+    }
+}
+```
+
+The `Unit` enum facilitate finding a supported metric unit by CloudWatch.
+
+CloudWatch EMF supports a max of 100 metrics. Metrics utility will flush all metrics when adding the 100th metric while subsequent metrics will be aggregated into a new EMF object, for your convenience.
+
+## Creating a metric with a different dimension
+
+CloudWatch EMF uses the same dimensions across all your metrics. Use `single_metric` if you have a metric that should have different dimensions.
+
+<Note type="info">
+    Generally, this would be an edge case since you <a href="https://aws.amazon.com/cloudwatch/pricing/">pay for unique metric</a>. Keep the following formula in mind:
+    <br/><br/>
+    <strong>unique metric = (metric_name + dimension_name + dimension_value)</strong>
+</Note><br/>
+
+```java:title=Handler.java
+withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
+    metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+});
+```
+
+## Adding metadata
+
+You can use `putMetadata` for advanced use cases, where you want to metadata as part of the serialized metrics object.
+
+<Note type="info">
+    <strong>This will not be available during metrics visualization</strong> - Use <strong>dimensions</strong> for this purpose
+</Note><br/>
+
+```javv:title=Handler.java
+@PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment")
+public APIGatewayProxyResponseEvent handleRequest(Object input, Context context) {
+    metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+    metricsLogger().putMetadata("booking_id", "1234567890"); # highlight-line
+
+    ...
+```
+
+This will be available in CloudWatch Logs to ease operations on high cardinal data.
+
+The `@PowertoolsMetrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, if no metrics are provided no exception will be raised.
+
+If metrics are provided, and any of the following criteria are not met, `ValidationException` exception will be raised:
+
+* Minimum of 1 dimension
+* Maximum of 9 dimensions
+
+If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@PowertoolsMetrics** annotation:
+
+```java:title=Handler.java
+    @PowertoolsMetrics(raiseOnEmptyMetrics = true)
+    public Object handleRequest(Object input, Context context) {
+    ...
+```
+
+## Capturing cold start metric
+
+You can capture cold start metrics automatically with `@PowertoolsMetrics` via the `captureColdStart` variable.
+
+```java:title=Handler.java
+    @PowertoolsMetrics(captureColdStart = true)
+    public Object handleRequest(Object input, Context context) {
+    ...
+```
+
+If it's a cold start invocation, this feature will:
+
+* Create a separate EMF blob solely containing a metric named `ColdStart`
+* Add `FunctionName` and `Service` dimensions
+
+This has the advantage of keeping cold start metric separate from your application metrics.
