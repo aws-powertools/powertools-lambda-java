@@ -16,12 +16,12 @@ Powertools dependencies are available in Maven Central. You can use your favouri
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>0.2.0-beta</version>
+        <version>0.3.0-beta</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>0.2.0-beta</version>
+        <version>0.3.0-beta</version>
     </dependency>
     ...
 </dependencies>
@@ -68,6 +68,7 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 
 * [gradle](https://gradle.org):
 ```groovy
+
 plugins{
     id 'java'
     id 'aspectj.AspectjGradlePlugin' version '0.0.4'
@@ -78,11 +79,14 @@ repositories {
 }
 
 dependencies {
-    implementation 'software.amazon.lambda:powertools-tracing:0.2.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-tracing:0.2.0-beta'
+    implementation 'software.amazon.lambda:powertools-tracing:0.3.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-tracing:0.3.0-beta'
 
-    implementation 'software.amazon.lambda:powertools-logging:0.2.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-logging:0.2.0-beta'
+    implementation 'software.amazon.lambda:powertools-logging:0.3.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-logging:0.3.0-beta'
+
+    implementation 'software.amazon.lambda:powertools-metrics:0.3.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-metrics:0.3.0-beta'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
     implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
@@ -92,6 +96,7 @@ dependencies {
 
     testImplementation 'junit:junit:4.12'
 }
+
 
 ```
 

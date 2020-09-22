@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>0.2.0-beta</version>
+    <version>0.3.0-beta</version>
     <packaging>pom</packaging>
 
     <name>AWS Lambda Powertools Java library Parent</name>
@@ -31,6 +31,7 @@
         <module>powertools-logging</module>
         <module>powertools-tracing</module>
         <module>powertools-sqs</module>
+        <module>powertools-metrics</module>
     </modules>
 
     <scm>
@@ -67,6 +68,7 @@
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
+        <aws-embedded-metrics.version>1.0.0</aws-embedded-metrics.version>
     </properties>
 
     <distributionManagement>
@@ -143,6 +145,11 @@
                 <artifactId>aws-xray-recorder-sdk-aws-sdk-v2-instrumentor</artifactId>
                 <version>${aws.xray.recorder.version}</version>
             </dependency>
+            <dependency>
+                <groupId>software.amazon.cloudwatchlogs</groupId>
+                <artifactId>aws-embedded-metrics</artifactId>
+                <version>${aws-embedded-metrics.version}</version>
+            </dependency>
 
             <!-- Test dependencies -->
             <dependency>
@@ -172,6 +179,12 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
+                <version>3.5.11</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-inline</artifactId>
                 <version>3.5.10</version>
                 <scope>test</scope>
             </dependency>

@@ -1,18 +1,5 @@
 package helloworld;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Entity;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
-import software.amazon.lambda.powertools.tracing.PowerTracer;
-import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -21,6 +8,24 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Entity;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.logging.PowertoolsLogger;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
+import software.amazon.lambda.powertools.tracing.PowerTracer;
+import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
+
+import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.withSingleMetric;
 import static software.amazon.lambda.powertools.tracing.PowerTracer.putMetadata;
 import static software.amazon.lambda.powertools.tracing.PowerTracer.withEntitySubsegment;
 
@@ -33,11 +38,19 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     @PowertoolsLogging(logEvent = true, samplingRate = 0.7)
     @PowertoolsTracing(captureError = false, captureResponse = false)
+    @PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
+
+        metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+
+        withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
+            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+        });
 
         PowertoolsLogger.appendKey("test", "willBeLogged");
 

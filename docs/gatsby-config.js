@@ -24,7 +24,8 @@ module.exports = {
                     ],
                     'Core utilities': [
                         'core/logging',
-                        'core/tracing'
+                        'core/tracing',
+                        'core/metrics'
                     ],
                     'Utilities': [
                         'utilities/sqs_large_message_handling'
