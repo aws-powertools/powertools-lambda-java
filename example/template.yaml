@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  gradle-example
+  sam-app
 
   Sample SAM Template for gradle-example
 
@@ -27,6 +27,25 @@ Resources:
           Properties:
             Path: /hello
             Method: get
+
+  HelloWorldStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.AppStream::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hellostream
+            Method: get
+
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
