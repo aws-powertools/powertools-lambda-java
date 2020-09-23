@@ -65,7 +65,7 @@ You can initialize Metrics anywhere in your code as many times as you need - It'
 
 You can create metrics using `putMetric`, and manually create dimensions for all your aggregate metrics using `add_dimension`.
 
-```java:title=app.py
+```java:title=Handler.java
 public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, Object> {
 
     MetricsLogger metricsLogger = PowertoolsMetricsLogger.metricsLogger();
@@ -73,10 +73,10 @@ public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, O
     @Override
     @PowertoolsMetrics(namespace = "ExampleApplication", service = "booking")
     public Object handleRequest(Object input, Context context) {
-        # highlight-start
+        // highlight-start
         metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
         metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
-        # highlight-end
+        // highlight-end
         ...
     }
 }
@@ -110,13 +110,13 @@ You can use `putMetadata` for advanced use cases, where you want to metadata as 
     <strong>This will not be available during metrics visualization</strong> - Use <strong>dimensions</strong> for this purpose
 </Note><br/>
 
-```javv:title=Handler.java
+```java:title=Handler.java
 @PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment")
 public APIGatewayProxyResponseEvent handleRequest(Object input, Context context) {
     metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
-    metricsLogger().putMetadata("booking_id", "1234567890"); # highlight-line
-
+    metricsLogger().putMetadata("booking_id", "1234567890"); // highlight-line
     ...
+}
 ```
 
 This will be available in CloudWatch Logs to ease operations on high cardinal data.
@@ -131,9 +131,10 @@ If metrics are provided, and any of the following criteria are not met, `Validat
 If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@PowertoolsMetrics** annotation:
 
 ```java:title=Handler.java
-    @PowertoolsMetrics(raiseOnEmptyMetrics = true)
-    public Object handleRequest(Object input, Context context) {
-    ...
+@PowertoolsMetrics(raiseOnEmptyMetrics = true)
+public Object handleRequest(Object input, Context context) {
+...
+}
 ```
 
 ## Capturing cold start metric
@@ -141,9 +142,10 @@ If you want to ensure that at least one metric is emitted, you can pass `raiseOn
 You can capture cold start metrics automatically with `@PowertoolsMetrics` via the `captureColdStart` variable.
 
 ```java:title=Handler.java
-    @PowertoolsMetrics(captureColdStart = true)
-    public Object handleRequest(Object input, Context context) {
-    ...
+@PowertoolsMetrics(captureColdStart = true)
+public Object handleRequest(Object input, Context context) {
+...
+}
 ```
 
 If it's a cold start invocation, this feature will:
