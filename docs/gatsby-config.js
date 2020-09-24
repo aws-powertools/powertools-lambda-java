@@ -28,7 +28,8 @@ module.exports = {
                         'core/metrics'
                     ],
                     'Utilities': [
-                        'utilities/sqs_large_message_handling'
+                        'utilities/sqs_large_message_handling',
+                        'utilities/parameters'
                     ],
                 },
                 navConfig: {
