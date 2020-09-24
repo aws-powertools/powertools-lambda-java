@@ -21,6 +21,7 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.Map;
 
 /**
  * AWS Secrets Manager Parameter Provider<br/><br/>
@@ -88,6 +89,15 @@ public class SecretsProvider extends BaseProvider {
             secretValue = new String(Base64.getDecoder().decode(client.getSecretValue(request).secretBinary().asByteArray()));
         }
         return secretValue;
+    }
+
+    /**
+     *
+     * @throws UnsupportedOperationException as it is not possible to get multiple values simultaneously from Secrets Manager
+     */
+    @Override
+    protected Map<String, String> getMultipleValues(String path) {
+        throw new UnsupportedOperationException("Impossible to get multiple values from AWS Secrets Manager");
     }
 
     /**

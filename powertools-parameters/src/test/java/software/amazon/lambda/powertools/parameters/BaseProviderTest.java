@@ -23,6 +23,8 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
 import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import static java.time.Clock.offset;
 import static java.time.Duration.of;
@@ -59,6 +61,14 @@ public class BaseProviderTest {
         protected String getValue(String key) {
             getFromStore = true;
             return value;
+        }
+
+        @Override
+        protected Map<String, String> getMultipleValues(String path) {
+            getFromStore = true;
+            Map<String, String> map = new HashMap<>();
+            map.put(path, value);
+            return map;
         }
     }
 
@@ -99,6 +109,35 @@ public class BaseProviderTest {
         provider.setClock(offset(clock, of(6, SECONDS)));
 
         provider.get("bar");
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void getMultiple_notCached_shouldGetValue() {
+        Map<String, String> foo = provider.getMultiple("toto");
+
+        assertThat(foo.get("toto")).isEqualTo("valueFromStore");
+        assertThat(getFromStore).isTrue();
+    }
+
+    @Test
+    public void getMultiple_cached_shouldGetFromCache() {
+        provider.getMultiple("foo");
+        getFromStore = false;
+
+        Map<String, String> foo = provider.getMultiple("foo");
+        assertThat(foo.get("foo")).isEqualTo("valueFromStore");
+        assertThat(getFromStore).isFalse();
+    }
+
+    @Test
+    public void getMultiple_expired_shouldGetValue() {
+        provider.getMultiple("bar");
+        getFromStore = false;
+
+        provider.setClock(offset(clock, of(6, SECONDS)));
+
+        provider.getMultiple("bar");
         assertThat(getFromStore).isTrue();
     }
 

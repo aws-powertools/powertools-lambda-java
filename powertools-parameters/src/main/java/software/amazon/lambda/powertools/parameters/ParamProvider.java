@@ -13,7 +13,11 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import java.util.Map;
+
 public interface ParamProvider {
+
+    Map<String, String> getMultiple(String path);
 
     String get(String key);
 

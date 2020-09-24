@@ -24,6 +24,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 
 /**
  * Base class for all parameter providers.
@@ -47,6 +48,15 @@ public abstract class BaseProvider implements ParamProvider {
      * @return the value of the parameter identified by the key
      */
     protected abstract String getValue(String key);
+
+    /**
+     * Retrieve multiple parameter values from the underlying parameter store.<br />
+     * Abstract: Implement this method in a child class of {@link BaseProvider}
+     *
+     * @param path
+     * @return
+     */
+    protected abstract Map<String, String> getMultipleValues(String path);
 
     /**
      * (Optional) Set the default max age for the cache of all parameters. Override the default 5 seconds.<br/>
@@ -100,6 +110,32 @@ public abstract class BaseProvider implements ParamProvider {
         }
         transformationManager.setTransformer(transformerClass);
         return this;
+    }
+
+    /**
+     * Retrieve multiple parameter values either from the underlying store or a cached value (if not expired).<br/>
+     * Cache all values with the 'path' as the key and also individually to be able to {@link #get(String)} a single value later<br/>
+     * <i>Does not support transformation.</i>
+     *
+     * @param path path of the parameter
+     * @return a map containing parameters keys and values. The key is a subpart of the path<br/>
+     * eg. getMultiple("/foo/bar") will retrieve [key="baz", value="valuebaz"] for parameter "/foo/bar/baz"
+     */
+    @Override
+    public Map<String, String> getMultiple(String path) {
+        try {
+            return (Map<String, String>) cacheManager.getIfNotExpired(path, now()).orElseGet(() -> {
+                Map<String, String> params = getMultipleValues(path);
+
+                cacheManager.putInCache(path, params);
+
+                params.forEach((k, v) -> cacheManager.putInCache(path + "/" + k, v));
+
+                return params;
+            });
+        } finally {
+            resetToDefaults();
+        }
     }
 
     /**

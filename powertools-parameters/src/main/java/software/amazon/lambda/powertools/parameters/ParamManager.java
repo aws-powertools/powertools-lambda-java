@@ -91,4 +91,12 @@ public final class ParamManager {
         }
         return ssmProvider;
     }
+
+    public static CacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    public static TransformationManager getTransformationManager() {
+        return transformationManager;
+    }
 }

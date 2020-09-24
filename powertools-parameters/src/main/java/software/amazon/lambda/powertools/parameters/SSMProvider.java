@@ -171,20 +171,9 @@ public class SSMProvider extends BaseProvider {
      * @return a map containing parameters keys and values. The key is a subpart of the path<br/>
      * eg. getMultiple("/foo/bar") will retrieve [key="baz", value="valuebaz"] for parameter "/foo/bar/baz"
      */
-    public Map<String, String> getMultiple(String path) {
-        try {
-            return (Map<String, String>) cacheManager.getIfNotExpired(path, now()).orElseGet(() -> {
-                Map<String, String> params = getMultipleBis(path, null);
-
-                cacheManager.putInCache(path, params);
-
-                params.forEach((k, v) -> cacheManager.putInCache(path + "/" + k, v));
-
-                return params;
-            });
-        } finally {
-            resetToDefaults();
-        }
+    @Override
+    protected Map<String, String> getMultipleValues(String path) {
+        return getMultipleBis(path, null);
     }
 
     /**
