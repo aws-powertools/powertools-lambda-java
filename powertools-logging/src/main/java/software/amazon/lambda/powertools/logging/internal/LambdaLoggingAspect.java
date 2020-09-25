@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,6 +84,7 @@ public final class LambdaLoggingAspect {
                     appendKey("service", serviceName());
                 });
 
+        getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
 
         if (powertoolsLogging.logEvent()) {
             proceedArgs = logEvent(pjp);
@@ -178,5 +180,13 @@ public final class LambdaLoggingAspect {
 
     private Logger logger(final ProceedingJoinPoint pjp) {
         return LogManager.getLogger(pjp.getSignature().getDeclaringType());
+    }
+
+    private static Optional<String> getXrayTraceId() {
+        final String X_AMZN_TRACE_ID = SystemWrapper.getenv("_X_AMZN_TRACE_ID");
+        if(X_AMZN_TRACE_ID != null) {
+            return Optional.ofNullable(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
+        }
+        return Optional.empty();
     }
 }
