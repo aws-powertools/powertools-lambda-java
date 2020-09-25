@@ -40,8 +40,10 @@ import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabl
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
 
 class LambdaLoggingAspectTest {
 
@@ -178,8 +180,8 @@ class LambdaLoggingAspectTest {
     void shouldLogxRayTraceIdEnvVarSet() {
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
-        try (MockedStatic<SystemWrapper> mocked = Mockito.mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
             requestHandler.handleRequest(new Object(), context);
 

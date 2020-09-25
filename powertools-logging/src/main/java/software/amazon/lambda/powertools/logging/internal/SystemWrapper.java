@@ -1,7 +1,7 @@
 package software.amazon.lambda.powertools.logging.internal;
 
-public class SystemWrapper {
-    public SystemWrapper() {
+class SystemWrapper {
+    private SystemWrapper() {
     }
 
     public static String getenv(String name) {

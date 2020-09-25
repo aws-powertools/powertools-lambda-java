@@ -36,6 +36,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
@@ -45,6 +47,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.logging.PowertoolsLogger.appendKey;
 import static software.amazon.lambda.powertools.logging.PowertoolsLogger.appendKeys;
+import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
 
 @Aspect
 public final class LambdaLoggingAspect {
@@ -183,10 +186,10 @@ public final class LambdaLoggingAspect {
     }
 
     private static Optional<String> getXrayTraceId() {
-        final String X_AMZN_TRACE_ID = SystemWrapper.getenv("_X_AMZN_TRACE_ID");
+        final String X_AMZN_TRACE_ID = getenv("_X_AMZN_TRACE_ID");
         if(X_AMZN_TRACE_ID != null) {
-            return Optional.ofNullable(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
+            return ofNullable(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
         }
-        return Optional.empty();
+        return empty();
     }
 }
