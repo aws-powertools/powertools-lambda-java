@@ -28,6 +28,8 @@ import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
@@ -38,8 +40,10 @@ import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabl
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
 
 class LambdaLoggingAspectTest {
 
@@ -52,7 +56,7 @@ class LambdaLoggingAspectTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        initMocks(this);
+        openMocks(this);
         ThreadContext.clearAll();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
@@ -170,6 +174,21 @@ class LambdaLoggingAspectTest {
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("service", "testService");
+    }
+
+    @Test
+    void shouldLogxRayTraceIdEnvVarSet() {
+        String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(ThreadContext.getImmutableContext())
+                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                    .containsEntry("xray_trace_id", xRayTraceId);
+        }
     }
 
     private void setupContext() {
