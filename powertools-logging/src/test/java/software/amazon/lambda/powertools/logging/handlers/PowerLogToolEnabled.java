@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
 public class PowerLogToolEnabled implements RequestHandler<Object, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerToolLogEventEnabled.class);
+    private final Logger LOG = LogManager.getLogger(PowerLogToolEnabled.class);
 
     @Override
     @PowertoolsLogging
