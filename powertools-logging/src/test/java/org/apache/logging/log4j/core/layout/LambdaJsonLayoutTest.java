@@ -39,7 +39,7 @@ import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 class LambdaJsonLayoutTest {
 
@@ -50,7 +50,7 @@ class LambdaJsonLayoutTest {
 
     @BeforeEach
     void setUp() throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
-        initMocks(this);
+        openMocks(this);
         setupContext();
         //Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();

@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -37,6 +38,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
 import static java.util.Optional.empty;
+import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
@@ -147,7 +149,8 @@ public final class LambdaLoggingAspect {
         if (isHandlerMethod(pjp)) {
             if (placedOnRequestHandler(pjp)) {
                 Logger log = logger(pjp);
-                log.info(pjp.getArgs()[0]);
+                asJson(pjp, pjp.getArgs()[0])
+                        .ifPresent(log::info);
             }
 
             if (placedOnStreamHandler(pjp)) {
@@ -171,7 +174,9 @@ public final class LambdaLoggingAspect {
             args[0] = new ByteArrayInputStream(bytes);
 
             Logger log = logger(pjp);
-            log.info(MAPPER.readValue(bytes, Map.class));
+
+            asJson(pjp, MAPPER.readValue(bytes, Map.class))
+                    .ifPresent(log::info);
 
         } catch (IOException e) {
             Logger log = logger(pjp);
@@ -181,6 +186,16 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
+    private Optional<String> asJson(final ProceedingJoinPoint pjp,
+                                    final Object target) {
+        try {
+            return ofNullable(MAPPER.writeValueAsString(target));
+        } catch (JsonProcessingException e) {
+            logger(pjp).error("Failed logging event of type {}", target.getClass(), e);
+            return empty();
+        }
+    }
+
     private Logger logger(final ProceedingJoinPoint pjp) {
         return LogManager.getLogger(pjp.getSignature().getDeclaringType());
     }
@@ -188,7 +203,7 @@ public final class LambdaLoggingAspect {
     private static Optional<String> getXrayTraceId() {
         final String X_AMZN_TRACE_ID = getenv("_X_AMZN_TRACE_ID");
         if(X_AMZN_TRACE_ID != null) {
-            return ofNullable(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
+            return of(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
         }
         return empty();
     }
