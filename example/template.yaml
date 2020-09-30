@@ -48,6 +48,84 @@ Resources:
             Path: /hellostream
             Method: get
 
+  HelloWorldParamsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.AppParams::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Tracing: Active
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref UserPwd
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref SecretConfig
+        - Statement:
+            - Sid: SSMGetParameterPolicy
+              Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:GetParametersByPath
+              Resource: '*'
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /helloparams
+            Method: get
+
+  UserPwd:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: /powertools-java/userpwd
+      Description: Generated secret for lambda-powertools-java powertools-parameters
+        module
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "test-user"}'
+        GenerateStringKey: password
+        PasswordLength: 15
+        ExcludeCharacters: '"@/\'
+  SecretConfig:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: /powertools-java/secretcode
+      Description: Json secret for lambda-powertools-java powertools-parameters module
+      SecretString: '{"id":23443,"code":"hk38543oj24kn796kp67bkb234gkj679l68"}'
+  BasicParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /powertools-java/sample/simplekey
+      Type: String
+      Value: simplevalue
+      Description: Simple SSM Parameter for lambda-powertools-java powertools-parameters
+        module
+  ParameterList:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /powertools-java/sample/keylist
+      Type: StringList
+      Value: value1,value2,value3
+      Description: SSM Parameter List for lambda-powertools-java powertools-parameters
+        module
+  JsonParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /powertools-java/sample/keyjson
+      Type: String
+      Value: '{"id":23443,"code":"hk38543oj24kn796kp67bkb234gkj679l68"}'
+      Description: Json SSM Parameter for lambda-powertools-java powertools-parameters
+        module
+  Base64Parameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /powertools-java/sample/keybase64
+      Type: String
+      Value: aGVsbG8gd29ybGQ=
+      Description: Base64 SSM Parameter for lambda-powertools-java powertools-parameters module
+
+
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
   # Find out more about other implicit resources you can reference within SAM
@@ -58,6 +136,18 @@ Outputs:
   HelloWorldFunction:
     Description: "Hello World Lambda Function ARN"
     Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+
+  HelloWorldStreamApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World stream function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hellostream/"
+  HelloWorldStreamFunction:
+    Description: "Hello World Stream Lambda Function ARN"
+    Value: !GetAtt HelloWorldStreamFunction.Arn
+
+  HelloWorldParamsApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World params function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/helloparams/"
+  HelloWorldParamsFunction:
+    Description: "Hello World Params Lambda Function ARN"
+    Value: !GetAtt HelloWorldParamsFunction.Arn
+
