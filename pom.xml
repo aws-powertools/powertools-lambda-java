@@ -135,6 +135,11 @@
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
+                <artifactId>aws-xray-recorder-sdk-aws-sdk-core</artifactId>
+                <version>${aws.xray.recorder.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
                 <artifactId>aws-xray-recorder-sdk-aws-sdk-v2</artifactId>
                 <version>${aws.xray.recorder.version}</version>
             </dependency>
