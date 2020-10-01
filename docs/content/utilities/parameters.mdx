@@ -1,0 +1,255 @@
+---
+title: Parameters
+description: Utility
+---
+
+import Note from "../../src/components/Note"
+
+The parameters utility provides a way to retrieve parameter values from
+[AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) or
+[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). It also provides a base class to create your parameter provider implementation.
+
+**Key features**
+
+* Retrieve one or multiple parameters from the underlying provider
+* Cache parameter values for a given amount of time (defaults to 5 seconds)
+* Transform parameter values from JSON or base 64 encoded strings
+
+**IAM Permissions**
+
+This utility requires additional permissions to work as expected. See the table below:
+
+Provider | Function/Method | IAM Permission
+------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
+SSM Parameter Store | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`  | `ssm:GetParameter`
+SSM Parameter Store | `SSMProvider.getMultiple(String)` | `ssm:GetParametersByPath`
+Secrets Manager | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)` | `secretsmanager:GetSecretValue`
+
+## SSM Parameter Store
+
+You can retrieve a single parameter using SSMProvider.get() and pass the key of the parameter.
+For multiple parameters, you can use SSMProvider.getMultiple() and pass the path to retrieve them all.
+
+```java:title=AppWithSSM.java
+
+public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    // Get an instance of the SSM Provider
+    SSMProvider ssmProvider = ParamManager.getSsmProvider();
+
+    // Retrieve a single parameter
+    String value = ssmProvider.get("/my/parameter");
+
+    // Retrieve multiple parameters from a path prefix
+    // This returns a Map with the parameter name as key
+    Map<String, String> values = ssmProvider.getMultiple("/my/path/prefix");
+
+}
+```
+
+Alternatively, you can retrieve an instance of a provider and configure its underlying SDK client,
+in order to get data from other regions or use specific credentials:
+
+```java
+  SsmClient client = SsmClient.builder().region(Region.EU_CENTRAL_1).build();
+  SSMProvider ssmProvider = ParamManager.getSsmProvider(client);
+```
+### Additional arguments
+
+The AWS Systems Manager Parameter Store provider supports two additional arguments for the `get()` and `getMultiple()` methods:
+
+| Option     | Default | Description |
+|---------------|---------|-------------|
+| **withDecryption()**   | `False` | Will automatically decrypt the parameter. |
+| **recursive()** | `False`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
+
+**Example:**
+
+```java:title=AppWithSSM.java
+
+public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    // Get an instance of the SSM Provider
+    SSMProvider ssmProvider = ParamManager.getSsmProvider();
+
+    // Retrieve a single parameter and decrypt it
+    String value = ssmProvider.withDecryption().get("/my/parameter");
+
+    // Retrieve multiple parameters recursively from a path prefix
+    Map<String, String> values = ssmProvider.recursive().getMultiple("/my/path/prefix");
+
+}
+```
+
+## Secrets Manager
+
+```java:title=AppWithSecrets.java
+
+public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    // Get an instance of the Secrets Provider
+    SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
+
+    // Retrieve a single secret
+    String value = secretsProvider.get("/my/secret");
+
+}
+```
+
+Alternatively, you can retrieve an instance of a provider and configure its underlying SDK client,
+in order to get data from other regions or use specific credentials:
+
+```java
+  SecretsManagerClient client = SecretsManagerClient.builder().region(Region.EU_CENTRAL_1).build();
+  SecretsProvider secretsProvider = ParamManager.getSecretsProvider(client);
+```
+
+## Advanced configuration
+
+### Caching
+
+By default, all parameters and their corresponding values are cached for 5 seconds.
+
+You can customize this default value using:
+```java
+  provider.defaultMaxAge(int, ChronoUnit)
+```
+
+You can also customize this value for each parameter with:
+```java
+  provider.withMaxAge(int, ChronoUnit).get()
+```
+
+### Transform values
+
+Parameter values can be transformed using ```withTransformation(transformerClass)```.
+Base64 and JSON transformations are provided:
+
+```java
+   String value = provider
+                    .withTransformation(Transformer.base64)
+                    .get("/my/parameter/b64");
+```
+
+For more complex transformation, you need to specify how to deserialize:
+
+```java
+   MyObj object = provider
+                    .withTransformation(Transformer.json)
+                    .get("/my/parameter/json", MyObj.class);
+```
+
+**Note**: ```SSMProvider.getMultiple()``` does not support transformation and will return simple Strings.
+
+**Write your own Transformer**
+
+You can write your own transformer, by implementing the ```Transformer``` interface and the ```applyTransformation()``` method.
+For example, if you wish to deserialize XML into an object:
+
+```java:title=XmlTransformer.java
+public class XmlTransformer<T> implements Transformer<T> {
+
+    private final XmlMapper mapper = new XmlMapper();
+
+    @Override
+    public T applyTransformation(String value, Class<T> targetClass) throws TransformationException {
+        try {
+            return mapper.readValue(value, targetClass);
+        } catch (IOException e) {
+            throw new TransformationException(e);
+        }
+    }
+}
+```
+
+Then use it like this:
+
+```java
+MyObj object = provider
+                    .withTransformation(XmlTransformer.class)
+                    .get("/my/parameter/xml", MyObj.class);
+```
+
+### Fluent API
+
+To simplify the use of the library, you can chain all method calls before a get.
+
+**Example:**
+
+```java
+ssmProvider
+  .defaultMaxAge(10, SECONDS)     // will set 10 seconds as the default cache TTL
+  .withMaxAge(1, MINUTES)         // will set the cache TTL for this value at 1 minute
+  .withTransformation(json)       // json is a static import from Transformer.json
+  .withDecryption()               // enable decryption of the parameter value
+  .get("/my/param", MyObj.class); // finally get the value
+```
+
+## Create your own provider
+You can create your own custom parameter store provider by inheriting the ```BaseProvider``` class and implementing the
+```String getValue(String key)``` method to retrieve data from your underlying store.
+
+All transformation and caching logic is handled by the get() methods in the base class.
+
+Here is an example implementation using S3 as a custom parameter store:
+
+```java:title=S3Provider.java
+public class S3Provider extends BaseProvider {
+
+    private final S3Client client;
+    private String bucket;
+
+    S3Provider(CacheManager cacheManager) {
+        this(cacheManager, S3Client.create());
+    }
+
+    S3Provider(CacheManager cacheManager, S3Client client) {
+        super(cacheManager);
+        this.client = client;
+    }
+
+    public S3Provider withBucket(String bucket) {
+        this.bucket = bucket;
+        return this;
+    }
+
+    @Override
+    protected String getValue(String key) {
+        if (bucket == null) {
+            throw new IllegalStateException("A bucket must be specified, using withBucket() method");
+        }
+
+        GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
+        ResponseBytes<GetObjectResponse> response = client.getObject(request, ResponseTransformer.toBytes());
+        return response.asUtf8String();
+    }
+
+    @Override
+    protected Map<String, String> getMultipleValues(String path) {
+        if (bucket == null) {
+            throw new IllegalStateException("A bucket must be specified, using withBucket() method");
+        }
+
+        ListObjectsV2Request listRequest = ListObjectsV2Request.builder().bucket(bucket).prefix(path).build();
+        List<S3Object> s3Objects = client.listObjectsV2(listRequest).contents();
+
+        Map<String, String> result = new HashMap<>();
+        s3Objects.forEach(s3Object -> {
+            result.put(s3Object.key(), getValue(s3Object.key()));
+        });
+
+        return result;
+    }
+
+    @Override
+    protected void resetToDefaults() {
+        super.resetToDefaults();
+        bucket = null;
+    }
+
+}
+```
+And then use it like this :
+
+```java
+S3Provider provider = new S3Provider(ParamManager.getCacheManager());
+provider.setTransformationManager(ParamManager.getTransformationManager()); // optional, needed for transformations
+String value = provider.withBucket("myBucket").get("myKey");
+```
