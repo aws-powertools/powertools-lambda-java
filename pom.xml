@@ -51,7 +51,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <log4j.version>2.13.3</log4j.version>
-        <jackson.version>2.11.2</jackson.version>
+        <jackson.version>2.11.3</jackson.version>
         <aspectj.version>1.9.6</aspectj.version>
         <aws.sdk.version>2.14.10</aws.sdk.version>
         <aws.xray.recorder.version>2.7.1</aws.xray.recorder.version>
