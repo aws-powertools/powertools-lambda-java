@@ -13,6 +13,8 @@
  */
 package software.amazon.lambda.powertools.sqs;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.lambda.powertools.sqs.internal.BatchContext;
 import software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 
@@ -34,6 +38,7 @@ import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.pr
 public final class PowertoolsSqs {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static SqsClient client = SqsClient.create();
 
     private PowertoolsSqs() {
     }
@@ -80,6 +85,47 @@ public final class PowertoolsSqs {
         return returnValue;
     }
 
+    public static void defaultSqsClient(SqsClient client) {
+        PowertoolsSqs.client = client;
+    }
+
+    public static SqsClient defaultSqsClient() {
+        return client;
+    }
+
+    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
+                                                    boolean suppressException,
+                                                    final Class<? extends SqsMessageHandler<R>> handler) {
+
+        try {
+            return partialBatchProcessor(event, suppressException, handler.newInstance());
+        } catch (IllegalAccessException | InstantiationException e) {
+            // LOG something
+            return Collections.emptyList();
+        }
+    }
+
+    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
+                                                    final boolean suppressException,
+                                                    final SqsMessageHandler<R> handler) {
+        final List<R> handlerReturn = new ArrayList<>();
+
+        BatchContext batchContext = new BatchContext(defaultSqsClient());
+
+        for (SQSMessage message : event.getRecords()) {
+            try {
+                handlerReturn.add(handler.process(message));
+                batchContext.addSuccess(message);
+            } catch (Exception e) {
+                batchContext.addFailure(message, e);
+            }
+        }
+
+        batchContext.processSuccessAndReset(suppressException);
+
+        return handlerReturn;
+    }
+
     private static SQSMessage clonedMessage(final SQSMessage sqsMessage) {
         try {
             return objectMapper
@@ -88,4 +134,5 @@ public final class PowertoolsSqs {
             throw new RuntimeException(e);
         }
     }
+
 }
