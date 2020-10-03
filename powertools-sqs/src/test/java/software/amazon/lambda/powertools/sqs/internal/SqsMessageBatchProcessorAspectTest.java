@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,8 +14,9 @@ import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
-import software.amazon.lambda.powertools.sqs.handlers.PartialBatchPartialFailureHandler;
+import software.amazon.lambda.powertools.sqs.handlers.LambdaHandlerApiGateway;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchFailureSuppressedHandler;
+import software.amazon.lambda.powertools.sqs.handlers.PartialBatchPartialFailureHandler;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchSuccessHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.defaultSqsClient;
 
@@ -92,6 +95,15 @@ public class SqsMessageBatchProcessorAspectTest {
 
         verify(sqsClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
+    }
+
+    @Test
+    void shouldNotTakeEffectOnNonSqsEventHandler() {
+        LambdaHandlerApiGateway handlerApiGateway = new LambdaHandlerApiGateway();
+
+        handlerApiGateway.handleRequest(mock(APIGatewayProxyRequestEvent.class), context);
+
+        verifyNoInteractions(sqsClient);
     }
 
     private void setupContext() {

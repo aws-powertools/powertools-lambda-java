@@ -14,7 +14,6 @@
 package software.amazon.lambda.powertools.sqs;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -89,48 +88,63 @@ public final class PowertoolsSqs {
         return returnValue;
     }
 
+    /**
+     * Provides ability to set default {@link SqsClient} to be used by utility.
+     * If no default configuration is provided, client is instantiated via {@link SqsClient#create()}
+     *
+     * @param client {@link SqsClient} to be used by utility
+     */
     public static void defaultSqsClient(SqsClient client) {
         PowertoolsSqs.client = client;
     }
 
-    public static SqsClient defaultSqsClient() {
-        return client;
+    /**
+     * @param event
+     * @param handler
+     * @param <R>
+     * @return
+     */
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final Class<? extends SqsMessageHandler<R>> handler) {
+        return batchProcessor(event, false, handler);
     }
 
-    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
-                                                    final Class<? extends SqsMessageHandler<R>> handler) {
-        return partialBatchProcessor(event, false, handler);
+    /**
+     * @param event
+     * @param suppressException
+     * @param handler
+     * @param <R>
+     * @return
+     */
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final Class<? extends SqsMessageHandler<R>> handler) {
+
+        SqsMessageHandler<R> handlerInstance = instantiatedHandler(handler);
+        return batchProcessor(event, suppressException, handlerInstance);
     }
 
-    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
-                                                    final boolean suppressException,
-                                                    final Class<? extends SqsMessageHandler<R>> handler) {
-
-        try {
-            SqsMessageHandler<R> handlerInstance;
-            if (null == handler.getDeclaringClass()) {
-                handlerInstance = handler.newInstance();
-            } else {
-                Constructor<? extends SqsMessageHandler<R>> constructor = handler.getDeclaredConstructor(handler.getDeclaringClass());
-                constructor.setAccessible(true);
-                handlerInstance = constructor.newInstance(handler.getDeclaringClass().newInstance());
-            }
-            return partialBatchProcessor(event, suppressException, handlerInstance);
-        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
-            LOG.error("Failed invoking process method on handler", e);
-            throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
-                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
-        }
+    /**
+     * @param event
+     * @param handler
+     * @param <R>
+     * @return
+     */
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final SqsMessageHandler<R> handler) {
+        return batchProcessor(event, false, handler);
     }
 
-    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
-                                                    final SqsMessageHandler<R> handler) {
-        return partialBatchProcessor(event, false, handler);
-    }
-
-    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
-                                                    final boolean suppressException,
-                                                    final SqsMessageHandler<R> handler) {
+    /**
+     * @param event
+     * @param suppressException
+     * @param handler
+     * @param <R>
+     * @return
+     */
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final SqsMessageHandler<R> handler) {
         final List<R> handlerReturn = new ArrayList<>();
 
         BatchContext batchContext = new BatchContext(defaultSqsClient());
@@ -152,6 +166,27 @@ public final class PowertoolsSqs {
         }
 
         return handlerReturn;
+    }
+
+    private static SqsClient defaultSqsClient() {
+        return client;
+    }
+
+    private static <R> SqsMessageHandler<R> instantiatedHandler(final Class<? extends SqsMessageHandler<R>> handler) {
+
+        try {
+            if (null == handler.getDeclaringClass()) {
+                return handler.newInstance();
+            }
+
+            final Constructor<? extends SqsMessageHandler<R>> constructor = handler.getDeclaredConstructor(handler.getDeclaringClass());
+            constructor.setAccessible(true);
+            return constructor.newInstance(handler.getDeclaringClass().newInstance());
+        } catch (Exception e) {
+            LOG.error("Failed creating handler instance", e);
+            throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
+                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
+        }
     }
 
     private static SQSMessage clonedMessage(final SQSMessage sqsMessage) {

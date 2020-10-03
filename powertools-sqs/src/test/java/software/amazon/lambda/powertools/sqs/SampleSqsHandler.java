@@ -2,7 +2,7 @@ package software.amazon.lambda.powertools.sqs;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 
-public class SampleSqsHandler implements SqsMessageHandler<String> {
+public class SampleSqsHandler implements SqsMessageHandler<Object> {
     private int counter;
 
     @Override

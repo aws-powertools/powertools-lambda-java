@@ -8,7 +8,7 @@ import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.sqs.SqsBatchProcessor;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.partialBatchProcessor;
+import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.batchProcessor;
 import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.placedOnSqsEventRequestHandler;
 
 @Aspect
@@ -29,7 +29,7 @@ public class SqsMessageBatchProcessorAspect {
 
             SQSEvent sqsEvent = (SQSEvent) proceedArgs[0];
 
-            partialBatchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value());
+            batchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value());
         }
 
         return pjp.proceed(proceedArgs);

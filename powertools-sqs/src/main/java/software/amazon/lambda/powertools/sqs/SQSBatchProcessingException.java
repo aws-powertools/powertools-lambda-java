@@ -7,6 +7,9 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 
 import static java.util.stream.Collectors.joining;
 
+/**
+ *
+ */
 public class SQSBatchProcessingException extends RuntimeException {
 
     private final List<Exception> exceptions;

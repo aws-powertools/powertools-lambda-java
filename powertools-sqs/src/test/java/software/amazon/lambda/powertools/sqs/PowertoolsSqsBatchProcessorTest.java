@@ -24,8 +24,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.batchProcessor;
 import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.defaultSqsClient;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.partialBatchProcessor;
 
 class PowertoolsSqsBatchProcessorTest {
 
@@ -48,7 +48,7 @@ class PowertoolsSqsBatchProcessorTest {
 
     @Test
     void shouldBatchProcessAndNotDeleteMessagesWhenAllSuccess() {
-        List<String> returnValues = partialBatchProcessor(event, false, (message) -> {
+        List<String> returnValues = batchProcessor(event, false, (message) -> {
             interactionClient.listQueues();
             return "Success";
         });
@@ -64,7 +64,7 @@ class PowertoolsSqsBatchProcessorTest {
     @ParameterizedTest
     @ValueSource(classes = {SampleInnerSqsHandler.class, SampleSqsHandler.class})
     void shouldBatchProcessViaClassAndNotDeleteMessagesWhenAllSuccess(Class<? extends SqsMessageHandler<String>> handler) {
-        List<String> returnValues = partialBatchProcessor(event, handler);
+        List<String> returnValues = batchProcessor(event, handler);
 
         assertThat(returnValues)
                 .hasSize(2)
@@ -87,7 +87,7 @@ class PowertoolsSqsBatchProcessorTest {
         };
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
-                .isThrownBy(() -> partialBatchProcessor(event, failedHandler))
+                .isThrownBy(() -> batchProcessor(event, failedHandler))
                 .satisfies(e -> {
 
                     assertThat(e.successMessageReturnValues())
@@ -116,7 +116,7 @@ class PowertoolsSqsBatchProcessorTest {
         };
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
-                .isThrownBy(() -> partialBatchProcessor(event, failedHandler))
+                .isThrownBy(() -> batchProcessor(event, failedHandler))
                 .satisfies(e -> {
 
                     assertThat(e.successMessageReturnValues())
@@ -141,7 +141,7 @@ class PowertoolsSqsBatchProcessorTest {
     @Test
     void shouldBatchProcessViaClassAndDeleteSuccessMessageOnPartialFailures() {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
-                .isThrownBy(() -> partialBatchProcessor(event, FailureSampleInnerSqsHandler.class))
+                .isThrownBy(() -> batchProcessor(event, FailureSampleInnerSqsHandler.class))
                 .satisfies(e -> {
 
                     assertThat(e.successMessageReturnValues())
@@ -176,7 +176,7 @@ class PowertoolsSqsBatchProcessorTest {
             return "Success";
         };
 
-        List<String> returnValues = partialBatchProcessor(event, true, failedHandler);
+        List<String> returnValues = batchProcessor(event, true, failedHandler);
 
         assertThat(returnValues)
                 .hasSize(1)
@@ -188,7 +188,7 @@ class PowertoolsSqsBatchProcessorTest {
 
     @Test
     void shouldBatchProcessViaClassAndSuppressExceptions() {
-        List<String> returnValues = partialBatchProcessor(event, true, FailureSampleInnerSqsHandler.class);
+        List<String> returnValues = batchProcessor(event, true, FailureSampleInnerSqsHandler.class);
 
         assertThat(returnValues)
                 .hasSize(1)
