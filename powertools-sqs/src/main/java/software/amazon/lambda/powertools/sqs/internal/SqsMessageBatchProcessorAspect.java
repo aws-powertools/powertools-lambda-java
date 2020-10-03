@@ -5,17 +5,14 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.lambda.powertools.sqs.PowertoolsSqs;
 import software.amazon.lambda.powertools.sqs.SqsBatchProcessor;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.placedOnSqsEventRequestHandler;
+import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.partialBatchProcessor;
+import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.placedOnSqsEventRequestHandler;
 
 @Aspect
 public class SqsMessageBatchProcessorAspect {
-    private static final SqsClient client = SqsClient.create();
-    private static BatchContext details = new BatchContext(PowertoolsSqs.defaultSqsClient());
 
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(sqsBatchProcessor)")
@@ -32,7 +29,7 @@ public class SqsMessageBatchProcessorAspect {
 
             SQSEvent sqsEvent = (SQSEvent) proceedArgs[0];
 
-            PowertoolsSqs.partialBatchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value().newInstance());
+            partialBatchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value().newInstance());
         }
 
         return pjp.proceed(proceedArgs);

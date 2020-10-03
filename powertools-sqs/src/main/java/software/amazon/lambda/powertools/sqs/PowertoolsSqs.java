@@ -14,7 +14,6 @@
 package software.amazon.lambda.powertools.sqs;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -22,13 +21,15 @@ import java.util.stream.Collectors;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
-import software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect;
+import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.processMessages;
+import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
 
 /**
  * A class of helper functions to add additional functionality to LargeMessageHandler.
@@ -36,6 +37,7 @@ import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.pr
  * {@see PowertoolsLogging}
  */
 public final class PowertoolsSqs {
+    private static final Log LOG = LogFactory.getLog(PowertoolsSqs.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static SqsClient client = SqsClient.create();
@@ -79,7 +81,7 @@ public final class PowertoolsSqs {
         R returnValue = messageFunction.apply(sqsMessages);
 
         if (deleteS3Payload) {
-            s3Pointers.forEach(SqsMessageAspect::deleteMessage);
+            s3Pointers.forEach(SqsLargeMessageAspect::deleteMessage);
         }
 
         return returnValue;
@@ -94,14 +96,15 @@ public final class PowertoolsSqs {
     }
 
     public static <R> List<R> partialBatchProcessor(final SQSEvent event,
-                                                    boolean suppressException,
+                                                    final boolean suppressException,
                                                     final Class<? extends SqsMessageHandler<R>> handler) {
 
         try {
             return partialBatchProcessor(event, suppressException, handler.newInstance());
         } catch (IllegalAccessException | InstantiationException e) {
-            // LOG something
-            return Collections.emptyList();
+            LOG.error("Failed invoking process method on handler", e);
+            throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
+                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
         }
     }
 
@@ -134,5 +137,4 @@ public final class PowertoolsSqs {
             throw new RuntimeException(e);
         }
     }
-
 }

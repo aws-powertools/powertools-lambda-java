@@ -12,7 +12,6 @@ import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 
 public class PartialBatchHandler implements RequestHandler<SQSEvent, List<Object>> {
 
-
     @Override
     @LargeMessageHandler
     @SqsBatchProcessor(HandlerSqs.class)
