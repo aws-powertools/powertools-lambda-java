@@ -98,6 +98,11 @@ public final class PowertoolsSqs {
     }
 
     public static <R> List<R> partialBatchProcessor(final SQSEvent event,
+                                                    final Class<? extends SqsMessageHandler<R>> handler) {
+        return partialBatchProcessor(event, false, handler);
+    }
+
+    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
                                                     final boolean suppressException,
                                                     final Class<? extends SqsMessageHandler<R>> handler) {
 
@@ -116,6 +121,11 @@ public final class PowertoolsSqs {
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
                     "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
         }
+    }
+
+    public static <R> List<R> partialBatchProcessor(final SQSEvent event,
+                                                    final SqsMessageHandler<R> handler) {
+        return partialBatchProcessor(event, false, handler);
     }
 
     public static <R> List<R> partialBatchProcessor(final SQSEvent event,

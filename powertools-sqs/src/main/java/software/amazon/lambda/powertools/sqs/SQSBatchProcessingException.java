@@ -16,6 +16,10 @@ public class SQSBatchProcessingException extends RuntimeException {
     public <T> SQSBatchProcessingException(final List<Exception> exceptions,
                                            final List<SQSEvent.SQSMessage> failures,
                                            final List<T> successReturns) {
+        super(exceptions.stream()
+                .map(Throwable::toString)
+                .collect(joining("\n")));
+
         this.exceptions = new ArrayList<>(exceptions);
         this.failures = new ArrayList<>(failures);
         this.returnValues = new ArrayList<>(successReturns);
@@ -34,22 +38,10 @@ public class SQSBatchProcessingException extends RuntimeException {
     }
 
     @Override
-    public String getMessage() {
-        return exceptions.stream()
-                .map(Throwable::toString)
-                .collect(joining("\n"));
-    }
-
-    @Override
     public void printStackTrace() {
         for (Exception exception : exceptions) {
             exception.printStackTrace();
         }
-    }
-
-    @Override
-    public String toString() {
-        return getMessage();
     }
 
     <T> void addSuccessMessageReturnValues(final List<T> returnValues) {
