@@ -33,9 +33,7 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
 
 /**
- * A class of helper functions to add additional functionality to LargeMessageHandler.
- * <p>
- * {@see PowertoolsLogging}
+ * A class of helper functions to add additional functionality to {@link SQSEvent} processing.
  */
 public final class PowertoolsSqs {
     private static final Log LOG = LogFactory.getLog(PowertoolsSqs.class);
@@ -99,10 +97,32 @@ public final class PowertoolsSqs {
     }
 
     /**
-     * @param event
-     * @param handler
-     * @param <R>
-     * @return
+     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     *
+     * <p>
+     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     *
+     * </p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
+     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * <p>
+     * If you dont want to utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * it, Refer {@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, Class)}
+     * </p>
+     *
+     * @param event   {@link SQSEvent} received by lambda function.
+     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing.
      */
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final Class<? extends SqsMessageHandler<R>> handler) {
@@ -110,11 +130,31 @@ public final class PowertoolsSqs {
     }
 
     /**
-     * @param event
-     * @param suppressException
-     * @param handler
-     * @param <R>
-     * @return
+     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     *
+     * <p>
+     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     *
+     * </p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
+     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     * <p>
+     * Exception can also be suppressed if desired.
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * @param event             {@link SQSEvent} received by lambda function.
+     * @param suppressException if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
+     *                          messages.
+     * @param handler           Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing and no suppression enabled.
      */
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
@@ -125,10 +165,32 @@ public final class PowertoolsSqs {
     }
 
     /**
-     * @param event
-     * @param handler
-     * @param <R>
-     * @return
+     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     *
+     * <p>
+     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     *
+     * </p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
+     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * <p>
+     * If you dont want to utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * it, Refer {@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}
+     * </p>
+     *
+     * @param event   {@link SQSEvent} received by lambda function.
+     * @param handler Instance of class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message-
+     * @throws SQSBatchProcessingException if some messages fail during processing.
      */
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final SqsMessageHandler<R> handler) {
@@ -136,11 +198,31 @@ public final class PowertoolsSqs {
     }
 
     /**
-     * @param event
-     * @param suppressException
-     * @param handler
-     * @param <R>
-     * @return
+     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     *
+     * <p>
+     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     *
+     * </p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
+     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     * <p>
+     * Exception can also be suppressed if desired.
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * @param event             {@link SQSEvent} received by lambda function.
+     * @param suppressException if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
+     *                          messages.
+     * @param handler           Instance of class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing and no suppression enabled.
      */
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
@@ -158,12 +240,7 @@ public final class PowertoolsSqs {
             }
         }
 
-        try {
-            batchContext.processSuccessAndReset(suppressException);
-        } catch (SQSBatchProcessingException e) {
-            e.addSuccessMessageReturnValues(handlerReturn);
-            throw e;
-        }
+        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException);
 
         return handlerReturn;
     }

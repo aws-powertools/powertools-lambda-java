@@ -1,6 +1,5 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
-import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,21 +36,21 @@ public final class BatchContext {
         exceptions.add(e);
     }
 
-    public <T> void processSuccessAndReset(final boolean suppressException) {
-        try {
-            if (hasFailures()) {
+    public <T> void processSuccessAndHandleFailed(final List<T> successReturns,
+                                                  final boolean suppressException) {
+        if (hasFailures()) {
+            deleteSuccessMessage();
 
-                deleteSuccessMessage();
+            if (suppressException) {
+                List<String> messageIds = failures.stream().
+                        map(SQSMessage::getMessageId)
+                        .collect(toList());
 
-                if (suppressException) {
-                    List<String> messageIds = failures.stream().map(SQSMessage::getMessageId).collect(toList());
-                    LOG.debug(format("[%s] records failed processing, but exceptions are suppressed. Failed messages %s", failures.size(), messageIds));
-                } else {
-                    throw new SQSBatchProcessingException(exceptions, failures, new ArrayList<T>());
-                }
+                LOG.debug(format("[%s] records failed processing, but exceptions are suppressed. " +
+                        "Failed messages %s", failures.size(), messageIds));
+            } else {
+                throw new SQSBatchProcessingException(exceptions, failures, successReturns);
             }
-        } finally {
-            reset();
         }
     }
 
@@ -80,11 +79,5 @@ public final class BatchContext {
                 .queueName(arnArray[2])
                 .build())
                 .queueUrl();
-    }
-
-    private void reset() {
-        success.clear();
-        failures.clear();
-        exceptions.clear();
     }
 }
