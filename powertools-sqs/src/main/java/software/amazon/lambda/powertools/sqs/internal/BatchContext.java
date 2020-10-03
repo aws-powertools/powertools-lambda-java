@@ -1,5 +1,6 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
+import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +37,7 @@ public final class BatchContext {
         exceptions.add(e);
     }
 
-    public void processSuccessAndReset(final boolean suppressException) {
+    public <T> void processSuccessAndReset(final boolean suppressException) {
         try {
             if (hasFailures()) {
 
@@ -46,7 +47,7 @@ public final class BatchContext {
                     List<String> messageIds = failures.stream().map(SQSMessage::getMessageId).collect(toList());
                     LOG.debug(format("[%s] records failed processing, but exceptions are suppressed. Failed messages %s", failures.size(), messageIds));
                 } else {
-                    throw new SQSBatchProcessingException(exceptions);
+                    throw new SQSBatchProcessingException(exceptions, failures, new ArrayList<T>());
                 }
             }
         } finally {

@@ -13,6 +13,8 @@
  */
 package software.amazon.lambda.powertools.sqs;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -100,8 +102,16 @@ public final class PowertoolsSqs {
                                                     final Class<? extends SqsMessageHandler<R>> handler) {
 
         try {
-            return partialBatchProcessor(event, suppressException, handler.newInstance());
-        } catch (IllegalAccessException | InstantiationException e) {
+            SqsMessageHandler<R> handlerInstance;
+            if (null == handler.getDeclaringClass()) {
+                handlerInstance = handler.newInstance();
+            } else {
+                Constructor<? extends SqsMessageHandler<R>> constructor = handler.getDeclaredConstructor(handler.getDeclaringClass());
+                constructor.setAccessible(true);
+                handlerInstance = constructor.newInstance(handler.getDeclaringClass().newInstance());
+            }
+            return partialBatchProcessor(event, suppressException, handlerInstance);
+        } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
             LOG.error("Failed invoking process method on handler", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
                     "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
@@ -124,7 +134,12 @@ public final class PowertoolsSqs {
             }
         }
 
-        batchContext.processSuccessAndReset(suppressException);
+        try {
+            batchContext.processSuccessAndReset(suppressException);
+        } catch (SQSBatchProcessingException e) {
+            e.addSuccessMessageReturnValues(handlerReturn);
+            throw e;
+        }
 
         return handlerReturn;
     }

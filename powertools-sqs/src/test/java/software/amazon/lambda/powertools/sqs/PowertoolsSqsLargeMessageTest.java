@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-class PowertoolsSqsTest {
+class PowertoolsSqsLargeMessageTest {
 
     @Mock
     private AmazonS3 amazonS3;

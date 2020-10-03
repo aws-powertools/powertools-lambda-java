@@ -29,7 +29,7 @@ public class SqsMessageBatchProcessorAspect {
 
             SQSEvent sqsEvent = (SQSEvent) proceedArgs[0];
 
-            partialBatchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value().newInstance());
+            partialBatchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value());
         }
 
         return pjp.proceed(proceedArgs);
