@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
@@ -107,6 +108,13 @@ class PowertoolsSqsBatchProcessorTest {
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
+
+        ArgumentCaptor<GetQueueUrlRequest> captor = ArgumentCaptor.forClass(GetQueueUrlRequest.class);
+        verify(sqsClient).getQueueUrl(captor.capture());
+
+        assertThat(captor.getValue())
+                .hasFieldOrPropertyWithValue("queueName", "my-queue")
+                .hasFieldOrPropertyWithValue("queueOwnerAWSAccountId", "123456789012");
     }
 
     @Test

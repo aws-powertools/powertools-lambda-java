@@ -8,6 +8,7 @@ import org.apache.commons.logging.LogFactory;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchResponse;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 
@@ -68,15 +69,16 @@ public final class BatchContext {
                             .build()).collect(toList()))
                     .build();
 
-            client.deleteMessageBatch(request);
+            DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
+            LOG.debug(format("Response from delete request %s", deleteMessageBatchResponse));
         }
     }
 
     private String url() {
         String[] arnArray = success.get(0).getEventSourceArn().split(":");
         return client.getQueueUrl(GetQueueUrlRequest.builder()
-                .queueOwnerAWSAccountId(arnArray[1])
-                .queueName(arnArray[2])
+                .queueOwnerAWSAccountId(arnArray[4])
+                .queueName(arnArray[5])
                 .build())
                 .queueUrl();
     }
