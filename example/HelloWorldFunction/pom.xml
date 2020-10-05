@@ -34,6 +34,11 @@
             <version>0.4.0-beta</version>
         </dependency>
         <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-sqs</artifactId>
+            <version>0.4.0-beta</version>
+        </dependency>
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
             <version>1.2.0</version>
@@ -89,6 +94,10 @@
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
                          <artifactId>powertools-metrics</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-sqs</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
              </configuration>

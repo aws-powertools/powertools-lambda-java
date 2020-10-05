@@ -57,6 +57,10 @@
             <groupId>software.amazon.payloadoffloading</groupId>
             <artifactId>payloadoffloading-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.aspectj</groupId>

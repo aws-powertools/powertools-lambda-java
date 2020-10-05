@@ -28,9 +28,9 @@ import static java.lang.String.format;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 
 @Aspect
-public class SqsMessageAspect {
+public class SqsLargeMessageAspect {
 
-    private static final Log LOG = LogFactory.getLog(SqsMessageAspect.class);
+    private static final Log LOG = LogFactory.getLog(SqsLargeMessageAspect.class);
     private static AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient();
 
     @SuppressWarnings({"EmptyMethod"})
