@@ -125,6 +125,57 @@ Resources:
       Value: aGVsbG8gd29ybGQ=
       Description: Base64 SSM Parameter for lambda-powertools-java powertools-parameters module
 
+  TestSqsQueue:
+    Type: AWS::SQS::Queue
+
+  HelloWorldSqsEventFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.AppSqsEvent::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Tracing: Active
+      Policies:
+      - Statement:
+          - Sid: AdditionalPermisssionForPowertoolsSQSUtils
+            Effect: Allow
+            Action:
+              - sqs:GetQueueUrl
+              - sqs:DeleteMessageBatch
+            Resource: !GetAtt TestSqsQueue.Arn
+      Events:
+        TestSQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt TestSqsQueue.Arn
+            BatchSize: 10
+
+  TestAnotherSqsQueue:
+    Type: AWS::SQS::Queue
+
+  HelloWorldSqsEventUtilFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.AppSqsEventUtil::handleRequest
+      Runtime: java8
+      MemorySize: 512
+      Tracing: Active
+      Policies:
+      - Statement:
+          - Sid: AdditionalPermisssionForPowertoolsSQSUtils
+            Effect: Allow
+            Action:
+              - sqs:GetQueueUrl
+              - sqs:DeleteMessageBatch
+            Resource: !GetAtt TestAnotherSqsQueue.Arn
+      Events:
+        TestSQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt TestAnotherSqsQueue.Arn
+            BatchSize: 10
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function

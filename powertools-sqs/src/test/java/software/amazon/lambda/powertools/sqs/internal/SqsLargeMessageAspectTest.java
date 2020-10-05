@@ -1,5 +1,9 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.stream.Stream;
+
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.services.lambda.runtime.Context;
@@ -21,10 +25,6 @@ import software.amazon.lambda.powertools.sqs.handlers.LambdaHandlerApiGateway;
 import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandler;
 import software.amazon.lambda.powertools.sqs.handlers.SqsNoDeleteMessageHandler;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.stream.Stream;
-
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
@@ -35,10 +35,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
-import static software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect.FailedProcessingLargePayloadException;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.FailedProcessingLargePayloadException;
 
-public class SqsMessageAspectTest {
+public class SqsLargeMessageAspectTest {
 
     private RequestHandler<SQSEvent, String> requestHandler;
 
@@ -53,9 +53,9 @@ public class SqsMessageAspectTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        initMocks(this);
+        openMocks(this);
         setupContext();
-        writeStaticField(SqsMessageAspect.class, "amazonS3", amazonS3, true);
+        writeStaticField(SqsLargeMessageAspect.class, "amazonS3", amazonS3, true);
         requestHandler = new SqsMessageHandler();
     }
 

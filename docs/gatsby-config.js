@@ -29,7 +29,8 @@ module.exports = {
                     ],
                     'Utilities': [
                         'utilities/sqs_large_message_handling',
-                        'utilities/parameters'
+                        'utilities/batch',
+                        'utilities/parameters',
                     ],
                 },
                 navConfig: {

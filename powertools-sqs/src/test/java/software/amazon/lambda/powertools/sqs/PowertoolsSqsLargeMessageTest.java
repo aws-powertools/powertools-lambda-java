@@ -21,7 +21,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import software.amazon.lambda.powertools.sqs.internal.SqsMessageAspect;
+import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.util.Collections.singletonList;
@@ -33,9 +33,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
-class PowertoolsSqsTest {
+class PowertoolsSqsLargeMessageTest {
 
     @Mock
     private AmazonS3 amazonS3;
@@ -44,8 +44,8 @@ class PowertoolsSqsTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        initMocks(this);
-        writeStaticField(SqsMessageAspect.class, "amazonS3", amazonS3, true);
+        openMocks(this);
+        writeStaticField(SqsLargeMessageAspect.class, "amazonS3", amazonS3, true);
     }
 
     @Test
@@ -122,7 +122,7 @@ class PowertoolsSqsTest {
         String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
-        assertThatExceptionOfType(SqsMessageAspect.FailedProcessingLargePayloadException.class)
+        assertThatExceptionOfType(SqsLargeMessageAspect.FailedProcessingLargePayloadException.class)
                 .isThrownBy(() -> PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> sqsMessages.get(0).getBody()))
                 .withCause(exception);
 
@@ -145,7 +145,7 @@ class PowertoolsSqsTest {
         String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
-        assertThatExceptionOfType(SqsMessageAspect.FailedProcessingLargePayloadException.class)
+        assertThatExceptionOfType(SqsLargeMessageAspect.FailedProcessingLargePayloadException.class)
                 .isThrownBy(() -> PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> sqsMessages.get(0).getBody()))
                 .withCauseInstanceOf(IOException.class);
 
