@@ -1,6 +1,7 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
 import java.io.IOException;
+import java.util.Random;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -31,17 +32,19 @@ import static org.mockito.Mockito.when;
 import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.overrideSqsClient;
 
 public class SqsMessageBatchProcessorAspectTest {
-    public static final SqsClient sqsClient = mock(SqsClient.class);
+    public static final Random mockedRandom = mock(Random.class);
+    private static final SqsClient sqsClient = mock(SqsClient.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private SQSEvent event;
     private RequestHandler<SQSEvent, String> requestHandler;
 
-    private Context context = mock(Context.class);
+    private final Context context = mock(Context.class);
 
     @BeforeEach
     void setUp() throws IOException {
         overrideSqsClient(sqsClient);
+        reset(mockedRandom);
         reset(sqsClient);
         setupContext();
         event = MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEvent.json"), SQSEvent.class);
@@ -57,7 +60,7 @@ public class SqsMessageBatchProcessorAspectTest {
     void shouldBatchProcessAllMessageSuccessfullyAndNotDeleteFromSQS() {
         requestHandler.handleRequest(event, context);
 
-        verify(sqsClient, times(2)).listQueues();
+        verify(mockedRandom, times(2)).nextInt();
         verify(sqsClient, times(0)).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
@@ -83,7 +86,7 @@ public class SqsMessageBatchProcessorAspectTest {
                             .contains("Success");
                 });
 
-        verify(sqsClient).listQueues();
+        verify(mockedRandom).nextInt();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
@@ -93,7 +96,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         requestHandler.handleRequest(event, context);
 
-        verify(sqsClient).listQueues();
+        verify(mockedRandom).nextInt();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
