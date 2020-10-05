@@ -28,7 +28,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.defaultSqsClient;
+import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.overrideSqsClient;
 
 public class SqsMessageBatchProcessorAspectTest {
     public static final SqsClient sqsClient = mock(SqsClient.class);
@@ -41,7 +41,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
     @BeforeEach
     void setUp() throws IOException {
-        defaultSqsClient(sqsClient);
+        overrideSqsClient(sqsClient);
         reset(sqsClient);
         setupContext();
         event = MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEvent.json"), SQSEvent.class);

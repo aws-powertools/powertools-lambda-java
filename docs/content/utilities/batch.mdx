@@ -198,7 +198,7 @@ If you need to pass custom SqsClient such as region to the SDK, you can pass you
 public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
     // highlight-start
     static {
-        PowertoolsSqs.defaultSqsClient(SqsClient.builder()
+        PowertoolsSqs.overrideSqsClient(SqsClient.builder()
                 .build());
     }
     // highlight-end

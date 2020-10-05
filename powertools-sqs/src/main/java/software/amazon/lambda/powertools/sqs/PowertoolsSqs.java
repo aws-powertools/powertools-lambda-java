@@ -92,7 +92,7 @@ public final class PowertoolsSqs {
      *
      * @param client {@link SqsClient} to be used by utility
      */
-    public static void defaultSqsClient(SqsClient client) {
+    public static void overrideSqsClient(SqsClient client) {
         PowertoolsSqs.client = client;
     }
 
@@ -229,7 +229,7 @@ public final class PowertoolsSqs {
                                              final SqsMessageHandler<R> handler) {
         final List<R> handlerReturn = new ArrayList<>();
 
-        BatchContext batchContext = new BatchContext(defaultSqsClient());
+        BatchContext batchContext = new BatchContext(client);
 
         for (SQSMessage message : event.getRecords()) {
             try {
@@ -243,10 +243,6 @@ public final class PowertoolsSqs {
         batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException);
 
         return handlerReturn;
-    }
-
-    private static SqsClient defaultSqsClient() {
-        return client;
     }
 
     private static <R> SqsMessageHandler<R> instantiatedHandler(final Class<? extends SqsMessageHandler<R>> handler) {

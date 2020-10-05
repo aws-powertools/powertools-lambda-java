@@ -26,7 +26,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.batchProcessor;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.defaultSqsClient;
+import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.overrideSqsClient;
 
 class PowertoolsSqsBatchProcessorTest {
 
@@ -44,7 +44,7 @@ class PowertoolsSqsBatchProcessorTest {
                 .queueUrl("test")
                 .build());
 
-        defaultSqsClient(sqsClient);
+        overrideSqsClient(sqsClient);
     }
 
     @Test
