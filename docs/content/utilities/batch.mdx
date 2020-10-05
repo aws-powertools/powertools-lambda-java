@@ -14,11 +14,11 @@ The SQS batch processing utility provides a way to handle partial failures when 
 
 **Background**
 
-When using SQS as a Lambda event source mapping, Lambda functions are triggered with a batch of messages from SQS.
+When using SQS as a Lambda event source mapping, Lambda functions can be triggered with a batch of messages from SQS.
 
-If your function fails to process any message from the batch, the entire batch returns to your SQS queue, and your Lambda function is triggered with the same batch one more time.
+If your function fails to process any message from the batch, the entire batch returns to your SQS queue, and your Lambda function will be triggered with the same batch again.
 
-With this utility, messages within a batch are handled individually - only messages that were not successfully processed
+With this utility, messages within a batch will be handled individually - only messages that were not successfully processed
 are returned to the queue.
 
 <Note type="warning">
