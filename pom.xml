@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>0.4.0-beta</version>
+    <version>0.5.0-beta</version>
     <packaging>pom</packaging>
 
     <name>AWS Lambda Powertools Java library Parent</name>
