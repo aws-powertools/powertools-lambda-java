@@ -75,6 +75,17 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 ```
 **Note:** If you are working with lambda function on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
 
+## Environment variables
+
+**Environment variables** used across suite of utilities.
+
+Environment variable | Description | Utility
+------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------
+**POWERTOOLS_SERVICE_NAME** | Sets service name used for tracing namespace, metrics dimension and structured logging | All
+**POWERTOOLS_METRICS_NAMESPACE** | Sets namespace used for metrics | [Metrics](./core/metrics)
+**POWERTOOLS_LOGGER_SAMPLE_RATE** | Debug log sampling | [Logging](./core/logging)
+**LOG_LEVEL** | Sets logging level | [Logging](./core/logger)
+
 ## Tenets
 
 * **AWS Lambda only** – We optimise for AWS Lambda function environments and supported runtimes only. Utilities might work with web frameworks and non-Lambda environments, though they are not officially supported.
