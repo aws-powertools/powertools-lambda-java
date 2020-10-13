@@ -22,7 +22,8 @@ enum DefaultLambdaFields {
     FUNCTION_NAME("functionName"),
     FUNCTION_VERSION("functionVersion"),
     FUNCTION_ARN("functionArn"),
-    FUNCTION_MEMORY_SIZE("functionMemorySize");
+    FUNCTION_MEMORY_SIZE("functionMemorySize"),
+    FUNCTION_REQUEST_ID("function_request_id");
 
     private final String name;
 
@@ -41,6 +42,7 @@ enum DefaultLambdaFields {
         hashMap.put(FUNCTION_VERSION.name, context.getFunctionVersion());
         hashMap.put(FUNCTION_ARN.name, context.getInvokedFunctionArn());
         hashMap.put(FUNCTION_MEMORY_SIZE.name, String.valueOf(context.getMemoryLimitInMB()));
+        hashMap.put(FUNCTION_REQUEST_ID.name, String.valueOf(context.getAwsRequestId()));
 
         return hashMap;
     }
