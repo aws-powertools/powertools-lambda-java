@@ -69,7 +69,7 @@ import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.g
 
 class LambdaLoggingAspectTest {
 
-    private static final int EXPECTED_CONTEXT_SIZE = 7;
+    private static final int EXPECTED_CONTEXT_SIZE = 8;
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
 
@@ -99,6 +99,7 @@ class LambdaLoggingAspectTest {
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
                 .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
                 .containsEntry(DefaultLambdaFields.FUNCTION_NAME.getName(), "testFunction")
+                .containsEntry(DefaultLambdaFields.FUNCTION_REQUEST_ID.getName(), "RequestId")
                 .containsKey("coldStart")
                 .containsKey("service");
     }
@@ -115,6 +116,7 @@ class LambdaLoggingAspectTest {
                 .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
                 .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
                 .containsEntry(DefaultLambdaFields.FUNCTION_NAME.getName(), "testFunction")
+                .containsEntry(DefaultLambdaFields.FUNCTION_REQUEST_ID.getName(), "RequestId")
                 .containsKey("coldStart")
                 .containsKey("service");
     }
@@ -232,6 +234,7 @@ class LambdaLoggingAspectTest {
         when(context.getInvokedFunctionArn()).thenReturn("testArn");
         when(context.getFunctionVersion()).thenReturn("1");
         when(context.getMemoryLimitInMB()).thenReturn(10);
+        when(context.getAwsRequestId()).thenReturn("RequestId");
     }
 
     private void resetLogLevel(Level level) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
