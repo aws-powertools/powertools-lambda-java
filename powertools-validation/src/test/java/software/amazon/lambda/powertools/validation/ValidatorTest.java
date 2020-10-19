@@ -14,8 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
-import static software.amazon.lambda.powertools.validation.Validator.*;
 import static software.amazon.lambda.powertools.validation.Validator.getJsonSchema;
+import static software.amazon.lambda.powertools.validation.Validator.validate;
 
 public class ValidatorTest {
 

@@ -14,7 +14,6 @@
 package software.amazon.lambda.powertools.validation;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.networknt.schema.SpecVersion;
 import com.networknt.schema.SpecVersion.VersionFlag;
 
 import java.io.InputStream;
@@ -24,7 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static com.networknt.schema.SpecVersion.VersionFlag.*;
+import static com.networknt.schema.SpecVersion.VersionFlag.V7;
 
 /**
  * {@link Validation} is used to specify that the annotated method input and/or output needs to be valid.<br>
