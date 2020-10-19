@@ -1,0 +1,12 @@
+{
+  "basket": {
+    "products" : [
+      {
+        "id": 43242,
+        "name": "FooBar XY",
+        "price": 258
+      }
+    ],
+    "hiddenProduct": "ewogICJpZCI6IDQzMjQyLAogICJuYW1lIjogIkZvb0JhciBYWSIsCiAgInByaWNlIjogMjU4Cn0="
+  }
+}
