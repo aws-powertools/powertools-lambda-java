@@ -16,17 +16,23 @@ package software.amazon.lambda.powertools.validation.internal;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import software.amazon.lambda.powertools.validation.ValidationException;
-import software.amazon.lambda.powertools.validation.handlers.ValidationInboundClasspathHandler;
-import software.amazon.lambda.powertools.validation.handlers.ValidationInboundStringHandler;
+import software.amazon.lambda.powertools.validation.ValidatorConfig;
+import software.amazon.lambda.powertools.validation.handlers.*;
+import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
 
+import java.io.IOException;
+
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-public class ValidatorAspectTest {
+public class ValidationAspectTest {
 
     @Mock
     private Context context;
@@ -45,7 +51,7 @@ public class ValidatorAspectTest {
                 "    \"name\": \"Lampshade\"," +
                 "    \"price\": 42" +
                 "}");
-        handler.handleRequest(event, context);
+        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 
     @Test
@@ -70,7 +76,7 @@ public class ValidatorAspectTest {
                 "    \"name\": \"Lampshade\"," +
                 "    \"price\": 42" +
                 "}");
-        handler.handleRequest(event, context);
+        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 
     @Test
@@ -81,7 +87,30 @@ public class ValidatorAspectTest {
                 "    \"id\": 1," +
                 "    \"name\": \"Lampshade\"" +
                 "}");
-        // price is missing
         assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> handler.handleRequest(event, context));
+    }
+
+    @Test
+    public void validate_SQS() throws IOException {
+        SQSEvent event = ValidatorConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/sqs.json"), SQSEvent.class);
+
+        SQSHandler handler = new SQSHandler();
+        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
+    }
+
+    @Test
+    public void validate_Kinesis() throws IOException {
+        KinesisEvent event = ValidatorConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/kinesis.json"), KinesisEvent.class);
+
+        KinesisHandler handler = new KinesisHandler();
+        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
+    }
+
+    @Test
+    public void validate_CustomObject() throws IOException {
+        MyCustomEvent event = ValidatorConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/custom_event.json"), MyCustomEvent.class);
+
+        MyCustomEventHandler handler = new MyCustomEventHandler();
+        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 }

@@ -16,38 +16,70 @@ package software.amazon.lambda.powertools.validation.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
-import software.amazon.lambda.powertools.validation.Validator;
+import software.amazon.lambda.powertools.validation.Validation;
 
 
-public class ValidationInboundStringHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
+public class ValidationInboundStringHandler implements RequestHandler<APIGatewayV2HTTPEvent, String> {
 
-    private static final String schema = "{" +
-            "  \"$schema\": \"http://json-schema.org/draft-04/schema#\"," +
-            "  \"title\": \"Product\"," +
-            "  \"description\": \"A product from the catalog\"," +
-            "  \"type\": \"object\"," +
-            "  \"properties\": {" +
-            "    \"id\": {" +
-            "      \"description\": \"The unique identifier for a product\"," +
-            "      \"type\": \"integer\"" +
-            "    }," +
-            "    \"name\": {" +
-            "      \"description\": \"Name of the product\"," +
-            "      \"type\": \"string\"" +
-            "    }," +
-            "    \"price\": {" +
-            "      \"type\": \"number\"," +
-            "      \"minimum\": 0," +
-            "      \"exclusiveMinimum\": true" +
-            "    }" +
-            "  }," +
-            "  \"required\": [\"id\", \"name\", \"price\"]" +
+    private static final String schema = "{\n" +
+            "  \"$schema\": \"http://json-schema.org/draft-07/schema\",\n" +
+            "  \"$id\": \"http://example.com/product.json\",\n" +
+            "  \"type\": \"object\",\n" +
+            "  \"title\": \"Product schema\",\n" +
+            "  \"description\": \"JSON schema to validate Products\",\n" +
+            "  \"default\": {},\n" +
+            "  \"examples\": [\n" +
+            "    {\n" +
+            "      \"id\": 43242,\n" +
+            "      \"name\": \"FooBar XY\",\n" +
+            "      \"price\": 258\n" +
+            "    }\n" +
+            "  ],\n" +
+            "  \"required\": [\n" +
+            "    \"id\",\n" +
+            "    \"name\",\n" +
+            "    \"price\"\n" +
+            "  ],\n" +
+            "  \"properties\": {\n" +
+            "    \"id\": {\n" +
+            "      \"$id\": \"#/properties/id\",\n" +
+            "      \"type\": \"integer\",\n" +
+            "      \"title\": \"Id of the product\",\n" +
+            "      \"description\": \"Unique identifier of the product\",\n" +
+            "      \"default\": 0,\n" +
+            "      \"examples\": [\n" +
+            "        43242\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"name\": {\n" +
+            "      \"$id\": \"#/properties/name\",\n" +
+            "      \"type\": \"string\",\n" +
+            "      \"title\": \"Name of the product\",\n" +
+            "      \"description\": \"Explicit name of the product\",\n" +
+            "      \"minLength\": 5,\n" +
+            "      \"default\": \"\",\n" +
+            "      \"examples\": [\n" +
+            "        \"FooBar XY\"\n" +
+            "      ]\n" +
+            "    },\n" +
+            "    \"price\": {\n" +
+            "      \"$id\": \"#/properties/price\",\n" +
+            "      \"type\": \"number\",\n" +
+            "      \"title\": \"Price of the product\",\n" +
+            "      \"description\": \"Positive price of the product\",\n" +
+            "      \"default\": 0,\n" +
+            "      \"exclusiveMinimum\": 0,\n" +
+            "      \"examples\": [\n" +
+            "        258.99\n" +
+            "      ]\n" +
+            "    }\n" +
+            "  },\n" +
+            "  \"additionalProperties\": true\n" +
             "}";
     
     @Override
-    @Validator(inboundSchema = schema)
-    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent input, Context context) {
-        return null;
+    @Validation(inboundSchema = schema)
+    public String handleRequest(APIGatewayV2HTTPEvent input, Context context) {
+        return "OK";
     }
 }
