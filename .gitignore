@@ -99,3 +99,7 @@ docs/public
 /example/.aws-sam/
 /example/HelloWorldFunction/.aws-sam/
 samconfig.toml
+example/HelloWorldFunction/.gradle
+example/HelloWorldFunction/build
+/example/.gradle/
+/example/.java-version
