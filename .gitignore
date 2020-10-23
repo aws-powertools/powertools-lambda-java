@@ -5,6 +5,7 @@
 
 # Package Files #
 *.jar
+!example/HelloWorldFunction/gradle/wrapper/gradle-wrapper.jar
 *.war
 *.ear
 
