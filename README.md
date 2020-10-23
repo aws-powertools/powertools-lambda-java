@@ -78,7 +78,7 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 
 ## Example
 
-See **[example](./example/README.md)** of all features, and a SAM template with all Powertools env vars.
+See **[example](./example/README.md)** for maven or gradle configurations including all features, and a SAM template with all Powertools env vars.
 
 ## Credits
 

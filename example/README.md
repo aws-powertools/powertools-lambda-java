@@ -1,4 +1,4 @@
-# sam-app
+# example
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
@@ -25,7 +25,8 @@ To use the SAM CLI, you need the following tools.
 
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
 * Java8 - [Install the Java SE Development Kit 8](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html)
-* Maven - [Install Maven](https://maven.apache.org/install.html)
+* Maven - [Install Maven](https://maven.apache.org/install.html) or
+* Gradle - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
 To build and deploy your application for the first time, run the following in your shell:
@@ -50,24 +51,24 @@ You can find your API Gateway Endpoint URL in the output values displayed after 
 Build your application with the `sam build` command.
 
 ```bash
-sam-app$ sam build
+example$ sam build
 ```
 
-The SAM CLI installs dependencies defined in `HelloWorldFunction/pom.xml`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
+The SAM CLI installs dependencies defined in `HelloWorldFunction/build.gradle`, creates a deployment package, and saves it in the `.aws-sam/build` folder.
 
 Test a single function by invoking it directly with a test event. An event is a JSON document that represents the input that the function receives from the event source. Test events are included in the `events` folder in this project.
 
 Run functions locally and invoke them with the `sam local invoke` command.
 
 ```bash
-sam-app$ sam local invoke HelloWorldFunction --event events/event.json
+example$ sam local invoke HelloWorldFunction --event events/event.json
 ```
 
 The SAM CLI can also emulate your application's API. Use the `sam local start-api` to run the API locally on port 3000.
 
 ```bash
-sam-app$ sam local start-api
-sam-app$ curl http://localhost:3000/
+example$ sam local start-api
+example$ curl http://localhost:3000/
 ```
 
 The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
@@ -91,7 +92,7 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-sam-app$ sam logs -n HelloWorldFunction --stack-name sam-app --tail
+example$ sam logs -n HelloWorldFunction --stack-name sam-app --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
@@ -101,8 +102,8 @@ You can find more information and examples about filtering Lambda function logs 
 Tests are defined in the `HelloWorldFunction/src/test` folder in this project.
 
 ```bash
-sam-app$ cd HelloWorldFunction
-HelloWorldFunction$ mvn test
+example$ cd HelloWorldFunction
+HelloWorldFunction$ gradle test
 ```
 
 ## Cleanup
@@ -110,7 +111,7 @@ HelloWorldFunction$ mvn test
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
 ```bash
-aws cloudformation delete-stack --stack-name sam-app
+aws cloudformation delete-stack --stack-name example
 ```
 
 ## Resources

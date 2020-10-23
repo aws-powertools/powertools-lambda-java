@@ -75,6 +75,28 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 ```
 **Note:** If you are working with lambda function on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
 
+* [gradle](https://gradle.org):
+```groovy
+plugins{
+    id 'java'
+    id 'aspectj.AspectjGradlePlugin' version '0.0.3'
+}
+repositories {
+    jcenter()
+}
+dependencies {
+    implementation 'software.amazon.lambda:powertools-tracing:0.5.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-tracing:0.5.0-beta'
+    implementation 'software.amazon.lambda:powertools-logging:0.5.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-logging:0.5.0-beta'
+    implementation 'software.amazon.lambda:powertools-metrics:0.5.0-beta'
+    aspectpath 'software.amazon.lambda:powertools-metrics:0.5.0-beta'
+}
+```
+
+**Note:** Please add `aspectjVersion = '1.9.6'` to the `gradle.properties` file. The aspectj plugin works at the moment with gradle 5.x only.
+Please refer to [open issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/146) for more details.
+
 ## Environment variables
 
 **Environment variables** used across suite of utilities.
