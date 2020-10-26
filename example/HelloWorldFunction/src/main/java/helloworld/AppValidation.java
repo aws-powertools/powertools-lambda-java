@@ -4,18 +4,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Entity;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
-import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.logging.PowertoolsLogger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
-import software.amazon.lambda.powertools.tracing.PowerTracer;
-import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
 import software.amazon.lambda.powertools.validation.Validation;
+import software.amazon.lambda.powertools.validation.Validator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,11 +14,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.withSingleMetric;
-import static software.amazon.lambda.powertools.tracing.PowerTracer.putMetadata;
-import static software.amazon.lambda.powertools.tracing.PowerTracer.withEntitySubsegment;
 
 /**
  * Handler for requests to Lambda function.
@@ -51,7 +36,7 @@ public class AppValidation implements RequestHandler<APIGatewayProxyRequestEvent
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             return response
                     .withBody("{}")
                     .withStatusCode(500);
