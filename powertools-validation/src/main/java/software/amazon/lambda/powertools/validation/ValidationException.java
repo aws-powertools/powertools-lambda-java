@@ -13,6 +13,10 @@
  */
 package software.amazon.lambda.powertools.validation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.io.IOException;
+
 public class ValidationException extends RuntimeException {
 
     private static final long serialVersionUID = 1133341411263381508L;
@@ -23,5 +27,9 @@ public class ValidationException extends RuntimeException {
 
     public ValidationException(Exception e) {
         super(e);
+    }
+
+    public ValidationException(String message, Exception e) {
+        super(message, e);
     }
 }

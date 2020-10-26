@@ -28,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
- *
+ * Validation utility, used to manually validate Json against Json Schema
  */
 public class Validator {
     private static final String CLASSPATH = "classpath:";
@@ -64,7 +64,7 @@ public class Validator {
             Expression<JsonNode> expression = ValidatorConfig.get().getJmesPath().compile(envelope);
             subNode = expression.search(jsonNode);
         } catch (Exception e) {
-            throw new ValidationException(e);
+            throw new ValidationException("Cannot find envelope <"+envelope+"> in the object <"+obj+">", e);
         }
         if (subNode.getNodeType() == JsonNodeType.ARRAY) {
             subNode.forEach(jsonNode -> validate(jsonNode, jsonSchema));
@@ -105,7 +105,7 @@ public class Validator {
         try {
             jsonNode = ValidatorConfig.get().getObjectMapper().valueToTree(obj);
         } catch (Exception e) {
-            throw new ValidationException(e);
+            throw new ValidationException("Object <"+obj+"> is not valid against the schema provided", e);
         }
 
         validate(jsonNode, jsonSchema);
@@ -133,8 +133,8 @@ public class Validator {
         JsonNode jsonNode;
         try {
             jsonNode = ValidatorConfig.get().getObjectMapper().readTree(json);
-        } catch (JsonProcessingException e) {
-            throw new ValidationException(e);
+        } catch (Exception e) {
+            throw new ValidationException("Json <"+json+"> is not valid against the schema provided", e);
         }
 
         validate(jsonNode, jsonSchema);
@@ -163,7 +163,7 @@ public class Validator {
         try {
             jsonNode = ValidatorConfig.get().getObjectMapper().valueToTree(map);
         } catch (Exception e) {
-            throw new ValidationException(e);
+            throw new ValidationException("Map <"+map+"> cannot be converted to json for validation", e);
         }
 
         validate(jsonNode, jsonSchema);
