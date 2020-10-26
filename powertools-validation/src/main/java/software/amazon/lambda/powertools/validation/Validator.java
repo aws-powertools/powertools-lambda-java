@@ -27,17 +27,33 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+/**
+ *
+ */
 public class Validator {
     private static final String CLASSPATH = "classpath:";
 
     private static final ConcurrentHashMap<String, JsonSchema> schemas = new ConcurrentHashMap<>();
 
     /**
-     * @param obj
-     * @param jsonSchema
-     * @param envelope
+     * Validate part of a json object against a json schema
+     *
+     * @param obj        The object to validate
+     * @param jsonSchema The schema used to validate: either the schema itself or a path to file in the classpath: "classpath:/path/to/schema.json"
+     * @param envelope   a path to a sub object within obj
      */
-    public static void validate(Object obj, JsonSchema jsonSchema, String envelope) {
+    public static void validate(Object obj, String jsonSchema, String envelope) throws ValidationException {
+        validate(obj, getJsonSchema(jsonSchema), envelope);
+    }
+
+    /**
+     * Validate part of a json object against a json schema
+     *
+     * @param obj        The object to validate
+     * @param jsonSchema The schema used to validate
+     * @param envelope   a path to a sub object within obj
+     */
+    public static void validate(Object obj, JsonSchema jsonSchema, String envelope) throws ValidationException {
         if (envelope == null || envelope.isEmpty()) {
             validate(obj, jsonSchema);
             return;
@@ -69,11 +85,22 @@ public class Validator {
     /**
      * Validate a json object against a json schema
      *
-     * @param obj        object to validate
-     * @param jsonSchema the schema used to validate
+     * @param obj        Object to validate
+     * @param jsonSchema The schema used to validate: either the schema itself or a path to file in the classpath: "classpath:/path/to/schema.json"
      * @throws ValidationException if validation fails
      */
-    public static void validate(Object obj, JsonSchema jsonSchema) {
+    public static void validate(Object obj, String jsonSchema) throws ValidationException {
+        validate(obj, getJsonSchema(jsonSchema));
+    }
+
+    /**
+     * Validate a json object against a json schema
+     *
+     * @param obj        Object to validate
+     * @param jsonSchema The schema used to validate
+     * @throws ValidationException if validation fails
+     */
+    public static void validate(Object obj, JsonSchema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
             jsonNode = ValidatorConfig.get().getObjectMapper().valueToTree(obj);
@@ -82,6 +109,17 @@ public class Validator {
         }
 
         validate(jsonNode, jsonSchema);
+    }
+
+    /**
+     * Validate a json object (in string format) against a json schema
+     *
+     * @param json       Json in string format
+     * @param jsonSchema The schema used to validate: either the schema itself or a path to file in the classpath: "classpath:/path/to/schema.json"
+     * @throws ValidationException if validation fails
+     */
+    public static void validate(String json, String jsonSchema) throws ValidationException {
+        validate(json, getJsonSchema(jsonSchema));
     }
 
     /**
@@ -105,7 +143,18 @@ public class Validator {
     /**
      * Validate a json object (in map format) against a json schema
      *
-     * @param map        map to be transformed in json and validated against the schema
+     * @param map        Map to be transformed in json and validated against the schema
+     * @param jsonSchema The schema used to validate: either the schema itself or a path to file in the classpath: "classpath:/path/to/schema.json"
+     * @throws ValidationException if validation fails
+     */
+    public static void validate(Map<String, Object> map, String jsonSchema) throws ValidationException {
+        validate(map, getJsonSchema(jsonSchema));
+    }
+
+    /**
+     * Validate a json object (in map format) against a json schema
+     *
+     * @param map        Map to be transformed in json and validated against the schema
      * @param jsonSchema the schema used to validate json map
      * @throws ValidationException if validation fails
      */
@@ -124,11 +173,23 @@ public class Validator {
      * Validate a json object (in JsonNode format) against a json schema.<br>
      * Perform the actual validation.
      *
+     * @param jsonNode   Json to be validated against the schema
+     * @param jsonSchema The schema used to validate: either the schema itself or a path to file in the classpath: "classpath:/path/to/schema.json"
+     * @throws ValidationException if validation fails
+     */
+    public static void validate(JsonNode jsonNode, String jsonSchema) throws ValidationException {
+        validate(jsonNode, getJsonSchema(jsonSchema));
+    }
+
+    /**
+     * Validate a json object (in JsonNode format) against a json schema.<br>
+     * Perform the actual validation.
+     *
      * @param jsonNode   json to be validated against the schema
      * @param jsonSchema the schema to validate json node
      * @throws ValidationException if validation fails
      */
-    public static void validate(JsonNode jsonNode, JsonSchema jsonSchema) {
+    public static void validate(JsonNode jsonNode, JsonSchema jsonSchema) throws ValidationException {
         Set<ValidationMessage> validationMessages = jsonSchema.validate(jsonNode);
         if (!validationMessages.isEmpty()) {
             String message;
@@ -158,7 +219,7 @@ public class Validator {
      * Optional: validate the schema against the version specifications.<br/>
      * Store it in memory to avoid reloading it.<br/>
      *
-     * @param schema either the schema itself of a "classpath:/path/to/schema.json"
+     * @param schema         either the schema itself of a "classpath:/path/to/schema.json"
      * @param validateSchema specify if the schema itself must be validated against specifications
      * @return the loaded json schema
      */
