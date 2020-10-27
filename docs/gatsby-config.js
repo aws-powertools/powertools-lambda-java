@@ -31,6 +31,7 @@ module.exports = {
                         'utilities/sqs_large_message_handling',
                         'utilities/batch',
                         'utilities/parameters',
+                        'utilities/validation'
                     ],
                 },
                 navConfig: {

@@ -33,6 +33,7 @@
         <module>powertools-sqs</module>
         <module>powertools-metrics</module>
         <module>powertools-parameters</module>
+        <module>powertools-validation</module>
     </modules>
 
     <scm>
@@ -70,6 +71,7 @@
         <maven-gpg-plugin.version>1.6</maven-gpg-plugin.version>
         <junit-jupiter.version>5.7.0</junit-jupiter.version>
         <aws-embedded-metrics.version>1.0.1</aws-embedded-metrics.version>
+        <jmespath.version>0.5.0</jmespath.version>
     </properties>
 
     <distributionManagement>
@@ -102,6 +104,11 @@
                 <version>${aws.sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.burt</groupId>
+                <artifactId>jmespath-jackson</artifactId>
+                <version>${jmespath.version}</version>
             </dependency>
             <dependency>
                 <groupId>software.amazon.payloadoffloading</groupId>
