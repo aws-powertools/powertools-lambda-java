@@ -17,8 +17,15 @@
         "react-dom": "^16.13.1"
     },
     "resolutions": {
+        "gatsby/*/bl": "^4.0.3",
         "gatsby/*/*/dot-prop": "^5.1.1",
-        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^1.0.1",
+        "gatsby/*/*/node-fetch": "^2.6.1",
+        "gatsby/*/*/*/node-fetch": "^2.6.1",
+        "gatsby/*/*/*/*/node-fetch": "^2.6.1",
+        "gatsby/*/node-fetch": "^2.6.1",
+        "gatsby/*/*/node-forge": "^0.10.0",
+        "gatsby-theme-apollo-docs/*/*/*/node-fetch": "^2.6.1",
+        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^4.0.3",
         "gatsby-theme-apollo-docs/*/*/*/*/semver": "^4.3.2"
     },
     "keywords": [],
