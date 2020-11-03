@@ -16,7 +16,7 @@ package software.amazon.lambda.powertools.logging.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.Logging;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class PowerToolLogEventEnabledForStream implements RequestStreamHandler {
 
-    @PowertoolsLogging(logEvent = true)
+    @Logging(logEvent = true)
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
         ObjectMapper mapper = new ObjectMapper();

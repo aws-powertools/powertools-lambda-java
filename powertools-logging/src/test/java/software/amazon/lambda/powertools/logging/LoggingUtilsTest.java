@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-class PowertoolsLoggerTest {
+class LoggingUtilsTest {
 
     @BeforeEach
     void setUp() {
@@ -32,7 +32,7 @@ class PowertoolsLoggerTest {
 
     @Test
     void shouldSetCustomKeyOnThreadContext() {
-        PowertoolsLogger.appendKey("test", "value");
+        LoggingUtils.appendKey("test", "value");
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(1)
@@ -45,7 +45,7 @@ class PowertoolsLoggerTest {
         customKeys.put("test", "value");
         customKeys.put("test1", "value1");
 
-        PowertoolsLogger.appendKeys(customKeys);
+        LoggingUtils.appendKeys(customKeys);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(2)

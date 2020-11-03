@@ -15,14 +15,14 @@ package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.Logging;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 
 public class PowerLogToolEnabledForStream implements RequestStreamHandler {
 
-    @PowertoolsLogging
+    @Logging
     @Override
     public void handleRequest(InputStream input, OutputStream output, Context context) {
 

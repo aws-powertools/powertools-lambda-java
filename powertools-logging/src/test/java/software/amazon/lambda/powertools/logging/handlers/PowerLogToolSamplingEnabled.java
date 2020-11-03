@@ -17,13 +17,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowerLogToolSamplingEnabled implements RequestHandler<Object, Object> {
     private final Logger LOG = LogManager.getLogger(PowerLogToolSamplingEnabled.class);
 
     @Override
-    @PowertoolsLogging(samplingRate = 1.0)
+    @Logging(samplingRate = 1.0)
     public Object handleRequest(Object input, Context context) {
         LOG.info("Test event");
         LOG.debug("Test debug event");

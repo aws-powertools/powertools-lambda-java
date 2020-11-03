@@ -18,8 +18,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.logging.PowertoolsLogger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
@@ -36,7 +36,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowertoolsLogging(logEvent = true, samplingRate = 0.7)
+    @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureError = false, captureResponse = false)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -52,7 +52,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
 
-        PowertoolsLogger.appendKey("test", "willBeLogged");
+        LoggingUtils.appendKey("test", "willBeLogged");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);

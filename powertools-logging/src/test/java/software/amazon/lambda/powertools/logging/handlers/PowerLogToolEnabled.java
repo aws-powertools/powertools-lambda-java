@@ -17,20 +17,20 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowerLogToolEnabled implements RequestHandler<Object, Object> {
     private final Logger LOG = LogManager.getLogger(PowerLogToolEnabled.class);
 
     @Override
-    @PowertoolsLogging
+    @Logging
     public Object handleRequest(Object input, Context context) {
         LOG.info("Test event");
         LOG.debug("Test debug event");
         return null;
     }
 
-    @PowertoolsLogging
+    @Logging
     public void anotherMethod() {
         System.out.println("test");
     }

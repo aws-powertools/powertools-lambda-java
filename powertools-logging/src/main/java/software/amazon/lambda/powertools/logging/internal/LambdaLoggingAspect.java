@@ -35,7 +35,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.Logging;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
@@ -47,8 +47,8 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.logging.PowertoolsLogger.appendKey;
-import static software.amazon.lambda.powertools.logging.PowertoolsLogger.appendKeys;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
 
 @Aspect
@@ -71,16 +71,16 @@ public final class LambdaLoggingAspect {
     }
 
     @SuppressWarnings({"EmptyMethod"})
-    @Pointcut("@annotation(powertoolsLogging)")
-    public void callAt(PowertoolsLogging powertoolsLogging) {
+    @Pointcut("@annotation(logging)")
+    public void callAt(Logging logging) {
     }
 
-    @Around(value = "callAt(powertoolsLogging) && execution(@PowertoolsLogging * *.*(..))", argNames = "pjp,powertoolsLogging")
+    @Around(value = "callAt(logging) && execution(@Logging * *.*(..))", argNames = "pjp,logging")
     public Object around(ProceedingJoinPoint pjp,
-                         PowertoolsLogging powertoolsLogging) throws Throwable {
+                         Logging logging) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
-        setLogLevelBasedOnSamplingRate(pjp, powertoolsLogging);
+        setLogLevelBasedOnSamplingRate(pjp, logging);
 
         extractContext(pjp)
                 .ifPresent(context -> {
@@ -91,7 +91,7 @@ public final class LambdaLoggingAspect {
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
 
-        if (powertoolsLogging.logEvent()) {
+        if (logging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 
@@ -108,10 +108,10 @@ public final class LambdaLoggingAspect {
     }
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
-                                                final PowertoolsLogging powertoolsLogging) {
+                                                final Logging logging) {
         if (isHandlerMethod(pjp)) {
             float sample = SAMPLER.nextFloat();
-            double samplingRate = samplingRate(powertoolsLogging);
+            double samplingRate = samplingRate(logging);
 
             if (samplingRate < 0 || samplingRate > 1) {
                 LOG.debug("Skipping sampling rate configuration because of invalid value. Sampling rate: {}", samplingRate);
@@ -131,7 +131,7 @@ public final class LambdaLoggingAspect {
         }
     }
 
-    private double samplingRate(final PowertoolsLogging powertoolsLogging) {
+    private double samplingRate(final Logging logging) {
         if (null != SAMPLING_RATE) {
             try {
                 return Double.parseDouble(SAMPLING_RATE);
@@ -140,7 +140,7 @@ public final class LambdaLoggingAspect {
                         "value. Sampling rate: {}", SAMPLING_RATE);
             }
         }
-        return powertoolsLogging.samplingRate();
+        return logging.samplingRate();
     }
 
     private Object[] logEvent(final ProceedingJoinPoint pjp) {

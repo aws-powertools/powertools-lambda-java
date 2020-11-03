@@ -8,14 +8,14 @@ import java.util.Map;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 
 public class AppStream implements RequestStreamHandler {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    @PowertoolsLogging(logEvent = true)
+    @Logging(logEvent = true)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
         Map map = mapper.readValue(input, Map.class);
