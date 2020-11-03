@@ -72,7 +72,7 @@ section.
 </build>
 ```
 
-The annotation `@LargeMessageHandler` should be used with the handleRequest method of a class
+The annotation `@SqsLargeMessage` should be used with the handleRequest method of a class
 which implements `com.amazonaws.services.lambda.runtime.RequestHandler` with
 `com.amazonaws.services.lambda.runtime.events.SQSEvent` as the first parameter.
 
@@ -80,7 +80,7 @@ which implements `com.amazonaws.services.lambda.runtime.RequestHandler` with
 public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
 
     @Override
-    @LargeMessageHandler
+    @SqsLargeMessage
     public String handleRequest(SQSEvent sqsEvent, Context context) {
     // process messages
 
@@ -89,7 +89,7 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
 }
 ```
 
-`@LargeMessageHandler` creates a default S3 Client `AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient()`.
+`@SqsLargeMessage` creates a default S3 Client `AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient()`.
 When the Lambda function is invoked with an event from SQS, each record received
 in the SQSEvent will be checked to see if it's body contains a payload which has
 been offloaded to S3. If it does then `getObject(bucket, key)` will be called,
@@ -102,7 +102,7 @@ deleted from S3 using `deleteObject(bucket, key)`
 To disable deletion of payloads setting the following annotation parameter:
 
 ```java
-@LargeMessageHandler(deletePayloads=false)
+@SqsLargeMessage(deletePayloads=false)
 public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
 
 }
@@ -112,7 +112,7 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
 
 If you want to avoid using annotation and have control over error that can happen during payload enrichment.
 
-`PowertoolsSqs.enrichedMessageFromS3()` provides you access with list of `SQSMessage` object enriched from S3 payload.
+`SqsUtils.enrichedMessageFromS3()` provides you access with list of `SQSMessage` object enriched from S3 payload.
 Original `SQSEvent` object is never mutated. You can also control if the S3 payload should be deleted after successful
 processing. You can enrich messages from S3 with below code:
 
@@ -122,7 +122,7 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
     @Override
     public String handleRequest(SQSEvent sqsEvent, Context context) {
 
-         Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
+         Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
             // Some business logic
             Map<String, String> someBusinessLogic = new HashMap<>();
             someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
@@ -130,7 +130,7 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
         });
 
          // Do not delete payload after processing.
-         Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, false, sqsMessages -> {
+         Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, false, sqsMessages -> {
             // Some business logic
             Map<String, String> someBusinessLogic = new HashMap<>();
             someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
@@ -140,7 +140,7 @@ public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
          // Better control over exception during enrichment
          try {
                // Do not delete payload after processing.
-            PowertoolsSqs.enrichedMessageFromS3(sqsEvent, false, sqsMessages -> {
+            SqsUtils.enrichedMessageFromS3(sqsEvent, false, sqsMessages -> {
                 // Some business logic
             });
          } catch (FailedProcessingLargePayloadException e) {

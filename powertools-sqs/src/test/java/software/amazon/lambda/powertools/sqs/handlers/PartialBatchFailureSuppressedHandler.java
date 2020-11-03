@@ -3,7 +3,7 @@ package software.amazon.lambda.powertools.sqs.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import software.amazon.lambda.powertools.sqs.SqsBatchProcessor;
+import software.amazon.lambda.powertools.sqs.SqsBatch;
 import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
@@ -11,7 +11,7 @@ import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProc
 
 public class PartialBatchFailureSuppressedHandler implements RequestHandler<SQSEvent, String> {
     @Override
-    @SqsBatchProcessor(value = InnerMessageHandler.class, suppressException = true)
+    @SqsBatch(value = InnerMessageHandler.class, suppressException = true)
     public String handleRequest(final SQSEvent sqsEvent,
                                 final Context context) {
         return "Success";

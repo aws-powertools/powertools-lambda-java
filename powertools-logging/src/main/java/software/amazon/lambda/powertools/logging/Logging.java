@@ -19,17 +19,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@code PowertoolsLogging} is used to signal that the annotated method should be
- * extended with PowertoolsLogging functionality.
+ * {@code Logging} is used to signal that the annotated method should be
+ * extended with Logging functionality.
  *
- * <p>{@code PowertoolsLogging} provides an opinionated logger with output structured as JSON.</p>
+ * <p>{@code Logging} provides an opinionated logger with output structured as JSON.</p>
  *
- * <p>{@code PowertoolsLogging} should be used with the handleRequest method of a class
+ * <p>{@code Logging} should be used with the handleRequest method of a class
  * which implements either
  * {@code com.amazonaws.services.lambda.runtime.RequestHandler} or
  * {@code com.amazonaws.services.lambda.runtime.RequestStreamHandler}.</p>
  *
- * <p>By default {@code PowertoolsLogging} will load the following keys and values from the Lambda
+ * <p>By default {@code Logging} will load the following keys and values from the Lambda
  * {@code com.amazonaws.services.lambda.runtime.Context}</p>
  *
  * <ul>
@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
  *     <li>MemoryLimitInMB</li>
  * </ul>
  *
- * <p>By default {@code PowertoolsLogging} will also create keys for:</p>
+ * <p>By default {@code Logging} will also create keys for:</p>
  *
  * <ul>
  *     <li>coldStart - True if this is the first invocation of this Lambda execution environment; else False</li>
@@ -52,17 +52,17 @@ import java.lang.annotation.Target;
  *
  * <p>The data and time of the log event will be written using {@link java.time.format.DateTimeFormatter#ISO_ZONED_DATE_TIME}</p>
  *
- * <p>By default {@code PowertoolsLogging} will not log the event which has trigger the invoke of the Lambda function.
- * This can be enabled using {@code @PowertoolsLogging(logEvent = true)}.</p>
+ * <p>By default {@code Logging} will not log the event which has trigger the invoke of the Lambda function.
+ * This can be enabled using {@code @Logging(logEvent = true)}.</p>
  *
- * <p>By default {@code PowertoolsLogging} all debug logs will follow log4j2 configuration unless configured via
- * POWERTOOLS_LOGGER_SAMPLE_RATE environment variable {@code @PowertoolsLogging(samplingRate = <0.0-1.0>)}.</p>
+ * <p>By default {@code Logging} all debug logs will follow log4j2 configuration unless configured via
+ * POWERTOOLS_LOGGER_SAMPLE_RATE environment variable {@code @Logging(samplingRate = <0.0-1.0>)}.</p>
  *
- * <p>To append additional keys to each log entry you can use {@link PowertoolsLogger#appendKey(String, String)}</p>
+ * <p>To append additional keys to each log entry you can use {@link LoggingUtils#appendKey(String, String)}</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface PowertoolsLogging {
+public @interface Logging {
 
     boolean logEvent() default false;
 

@@ -18,13 +18,13 @@ import java.util.Map;
 import org.apache.logging.log4j.ThreadContext;
 
 /**
- * A class of helper functions to add additional functionality to PowertoolsLogging.
+ * A class of helper functions to add additional functionality to Logging.
  *
- * {@see PowertoolsLogging}
+ * {@see Logging}
  */
-public final class PowertoolsLogger {
+public final class LoggingUtils {
 
-    private PowertoolsLogger() {
+    private LoggingUtils() {
     }
 
     /**

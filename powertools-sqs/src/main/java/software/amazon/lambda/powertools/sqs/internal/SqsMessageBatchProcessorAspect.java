@@ -5,23 +5,23 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.sqs.SqsBatchProcessor;
+import software.amazon.lambda.powertools.sqs.SqsBatch;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.batchProcessor;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.batchProcessor;
 import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.placedOnSqsEventRequestHandler;
 
 @Aspect
 public class SqsMessageBatchProcessorAspect {
 
     @SuppressWarnings({"EmptyMethod"})
-    @Pointcut("@annotation(sqsBatchProcessor)")
-    public void callAt(SqsBatchProcessor sqsBatchProcessor) {
+    @Pointcut("@annotation(sqsBatch)")
+    public void callAt(SqsBatch sqsBatch) {
     }
 
-    @Around(value = "callAt(sqsBatchProcessor) && execution(@SqsBatchProcessor * *.*(..))", argNames = "pjp,sqsBatchProcessor")
+    @Around(value = "callAt(sqsBatch) && execution(@SqsBatch * *.*(..))", argNames = "pjp,sqsBatch")
     public Object around(ProceedingJoinPoint pjp,
-                         SqsBatchProcessor sqsBatchProcessor) throws Throwable {
+                         SqsBatch sqsBatch) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)
@@ -29,7 +29,7 @@ public class SqsMessageBatchProcessorAspect {
 
             SQSEvent sqsEvent = (SQSEvent) proceedArgs[0];
 
-            batchProcessor(sqsEvent, sqsBatchProcessor.suppressException(), sqsBatchProcessor.value());
+            batchProcessor(sqsEvent, sqsBatch.suppressException(), sqsBatch.value());
         }
 
         return pjp.proceed(proceedArgs);

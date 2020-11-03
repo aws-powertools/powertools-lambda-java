@@ -10,7 +10,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
 
 /**
- * {@link SqsBatchProcessor} is used to process batch messages in {@link SQSEvent}
+ * {@link SqsBatch} is used to process batch messages in {@link SQSEvent}
  *
  * <p>
  * When using the annotation, implementation of {@link SqsMessageHandler} is required. Annotation will take care of
@@ -29,14 +29,14 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
  *
  * <p>
  * If you want to suppress the exception even if any message in batch fails, set
- * {@link SqsBatchProcessor#suppressException()} to true. By default its value is false
+ * {@link SqsBatch#suppressException()} to true. By default its value is false
  * </p>
  *
  * <pre>
  * public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
  *
  *    {@literal @}Override
- *    {@literal @}{@link SqsBatchProcessor(SqsMessageHandler)}
+ *    {@literal @}{@link SqsBatch (SqsMessageHandler)}
  *     public String handleRequest(SQSEvent sqsEvent, Context context) {
  *
  *         return "ok";
@@ -54,7 +54,7 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface SqsBatchProcessor {
+public @interface SqsBatch {
 
     Class<? extends SqsMessageHandler<Object>> value();
 

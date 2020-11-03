@@ -85,7 +85,7 @@ This utility requires additional permissions to work as expected. Lambda functio
 
 ## Processing messages from SQS
 
-You can use either **[SqsBatchProcessor annotation](#SqsBatchProcessor annotation)**, or **[PowertoolsSqs Utility API](#PowertoolsSqs Utility API)** as a fluent API.
+You can use either **[SqsBatch annotation](#sqsbatch-annotation)**, or **[SqsUtils Utility API](#sqsutils-utility-api)** as a fluent API.
 
 Both have nearly the same behaviour when it comes to processing messages from the batch:
 
@@ -94,18 +94,18 @@ Both have nearly the same behaviour when it comes to processing messages from th
     - **1)** Delete successfully processed messages from the queue by directly calling `sqs:DeleteMessageBatch`
     - **2)** Raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
 
-The only difference is that **PowertoolsSqs Utility API** will give you access to return from the processed messages if you need. Exception `SQSBatchProcessingException` thrown from the
+The only difference is that **SqsUtils Utility API** will give you access to return from the processed messages if you need. Exception `SQSBatchProcessingException` thrown from the
 utility will have access to both successful and failed messaged along with failure exceptions.
 
 ## Functional Interface SqsMessageHandler
 
-Both [annotation](#SqsBatchProcessor annotation) and [PowertoolsSqs Utility API](#PowertoolsSqs Utility API) requires an implementation of functional interface `SqsMessageHandler`.
+Both [annotation](#sqsbatch-annotation) and [SqsUtils Utility API](#sqsutils-utility-api) requires an implementation of functional interface `SqsMessageHandler`.
 
 This implementation is responsible for processing each individual message from the batch, and to raise an exception if unable to process any of the messages sent.
 
 **Any non-exception/successful return from your record handler function** will instruct utility to queue up each individual message for deletion.
 
-### SqsBatchProcessor annotation
+### SqsBatch annotation
 
 When using this annotation, you need provide a class implementation of `SqsMessageHandler` that will process individual messages from the batch - It should raise an exception if it is unable to process the record.
 
@@ -116,13 +116,12 @@ All records in the batch will be passed to this handler for processing, even if 
 
 <Note type="warning">
   You will not have accessed to the <strong>processed messages</strong> within the Lambda Handler - all processing logic will and should be performed by the implemented <code>SqsMessageHandler#process()</code> function.
-
 </Note><br/>
 
 ```java:title=App.java
 public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
     @Override
-    @SqsBatchProcessor(SampleMessageHandler.class) // highlight-line
+    @SqsBatch(SampleMessageHandler.class) // highlight-line
     public String handleRequest(SQSEvent input, Context context) {
         return "{\"statusCode\": 200}";
     }
@@ -140,17 +139,17 @@ public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
 }
 ```
 
-### PowertoolsSqs Utility API
+### SqsUtils Utility API
 
 If you require access to the result of processed messages, you can use this utility.
 
-The result from calling <code>PowertoolsSqs#batchProcessor()</code> on the context manager will be a list of all the return values from your <code>SqsMessageHandler#process()</code>  function.
+The result from calling <code>SqsUtils#batchProcessor()</code> on the context manager will be a list of all the return values from your <code>SqsMessageHandler#process()</code>  function.
 
 ```java:title=App.java
 public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
     @Override
     public List<String> handleRequest(SQSEvent input, Context context) {
-        List<String> returnValues = PowertoolsSqs.batchProcessor(input, SampleMessageHandler.class); // highlight-line
+        List<String> returnValues = SqsUtils.batchProcessor(input, SampleMessageHandler.class); // highlight-line
 
         return returnValues;
     }
@@ -176,7 +175,7 @@ public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
     @Override
     public List<String> handleRequest(SQSEvent input, Context context) {
         // highlight-start
-        List<String> returnValues = PowertoolsSqs.batchProcessor(input, (message) -> {
+        List<String> returnValues = SqsUtils.batchProcessor(input, (message) -> {
             // This will be called for each individual message from a batch
             // It should raise an exception if the message was not processed successfully
             String returnVal = doSomething(message.getBody());
@@ -192,21 +191,21 @@ public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
 ## Passing custom SqsClient
 
 If you need to pass custom SqsClient such as region to the SDK, you can pass your own `SqsClient` to be used by utility either for
-**[SqsBatchProcessor annotation](#SqsBatchProcessor annotation)**, or **[PowertoolsSqs Utility API](#PowertoolsSqs Utility API)**.
+**[SqsBatch annotation](#sqsbatch-annotation)**, or **[SqsUtils Utility API](#sqsutils-utility-api)**.
 
 ```java:title=App.java
 
 public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
     // highlight-start
     static {
-        PowertoolsSqs.overrideSqsClient(SqsClient.builder()
+        SqsUtils.overrideSqsClient(SqsClient.builder()
                 .build());
     }
     // highlight-end
 
     @Override
     public List<String> handleRequest(SQSEvent input, Context context) {
-        List<String> returnValues = PowertoolsSqs.batchProcessor(input, SampleMessageHandler.class);
+        List<String> returnValues = SqsUtils.batchProcessor(input, SampleMessageHandler.class);
 
         return returnValues;
     }
@@ -229,23 +228,23 @@ public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
 
 If you want to disable the default behavior where `SQSBatchProcessingException` is raised if there are any exception, you can pass the `suppressException` boolean argument.
 
-**Within SqsBatchProcessor annotation**
+**Within SqsBatch annotation**
 
 ```java:title=App.java
 ...
     @Override
-    @SqsBatchProcessor(value = SampleMessageHandler.class, suppressException = true) // highlight-line
+    @SqsBatch(value = SampleMessageHandler.class, suppressException = true) // highlight-line
     public String handleRequest(SQSEvent input, Context context) {
         return "{\"statusCode\": 200}";
     }
 ```
 
-**Within PowertoolsSqs Utility API**
+**Within SqsUtils Utility API**
 
 ```java:title=App.java
     @Override
     public List<String> handleRequest(SQSEvent input, Context context) {
-        List<String> returnValues = PowertoolsSqs.batchProcessor(input, true, SampleMessageHandler.class); // highlight-line
+        List<String> returnValues = SqsUtils.batchProcessor(input, true, SampleMessageHandler.class); // highlight-line
 
         return returnValues;
     }

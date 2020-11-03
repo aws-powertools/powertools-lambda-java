@@ -35,7 +35,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-class PowertoolsSqsLargeMessageTest {
+class SqsUtilsLargeMessageTest {
 
     @Mock
     private AmazonS3 amazonS3;
@@ -56,7 +56,7 @@ class PowertoolsSqsLargeMessageTest {
         when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3Response);
         SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
-        Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
+        Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
             Map<String, String> someBusinessLogic = new HashMap<>();
             someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
             return someBusinessLogic;
@@ -78,7 +78,7 @@ class PowertoolsSqsLargeMessageTest {
         when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3Response);
         SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
-        Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, deleteS3Payload, sqsMessages -> {
+        Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, deleteS3Payload, sqsMessages -> {
             Map<String, String> someBusinessLogic = new HashMap<>();
             someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
             return someBusinessLogic;
@@ -102,7 +102,7 @@ class PowertoolsSqsLargeMessageTest {
         when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3Response);
         SQSEvent sqsEvent = messageWithBody("This is small message");
 
-        Map<String, String> sqsMessage = PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
+        Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages -> {
             Map<String, String> someBusinessLogic = new HashMap<>();
             someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
             return someBusinessLogic;
@@ -123,7 +123,7 @@ class PowertoolsSqsLargeMessageTest {
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
         assertThatExceptionOfType(SqsLargeMessageAspect.FailedProcessingLargePayloadException.class)
-                .isThrownBy(() -> PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> sqsMessages.get(0).getBody()))
+                .isThrownBy(() -> SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages -> sqsMessages.get(0).getBody()))
                 .withCause(exception);
 
         verify(amazonS3, never()).deleteObject(BUCKET_NAME, BUCKET_KEY);
@@ -146,7 +146,7 @@ class PowertoolsSqsLargeMessageTest {
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
         assertThatExceptionOfType(SqsLargeMessageAspect.FailedProcessingLargePayloadException.class)
-                .isThrownBy(() -> PowertoolsSqs.enrichedMessageFromS3(sqsEvent, sqsMessages -> sqsMessages.get(0).getBody()))
+                .isThrownBy(() -> SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages -> sqsMessages.get(0).getBody()))
                 .withCauseInstanceOf(IOException.class);
 
         verify(amazonS3, never()).deleteObject(BUCKET_NAME, BUCKET_KEY);

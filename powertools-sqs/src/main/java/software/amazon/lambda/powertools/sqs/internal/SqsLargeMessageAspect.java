@@ -20,7 +20,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.sqs.LargeMessageHandler;
+import software.amazon.lambda.powertools.sqs.SqsLargeMessage;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
@@ -34,13 +34,13 @@ public class SqsLargeMessageAspect {
     private static AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient();
 
     @SuppressWarnings({"EmptyMethod"})
-    @Pointcut("@annotation(largeMessageHandler)")
-    public void callAt(LargeMessageHandler largeMessageHandler) {
+    @Pointcut("@annotation(sqsLargeMessage)")
+    public void callAt(SqsLargeMessage sqsLargeMessage) {
     }
 
-    @Around(value = "callAt(largeMessageHandler) && execution(@LargeMessageHandler * *.*(..))", argNames = "pjp,largeMessageHandler")
+    @Around(value = "callAt(sqsLargeMessage) && execution(@SqsLargeMessage * *.*(..))", argNames = "pjp,sqsLargeMessage")
     public Object around(ProceedingJoinPoint pjp,
-                         LargeMessageHandler largeMessageHandler) throws Throwable {
+                         SqsLargeMessage sqsLargeMessage) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)
@@ -49,7 +49,7 @@ public class SqsLargeMessageAspect {
 
             Object proceed = pjp.proceed(proceedArgs);
 
-            if (largeMessageHandler.deletePayloads()) {
+            if (sqsLargeMessage.deletePayloads()) {
                 pointersToDelete.forEach(this::deleteMessageFromS3);
             }
             return proceed;

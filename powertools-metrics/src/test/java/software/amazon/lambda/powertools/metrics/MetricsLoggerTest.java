@@ -2,7 +2,6 @@ package software.amazon.lambda.powertools.metrics;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Collections;
 import java.util.Map;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,7 +19,7 @@ import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
 
-class PowertoolsMetricsLoggerTest {
+class MetricsLoggerTest {
 
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
@@ -48,7 +47,7 @@ class PowertoolsMetricsLoggerTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            PowertoolsMetricsLogger.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
+            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
                     metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
 
             assertThat(out.toString())

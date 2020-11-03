@@ -26,7 +26,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
  * of use.
  *
  */
-public final class PowerTracer {
+public final class TracingUtils {
 
     /**
      * Put an annotation to the current subsegment.
@@ -44,7 +44,7 @@ public final class PowerTracer {
      *
      * The namespace used will be the namespace of the current subsegment if it
      * is set else it will follow the namespace process as described in
-     * {@link PowertoolsTracing}
+     * {@link Tracing}
      *
      * @param key the key of the metadata
      * @param value the value of the metadata
@@ -72,7 +72,7 @@ public final class PowerTracer {
      * Adds a new subsegment around the passed consumer. This also provides access to
      * the newly created subsegment.
      *
-     * The namespace used follows the flow as described in {@link PowertoolsTracing}
+     * The namespace used follows the flow as described in {@link Tracing}
      *
      * This method is intended for use with multi-threaded programming where the
      * context is lost between threads.
@@ -107,7 +107,7 @@ public final class PowerTracer {
      * Adds a new subsegment around the passed consumer. This also provides access to
      * the newly created subsegment.
      *
-     * The namespace used follows the flow as described in {@link PowertoolsTracing}
+     * The namespace used follows the flow as described in {@link Tracing}
      *
      * @param name the name of the subsegment
      * @param subsegment the x-ray subsegment for the wrapped consumer

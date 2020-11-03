@@ -25,10 +25,10 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.batchProcessor;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.overrideSqsClient;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.batchProcessor;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
 
-class PowertoolsSqsBatchProcessorTest {
+class SqsUtilsBatchProcessorTest {
 
     private static final SqsClient sqsClient = mock(SqsClient.class);
     private static final SqsClient interactionClient = mock(SqsClient.class);

@@ -18,16 +18,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.logging.PowertoolsLogger;
-import software.amazon.lambda.powertools.logging.PowertoolsLogging;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
-import software.amazon.lambda.powertools.tracing.PowerTracer;
-import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.tracing.TracingUtils;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.withSingleMetric;
-import static software.amazon.lambda.powertools.tracing.PowerTracer.putMetadata;
-import static software.amazon.lambda.powertools.tracing.PowerTracer.withEntitySubsegment;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
+import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
+import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
 /**
  * Handler for requests to Lambda function.
@@ -36,9 +36,9 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowertoolsLogging(logEvent = true, samplingRate = 0.7)
-    @PowertoolsTracing(captureError = false, captureResponse = false)
-    @PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @Logging(logEvent = true, samplingRate = 0.7)
+    @Tracing(captureError = false, captureResponse = false)
+    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
@@ -52,17 +52,17 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
 
-        PowertoolsLogger.appendKey("test", "willBeLogged");
+        LoggingUtils.appendKey("test", "willBeLogged");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
         try {
             final String pageContents = this.getPageContents("https://checkip.amazonaws.com");
             log.info(pageContents);
-            PowerTracer.putAnnotation("Test", "New");
+            TracingUtils.putAnnotation("Test", "New");
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
-            PowerTracer.withSubsegment("loggingResponse", subsegment -> {
+            TracingUtils.withSubsegment("loggingResponse", subsegment -> {
                 String sampled = "log something out";
                 log.info(sampled);
                 log.info(output);
@@ -103,13 +103,13 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         anotherThread.join();
     }
 
-    @PowertoolsTracing
+    @Tracing
     private void log() {
         log.info("inside threaded logging for function");
     }
 
 
-    @PowertoolsTracing(namespace = "getPageContents", captureResponse = false, captureError = false)
+    @Tracing(namespace = "getPageContents", captureResponse = false, captureError = false)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
         putMetadata("getPageContents", address);

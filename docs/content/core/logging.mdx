@@ -81,8 +81,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowertoolsLogger;
-import software.amazon.lambda.logging.PowertoolsLogging;
+import software.amazon.lambda.logging.LoggingUtils;
+import software.amazon.lambda.logging.Logging;
 ...
 
 /**
@@ -92,7 +92,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowertoolsLogging
+    @Logging
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
      ...
     }
@@ -110,8 +110,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowertoolsLogger;
-import software.amazon.lambda.logging.PowertoolsLogging;
+import software.amazon.lambda.logging.LoggingUtils;
+import software.amazon.lambda.logging.Logging;
 ...
 
 /**
@@ -121,7 +121,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
     
-    @PowertoolsLogging(logEvent = true)
+    @Logging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
      ...
     }
@@ -137,8 +137,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowertoolsLogger;
-import software.amazon.lambda.logging.PowertoolsLogging;
+import software.amazon.lambda.logging.LoggingUtils;
+import software.amazon.lambda.logging.Logging;
 ...
 
 /**
@@ -148,10 +148,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowertoolsLogging(logEvent = true)
+    @Logging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         ...
-        PowertoolsLogger.appendKey("test", "willBeLogged");
+        LoggingUtils.appendKey("test", "willBeLogged");
         ...
 
         ...
@@ -159,7 +159,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
          customKeys.put("test", "value");
          customKeys.put("test1", "value1");
 
-         PowertoolsLogger.appendKeys(customKeys);
+         LoggingUtils.appendKeys(customKeys);
         ...
     }
 }
@@ -177,8 +177,8 @@ package helloworld;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.logging.PowertoolsLogger;
-import software.amazon.lambda.logging.PowertoolsLogging;
+import software.amazon.lambda.logging.LoggingUtils;
+import software.amazon.lambda.logging.Logging;
 ...
 
 /**
@@ -188,7 +188,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     Logger log = LogManager.getLogger();
 
-    @PowertoolsLogging(samplingRate = 0.5)
+    @Logging(samplingRate = 0.5)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
      ...
     }
