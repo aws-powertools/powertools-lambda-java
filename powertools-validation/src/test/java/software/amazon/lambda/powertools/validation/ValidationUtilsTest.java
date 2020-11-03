@@ -14,21 +14,21 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
-import static software.amazon.lambda.powertools.validation.Validator.getJsonSchema;
-import static software.amazon.lambda.powertools.validation.Validator.validate;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 
-public class ValidatorTest {
+public class ValidationUtilsTest {
 
     private JsonSchema schema = getJsonSchema("classpath:/schema_v7.json");
 
     @BeforeEach
     public void setup() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
     }
 
     @Test
     public void testLoadSchemaV7OK() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schema_v7.json", true);
         assertThat(jsonSchema).isNotNull();
         assertThat(jsonSchema.getCurrentUri()).asString().isEqualTo("http://example.com/product.json");
@@ -36,7 +36,7 @@ public class ValidatorTest {
 
     @Test
     public void testLoadSchemaV7KO() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
         assertThatThrownBy(() -> getJsonSchema("classpath:/schema_v7_ko.json", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification V7");
@@ -44,41 +44,41 @@ public class ValidatorTest {
 
     @Test
     public void testLoadMetaSchema_NoValidation() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
         getJsonSchema("classpath:/schemas/meta_schema_V201909", false);
     }
 
     @Test
     public void testLoadMetaSchemaV2019() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V201909", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV7() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V7", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV6() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V6);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V6);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V6", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV4() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V4", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadSchemaV4OK() {
-        ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schema_v4.json", true);
         assertThat(jsonSchema).isNotNull();
     }
@@ -92,14 +92,14 @@ public class ValidatorTest {
 
     @Test
     public void testValidateJsonNodeOK() throws IOException {
-        JsonNode node = ValidatorConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ok.json"));
+        JsonNode node = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ok.json"));
 
         validate(node, schema);
     }
 
     @Test
     public void testValidateJsonNodeKO() throws IOException {
-        JsonNode node = ValidatorConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ko.json"));
+        JsonNode node = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ko.json"));
 
         assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> validate(node, schema));
     }

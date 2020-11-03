@@ -20,14 +20,14 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.validation.Validation;
-import software.amazon.lambda.powertools.validation.ValidatorConfig;
+import software.amazon.lambda.powertools.validation.ValidationConfig;
 
 import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
-import static software.amazon.lambda.powertools.validation.Validator.getJsonSchema;
-import static software.amazon.lambda.powertools.validation.Validator.validate;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 import static software.amazon.lambda.powertools.validation.jmespath.Base64Function.decode;
 import static software.amazon.lambda.powertools.validation.jmespath.Base64GZipFunction.decompress;
 
@@ -48,7 +48,7 @@ public class ValidationAspect {
         boolean validationNeeded = false;
 
         if (validation.schemaVersion() != V201909) {
-            ValidatorConfig.get().setSchemaVersion(validation.schemaVersion());
+            ValidationConfig.get().setSchemaVersion(validation.schemaVersion());
         }
 
         if (isHandlerMethod(pjp)

@@ -5,7 +5,6 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import software.amazon.lambda.powertools.validation.Validation;
-import software.amazon.lambda.powertools.validation.Validator;
 
 import java.io.BufferedReader;
 import java.io.IOException;

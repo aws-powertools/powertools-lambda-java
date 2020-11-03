@@ -26,8 +26,8 @@ public class Base64GZipFunctionTest {
 
     @Test
     public void testPowertoolsGzip() throws IOException {
-        JsonNode event = ValidatorConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
-        Expression<JsonNode> expression = ValidatorConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(hiddenProduct)");
+        JsonNode event = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
+        Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(hiddenProduct)");
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(result.asText()).isEqualTo("{  \"id\": 43242,  \"name\": \"FooBar XY\",  \"price\": 258}");
