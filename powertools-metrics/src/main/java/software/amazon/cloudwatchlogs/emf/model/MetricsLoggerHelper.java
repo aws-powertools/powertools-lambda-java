@@ -2,7 +2,7 @@ package software.amazon.cloudwatchlogs.emf.model;
 
 import java.lang.reflect.Field;
 
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
 public final class MetricsLoggerHelper {
     private MetricsLoggerHelper() {

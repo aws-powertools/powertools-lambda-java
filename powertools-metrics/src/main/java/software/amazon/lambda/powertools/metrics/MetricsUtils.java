@@ -7,20 +7,20 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 /**
  * A class used to retrieve the instance of the {@code MetricsLogger} used by
- * {@code PowertoolsMetrics}.
+ * {@code Metrics}.
  *
- * {@see PowertoolsMetrics}
+ * {@see Metrics}
  */
-public final class PowertoolsMetricsLogger {
+public final class MetricsUtils {
     private static final MetricsLogger metricsLogger = new MetricsLogger();
 
-    private PowertoolsMetricsLogger() {
+    private MetricsUtils() {
     }
 
     /**
-     * The instance of the {@code MetricsLogger} used by {@code PowertoolsMetrics}.
+     * The instance of the {@code MetricsLogger} used by {@code Metrics}.
      *
-     * @return The instance of the MetricsLogger used by PowertoolsMetrics.
+     * @return The instance of the MetricsLogger used by Metrics.
      */
     public static MetricsLogger metricsLogger() {
         return metricsLogger;

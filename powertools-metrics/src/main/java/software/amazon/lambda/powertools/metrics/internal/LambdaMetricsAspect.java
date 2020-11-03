@@ -12,7 +12,7 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
+import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 
 import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
@@ -24,21 +24,21 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.withSingleMetric;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 
 @Aspect
 public class LambdaMetricsAspect {
     private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
 
     @SuppressWarnings({"EmptyMethod"})
-    @Pointcut("@annotation(powertoolsMetrics)")
-    public void callAt(PowertoolsMetrics powertoolsMetrics) {
+    @Pointcut("@annotation(metrics)")
+    public void callAt(Metrics metrics) {
     }
 
-    @Around(value = "callAt(powertoolsMetrics) && execution(@PowertoolsMetrics * *.*(..))", argNames = "pjp,powertoolsMetrics")
+    @Around(value = "callAt(metrics) && execution(@Metrics * *.*(..))", argNames = "pjp,metrics")
     public Object around(ProceedingJoinPoint pjp,
-                         PowertoolsMetrics powertoolsMetrics) throws Throwable {
+                         Metrics metrics) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)
@@ -47,17 +47,17 @@ public class LambdaMetricsAspect {
 
             MetricsLogger logger = metricsLogger();
 
-            logger.setNamespace(namespace(powertoolsMetrics))
-                    .putDimensions(DimensionSet.of("Service", service(powertoolsMetrics)));
+            logger.setNamespace(namespace(metrics))
+                    .putDimensions(DimensionSet.of("Service", service(metrics)));
 
-            coldStartSingleMetricIfApplicable(pjp, powertoolsMetrics);
+            coldStartSingleMetricIfApplicable(pjp, metrics);
 
             try {
                 Object proceed = pjp.proceed(proceedArgs);
 
                 coldStartDone();
 
-                validateBeforeFlushingMetrics(powertoolsMetrics);
+                validateBeforeFlushingMetrics(metrics);
 
                 logger.flush();
                 return proceed;
@@ -71,8 +71,8 @@ public class LambdaMetricsAspect {
     }
 
     private void coldStartSingleMetricIfApplicable(final ProceedingJoinPoint pjp,
-                                                   final PowertoolsMetrics powertoolsMetrics) {
-        if (powertoolsMetrics.captureColdStart()
+                                                   final Metrics metrics) {
+        if (metrics.captureColdStart()
                 && isColdStart()) {
 
             Optional<Context> contextOptional = extractContext(pjp);
@@ -80,14 +80,14 @@ public class LambdaMetricsAspect {
             if (contextOptional.isPresent()) {
                 Context context = contextOptional.orElseThrow(() -> new IllegalStateException("Context not found"));
 
-                withSingleMetric("ColdStart", 1, Unit.COUNT, namespace(powertoolsMetrics), (logger) ->
-                        logger.setDimensions(DimensionSet.of("Service", service(powertoolsMetrics), "FunctionName", context.getFunctionName())));
+                withSingleMetric("ColdStart", 1, Unit.COUNT, namespace(metrics), (logger) ->
+                        logger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", context.getFunctionName())));
             }
         }
     }
 
-    private void validateBeforeFlushingMetrics(PowertoolsMetrics powertoolsMetrics) {
-        if (powertoolsMetrics.raiseOnEmptyMetrics() && hasNoMetrics()) {
+    private void validateBeforeFlushingMetrics(Metrics metrics) {
+        if (metrics.raiseOnEmptyMetrics() && hasNoMetrics()) {
             throw new ValidationException("No metrics captured, at least one metrics must be emitted");
         }
 
@@ -97,12 +97,12 @@ public class LambdaMetricsAspect {
         }
     }
 
-    private String namespace(PowertoolsMetrics powertoolsMetrics) {
-        return !"".equals(powertoolsMetrics.namespace()) ? powertoolsMetrics.namespace() : NAMESPACE;
+    private String namespace(Metrics metrics) {
+        return !"".equals(metrics.namespace()) ? metrics.namespace() : NAMESPACE;
     }
 
-    private String service(PowertoolsMetrics powertoolsMetrics) {
-        return !"".equals(powertoolsMetrics.service()) ? powertoolsMetrics.service() : serviceName();
+    private String service(Metrics metrics) {
+        return !"".equals(metrics.service()) ? metrics.service() : serviceName();
     }
 
     // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed

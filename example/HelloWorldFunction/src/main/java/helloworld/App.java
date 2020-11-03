@@ -20,12 +20,12 @@ import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.PowertoolsLogger;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
+import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger.withSingleMetric;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
@@ -38,7 +38,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     @PowertoolsLogging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureError = false, captureResponse = false)
-    @PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 

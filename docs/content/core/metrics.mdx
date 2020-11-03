@@ -44,15 +44,15 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetrics;
-import software.amazon.lambda.powertools.metrics.PowertoolsMetricsLogger;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
 
-public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, Object> {
+public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
 
-    MetricsLogger metricsLogger = PowertoolsMetricsLogger.metricsLogger();
+    MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
 
     @Override
-    @PowertoolsMetrics(namespace = "ExampleApplication", service = "booking")
+    @Metrics(namespace = "ExampleApplication", service = "booking")
     public Object handleRequest(Object input, Context context) {
         ...
     }
@@ -66,12 +66,12 @@ You can initialize Metrics anywhere in your code as many times as you need - It'
 You can create metrics using `putMetric`, and manually create dimensions for all your aggregate metrics using `add_dimension`.
 
 ```java:title=Handler.java
-public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, Object> {
+public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
 
-    MetricsLogger metricsLogger = PowertoolsMetricsLogger.metricsLogger();
+    MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
 
     @Override
-    @PowertoolsMetrics(namespace = "ExampleApplication", service = "booking")
+    @Metrics(namespace = "ExampleApplication", service = "booking")
     public Object handleRequest(Object input, Context context) {
         // highlight-start
         metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
@@ -111,7 +111,7 @@ You can use `putMetadata` for advanced use cases, where you want to metadata as 
 </Note><br/>
 
 ```java:title=Handler.java
-@PowertoolsMetrics(namespace = "ServerlessAirline", service = "payment")
+@Metrics(namespace = "ServerlessAirline", service = "payment")
 public APIGatewayProxyResponseEvent handleRequest(Object input, Context context) {
     metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
     metricsLogger().putMetadata("booking_id", "1234567890"); // highlight-line
@@ -121,17 +121,17 @@ public APIGatewayProxyResponseEvent handleRequest(Object input, Context context)
 
 This will be available in CloudWatch Logs to ease operations on high cardinal data.
 
-The `@PowertoolsMetrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, if no metrics are provided no exception will be raised.
+The `@Metrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, if no metrics are provided no exception will be raised.
 
 If metrics are provided, and any of the following criteria are not met, `ValidationException` exception will be raised:
 
 * Minimum of 1 dimension
 * Maximum of 9 dimensions
 
-If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@PowertoolsMetrics** annotation:
+If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@Metrics** annotation:
 
 ```java:title=Handler.java
-@PowertoolsMetrics(raiseOnEmptyMetrics = true)
+@Metrics(raiseOnEmptyMetrics = true)
 public Object handleRequest(Object input, Context context) {
 ...
 }
@@ -139,10 +139,10 @@ public Object handleRequest(Object input, Context context) {
 
 ## Capturing cold start metric
 
-You can capture cold start metrics automatically with `@PowertoolsMetrics` via the `captureColdStart` variable.
+You can capture cold start metrics automatically with `@Metrics` via the `captureColdStart` variable.
 
 ```java:title=Handler.java
-@PowertoolsMetrics(captureColdStart = true)
+@Metrics(captureColdStart = true)
 public Object handleRequest(Object input, Context context) {
 ...
 }
