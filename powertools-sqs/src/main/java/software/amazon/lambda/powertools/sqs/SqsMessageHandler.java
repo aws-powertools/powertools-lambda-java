@@ -13,11 +13,11 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
  * <p>
  * It is required by utilities:
  * <ul>
- *   <li>{@link SqsBatchProcessor}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, Class)}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, Class)}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, SqsMessageHandler)}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}</li>
+ *   <li>{@link SqsBatch}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, Class)}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, SqsMessageHandler)}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}</li>
  * </ul>
  * </p>
  * @param <R> Return value type from {@link SqsMessageHandler#process(SQSMessage)}

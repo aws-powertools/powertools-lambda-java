@@ -6,7 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.sqs.SqsBatchProcessor;
+import software.amazon.lambda.powertools.sqs.SqsBatch;
 import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
@@ -15,7 +15,7 @@ public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
     private static final Logger LOG = LogManager.getLogger(AppSqsEvent.class);
 
     @Override
-    @SqsBatchProcessor(SampleMessageHandler.class)
+    @SqsBatch(SampleMessageHandler.class)
     @Logging(logEvent = true)
     public String handleRequest(SQSEvent input, Context context) {
         return "{\"statusCode\": 200}";

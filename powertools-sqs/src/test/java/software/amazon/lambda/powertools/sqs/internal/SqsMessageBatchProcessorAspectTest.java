@@ -29,7 +29,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static software.amazon.lambda.powertools.sqs.PowertoolsSqs.overrideSqsClient;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
 
 public class SqsMessageBatchProcessorAspectTest {
     public static final Random mockedRandom = mock(Random.class);

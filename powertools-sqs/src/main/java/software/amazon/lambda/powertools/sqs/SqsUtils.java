@@ -35,17 +35,17 @@ import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspe
 /**
  * A class of helper functions to add additional functionality to {@link SQSEvent} processing.
  */
-public final class PowertoolsSqs {
-    private static final Log LOG = LogFactory.getLog(PowertoolsSqs.class);
+public final class SqsUtils {
+    private static final Log LOG = LogFactory.getLog(SqsUtils.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static SqsClient client = SqsClient.create();
 
-    private PowertoolsSqs() {
+    private SqsUtils() {
     }
 
     /**
-     * This is a utility method when you want to avoid using {@code LargeMessageHandler} annotation.
+     * This is a utility method when you want to avoid using {@code SqsLargeMessage} annotation.
      * Gives you access to enriched messages from S3 in the SQS event produced via extended client lib.
      * If all the large S3 payload are successfully retrieved, it will delete them from S3 post success.
      *
@@ -59,7 +59,7 @@ public final class PowertoolsSqs {
     }
 
     /**
-     * This is a utility method when you want to avoid using {@code LargeMessageHandler} annotation.
+     * This is a utility method when you want to avoid using {@code SqsLargeMessage} annotation.
      * Gives you access to enriched messages from S3 in the SQS event produced via extended client lib.
      * if all the large S3 payload are successfully retrieved, Control if it will delete payload from S3 post success.
      *
@@ -72,7 +72,7 @@ public final class PowertoolsSqs {
                                               final Function<List<SQSMessage>, R> messageFunction) {
 
         List<SQSMessage> sqsMessages = sqsEvent.getRecords().stream()
-                .map(PowertoolsSqs::clonedMessage)
+                .map(SqsUtils::clonedMessage)
                 .collect(Collectors.toList());
 
         List<PayloadS3Pointer> s3Pointers = processMessages(sqsMessages);
@@ -93,7 +93,7 @@ public final class PowertoolsSqs {
      * @param client {@link SqsClient} to be used by utility
      */
     public static void overrideSqsClient(SqsClient client) {
-        PowertoolsSqs.client = client;
+        SqsUtils.client = client;
     }
 
     /**
@@ -116,7 +116,7 @@ public final class PowertoolsSqs {
      *
      * <p>
      * If you dont want to utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
-     * it, Refer {@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, Class)}
+     * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}
      * </p>
      *
      * @param event   {@link SQSEvent} received by lambda function.
@@ -184,7 +184,7 @@ public final class PowertoolsSqs {
      *
      * <p>
      * If you dont want to utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
-     * it, Refer {@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}
+     * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}
      * </p>
      *
      * @param event   {@link SQSEvent} received by lambda function.

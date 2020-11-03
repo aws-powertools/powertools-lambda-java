@@ -17,11 +17,11 @@ import static java.util.stream.Collectors.joining;
  * <p>
  * This exception can be thrown form:
  * <ul>
- *   <li>{@link SqsBatchProcessor}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, Class)}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, Class)}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, SqsMessageHandler)}</li>
- *   <li>{@link PowertoolsSqs#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}</li>
+ *   <li>{@link SqsBatch}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, Class)}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, SqsMessageHandler)}</li>
+ *   <li>{@link SqsUtils#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}</li>
  * </ul>
  * </p>
  */
