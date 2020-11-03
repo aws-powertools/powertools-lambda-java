@@ -85,7 +85,7 @@ This utility requires additional permissions to work as expected. Lambda functio
 
 ## Processing messages from SQS
 
-You can use either **[SqsBatch annotation](#SqsBatch annotation)**, or **[SqsUtils Utility API](#SqsUtils Utility API)** as a fluent API.
+You can use either **[SqsBatch annotation](#sqsbatch-annotation)**, or **[SqsUtils Utility API](#sqsutils-utility-api)** as a fluent API.
 
 Both have nearly the same behaviour when it comes to processing messages from the batch:
 
@@ -99,7 +99,7 @@ utility will have access to both successful and failed messaged along with failu
 
 ## Functional Interface SqsMessageHandler
 
-Both [annotation](#SqsBatch annotation) and [SqsUtils Utility API](#SqsUtils Utility API) requires an implementation of functional interface `SqsMessageHandler`.
+Both [annotation](#sqsbatch-annotation) and [SqsUtils Utility API](#sqsutils-utility-api) requires an implementation of functional interface `SqsMessageHandler`.
 
 This implementation is responsible for processing each individual message from the batch, and to raise an exception if unable to process any of the messages sent.
 
@@ -116,7 +116,6 @@ All records in the batch will be passed to this handler for processing, even if 
 
 <Note type="warning">
   You will not have accessed to the <strong>processed messages</strong> within the Lambda Handler - all processing logic will and should be performed by the implemented <code>SqsMessageHandler#process()</code> function.
-
 </Note><br/>
 
 ```java:title=App.java
@@ -192,7 +191,7 @@ public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
 ## Passing custom SqsClient
 
 If you need to pass custom SqsClient such as region to the SDK, you can pass your own `SqsClient` to be used by utility either for
-**[SqsBatch annotation](#SqsBatch annotation)**, or **[SqsUtils Utility API](#SqsUtils Utility API)**.
+**[SqsBatch annotation](#sqsbatch-annotation)**, or **[SqsUtils Utility API](#sqsutils-utility-api)**.
 
 ```java:title=App.java
 
