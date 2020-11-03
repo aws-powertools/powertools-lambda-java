@@ -16,32 +16,32 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-tracing</artifactId>
-            <version>0.6.0-beta</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
-            <version>0.6.0-beta</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-metrics</artifactId>
-            <version>0.6.0-beta</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-parameters</artifactId>
-            <version>0.6.0-beta</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-validation</artifactId>
-            <version>0.6.0-beta</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-sqs</artifactId>
-            <version>0.6.0-beta</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
