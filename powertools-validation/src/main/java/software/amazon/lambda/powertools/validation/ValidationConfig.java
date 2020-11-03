@@ -31,15 +31,15 @@ import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKN
  * Use this if you need to customize some part of the JSON Schema validation
  * (eg. specification version, Jackson ObjectMapper, or adding functions to JMESPath)
  */
-public class ValidatorConfig {
-    private ValidatorConfig() {
+public class ValidationConfig {
+    private ValidationConfig() {
     }
 
     private static class ConfigHolder {
-        private final static ValidatorConfig instance = new ValidatorConfig();
+        private final static ValidationConfig instance = new ValidationConfig();
     }
 
-    public static ValidatorConfig get() {
+    public static ValidationConfig get() {
         return ConfigHolder.instance;
     }
 

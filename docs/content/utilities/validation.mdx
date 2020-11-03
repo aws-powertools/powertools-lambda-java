@@ -101,7 +101,7 @@ Validate standalone function is used within the Lambda handler, or any other met
 You can also gracefully handle schema validation errors by catching `ValidationException`.
 
 ```java
-import static software.amazon.lambda.powertools.validation.Validator.*;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.*;
 
 public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
@@ -289,7 +289,7 @@ public class XMLFunction extends BaseFunction {
 Once your function is created, you need to add it to powertools:
 
 ```java
-ValidatorConfig.get().addFunction(new XMLFunction());
+ValidationConfig.get().addFunction(new XMLFunction());
 ```
 
 You can then use it to do your validation:
@@ -317,16 +317,16 @@ public class MyXMLEventHandler implements RequestHandler<MyEventWithXML, String>
 
 ## Change the schema version
 By default, powertools-validation is configured with [V7](https://json-schema.org/draft-07/json-schema-release-notes.html).
-You can use the `ValidatorConfig` to change that behaviour:
+You can use the `ValidationConfig` to change that behaviour:
 
 ```java
-ValidatorConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
 ```
 
 ## Advanced ObjectMapper settings
-If you need to configure the Jackson ObjectMapper, you can use the `ValidatorConfig`:
+If you need to configure the Jackson ObjectMapper, you can use the `ValidationConfig`:
 
 ```java
-ObjectMapper objectMapper= ValidatorConfig.get().getObjectMapper();
+ObjectMapper objectMapper= ValidationConfig.get().getObjectMapper();
 // update (de)serializationConfig or other properties
 ```

@@ -30,10 +30,13 @@ import java.util.stream.Collectors;
 /**
  * Validation utility, used to manually validate Json against Json Schema
  */
-public class Validator {
+public class ValidationUtils {
     private static final String CLASSPATH = "classpath:";
 
     private static final ConcurrentHashMap<String, JsonSchema> schemas = new ConcurrentHashMap<>();
+
+    private ValidationUtils() {
+    }
 
     /**
      * Validate part of a json object against a json schema
@@ -60,8 +63,8 @@ public class Validator {
         }
         JsonNode subNode;
         try {
-            JsonNode jsonNode = ValidatorConfig.get().getObjectMapper().valueToTree(obj);
-            Expression<JsonNode> expression = ValidatorConfig.get().getJmesPath().compile(envelope);
+            JsonNode jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(obj);
+            Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile(envelope);
             subNode = expression.search(jsonNode);
         } catch (Exception e) {
             throw new ValidationException("Cannot find envelope <"+envelope+"> in the object <"+obj+">", e);
@@ -103,7 +106,7 @@ public class Validator {
     public static void validate(Object obj, JsonSchema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
-            jsonNode = ValidatorConfig.get().getObjectMapper().valueToTree(obj);
+            jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(obj);
         } catch (Exception e) {
             throw new ValidationException("Object <"+obj+"> is not valid against the schema provided", e);
         }
@@ -132,7 +135,7 @@ public class Validator {
     public static void validate(String json, JsonSchema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
-            jsonNode = ValidatorConfig.get().getObjectMapper().readTree(json);
+            jsonNode = ValidationConfig.get().getObjectMapper().readTree(json);
         } catch (Exception e) {
             throw new ValidationException("Json <"+json+"> is not valid against the schema provided", e);
         }
@@ -161,7 +164,7 @@ public class Validator {
     public static void validate(Map<String, Object> map, JsonSchema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
-            jsonNode = ValidatorConfig.get().getObjectMapper().valueToTree(map);
+            jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(map);
         } catch (Exception e) {
             throw new ValidationException("Map <"+map+"> cannot be converted to json for validation", e);
         }
@@ -194,7 +197,7 @@ public class Validator {
         if (!validationMessages.isEmpty()) {
             String message;
             try {
-                message = ValidatorConfig.get().getObjectMapper().writeValueAsString(new ValidationErrors(validationMessages));
+                message = ValidationConfig.get().getObjectMapper().writeValueAsString(new ValidationErrors(validationMessages));
             } catch (JsonProcessingException e) {
                 message = validationMessages.stream().map(ValidationMessage::getMessage).collect(Collectors.joining(", "));
             }
@@ -233,13 +236,13 @@ public class Validator {
                 if (schemaStream == null) {
                     throw new IllegalArgumentException("'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
                 }
-                jsonSchema = ValidatorConfig.get().getFactory().getSchema(schemaStream);
+                jsonSchema = ValidationConfig.get().getFactory().getSchema(schemaStream);
             } else {
-                jsonSchema = ValidatorConfig.get().getFactory().getSchema(schema);
+                jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
             }
 
             if (validateSchema) {
-                String version = ValidatorConfig.get().getSchemaVersion().toString();
+                String version = ValidationConfig.get().getSchemaVersion().toString();
                 try {
                     validate(jsonSchema.getSchemaNode(),
                             getJsonSchema("classpath:/schemas/meta_schema_" + version));

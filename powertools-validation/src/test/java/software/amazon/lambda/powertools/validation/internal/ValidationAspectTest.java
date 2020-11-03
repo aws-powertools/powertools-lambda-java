@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import software.amazon.lambda.powertools.validation.ValidationException;
-import software.amazon.lambda.powertools.validation.ValidatorConfig;
+import software.amazon.lambda.powertools.validation.ValidationConfig;
 import software.amazon.lambda.powertools.validation.handlers.*;
 import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
 
@@ -92,7 +92,7 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_SQS() throws IOException {
-        SQSEvent event = ValidatorConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/sqs.json"), SQSEvent.class);
+        SQSEvent event = ValidationConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/sqs.json"), SQSEvent.class);
 
         SQSHandler handler = new SQSHandler();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
@@ -100,7 +100,7 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_Kinesis() throws IOException {
-        KinesisEvent event = ValidatorConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/kinesis.json"), KinesisEvent.class);
+        KinesisEvent event = ValidationConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/kinesis.json"), KinesisEvent.class);
 
         KinesisHandler handler = new KinesisHandler();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
@@ -108,7 +108,7 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_CustomObject() throws IOException {
-        MyCustomEvent event = ValidatorConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/custom_event.json"), MyCustomEvent.class);
+        MyCustomEvent event = ValidationConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/custom_event.json"), MyCustomEvent.class);
 
         MyCustomEventHandler handler = new MyCustomEventHandler();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");

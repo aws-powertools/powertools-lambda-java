@@ -26,8 +26,8 @@ public class Base64FunctionTest {
 
     @Test
     public void testPowertoolsBase64() throws IOException {
-        JsonNode event = ValidatorConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event.json"));
-        Expression<JsonNode> expression = ValidatorConfig.get().getJmesPath().compile("basket.powertools_base64(hiddenProduct)");
+        JsonNode event = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event.json"));
+        Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile("basket.powertools_base64(hiddenProduct)");
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(result.asText()).isEqualTo("{\n" +
