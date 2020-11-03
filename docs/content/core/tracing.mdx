@@ -36,25 +36,25 @@ Resources:
 The Powertools service name is used as the X-Ray namespace. This can be set using the environment variable
 `POWERTOOLS_SERVICE_NAME`
 
-To enable Powertools tracing to your function add the @PowertoolsTracing annotation to your handleRequest method or on
+To enable Powertools tracing to your function add the @Tracing annotation to your handleRequest method or on
 any method will capture the method as a separate subsegment automatically.
 
 ```java:title=LambdaHandler.java
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    @PowertoolsTracing
+    @Tracing
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         businessLogic1();
 
         businessLogic2();
     }
 
-    @PowertoolsTracing
+    @Tracing
     public void businessLogic1(){
 
     }
 
-    @PowertoolsTracing
+    @Tracing
     public void businessLogic2(){
 
     }
@@ -72,7 +72,7 @@ By default this annotation will automatically record method responses and except
 ```java:title=HandlerWithoutCapturingResponseOrError.java
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    @PowertoolsTracing(captureError = false, captureResponse = false)
+    @Tracing(captureError = false, captureResponse = false)
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
     ...
     }
@@ -82,14 +82,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
 Annotations are key-values indexed by AWS X-Ray on a per trace basis. You can use them to filter traces as well as to create [Trace Groups](https://aws.amazon.com/about-aws/whats-new/2018/11/aws-xray-adds-the-ability-to-group-traces/).
 
-You can add annotations using `putAnnotation()` method from PowerTracer and it will be correctly inject for the subsegment in concern.
+You can add annotations using `putAnnotation()` method from TracingUtils and it will be correctly inject for the subsegment in concern.
 
 ```java
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    @PowertoolsTracing
+    @Tracing
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-        PowerTracer.putAnnotation("annotation", "value");
+        TracingUtils.putAnnotation("annotation", "value");
     }
 }
 ```
@@ -98,14 +98,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
 Metadata are non-indexed values that can add additional context for an operation.
 
-You can add metadata using `putMetadata()` method from PowerTracer and it will be correctly inject for the subsegment in concern.
+You can add metadata using `putMetadata()` method from TracingUtils and it will be correctly inject for the subsegment in concern.
 
 ```java
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    @PowertoolsTracing
+    @Tracing
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-        PowerTracer.putMetadata("content", "value");
+        TracingUtils.putMetadata("content", "value");
     }
 }
 ```
@@ -119,11 +119,11 @@ under a subsegment, or you are doing multithreaded programming. Refer examples b
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-         PowerTracer.withSubsegment("loggingResponse", subsegment -> {
+         TracingUtils.withSubsegment("loggingResponse", subsegment -> {
             // Some business logic
          });
 
-         PowerTracer.withSubsegment("localNamespace", "loggingResponse", subsegment -> {
+         TracingUtils.withSubsegment("localNamespace", "loggingResponse", subsegment -> {
             // Some business logic
          });
     }

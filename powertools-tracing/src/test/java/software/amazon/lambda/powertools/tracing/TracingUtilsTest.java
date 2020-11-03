@@ -19,14 +19,13 @@ import com.amazonaws.xray.entities.Entity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.lambda.powertools.tracing.PowerTracer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static software.amazon.lambda.powertools.tracing.PowerTracer.withEntitySubsegment;
+import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
-class PowerTracerTest {
+class TracingUtilsTest {
 
     @BeforeEach
     void setUp() {
@@ -46,7 +45,7 @@ class PowerTracerTest {
     void shouldSetAnnotationOnCurrentSubSegment() {
         AWSXRay.beginSubsegment("subSegment");
 
-        PowerTracer.putAnnotation("key", "val");
+        TracingUtils.putAnnotation("key", "val");
 
         assertThat(AWSXRay.getTraceEntity().getAnnotations())
                 .hasSize(1)
@@ -55,7 +54,7 @@ class PowerTracerTest {
 
     @Test
     void shouldNotSetAnnotationIfNoCurrentSubSegment() {
-        PowerTracer.putAnnotation("key", "val");
+        TracingUtils.putAnnotation("key", "val");
 
         assertThat(AWSXRay.getTraceEntity().getAnnotations())
                 .isEmpty();
@@ -65,7 +64,7 @@ class PowerTracerTest {
     void shouldSetMetadataOnCurrentSubSegment() {
         AWSXRay.beginSubsegment("subSegment");
 
-        PowerTracer.putMetadata("key", "val");
+        TracingUtils.putMetadata("key", "val");
 
         assertThat(AWSXRay.getTraceEntity().getMetadata())
                 .hasSize(1)
@@ -78,7 +77,7 @@ class PowerTracerTest {
 
     @Test
     void shouldNotSetMetaDataIfNoCurrentSubSegment() {
-        PowerTracer.putMetadata("key", "val");
+        TracingUtils.putMetadata("key", "val");
 
         assertThat(AWSXRay.getTraceEntity().getAnnotations())
                 .isEmpty();
@@ -88,7 +87,7 @@ class PowerTracerTest {
     void shouldInvokeCodeBlockWrappedWithinSubsegment() {
         Context test = mock(Context.class);
 
-        PowerTracer.withSubsegment("testSubSegment", subsegment -> {
+        TracingUtils.withSubsegment("testSubSegment", subsegment -> {
             subsegment.putAnnotation("key", "val");
             subsegment.putMetadata("key", "val");
             test.getFunctionName();
@@ -118,7 +117,7 @@ class PowerTracerTest {
     void shouldInvokeCodeBlockWrappedWithinNamespacedSubsegment() {
         Context test = mock(Context.class);
 
-        PowerTracer.withSubsegment("testNamespace", "testSubSegment", subsegment -> {
+        TracingUtils.withSubsegment("testNamespace", "testSubSegment", subsegment -> {
             subsegment.putAnnotation("key", "val");
             subsegment.putMetadata("key", "val");
             test.getFunctionName();

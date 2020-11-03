@@ -19,7 +19,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.tracing.PowertoolsTracing;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
@@ -32,17 +32,17 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 public final class LambdaTracingAspect {
 
     @SuppressWarnings({"EmptyMethod"})
-    @Pointcut("@annotation(powerToolsTracing)")
-    public void callAt(PowertoolsTracing powerToolsTracing) {
+    @Pointcut("@annotation(tracing)")
+    public void callAt(Tracing tracing) {
     }
 
-    @Around(value = "callAt(powerToolsTracing) && execution(@PowertoolsTracing * *.*(..))", argNames = "pjp,powerToolsTracing")
+    @Around(value = "callAt(tracing) && execution(@Tracing * *.*(..))", argNames = "pjp,tracing")
     public Object around(ProceedingJoinPoint pjp,
-                         PowertoolsTracing powerToolsTracing) throws Throwable {
+                         Tracing tracing) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         Subsegment segment = AWSXRay.beginSubsegment("## " + pjp.getSignature().getName());
-        segment.setNamespace(namespace(powerToolsTracing));
+        segment.setNamespace(namespace(tracing));
 
         if (placedOnHandlerMethod(pjp)) {
             segment.putAnnotation("ColdStart", isColdStart());
@@ -50,15 +50,15 @@ public final class LambdaTracingAspect {
 
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
-            if (powerToolsTracing.captureResponse()) {
-                segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " response", methodReturn);
+            if (tracing.captureResponse()) {
+                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", methodReturn);
             }
 
             coldStartDone();
             return methodReturn;
         } catch (Exception e) {
-            if (powerToolsTracing.captureError()) {
-                segment.putMetadata(namespace(powerToolsTracing), pjp.getSignature().getName() + " error", e);
+            if (tracing.captureError()) {
+                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " error", e);
             }
             throw e;
         } finally {
@@ -66,7 +66,7 @@ public final class LambdaTracingAspect {
         }
     }
 
-    private String namespace(PowertoolsTracing powerToolsTracing) {
+    private String namespace(Tracing powerToolsTracing) {
         return powerToolsTracing.namespace().isEmpty() ? serviceName() : powerToolsTracing.namespace();
     }
 
