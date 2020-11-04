@@ -17,6 +17,7 @@
         "react-dom": "^16.13.1"
     },
     "resolutions": {
+        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^1.2.3"
     },
     "keywords": [],
     "license": "Apache-2.0",
