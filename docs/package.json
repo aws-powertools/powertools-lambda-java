@@ -4,22 +4,20 @@
         "build": "gatsby build --prefix-paths"
     },
     "dependencies": {
-        "@aws-amplify/analytics": "^3.2.0",
-        "antd": "^4.2.4",
-        "aws-amplify": "^3.0.17",
-        "gatsby": "^2.24.37",
+        "@aws-amplify/analytics": "^3.3.6",
+        "antd": "^4.7.0",
+        "aws-amplify": "^3.3.3",
+        "gatsby": "^2.24.77",
         "gatsby-plugin-antd": "^2.2.0",
-        "gatsby-plugin-catch-links": "^2.3.2",
-        "gatsby-plugin-sitemap": "^2.4.3",
-        "gatsby-remark-autolink-headers": "^2.3.3",
-        "gatsby-theme-apollo-docs": "^4.3.5",
+        "gatsby-plugin-catch-links": "^2.3.15",
+        "gatsby-plugin-sitemap": "^2.4.16",
+        "gatsby-remark-autolink-headers": "^2.3.15",
+        "gatsby-theme-apollo-docs": "^4.5.3",
         "react": "^16.13.1",
         "react-dom": "^16.13.1"
     },
     "resolutions": {
-        "gatsby/*/*/dot-prop": "^5.1.1",
-        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^1.0.1",
-        "gatsby-theme-apollo-docs/*/*/*/*/semver": "^4.3.2"
+        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^1.2.3"
     },
     "keywords": [],
     "license": "Apache-2.0",
