@@ -8,20 +8,20 @@ repositories {
 }
 
 dependencies {
-    implementation 'software.amazon.lambda:powertools-tracing:0.6.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-tracing:0.6.0-beta'
+    implementation 'software.amazon.lambda:powertools-tracing:1.0.0'
+    aspectpath 'software.amazon.lambda:powertools-tracing:1.0.0'
 
-    implementation 'software.amazon.lambda:powertools-logging:0.6.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-logging:0.6.0-beta'
+    implementation 'software.amazon.lambda:powertools-logging:1.0.0'
+    aspectpath 'software.amazon.lambda:powertools-logging:1.0.0'
 
-    implementation 'software.amazon.lambda:powertools-metrics:0.6.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-metrics:0.6.0-beta'
+    implementation 'software.amazon.lambda:powertools-metrics:1.0.0'
+    aspectpath 'software.amazon.lambda:powertools-metrics:1.0.0'
 
-    implementation 'software.amazon.lambda:powertools-sqs:0.6.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-sqs:0.6.0-beta'
+    implementation 'software.amazon.lambda:powertools-sqs:1.0.0'
+    aspectpath 'software.amazon.lambda:powertools-sqs:1.0.0'
 
-    implementation 'software.amazon.lambda:powertools-parameters:0.6.0-beta'
-    aspectpath 'software.amazon.lambda:powertools-parameters:0.6.0-beta'
+    implementation 'software.amazon.lambda:powertools-parameters:1.0.0'
+    aspectpath 'software.amazon.lambda:powertools-parameters:1.0.0'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
     implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
