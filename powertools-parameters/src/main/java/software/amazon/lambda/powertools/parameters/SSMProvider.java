@@ -13,6 +13,12 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
@@ -21,10 +27,6 @@ import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
-
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * AWS System Manager Parameter Store Provider <br/><br/>
@@ -78,7 +80,10 @@ public class SSMProvider extends BaseProvider {
      * Use the {@link SSMProvider.Builder} to create an instance of it.
      */
     SSMProvider(CacheManager cacheManager) {
-        this(cacheManager, SsmClient.create());
+        this(cacheManager, SsmClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .build());
     }
 
     /**

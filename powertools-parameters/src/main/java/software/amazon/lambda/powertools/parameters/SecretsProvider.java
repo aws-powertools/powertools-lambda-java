@@ -13,15 +13,17 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.Map;
+
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
-
-import java.time.temporal.ChronoUnit;
-import java.util.Base64;
-import java.util.Map;
 
 /**
  * AWS Secrets Manager Parameter Provider<br/><br/>
@@ -58,7 +60,10 @@ public class SecretsProvider extends BaseProvider {
      * Use the {@link Builder} to create an instance of it.
      */
     SecretsProvider(CacheManager cacheManager) {
-        this(cacheManager, SecretsManagerClient.create());
+        this(cacheManager, SecretsManagerClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .build());
     }
 
     /**
