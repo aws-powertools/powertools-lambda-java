@@ -24,6 +24,7 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isSamLocal;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
@@ -62,7 +63,9 @@ public final class LambdaTracingAspect {
             }
             throw e;
         } finally {
-            AWSXRay.endSubsegment();
+            if (!isSamLocal()) {
+                AWSXRay.endSubsegment();
+            }
         }
     }
 

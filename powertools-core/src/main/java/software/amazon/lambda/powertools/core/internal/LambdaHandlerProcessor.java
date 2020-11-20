@@ -78,4 +78,8 @@ public final class LambdaHandlerProcessor {
     public static void coldStartDone() {
         IS_COLD_START = false;
     }
+
+    public static boolean isSamLocal() {
+        return "true".equals(System.getenv("AWS_SAM_LOCAL"));
+    }
 }
