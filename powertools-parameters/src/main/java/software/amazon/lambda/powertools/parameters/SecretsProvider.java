@@ -18,7 +18,9 @@ import java.util.Base64;
 import java.util.Map;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
@@ -63,6 +65,7 @@ public class SecretsProvider extends BaseProvider {
         this(cacheManager, SecretsManagerClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
                 .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                 .build());
     }
 

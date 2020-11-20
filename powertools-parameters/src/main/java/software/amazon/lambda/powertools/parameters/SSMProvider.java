@@ -18,7 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
@@ -83,6 +85,7 @@ public class SSMProvider extends BaseProvider {
         this(cacheManager, SsmClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
                 .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                 .build());
     }
 
