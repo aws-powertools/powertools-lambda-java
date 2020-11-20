@@ -1,6 +1,6 @@
 plugins{
     id 'java'
-    id 'aspectj.AspectjGradlePlugin' version '0.0.3'
+    id 'aspectj.AspectjGradlePlugin' version '0.0.6'
 }
 
 repositories {
@@ -22,6 +22,9 @@ dependencies {
 
     implementation 'software.amazon.lambda:powertools-parameters:1.0.0'
     aspectpath 'software.amazon.lambda:powertools-parameters:1.0.0'
+
+    implementation 'software.amazon.lambda:powertools-validation:1.0.0'
+    aspectpath 'software.amazon.lambda:powertools-validation:1.0.0'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.0'
     implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'

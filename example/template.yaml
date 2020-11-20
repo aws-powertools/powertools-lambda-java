@@ -16,7 +16,7 @@ Resources:
     Properties:
       CodeUri: HelloWorldFunction
       Handler: helloworld.App::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -35,7 +35,7 @@ Resources:
     Properties:
       CodeUri: HelloWorldFunction
       Handler: helloworld.AppValidation::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Tracing: Active
       Events:
@@ -50,7 +50,7 @@ Resources:
     Properties:
       CodeUri: HelloWorldFunction
       Handler: helloworld.AppStream::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Tracing: Active
       Environment:
@@ -68,7 +68,7 @@ Resources:
     Properties:
       CodeUri: HelloWorldFunction
       Handler: helloworld.AppParams::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Tracing: Active
       Policies:
@@ -148,7 +148,7 @@ Resources:
     Properties:
       CodeUri: HelloWorldFunction
       Handler: helloworld.AppSqsEvent::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Tracing: Active
       Policies:
@@ -174,7 +174,7 @@ Resources:
     Properties:
       CodeUri: HelloWorldFunction
       Handler: helloworld.AppSqsEventUtil::handleRequest
-      Runtime: java8
+      Runtime: java11
       MemorySize: 512
       Tracing: Active
       Policies:
