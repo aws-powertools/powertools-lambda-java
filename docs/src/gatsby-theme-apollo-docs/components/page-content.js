@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import SectionNav from './section-nav';
 import styled from '@emotion/styled';
 import useMount from 'react-use/lib/useMount';
@@ -179,7 +179,9 @@ export default function PageContent(props) {
         );
     });
 
-    const githubUrl = props.githubUrl.replace("master", "master/docs")
+    const githubUrl = props.githubUrl.replace("tree/", "blob/")
+        .replace("/content/", "/docs/content/")
+
     const editLink = githubUrl && (
         <AsideLink href={githubUrl}>
             <IconGithub /> Edit on GitHub
