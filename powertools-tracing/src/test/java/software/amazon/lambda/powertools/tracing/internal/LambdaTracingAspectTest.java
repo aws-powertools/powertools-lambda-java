@@ -25,6 +25,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled;
@@ -32,13 +33,12 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaData;
-import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 class LambdaTracingAspectTest {
     private RequestHandler<Object, Object> requestHandler;
@@ -49,7 +49,7 @@ class LambdaTracingAspectTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        initMocks(this);
+        openMocks(this);
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
         requestHandler = new PowerTracerToolEnabled();
