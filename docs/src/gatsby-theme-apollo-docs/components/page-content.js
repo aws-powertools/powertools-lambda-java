@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import SectionNav from './section-nav';
 import styled from '@emotion/styled';
 import useMount from 'react-use/lib/useMount';
@@ -179,8 +179,9 @@ export default function PageContent(props) {
         );
     });
 
-    const githubUrl = props.githubUrl.replace("tree/", "blob/")
+   const githubUrl = props.githubUrl.replace("tree/", "blob/")
         .replace("/content/", "/docs/content/")
+	const sourceUrl = /.+?(?=tree)/.exec(props.githubUrl)
 
     const editLink = githubUrl && (
         <AsideLink href={githubUrl}>
@@ -210,6 +211,9 @@ export default function PageContent(props) {
                     />
                 )}
                 {editLink}
+                <AsideLink href={sourceUrl}>
+					<IconGithub /> Source code
+				</AsideLink>
             </Aside>
         </Wrapper>
     );
@@ -218,11 +222,12 @@ export default function PageContent(props) {
 PageContent.propTypes = {
     children: PropTypes.node.isRequired,
     pathname: PropTypes.string.isRequired,
-    githubUrl: PropTypes.string,
+    githubUrl: PropTypes.string.isRequired,
     pages: PropTypes.array.isRequired,
     hash: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
-    graphManagerUrl: PropTypes.string.isRequired,
+    graphManagerUrl: PropTypes.string,
     headings: PropTypes.array.isRequired,
     spectrumUrl: PropTypes.string
 };
+
