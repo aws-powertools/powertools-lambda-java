@@ -27,5 +27,4 @@ public @interface Param {
     String key();
     Class<? extends BaseProvider> provider() default SSMProvider.class;
     Class<? extends Transformer> transformer() default Transformer.class;
-    long maxAgeInSeconds() default 5;
 }
