@@ -265,3 +265,47 @@ S3Provider provider = new S3Provider(ParamManager.getCacheManager());
 provider.setTransformationManager(ParamManager.getTransformationManager()); // optional, needed for transformations
 String value = provider.withBucket("myBucket").get("myKey");
 ```
+
+## Annotation
+You can make use of the annotation ```@Param``` to inject a parameter value in a variable.
+
+```java
+@Param(key = "/my/parameter")
+private String value;
+```
+By default it will use ```SSMProvider``` to retrieve the value from AWS System Manager Parameter Store.
+You could specify a different provider as long as it extends ```BaseProvider``` and/or a ```Transformer```.
+For example:
+
+```java
+@Param(key = "/my/parameter/json", provider = SecretsProvider.class, transformer = JsonTransformer.class)
+private ObjectToDeserialize value;
+```
+
+In this case ```SecretsProvider``` will be used to retrieve a raw value that is then trasformed into the target Object by using ```JsonTransformer```.
+To show the convenience of the annotation compare the following two code snippets.
+
+```java:title=AppWithoutAnnotation.java
+
+public class AppWithoutAnnotation implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    // Get an instance of the SSM Provider
+    SSMProvider ssmProvider = ParamManager.getSsmProvider();
+
+    // Retrieve a single parameter
+    ObjectToDeserialize value = ssmProvider
+                                    .withTransformation(Transformer.json)
+                                    .get("/my/parameter/json");
+
+}
+```
+And with the usage of ```@Param```
+
+```java:title=AppWithAnnotation.java
+public class AppWithAnnotation implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    @Param(key = "/my/parameter/json" transformer = JsonTransformer.class)
+    ObjectToDeserialize value;
+
+}
+```
