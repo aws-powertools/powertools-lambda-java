@@ -16,7 +16,12 @@ package software.amazon.lambda.powertools.parameters;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.exception.ProviderException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class to retrieve instances of parameter providers.
@@ -26,9 +31,33 @@ public final class ParamManager {
 
     private static final CacheManager cacheManager = new CacheManager();
     private static final TransformationManager transformationManager = new TransformationManager();
+    private static final ConcurrentHashMap<Class<? extends BaseProvider>, BaseProvider> providers = new ConcurrentHashMap<>();
 
     private static SecretsProvider secretsProvider;
     private static SSMProvider ssmProvider;
+
+    /**
+     * Get a concrete implementation of {@link BaseProvider}.<br/>
+     * You can specify {@link SecretsProvider} or {@link SSMProvider} or create your custom provider
+     * by extending {@link BaseProvider} if you need to integrate with a different parameter store.
+     * @return a {@link SecretsProvider}
+     */
+    public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
+        if (providerClass == null) {
+            throw new IllegalStateException("You cannot provide a null provider class.");
+        }
+        try {
+            if(!providers.containsKey(providerClass)) {
+                Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
+                T provider = constructor.newInstance(cacheManager);
+                provider.setTransformationManager(transformationManager);
+                providers.put(providerClass, provider);
+            }
+            return (T) providers.get(providerClass);
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+            throw new ProviderException(e);
+        }
+    }
 
     /**
      * Get a {@link SecretsProvider} with default {@link SecretsManagerClient}.<br/>
@@ -36,11 +65,12 @@ public final class ParamManager {
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider() {
-        if (secretsProvider == null) {
+        if (!providers.containsKey(SecretsProvider.class)) {
             secretsProvider = SecretsProvider.builder()
                                     .withCacheManager(cacheManager)
                                     .withTransformationManager(transformationManager)
                                     .build();
+            providers.put(SecretsProvider.class, secretsProvider);
         }
         return secretsProvider;
     }
@@ -51,11 +81,12 @@ public final class ParamManager {
      * @return a {@link SSMProvider}
      */
     public static SSMProvider getSsmProvider() {
-        if (ssmProvider == null) {
+        if (!providers.containsKey(SSMProvider.class)) {
             ssmProvider = SSMProvider.builder()
                             .withCacheManager(cacheManager)
                             .withTransformationManager(transformationManager)
                             .build();
+            providers.put(SSMProvider.class, ssmProvider);
         }
         return ssmProvider;
     }
@@ -66,12 +97,13 @@ public final class ParamManager {
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider(SecretsManagerClient client) {
-        if (secretsProvider == null) {
+        if (!providers.containsKey(SecretsProvider.class)) {
             secretsProvider = SecretsProvider.builder()
                                     .withClient(client)
                                     .withCacheManager(cacheManager)
                                     .withTransformationManager(transformationManager)
                                     .build();
+            providers.put(SecretsProvider.class, secretsProvider);
         }
         return secretsProvider;
     }
