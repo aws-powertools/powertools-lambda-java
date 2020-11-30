@@ -28,6 +28,7 @@ import software.amazon.awssdk.services.ssm.model.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,8 +58,7 @@ public class ParamManagerIntegrationTest {
     public void setup() throws IllegalAccessException {
         openMocks(this);
 
-        writeStaticField(ParamManager.class, "ssmProvider", null, true);
-        writeStaticField(ParamManager.class, "secretsProvider", null, true);
+        writeStaticField(ParamManager.class, "providers", new ConcurrentHashMap<>(), true);
     }
 
     @Test
