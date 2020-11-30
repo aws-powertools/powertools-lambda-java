@@ -51,7 +51,7 @@ public final class ParamManager {
                 Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
                 T provider = constructor.newInstance(cacheManager);
                 provider.setTransformationManager(transformationManager);
-                providers.put(providerClass, provider);
+                providers.putIfAbsent(providerClass, provider);
             }
             return (T) providers.get(providerClass);
         } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
@@ -70,7 +70,7 @@ public final class ParamManager {
                                     .withCacheManager(cacheManager)
                                     .withTransformationManager(transformationManager)
                                     .build();
-            providers.put(SecretsProvider.class, secretsProvider);
+            providers.putIfAbsent(SecretsProvider.class, secretsProvider);
         }
         return secretsProvider;
     }
@@ -86,7 +86,7 @@ public final class ParamManager {
                             .withCacheManager(cacheManager)
                             .withTransformationManager(transformationManager)
                             .build();
-            providers.put(SSMProvider.class, ssmProvider);
+            providers.putIfAbsent(SSMProvider.class, ssmProvider);
         }
         return ssmProvider;
     }
@@ -103,7 +103,7 @@ public final class ParamManager {
                                     .withCacheManager(cacheManager)
                                     .withTransformationManager(transformationManager)
                                     .build();
-            providers.put(SecretsProvider.class, secretsProvider);
+            providers.putIfAbsent(SecretsProvider.class, secretsProvider);
         }
         return secretsProvider;
     }
@@ -114,12 +114,13 @@ public final class ParamManager {
      * @return a {@link SSMProvider}
      */
     public static SSMProvider getSsmProvider(SsmClient client) {
-        if (ssmProvider == null) {
+        if (!providers.containsKey(SSMProvider.class)) {
             ssmProvider = SSMProvider.builder()
                                 .withClient(client)
                                 .withCacheManager(cacheManager)
                                 .withTransformationManager(transformationManager)
                                 .build();
+            providers.putIfAbsent(SSMProvider.class, ssmProvider);
         }
         return ssmProvider;
     }
