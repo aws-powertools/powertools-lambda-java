@@ -13,8 +13,6 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
@@ -29,8 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * Each instance is unique (singleton).
  */
 public final class ParamManager {
-
-    private static final Log LOG = LogFactory.getLog(ParamManager.class);
 
     private static final CacheManager cacheManager = new CacheManager();
     private static final TransformationManager transformationManager = new TransformationManager();
@@ -109,7 +105,6 @@ public final class ParamManager {
             provider.setTransformationManager(transformationManager);
             return provider;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
-            LOG.error("Failed creating provider instance", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
                     "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
         }

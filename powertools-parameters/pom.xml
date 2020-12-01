@@ -82,10 +82,6 @@
             <artifactId>aspectjrt</artifactId>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>software.amazon.payloadoffloading</groupId>
-            <artifactId>payloadoffloading-common</artifactId>
-        </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
