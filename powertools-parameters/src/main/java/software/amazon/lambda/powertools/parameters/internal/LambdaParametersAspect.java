@@ -16,10 +16,11 @@ public class LambdaParametersAspect {
 
     @Around("getParam(paramAnnotation)")
     public Object injectParam(final ProceedingJoinPoint joinPoint, final Param paramAnnotation) {
-        BaseProvider provider = ParamManager.getProvider(paramAnnotation.provider());
-        if(null == provider) {
-            throw new IllegalArgumentException(String.format("ParamProvider %s not supported.", paramAnnotation.provider().getName()));
+        if(null == paramAnnotation.provider()) {
+            throw new IllegalArgumentException("provider for Param annotation cannot be null!");
         }
+        BaseProvider provider = ParamManager.getProvider(paramAnnotation.provider());
+
         if(paramAnnotation.transformer().isInterface()) {
             // No transformation
             return provider.get(paramAnnotation.key());
