@@ -18,6 +18,10 @@ import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Utility class to retrieve instances of parameter providers.
  * Each instance is unique (singleton).
@@ -27,8 +31,20 @@ public final class ParamManager {
     private static final CacheManager cacheManager = new CacheManager();
     private static final TransformationManager transformationManager = new TransformationManager();
 
-    private static SecretsProvider secretsProvider;
-    private static SSMProvider ssmProvider;
+    private static ConcurrentHashMap<Class<? extends BaseProvider>, BaseProvider> providers = new ConcurrentHashMap<>();
+
+    /**
+     * Get a concrete implementation of {@link BaseProvider}.<br/>
+     * You can specify {@link SecretsProvider} or {@link SSMProvider} or create your custom provider
+     * by extending {@link BaseProvider} if you need to integrate with a different parameter store.
+     * @return a {@link SecretsProvider}
+     */
+    public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
+        if (providerClass == null) {
+            throw new IllegalStateException("providerClass cannot be null.");
+        }
+        return (T) providers.computeIfAbsent(providerClass, (k) -> createProvider(k));
+    }
 
     /**
      * Get a {@link SecretsProvider} with default {@link SecretsManagerClient}.<br/>
@@ -36,13 +52,7 @@ public final class ParamManager {
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider() {
-        if (secretsProvider == null) {
-            secretsProvider = SecretsProvider.builder()
-                                    .withCacheManager(cacheManager)
-                                    .withTransformationManager(transformationManager)
-                                    .build();
-        }
-        return secretsProvider;
+        return getProvider(SecretsProvider.class);
     }
 
     /**
@@ -51,13 +61,7 @@ public final class ParamManager {
      * @return a {@link SSMProvider}
      */
     public static SSMProvider getSsmProvider() {
-        if (ssmProvider == null) {
-            ssmProvider = SSMProvider.builder()
-                            .withCacheManager(cacheManager)
-                            .withTransformationManager(transformationManager)
-                            .build();
-        }
-        return ssmProvider;
+        return getProvider(SSMProvider.class);
     }
 
     /**
@@ -66,14 +70,11 @@ public final class ParamManager {
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider(SecretsManagerClient client) {
-        if (secretsProvider == null) {
-            secretsProvider = SecretsProvider.builder()
-                                    .withClient(client)
-                                    .withCacheManager(cacheManager)
-                                    .withTransformationManager(transformationManager)
-                                    .build();
-        }
-        return secretsProvider;
+        return (SecretsProvider) providers.computeIfAbsent(SecretsProvider.class, (k) -> SecretsProvider.builder()
+                .withClient(client)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .build());
     }
 
     /**
@@ -82,14 +83,11 @@ public final class ParamManager {
      * @return a {@link SSMProvider}
      */
     public static SSMProvider getSsmProvider(SsmClient client) {
-        if (ssmProvider == null) {
-            ssmProvider = SSMProvider.builder()
-                                .withClient(client)
-                                .withCacheManager(cacheManager)
-                                .withTransformationManager(transformationManager)
-                                .build();
-        }
-        return ssmProvider;
+        return (SSMProvider) providers.computeIfAbsent(SSMProvider.class, (k) -> SSMProvider.builder()
+                .withClient(client)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .build());
     }
 
     public static CacheManager getCacheManager() {
@@ -99,4 +97,17 @@ public final class ParamManager {
     public static TransformationManager getTransformationManager() {
         return transformationManager;
     }
+
+    private static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
+        try {
+            Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
+            T provider = constructor.newInstance(cacheManager);
+            provider.setTransformationManager(transformationManager);
+            return provider;
+        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+            throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
+                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
+        }
+    }
+
 }

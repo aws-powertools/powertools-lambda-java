@@ -104,7 +104,7 @@ public abstract class BaseProvider implements ParamProvider {
      * @param transformerClass Class of the transformer to apply. For convenience, you can use {@link Transformer#json} or {@link Transformer#base64} shortcuts.
      * @return the provider itself in order to chain calls (eg. <pre>provider.withTransformation(json).get("key", MyObject.class)</pre>).
      */
-    protected BaseProvider withTransformation(Class<? extends Transformer> transformerClass) {
+    public BaseProvider withTransformation(Class<? extends Transformer> transformerClass) {
         if (transformationManager == null) {
             throw new IllegalStateException("Trying to add transformation while no TransformationManager has been provided.");
         }

@@ -265,3 +265,105 @@ S3Provider provider = new S3Provider(ParamManager.getCacheManager());
 provider.setTransformationManager(ParamManager.getTransformationManager()); // optional, needed for transformations
 String value = provider.withBucket("myBucket").get("myKey");
 ```
+
+## Annotation
+You can make use of the annotation ```@Param``` to inject a parameter value in a variable.
+
+```java
+@Param(key = "/my/parameter")
+private String value;
+```
+By default it will use ```SSMProvider``` to retrieve the value from AWS System Manager Parameter Store.
+You could specify a different provider as long as it extends ```BaseProvider``` and/or a ```Transformer```.
+For example:
+
+```java
+@Param(key = "/my/parameter/json", provider = SecretsProvider.class, transformer = JsonTransformer.class)
+private ObjectToDeserialize value;
+```
+
+In this case ```SecretsProvider``` will be used to retrieve a raw value that is then trasformed into the target Object by using ```JsonTransformer```.
+To show the convenience of the annotation compare the following two code snippets.
+
+```java:title=AppWithoutAnnotation.java
+
+public class AppWithoutAnnotation implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    // Get an instance of the SSM Provider
+    SSMProvider ssmProvider = ParamManager.getSsmProvider();
+
+    // Retrieve a single parameter
+    ObjectToDeserialize value = ssmProvider
+                                    .withTransformation(Transformer.json)
+                                    .get("/my/parameter/json");
+
+}
+```
+And with the usage of ```@Param```
+
+```java:title=AppWithAnnotation.java
+public class AppWithAnnotation implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    @Param(key = "/my/parameter/json" transformer = JsonTransformer.class)
+    ObjectToDeserialize value;
+
+}
+```
+
+### Install
+
+If you want to use the ```@Param``` annotation in your project add configuration to compile-time weave (CTW) the powertools-parameters aspects into your project.
+
+* [maven](https://maven.apache.org/):
+```xml
+<build>
+    <plugins>
+        ...
+        <plugin>
+             <groupId>org.codehaus.mojo</groupId>
+             <artifactId>aspectj-maven-plugin</artifactId>
+             <version>1.11</version>
+             <configuration>
+                 ...
+                 <aspectLibraries>
+                     ...
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-parameters</artifactId>
+                     </aspectLibrary>
+                 </aspectLibraries>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>compile</goal>
+                     </goals>
+                 </execution>
+             </executions>
+        </plugin>
+        ...
+    </plugins>
+</build>
+```
+**Note:** If you are working with lambda function on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
+
+* [gradle](https://gradle.org):
+```groovy
+plugins{
+    id 'java'
+    id 'aspectj.AspectjGradlePlugin' version '0.0.6'
+}
+repositories {
+    jcenter()
+}
+dependencies {
+    ...
+    implementation 'software.amazon.lambda:powertools-parameters:1.0.1'
+    aspectpath 'software.amazon.lambda:powertools-parameters:1.0.1'
+}
+```
+
+**Note:**
+
+Please add `aspectjVersion = '1.9.6'` to the `gradle.properties` file. The aspectj plugin works at the moment with gradle 5.x only if
+you are using `java 8` as runtime. Please refer to [open issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/146) for more details.
