@@ -14,12 +14,14 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import software.amazon.lambda.powertools.sqs.SqsLargeMessage;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 
@@ -30,7 +32,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 @Aspect
 public class SqsLargeMessageAspect {
 
-    private static final Log LOG = LogFactory.getLog(SqsLargeMessageAspect.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SqsLargeMessageAspect.class);
     private static AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient();
 
     @SuppressWarnings({"EmptyMethod"})

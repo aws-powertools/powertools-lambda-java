@@ -1,10 +1,11 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
@@ -17,7 +18,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 public final class BatchContext {
-    private static final Log LOG = LogFactory.getLog(BatchContext.class);
+    private static final Logger LOG = LoggerFactory.getLogger(BatchContext.class);
 
     private final List<SQSMessage> success = new ArrayList<>();
     private final List<SQSMessage> failures = new ArrayList<>();

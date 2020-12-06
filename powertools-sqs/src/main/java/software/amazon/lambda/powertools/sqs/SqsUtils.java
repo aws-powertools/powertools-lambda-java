@@ -22,8 +22,10 @@ import java.util.stream.Collectors;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
@@ -36,7 +38,7 @@ import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspe
  * A class of helper functions to add additional functionality to {@link SQSEvent} processing.
  */
 public final class SqsUtils {
-    private static final Log LOG = LogFactory.getLog(SqsUtils.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SqsUtils.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static SqsClient client = SqsClient.create();
