@@ -12,6 +12,7 @@ on:
       - 'powertools-validation/**'
       - 'powertools-parameters/**'
       - 'pom.xml'
+      - '.github/workflows/**'
   push:
     branches:
       - master
