@@ -17,7 +17,10 @@
         "react-dom": "^16.13.1"
     },
     "resolutions": {
-        "gatsby-theme-apollo-docs/*/*/*/*/bl": "^1.2.3"
+        "bl": "^4.0.3",
+        "semver": "^7.3.2",
+        "node-fetch": "^2.6.1",
+        "graphql": "^14.7.0"
     },
     "keywords": [],
     "license": "Apache-2.0",
