@@ -15,6 +15,7 @@ package software.amazon.lambda.powertools.tracing.internal;
 
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
+import java.util.function.Supplier;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -42,7 +43,9 @@ public final class LambdaTracingAspect {
                          Tracing tracing) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
-        Subsegment segment = AWSXRay.beginSubsegment("## " + pjp.getSignature().getName());
+        Subsegment segment = AWSXRay.beginSubsegment(
+            customSegmentNameOrDefault(tracing,
+                () -> "## " + pjp.getSignature().getName()));
         segment.setNamespace(namespace(tracing));
 
         if (placedOnHandlerMethod(pjp)) {
@@ -67,6 +70,11 @@ public final class LambdaTracingAspect {
                 AWSXRay.endSubsegment();
             }
         }
+    }
+
+    private String customSegmentNameOrDefault(Tracing powerToolsTracing, Supplier<String> defaultSegmentName) {
+        String segmentName = powerToolsTracing.segmentName();
+        return segmentName.isEmpty() ? defaultSegmentName.get() : segmentName;
     }
 
     private String namespace(Tracing powerToolsTracing) {

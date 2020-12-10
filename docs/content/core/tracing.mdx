@@ -62,6 +62,8 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 ```
 
 By default this annotation will automatically record method responses and exceptions.
+If you want to customize segment name that appears in traces, use:
+`@Tracing(segmentName="yourCustomName")`
 
 <Note type="warning">
   <strong>Returning sensitive information from your Lambda handler or functions, where Tracer is used?</strong>
