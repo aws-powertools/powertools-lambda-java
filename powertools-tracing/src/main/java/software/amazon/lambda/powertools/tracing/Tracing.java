@@ -50,4 +50,5 @@ public @interface Tracing {
     String namespace() default "";
     boolean captureResponse() default true;
     boolean captureError() default true;
+    String segmentName() default "";
 }

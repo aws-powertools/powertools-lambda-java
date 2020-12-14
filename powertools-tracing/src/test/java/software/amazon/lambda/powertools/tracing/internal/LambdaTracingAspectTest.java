@@ -26,6 +26,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled;
@@ -43,6 +44,7 @@ import static org.mockito.MockitoAnnotations.openMocks;
 class LambdaTracingAspectTest {
     private RequestHandler<Object, Object> requestHandler;
     private RequestStreamHandler streamHandler;
+    private PowerToolNonHandler nonHandlerMethod;
 
     @Mock
     private Context context;
@@ -54,6 +56,7 @@ class LambdaTracingAspectTest {
         setupContext();
         requestHandler = new PowerTracerToolEnabled();
         streamHandler = new PowerTracerToolEnabledForStream();
+        nonHandlerMethod = new PowerToolNonHandler();
         AWSXRay.beginSegment(LambdaTracingAspectTest.class.getName());
     }
 
@@ -63,6 +66,24 @@ class LambdaTracingAspectTest {
     }
 
     @Test
+    void shouldCaptureNonHandlerMethod() {
+        nonHandlerMethod.doSomething();
+        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            .hasSize(1)
+            .anySatisfy(segment ->
+                assertThat(segment.getName()).isEqualTo("## doSomething"));
+    }
+
+    @Test
+    void shouldCaptureNonHandlerMethodWithCustomSegmentName() {
+        nonHandlerMethod.doSomethingCustomName();
+        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            .hasSize(1)
+            .anySatisfy(segment ->
+                assertThat(segment.getName()).isEqualTo("custom"));
+    }
+
+  @Test
     void shouldCaptureTraces() {
         requestHandler.handleRequest(new Object(), context);
 
