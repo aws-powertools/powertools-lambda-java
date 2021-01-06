@@ -19,10 +19,10 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 
 import static software.amazon.lambda.powertools.tracing.CaptureMode.DISABLED;
 
-public class PowerTracerToolEnabledWithNoMetaData implements RequestHandler<Object, Object> {
+public class PowerTracerToolEnabledWithNoMetaDataDeprecated implements RequestHandler<Object, Object> {
 
     @Override
-    @Tracing(captureMode = DISABLED)
+    @Tracing(captureResponse = false, captureError = false)
     public Object handleRequest(Object input, Context context) {
         return null;
     }

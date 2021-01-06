@@ -13,9 +13,10 @@
  */
 package software.amazon.lambda.powertools.tracing.internal;
 
+import java.util.function.Supplier;
+
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
-import java.util.function.Supplier;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -32,7 +33,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 
 @Aspect
 public final class LambdaTracingAspect {
-
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(tracing)")
     public void callAt(Tracing tracing) {
@@ -52,16 +52,19 @@ public final class LambdaTracingAspect {
             segment.putAnnotation("ColdStart", isColdStart());
         }
 
+        boolean captureResponse = captureResponse(tracing);
+        boolean captureError = captureError(tracing);
+
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
-            if (tracing.captureResponse()) {
+            if (captureResponse) {
                 segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", methodReturn);
             }
 
             coldStartDone();
             return methodReturn;
         } catch (Exception e) {
-            if (tracing.captureError()) {
+            if (captureError) {
                 segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " error", e);
             }
             throw e;
@@ -69,6 +72,34 @@ public final class LambdaTracingAspect {
             if (!isSamLocal()) {
                 AWSXRay.endSubsegment();
             }
+        }
+    }
+
+    private boolean captureResponse(Tracing powerToolsTracing) {
+        switch (powerToolsTracing.captureMode()) {
+            case ENVIRONMENT_VAR:
+                Boolean captureResponse = environmentVariable("TRACING_CAPTURE_RESPONSE");
+                return null != captureResponse ? captureResponse : powerToolsTracing.captureResponse();
+            case RESPONSE:
+            case RESPONSE_AND_ERROR:
+                return true;
+            case DISABLED:
+            default:
+                return false;
+        }
+    }
+
+    private boolean captureError(Tracing powerToolsTracing) {
+        switch (powerToolsTracing.captureMode()) {
+            case ENVIRONMENT_VAR:
+                Boolean captureError = environmentVariable("TRACING_CAPTURE_ERROR");
+                return null != captureError ? captureError : powerToolsTracing.captureError();
+            case ERROR:
+            case RESPONSE_AND_ERROR:
+                return true;
+            case DISABLED:
+            default:
+                return false;
         }
     }
 
@@ -84,5 +115,10 @@ public final class LambdaTracingAspect {
     private boolean placedOnHandlerMethod(ProceedingJoinPoint pjp) {
         return isHandlerMethod(pjp)
                 && (placedOnRequestHandler(pjp) || placedOnStreamHandler(pjp));
+    }
+
+    private Boolean environmentVariable(String tracing_capture_response) {
+        return null != SystemWrapper.getenv(tracing_capture_response)
+                ? Boolean.valueOf(SystemWrapper.getenv(tracing_capture_response)) : null;
     }
 }

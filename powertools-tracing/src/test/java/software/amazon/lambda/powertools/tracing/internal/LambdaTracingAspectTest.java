@@ -22,22 +22,29 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.xray.AWSXRay;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.tracing.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled;
+import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledExplicitlyForResponseAndError;
+import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForError;
+import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponse;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaData;
+import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaDataDeprecated;
+import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -48,6 +55,14 @@ class LambdaTracingAspectTest {
 
     @Mock
     private Context context;
+
+    @BeforeAll
+    static void beforeAll() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn(null);
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn(null);
+        }
+    }
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
@@ -69,21 +84,21 @@ class LambdaTracingAspectTest {
     void shouldCaptureNonHandlerMethod() {
         nonHandlerMethod.doSomething();
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
-            .hasSize(1)
-            .anySatisfy(segment ->
-                assertThat(segment.getName()).isEqualTo("## doSomething"));
+                .hasSize(1)
+                .anySatisfy(segment ->
+                        assertThat(segment.getName()).isEqualTo("## doSomething"));
     }
 
     @Test
     void shouldCaptureNonHandlerMethodWithCustomSegmentName() {
         nonHandlerMethod.doSomethingCustomName();
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
-            .hasSize(1)
-            .anySatisfy(segment ->
-                assertThat(segment.getName()).isEqualTo("custom"));
+                .hasSize(1)
+                .anySatisfy(segment ->
+                        assertThat(segment.getName()).isEqualTo("custom"));
     }
 
-  @Test
+    @Test
     void shouldCaptureTraces() {
         requestHandler.handleRequest(new Object(), context);
 
@@ -191,6 +206,136 @@ class LambdaTracingAspectTest {
                 });
     }
 
+    @Test
+    void shouldCaptureTracesWithNoMetadataDeprecated() {
+        requestHandler = new PowerTracerToolEnabledWithNoMetaDataDeprecated();
+
+        requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+                .hasSize(1)
+                .allSatisfy(subsegment -> {
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(1)
+                            .containsEntry("ColdStart", true);
+
+                    assertThat(subsegment.getMetadata())
+                            .isEmpty();
+                });
+    }
+
+    @Test
+    void shouldNotCaptureTracesIfDisabledViaEnvironmentVariable() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn("false");
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+                    .hasSize(1)
+                    .allSatisfy(subsegment -> {
+                        assertThat(subsegment.getAnnotations())
+                                .hasSize(1)
+                                .containsEntry("ColdStart", true);
+
+                        assertThat(subsegment.getMetadata())
+                                .isEmpty();
+                    });
+        }
+    }
+
+    @Test
+    void shouldCaptureTracesIfExplicitlyEnabledAndEnvironmentVariableIsDisabled() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn("false");
+            requestHandler = new PowerTracerToolEnabledForResponse();
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+                    .hasSize(1)
+                    .allSatisfy(subsegment -> {
+                        assertThat(subsegment.getAnnotations())
+                                .hasSize(1)
+                                .containsEntry("ColdStart", true);
+
+                        assertThat(subsegment.getMetadata())
+                                .hasSize(1)
+                                .containsKey("lambdaHandler");
+                    });
+        }
+    }
+
+    @Test
+    void shouldCaptureTracesIfExplicitlyEnabledBothAndEnvironmentVariableIsDisabled() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn("false");
+            requestHandler = new PowerTracerToolEnabledExplicitlyForResponseAndError();
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+                    .hasSize(1)
+                    .allSatisfy(subsegment -> {
+                        assertThat(subsegment.getAnnotations())
+                                .hasSize(1)
+                                .containsEntry("ColdStart", true);
+
+                        assertThat(subsegment.getMetadata())
+                                .hasSize(1)
+                                .containsKey("lambdaHandler");
+                    });
+        }
+    }
+
+    @Test
+    void shouldNotCaptureTracesWithExceptionMetaDataIfDisabledViaEnvironmentVariable() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn("false");
+            requestHandler = new PowerTracerToolEnabledWithException();
+
+            catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+                    .hasSize(1)
+                    .allSatisfy(subsegment -> {
+                        assertThat(subsegment.getAnnotations())
+                                .hasSize(1)
+                                .containsEntry("ColdStart", true);
+
+                        assertThat(subsegment.getMetadata())
+                                .isEmpty();
+                    });
+        }
+    }
+
+    @Test
+    void shouldCaptureTracesWithExceptionMetaDataEnabledExplicitlyAndEnvironmentVariableDisabled() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn("false");
+
+            requestHandler = new PowerTracerToolEnabledForError();
+
+            Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+                    .hasSize(1)
+                    .allSatisfy(subsegment -> {
+                        assertThat(subsegment.getAnnotations())
+                                .hasSize(1)
+                                .containsEntry("ColdStart", true);
+
+                        assertThat(subsegment.getMetadata())
+                                .hasSize(1)
+                                .containsKey("lambdaHandler");
+
+                        assertThat(subsegment.getMetadata().get("lambdaHandler"))
+                                .satisfies(stringObjectMap -> assertThat(stringObjectMap)
+                                        .containsEntry("handleRequest error", exception));
+                    });
+        }
+    }
 
     private void setupContext() {
         when(context.getFunctionName()).thenReturn("testFunction");
