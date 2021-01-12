@@ -59,8 +59,8 @@ class LambdaTracingAspectTest {
     @BeforeAll
     static void beforeAll() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn(null);
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn(null);
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn(null);
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn(null);
         }
     }
 
@@ -227,7 +227,7 @@ class LambdaTracingAspectTest {
     @Test
     void shouldNotCaptureTracesIfDisabledViaEnvironmentVariable() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
 
             requestHandler.handleRequest(new Object(), context);
 
@@ -247,7 +247,7 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureTracesIfExplicitlyEnabledAndEnvironmentVariableIsDisabled() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledForResponse();
 
             requestHandler.handleRequest(new Object(), context);
@@ -269,8 +269,8 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureTracesIfExplicitlyEnabledBothAndEnvironmentVariableIsDisabled() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_RESPONSE")).thenReturn("false");
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledExplicitlyForResponseAndError();
 
             requestHandler.handleRequest(new Object(), context);
@@ -292,7 +292,7 @@ class LambdaTracingAspectTest {
     @Test
     void shouldNotCaptureTracesWithExceptionMetaDataIfDisabledViaEnvironmentVariable() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledWithException();
 
             catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
@@ -313,7 +313,7 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureTracesWithExceptionMetaDataEnabledExplicitlyAndEnvironmentVariableDisabled() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("TRACING_CAPTURE_ERROR")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
 
             requestHandler = new PowerTracerToolEnabledForError();
 
