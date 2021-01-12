@@ -78,7 +78,7 @@ public final class LambdaTracingAspect {
     private boolean captureResponse(Tracing powerToolsTracing) {
         switch (powerToolsTracing.captureMode()) {
             case ENVIRONMENT_VAR:
-                Boolean captureResponse = environmentVariable("TRACING_CAPTURE_RESPONSE");
+                Boolean captureResponse = environmentVariable("POWERTOOLS_TRACER_CAPTURE_RESPONSE");
                 return null != captureResponse ? captureResponse : powerToolsTracing.captureResponse();
             case RESPONSE:
             case RESPONSE_AND_ERROR:
@@ -92,7 +92,7 @@ public final class LambdaTracingAspect {
     private boolean captureError(Tracing powerToolsTracing) {
         switch (powerToolsTracing.captureMode()) {
             case ENVIRONMENT_VAR:
-                Boolean captureError = environmentVariable("TRACING_CAPTURE_ERROR");
+                Boolean captureError = environmentVariable("POWERTOOLS_TRACER_CAPTURE_ERROR");
                 return null != captureError ? captureError : powerToolsTracing.captureError();
             case ERROR:
             case RESPONSE_AND_ERROR:
@@ -117,8 +117,8 @@ public final class LambdaTracingAspect {
                 && (placedOnRequestHandler(pjp) || placedOnStreamHandler(pjp));
     }
 
-    private Boolean environmentVariable(String tracing_capture_response) {
-        return null != SystemWrapper.getenv(tracing_capture_response)
-                ? Boolean.valueOf(SystemWrapper.getenv(tracing_capture_response)) : null;
+    private Boolean environmentVariable(String POWERTOOLS_TRACER_CAPTURE_RESPONSE) {
+        return null != SystemWrapper.getenv(POWERTOOLS_TRACER_CAPTURE_RESPONSE)
+                ? Boolean.valueOf(SystemWrapper.getenv(POWERTOOLS_TRACER_CAPTURE_RESPONSE)) : null;
     }
 }

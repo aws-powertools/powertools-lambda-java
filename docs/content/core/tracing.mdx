@@ -73,14 +73,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 ```
 
 By default, this annotation will automatically record method responses and exceptions. You can change the default behavior by setting
-the environment variables `TRACING_CAPTURE_RESPONSE` and `TRACING_CAPTURE_ERROR` as needed. Optionally, you can override behavior by
+the environment variables `POWERTOOLS_TRACER_CAPTURE_RESPONSE` and `POWERTOOLS_TRACER_CAPTURE_ERROR` as needed. Optionally, you can override behavior by
 different supported `captureMode` to record response, exception or both.
 
 <Note type="warning">
   <strong>Returning sensitive information from your Lambda handler or functions, where Tracer is used?</strong>
   <br/><br/>
   You can disable annotation from capturing their responses and exception as tracing metadata with <strong><code>captureMode=DISABLED </code></strong>
-   or globally by setting environment variables <strong><code>TRACING_CAPTURE_RESPONSE</code></strong> and <strong><code>TRACING_CAPTURE_ERROR</code></strong> to <strong><code>false</code></strong>.
+   or globally by setting environment variables <strong><code>POWERTOOLS_TRACER_CAPTURE_RESPONSE</code></strong> and <strong><code>POWERTOOLS_TRACER_CAPTURE_ERROR</code></strong> to <strong><code>false</code></strong>.
 </Note><br/>
 
 ```java:title=HandlerWithoutCapturingResponseOrError.java
@@ -104,8 +104,8 @@ Resources:
         Tracing: Active
         Environment:
             Variables:
-                TRACING_CAPTURE_RESPONSE: false # highlight-line
-                TRACING_CAPTURE_ERROR: false # highlight-line
+                POWERTOOLS_TRACER_CAPTURE_RESPONSE: false # highlight-line
+                POWERTOOLS_TRACER_CAPTURE_ERROR: false # highlight-line
 ```
 
 ### Annotations
