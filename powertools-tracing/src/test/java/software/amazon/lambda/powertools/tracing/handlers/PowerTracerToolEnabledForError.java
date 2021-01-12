@@ -17,13 +17,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
-import static software.amazon.lambda.powertools.tracing.CaptureMode.DISABLED;
+import static software.amazon.lambda.powertools.tracing.CaptureMode.ERROR;
 
-public class PowerTracerToolEnabledWithNoMetaData implements RequestHandler<Object, Object> {
+public class PowerTracerToolEnabledForError implements RequestHandler<Object, Object> {
 
     @Override
-    @Tracing(captureMode = DISABLED)
+    @Tracing(namespace = "lambdaHandler", captureMode = ERROR)
     public Object handleRequest(Object input, Context context) {
-        return null;
+        throw new RuntimeException("I am failing!");
     }
 }
