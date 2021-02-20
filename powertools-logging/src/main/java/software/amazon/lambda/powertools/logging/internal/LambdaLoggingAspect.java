@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Random;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,12 +48,12 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
 import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
 
 @Aspect
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Random SAMPLER = new Random();
 
     private static final String LOG_LEVEL = System.getenv("LOG_LEVEL");
@@ -175,7 +174,7 @@ public final class LambdaLoggingAspect {
 
             Logger log = logger(pjp);
 
-            asJson(pjp, MAPPER.readValue(bytes, Map.class))
+            asJson(pjp, objectMapper().readValue(bytes, Map.class))
                     .ifPresent(log::info);
 
         } catch (IOException e) {
@@ -189,7 +188,7 @@ public final class LambdaLoggingAspect {
     private Optional<String> asJson(final ProceedingJoinPoint pjp,
                                     final Object target) {
         try {
-            return ofNullable(MAPPER.writeValueAsString(target));
+            return ofNullable(objectMapper().writeValueAsString(target));
         } catch (JsonProcessingException e) {
             logger(pjp).error("Failed logging event of type {}", target.getClass(), e);
             return empty();
