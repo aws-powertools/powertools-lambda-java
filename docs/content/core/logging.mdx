@@ -100,6 +100,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 ```
 
 You can also explicitly log any incoming event using `logEvent` param.
+Refer [Override default object mapper](#override-default-object-mapper) to customise what is logged.
 
 <Note type="warning">
    This is disabled by default to prevent sensitive info being logged.
@@ -160,6 +161,42 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
          customKeys.put("test1", "value1");
 
          LoggingUtils.appendKeys(customKeys);
+        ...
+    }
+}
+```
+
+## Override default object mapper
+
+You can optionally choose to override default object mapper which is used to serialize lambda function events. You might
+want to supply custom object mapper in order to control how serialisation is done, for example, when you want to log only
+specific fields from received event due to security.
+
+```java:title=App.java
+package helloworld;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.logging.LoggingUtils;
+import software.amazon.lambda.logging.Logging;
+...
+
+/**
+ * Handler for requests to Lambda function.
+ */
+public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+    Logger log = LogManager.getLogger();
+
+    // highlight-start
+    static {
+        ObjectMapper objectMapper = new ObjectMapper();
+        LoggingUtils.defaultObjectMapper(objectMapper);
+    }
+    // highlight-end
+
+    @Logging(logEvent = true)
+    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         ...
     }
 }
