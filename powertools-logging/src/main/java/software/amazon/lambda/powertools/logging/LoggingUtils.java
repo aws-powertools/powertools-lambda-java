@@ -15,6 +15,7 @@ package software.amazon.lambda.powertools.logging;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.ThreadContext;
 
 /**
@@ -23,6 +24,7 @@ import org.apache.logging.log4j.ThreadContext;
  * {@see Logging}
  */
 public final class LoggingUtils {
+    private static ObjectMapper objectMapper = new ObjectMapper();
 
     private LoggingUtils() {
     }
@@ -47,5 +49,19 @@ public final class LoggingUtils {
      */
     public static void appendKeys(Map<String, String> customKeys) {
         ThreadContext.putAll(customKeys);
+    }
+
+    /**
+     * Sets the instance of ObjectMapper object which is used for serialising event when
+     * {@code @Logging(logEvent = true)}.
+     *
+     * @param objectMapper Custom implementation of object mapper to be used for logging serialised event
+     */
+    public static void defaultObjectMapper(ObjectMapper objectMapper) {
+        LoggingUtils.objectMapper = objectMapper;
+    }
+
+    public static ObjectMapper objectMapper() {
+        return objectMapper;
     }
 }
