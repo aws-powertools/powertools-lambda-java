@@ -23,8 +23,7 @@ import static software.amazon.lambda.powertools.parameters.transform.Transformer
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 public class AppParams implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-
-    Logger log = LogManager.getLogger();
+    private final static Logger log = LogManager.getLogger();
 
     SSMProvider ssmProvider = ParamManager.getSsmProvider();
     SecretsProvider secretsProvider = ParamManager.getSecretsProvider();

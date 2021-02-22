@@ -53,8 +53,8 @@ public abstract class BaseProvider implements ParamProvider {
      * Retrieve multiple parameter values from the underlying parameter store.<br />
      * Abstract: Implement this method in a child class of {@link BaseProvider}
      *
-     * @param path
-     * @return
+     * @param path Parameter store path
+     * @return Return map of parameter name value pairs
      */
     protected abstract Map<String, String> getMultipleValues(String path);
 

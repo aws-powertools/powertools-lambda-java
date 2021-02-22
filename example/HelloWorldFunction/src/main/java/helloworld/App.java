@@ -21,6 +21,7 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.tracing.CaptureMode;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
 import software.amazon.lambda.powertools.tracing.Tracing;
 
@@ -33,11 +34,10 @@ import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntityS
  * Handler for requests to Lambda function.
  */
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-
-    Logger log = LogManager.getLogger();
+    private final static Logger log = LogManager.getLogger();
 
     @Logging(logEvent = true, samplingRate = 0.7)
-    @Tracing(captureError = false, captureResponse = false)
+    @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
@@ -84,13 +84,9 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     }
 
     private void threadOption1() throws InterruptedException {
-        Entity traceEntity = AWSXRay.getTraceEntity();
-        Thread thread = new Thread(() -> {
-            AWSXRay.setTraceEntity(traceEntity);
-            log();
-        });
-        thread.start();
-        thread.join();
+        final Entity traceEntity = AWSXRay.getTraceEntity();
+        assert traceEntity != null;
+        traceEntity.run(new Thread(this::log));
     }
 
     private void threadOption2() throws InterruptedException {
@@ -108,8 +104,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         log.info("inside threaded logging for function");
     }
 
-
-    @Tracing(namespace = "getPageContents", captureResponse = false, captureError = false)
+    @Tracing(namespace = "getPageContents", captureMode = CaptureMode.DISABLED)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
         putMetadata("getPageContents", address);
