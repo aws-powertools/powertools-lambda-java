@@ -11,6 +11,7 @@ on:
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
       - 'powertools-parameters/**'
+      - 'powertools-metrics/**'
       - 'pom.xml'
       - '.github/workflows/**'
   push:
@@ -21,8 +22,11 @@ on:
       - 'powertools-logging/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'powertools-parameters/**'
+      - 'powertools-metrics/**'
       - 'pom.xml'
-
+      - '.github/workflows/**'
 jobs:
   build:
     runs-on: ubuntu-latest

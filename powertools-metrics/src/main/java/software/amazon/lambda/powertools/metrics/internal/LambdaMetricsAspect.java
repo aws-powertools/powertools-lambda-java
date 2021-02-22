@@ -53,16 +53,12 @@ public class LambdaMetricsAspect {
             coldStartSingleMetricIfApplicable(pjp, metrics);
 
             try {
-                Object proceed = pjp.proceed(proceedArgs);
-
-                coldStartDone();
-
-                validateBeforeFlushingMetrics(metrics);
-
-                logger.flush();
-                return proceed;
+                return pjp.proceed(proceedArgs);
 
             } finally {
+                coldStartDone();
+                validateMetricsAndRefreshOnFailure(metrics);
+                logger.flush();
                 refreshMetricsContext();
             }
         }
@@ -103,6 +99,16 @@ public class LambdaMetricsAspect {
 
     private String service(Metrics metrics) {
         return !"".equals(metrics.service()) ? metrics.service() : serviceName();
+    }
+
+    private void validateMetricsAndRefreshOnFailure(Metrics metrics) {
+        try {
+
+            validateBeforeFlushingMetrics(metrics);
+        } catch (ValidationException e){
+            refreshMetricsContext();
+            throw e;
+        }
     }
 
     // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed

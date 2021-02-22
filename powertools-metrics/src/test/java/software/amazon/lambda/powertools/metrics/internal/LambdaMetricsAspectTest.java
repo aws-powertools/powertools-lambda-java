@@ -27,6 +27,7 @@ import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsExcep
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoDimensionsHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoExceptionWhenNoMetricsHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsTooManyDimensionsHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsWithExceptionInHandler;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
@@ -230,6 +231,26 @@ public class LambdaMetricsAspectTest {
             assertThatExceptionOfType(ValidationException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
                     .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 14.");
+        }
+    }
+
+    @Test
+    public void metricsPublishedEvenHandlerThrowsException() {
+        requestHandler = new PowertoolsMetricsWithExceptionInHandler();
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            assertThatExceptionOfType(IllegalStateException.class)
+                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                    .withMessage("Whoops, unexpected exception");
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+                        assertThat(logAsJson)
+                                .containsEntry("CoolMetric", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsKey("_aws");
+                    });
         }
     }
 
