@@ -26,6 +26,7 @@ import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
 public final class LambdaHandlerProcessor {
+    // SERVICE_NAME cannot be final for testing purposes
     private static String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
             ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
     private static Boolean IS_COLD_START = null;

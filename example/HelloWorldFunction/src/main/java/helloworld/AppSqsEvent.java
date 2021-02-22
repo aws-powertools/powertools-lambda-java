@@ -12,23 +12,23 @@ import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 
 public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
-    private static final Logger LOG = LogManager.getLogger(AppSqsEvent.class);
+    private static final Logger log = LogManager.getLogger(AppSqsEvent.class);
 
-    @Override
     @SqsBatch(SampleMessageHandler.class)
     @Logging(logEvent = true)
+    @Override
     public String handleRequest(SQSEvent input, Context context) {
         return "{\"statusCode\": 200}";
     }
 
-    public class SampleMessageHandler implements SqsMessageHandler<Object> {
+    public static class SampleMessageHandler implements SqsMessageHandler<Object> {
 
         @Override
         public String process(SQSMessage message) {
             if("19dd0b57-b21e-4ac1-bd88-01bbb068cb99".equals(message.getMessageId())) {
                 throw new RuntimeException(message.getMessageId());
             }
-            LOG.info("Processing message with details {}", message);
+            log.info("Processing message with details {}", message);
             return message.getMessageId();
         }
     }

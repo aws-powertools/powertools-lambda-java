@@ -97,7 +97,7 @@ public @interface Validation {
     String outboundSchema() default "";
 
     /**
-     * path to the subelement
+     * path to the sub element
      */
     String envelope() default "";
 

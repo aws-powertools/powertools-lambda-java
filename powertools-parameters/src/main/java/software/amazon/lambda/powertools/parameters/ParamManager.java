@@ -31,6 +31,7 @@ public final class ParamManager {
     private static final CacheManager cacheManager = new CacheManager();
     private static final TransformationManager transformationManager = new TransformationManager();
 
+    // NOTE: For testing purposes `providers` cannot be final
     private static ConcurrentHashMap<Class<? extends BaseProvider>, BaseProvider> providers = new ConcurrentHashMap<>();
 
     /**
@@ -43,7 +44,7 @@ public final class ParamManager {
         if (providerClass == null) {
             throw new IllegalStateException("providerClass cannot be null.");
         }
-        return (T) providers.computeIfAbsent(providerClass, (k) -> createProvider(k));
+        return (T) providers.computeIfAbsent(providerClass, ParamManager::createProvider);
     }
 
     /**

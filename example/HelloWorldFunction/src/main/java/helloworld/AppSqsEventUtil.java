@@ -13,7 +13,7 @@ import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 import static java.util.Collections.emptyList;
 
 public class AppSqsEventUtil implements RequestHandler<SQSEvent, List<String>> {
-    private static final Logger LOG = LogManager.getLogger(AppSqsEventUtil.class);
+    private static final Logger log = LogManager.getLogger(AppSqsEventUtil.class);
 
     @Override
     public List<String> handleRequest(SQSEvent input, Context context) {
@@ -24,15 +24,15 @@ public class AppSqsEventUtil implements RequestHandler<SQSEvent, List<String>> {
                     throw new RuntimeException(message.getMessageId());
                 }
 
-                LOG.info("Processing message with details {}", message);
+                log.info("Processing message with details {}", message);
                 return message.getMessageId();
             });
 
         } catch (SQSBatchProcessingException e) {
-            LOG.info("Exception details {}", e.getMessage(), e);
-            LOG.info("Success message Returns{}", e.successMessageReturnValues());
-            LOG.info("Failed messages {}", e.getFailures());
-            LOG.info("Failed messages Reasons {}", e.getExceptions());
+            log.info("Exception details {}", e.getMessage(), e);
+            log.info("Success message Returns{}", e.successMessageReturnValues());
+            log.info("Failed messages {}", e.getFailures());
+            log.info("Failed messages Reasons {}", e.getExceptions());
             return emptyList();
         }
     }
