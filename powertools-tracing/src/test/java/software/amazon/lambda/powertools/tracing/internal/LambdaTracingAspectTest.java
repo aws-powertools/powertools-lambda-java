@@ -61,6 +61,8 @@ class LambdaTracingAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn(null);
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn(null);
+            mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn(false);
+            mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn(false);
         }
     }
 
@@ -227,6 +229,7 @@ class LambdaTracingAspectTest {
     @Test
     void shouldNotCaptureTracesIfDisabledViaEnvironmentVariable() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn(true);
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
 
             requestHandler.handleRequest(new Object(), context);
@@ -269,7 +272,9 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureTracesIfExplicitlyEnabledBothAndEnvironmentVariableIsDisabled() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn(true);
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
+            mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn(true);
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledExplicitlyForResponseAndError();
 
@@ -292,6 +297,7 @@ class LambdaTracingAspectTest {
     @Test
     void shouldNotCaptureTracesWithExceptionMetaDataIfDisabledViaEnvironmentVariable() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn(true);
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledWithException();
 

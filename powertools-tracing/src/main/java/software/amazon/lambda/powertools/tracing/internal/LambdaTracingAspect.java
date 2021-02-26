@@ -78,8 +78,8 @@ public final class LambdaTracingAspect {
     private boolean captureResponse(Tracing powerToolsTracing) {
         switch (powerToolsTracing.captureMode()) {
             case ENVIRONMENT_VAR:
-                Boolean captureResponse = environmentVariable("POWERTOOLS_TRACER_CAPTURE_RESPONSE");
-                return null != captureResponse ? captureResponse : powerToolsTracing.captureResponse();
+                boolean captureResponse = environmentVariable("POWERTOOLS_TRACER_CAPTURE_RESPONSE");
+                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_RESPONSE") ? captureResponse : powerToolsTracing.captureResponse();
             case RESPONSE:
             case RESPONSE_AND_ERROR:
                 return true;
@@ -92,8 +92,8 @@ public final class LambdaTracingAspect {
     private boolean captureError(Tracing powerToolsTracing) {
         switch (powerToolsTracing.captureMode()) {
             case ENVIRONMENT_VAR:
-                Boolean captureError = environmentVariable("POWERTOOLS_TRACER_CAPTURE_ERROR");
-                return null != captureError ? captureError : powerToolsTracing.captureError();
+                boolean captureError = environmentVariable("POWERTOOLS_TRACER_CAPTURE_ERROR");
+                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_ERROR") ? captureError : powerToolsTracing.captureError();
             case ERROR:
             case RESPONSE_AND_ERROR:
                 return true;
@@ -117,8 +117,11 @@ public final class LambdaTracingAspect {
                 && (placedOnRequestHandler(pjp) || placedOnStreamHandler(pjp));
     }
 
-    private Boolean environmentVariable(String POWERTOOLS_TRACER_CAPTURE_RESPONSE) {
-        return null != SystemWrapper.getenv(POWERTOOLS_TRACER_CAPTURE_RESPONSE)
-                ? Boolean.valueOf(SystemWrapper.getenv(POWERTOOLS_TRACER_CAPTURE_RESPONSE)) : null;
+    private boolean environmentVariable(String key) {
+        return Boolean.parseBoolean(SystemWrapper.getenv(key));
+    }
+
+    private boolean isEnvironmentVariableSet(String key) {
+        return SystemWrapper.containsKey(key);
     }
 }

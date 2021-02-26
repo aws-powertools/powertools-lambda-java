@@ -7,4 +7,8 @@ public class SystemWrapper {
     public static String getenv(String name) {
         return System.getenv(name);
     }
+
+    public static boolean containsKey(String key) {
+        return System.getenv().containsKey(key);
+    }
 }
