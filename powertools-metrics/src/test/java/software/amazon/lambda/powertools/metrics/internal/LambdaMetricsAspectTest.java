@@ -75,9 +75,23 @@ public class LambdaMetricsAspectTest {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             requestHandler.handleRequest("input", context);
 
-            assertThat(out.toString())
+            assertThat(out.toString().split("\n"))
+                    .hasSize(2)
                     .satisfies(s -> {
-                        Map<String, Object> logAsJson = readAsJson(s);
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
+
+                        logAsJson = readAsJson(s[1]);
 
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)

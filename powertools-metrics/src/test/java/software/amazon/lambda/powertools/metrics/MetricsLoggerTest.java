@@ -62,6 +62,33 @@ class MetricsLoggerTest {
         }
     }
 
+    @Test
+    void singleMetricsCaptureUtilityWithDefaultNameSpace() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
+
+            MetricsUtils.withSingleMetricOnDefaultNameSpace("Metric1", 1, Unit.COUNT,
+                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=GlobalName");
+                    });
+        }
+    }
+
     private Map<String, Object> readAsJson(String s) {
         try {
             return mapper.readValue(s, Map.class);
