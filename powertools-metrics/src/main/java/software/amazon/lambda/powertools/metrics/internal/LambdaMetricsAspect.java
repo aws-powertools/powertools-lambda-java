@@ -1,9 +1,7 @@
 package software.amazon.lambda.powertools.metrics.internal;
 
 import java.lang.reflect.Field;
-import java.util.Optional;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -25,7 +23,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 
 @Aspect
 public class LambdaMetricsAspect {
@@ -50,7 +47,10 @@ public class LambdaMetricsAspect {
             logger.setNamespace(namespace(metrics))
                     .putDimensions(DimensionSet.of("Service", service(metrics)));
 
-            coldStartSingleMetricIfApplicable(pjp, metrics);
+            extractContext(pjp).ifPresent((context) -> {
+                coldStartSingleMetricIfApplicable(context.getAwsRequestId(), context.getFunctionName(), metrics);
+                logger.putProperty("AwsRequestId", context.getAwsRequestId());
+            });
 
             try {
                 return pjp.proceed(proceedArgs);
@@ -66,20 +66,19 @@ public class LambdaMetricsAspect {
         return pjp.proceed(proceedArgs);
     }
 
-    private void coldStartSingleMetricIfApplicable(final ProceedingJoinPoint pjp,
+    private void coldStartSingleMetricIfApplicable(final String awsRequestId,
+                                                   final String functionName,
                                                    final Metrics metrics) {
         if (metrics.captureColdStart()
                 && isColdStart()) {
-
-            Optional<Context> contextOptional = extractContext(pjp);
-
-            if (contextOptional.isPresent()) {
-                Context context = contextOptional.orElseThrow(() -> new IllegalStateException("Context not found"));
-
-                withSingleMetric("ColdStart", 1, Unit.COUNT, namespace(metrics), (logger) ->
-                        logger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", context.getFunctionName())));
-            }
+                MetricsLogger metricsLogger = new MetricsLogger();
+                metricsLogger.setNamespace(namespace(metrics));
+                metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
+                metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
+                metricsLogger.putProperty("AwsRequestId", awsRequestId);
+                metricsLogger.flush();
         }
+
     }
 
     private void validateBeforeFlushingMetrics(Metrics metrics) {
@@ -103,7 +102,6 @@ public class LambdaMetricsAspect {
 
     private void validateMetricsAndRefreshOnFailure(Metrics metrics) {
         try {
-
             validateBeforeFlushingMetrics(metrics);
         } catch (ValidationException e){
             refreshMetricsContext();
