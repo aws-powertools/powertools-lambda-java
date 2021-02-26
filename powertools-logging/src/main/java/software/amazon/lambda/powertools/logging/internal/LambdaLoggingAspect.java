@@ -37,6 +37,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.Logging;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
@@ -165,8 +166,8 @@ public final class LambdaLoggingAspect {
         Object[] args = pjp.getArgs();
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             OutputStreamWriter writer = new OutputStreamWriter(out);
-             InputStreamReader reader = new InputStreamReader((InputStream) pjp.getArgs()[0])) {
+             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
+             InputStreamReader reader = new InputStreamReader((InputStream) pjp.getArgs()[0], UTF_8)) {
 
             IOUtils.copy(reader, writer);
             writer.flush();
