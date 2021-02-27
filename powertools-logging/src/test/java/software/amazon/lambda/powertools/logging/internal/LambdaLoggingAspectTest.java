@@ -41,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.core.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
@@ -65,7 +66,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
-import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 class LambdaLoggingAspectTest {
 

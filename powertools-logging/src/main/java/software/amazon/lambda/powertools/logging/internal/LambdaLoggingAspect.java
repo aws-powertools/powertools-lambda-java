@@ -39,10 +39,10 @@ import software.amazon.lambda.powertools.logging.Logging;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
@@ -50,7 +50,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
-import static software.amazon.lambda.powertools.logging.internal.SystemWrapper.getenv;
 
 @Aspect
 public final class LambdaLoggingAspect {
@@ -199,13 +198,5 @@ public final class LambdaLoggingAspect {
 
     private Logger logger(final ProceedingJoinPoint pjp) {
         return LogManager.getLogger(pjp.getSignature().getDeclaringType());
-    }
-
-    private static Optional<String> getXrayTraceId() {
-        final String X_AMZN_TRACE_ID = getenv("_X_AMZN_TRACE_ID");
-        if(X_AMZN_TRACE_ID != null) {
-            return of(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
-        }
-        return empty();
     }
 }

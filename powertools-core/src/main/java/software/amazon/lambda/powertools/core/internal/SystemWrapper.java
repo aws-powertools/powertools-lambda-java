@@ -1,6 +1,6 @@
-package software.amazon.lambda.powertools.logging.internal;
+package software.amazon.lambda.powertools.core.internal;
 
-class SystemWrapper {
+public class SystemWrapper {
     private SystemWrapper() {
     }
 

@@ -24,6 +24,7 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 public final class LambdaHandlerProcessor {
     // SERVICE_NAME cannot be final for testing purposes
@@ -82,5 +83,13 @@ public final class LambdaHandlerProcessor {
 
     public static boolean isSamLocal() {
         return "true".equals(System.getenv("AWS_SAM_LOCAL"));
+    }
+
+    public static Optional<String> getXrayTraceId() {
+        final String X_AMZN_TRACE_ID = getenv("_X_AMZN_TRACE_ID");
+        if(X_AMZN_TRACE_ID != null) {
+            return of(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
+        }
+        return empty();
     }
 }
