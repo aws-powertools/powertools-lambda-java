@@ -8,7 +8,7 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.metrics.Metrics;
 
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetricOnDefaultNameSpace;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 
 public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, Object> {
 
@@ -19,7 +19,7 @@ public class PowertoolsMetricsEnabledHandler implements RequestHandler<Object, O
         metricsLogger.putMetric("Metric1", 1, Unit.BYTES);
 
 
-        withSingleMetricOnDefaultNameSpace("Metric2", 1, Unit.COUNT,
+        withSingleMetric("Metric2", 1, Unit.COUNT,
                 log -> log.setDimensions(DimensionSet.of("Dimension1", "Value1")));
 
         return null;

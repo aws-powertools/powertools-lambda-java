@@ -10,6 +10,7 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 
@@ -27,6 +28,8 @@ import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogg
 @Aspect
 public class LambdaMetricsAspect {
     private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
+    public static final String TRACE_ID_PROPERTY = "XrayTraceId";
+    public static final String REQUEST_ID_PROPERTY = "AwsRequestId";
 
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(metrics)")
@@ -49,8 +52,11 @@ public class LambdaMetricsAspect {
 
             extractContext(pjp).ifPresent((context) -> {
                 coldStartSingleMetricIfApplicable(context.getAwsRequestId(), context.getFunctionName(), metrics);
-                logger.putProperty("AwsRequestId", context.getAwsRequestId());
+                logger.putProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
             });
+
+            LambdaHandlerProcessor.getXrayTraceId()
+                    .ifPresent(traceId -> logger.putProperty(TRACE_ID_PROPERTY, traceId));
 
             try {
                 return pjp.proceed(proceedArgs);
@@ -75,7 +81,7 @@ public class LambdaMetricsAspect {
                 metricsLogger.setNamespace(namespace(metrics));
                 metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
                 metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
-                metricsLogger.putProperty("AwsRequestId", awsRequestId);
+                metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
                 metricsLogger.flush();
         }
 
