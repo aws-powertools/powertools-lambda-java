@@ -56,7 +56,7 @@ public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
 
-    private static final String LOG_LEVEL = System.getenv("LOG_LEVEL");
+    private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
 
     private static Level LEVEL_AT_INITIALISATION;
