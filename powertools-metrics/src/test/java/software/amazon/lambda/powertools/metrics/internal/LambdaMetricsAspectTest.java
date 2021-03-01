@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 public class LambdaMetricsAspectTest {
     @Mock
@@ -71,13 +72,33 @@ public class LambdaMetricsAspectTest {
 
     @Test
     public void metricsWithoutColdStart() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+
             requestHandler.handleRequest("input", context);
 
-            assertThat(out.toString())
+            assertThat(out.toString().split("\n"))
+                    .hasSize(2)
                     .satisfies(s -> {
-                        Map<String, Object> logAsJson = readAsJson(s);
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("XrayTraceId", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("AwsRequestId", "123ABC");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
+
+                        logAsJson = readAsJson(s[1]);
 
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)

@@ -18,6 +18,7 @@ import software.amazon.cloudwatchlogs.emf.model.Unit;
 import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 class MetricsLoggerTest {
 
@@ -44,8 +45,10 @@ class MetricsLoggerTest {
 
     @Test
     void singleMetricsCaptureUtility() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
             MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
                     metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
@@ -57,7 +60,38 @@ class MetricsLoggerTest {
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Dimension1", "Value1")
-                                .containsKey("_aws");
+                                .containsKey("_aws")
+                                .containsEntry("XrayTraceId", "1-5759e988-bd862e3fe1be46a994272793");
+                    });
+        }
+    }
+
+    @Test
+    void singleMetricsCaptureUtilityWithDefaultNameSpace() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
+            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+
+            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
+                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("XrayTraceId", "1-5759e988-bd862e3fe1be46a994272793");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=GlobalName");
                     });
         }
     }

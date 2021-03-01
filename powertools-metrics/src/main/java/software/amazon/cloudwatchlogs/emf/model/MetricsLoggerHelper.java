@@ -16,7 +16,7 @@ public final class MetricsLoggerHelper {
         return metricsContext().getDimensions().size();
     }
 
-    private static MetricsContext metricsContext() {
+    public static MetricsContext metricsContext() {
         try {
             Field f = metricsLogger().getClass().getDeclaredField("context");
             f.setAccessible(true);
