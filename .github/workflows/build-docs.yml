@@ -16,18 +16,18 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: borales/actions-yarn@v2.0.0
+      - uses: actions/checkout@v1
       - name: Set up Python
         uses: actions/setup-python@v1
         with:
           python-version: "3.8"
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '12'
       - name: Capture branch and tag
         id: branch_name
         run: |
           echo "SOURCE_BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
           echo "SOURCE_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-      - name: install dependencies
-        run: make dev-docs
       - name: Build docs website
         run: make build-docs-website

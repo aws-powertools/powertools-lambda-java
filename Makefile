@@ -1,17 +1,15 @@
-
-dev-docs:
-	cd docs && yarn install
-
 build-docs:
 	@$(MAKE) build-docs-website
 
-build-docs-website: dev-docs
+build-docs-website:
 	mkdir -p dist
-	cd docs && yarn build
-	cp -R docs/public/* dist/
+	docker build -t squidfunk/mkdocs-material ./docs/
+	docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
+	cp -R site/* dist/
 
-docs-local:
-	cd docs && yarn start
+docs-local-docker:
+	docker build -t squidfunk/mkdocs-material ./docs/
+	docker run --rm -it -p 8000:8000 -v ${PWD}:/docs squidfunk/mkdocs-material
 
 test:
 	mvn test
