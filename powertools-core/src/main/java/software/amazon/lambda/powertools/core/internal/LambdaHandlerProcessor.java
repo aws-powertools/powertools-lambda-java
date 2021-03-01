@@ -37,7 +37,9 @@ public final class LambdaHandlerProcessor {
     }
 
     public static boolean isHandlerMethod(final ProceedingJoinPoint pjp) {
-        return "handleRequest".equals(pjp.getSignature().getName());
+        return "handleRequest".equals(pjp.getSignature().getName()) ||
+                // https://docs.aws.amazon.com/codeguru/latest/profiler-ug/lambda-custom.html
+                "requestHandler".equals(pjp.getSignature().getName());
     }
 
     public static boolean placedOnRequestHandler(final ProceedingJoinPoint pjp) {
