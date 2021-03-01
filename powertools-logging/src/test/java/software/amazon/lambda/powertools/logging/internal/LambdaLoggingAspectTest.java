@@ -47,6 +47,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledWithCustomMapper;
 
 import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.RequestParametersEntity;
 import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.ResponseElementsEntity;
@@ -178,6 +179,23 @@ class LambdaLoggingAspectTest {
         String event = (String) log.get("message");
 
         String expectEvent = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/s3EventNotification.json")))
+                .lines().collect(joining("\n"));
+
+        assertEquals(expectEvent, event, false);
+    }
+
+    @Test
+    void shouldLogEventForHandlerWithOverriddenObjectMapper() throws IOException, JSONException {
+        RequestHandler<S3EventNotification, Object> handler = new PowerToolLogEventEnabledWithCustomMapper();
+        S3EventNotification s3EventNotification = s3EventNotification();
+
+        handler.handleRequest(s3EventNotification, context);
+
+        Map<String, Object> log = parseToMap(Files.lines(Paths.get("target/logfile.json")).collect(joining()));
+
+        String event = (String) log.get("message");
+
+        String expectEvent = new BufferedReader(new InputStreamReader(this.getClass().getResourceAsStream("/customizedLogEvent.json")))
                 .lines().collect(joining("\n"));
 
         assertEquals(expectEvent, event, false);
