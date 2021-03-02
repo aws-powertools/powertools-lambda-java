@@ -61,7 +61,7 @@ class MetricsLoggerTest {
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Dimension1", "Value1")
                                 .containsKey("_aws")
-                                .containsEntry("XrayTraceId", "1-5759e988-bd862e3fe1be46a994272793");
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
                     });
         }
     }
@@ -85,7 +85,7 @@ class MetricsLoggerTest {
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Dimension1", "Value1")
                                 .containsKey("_aws")
-                                .containsEntry("XrayTraceId", "1-5759e988-bd862e3fe1be46a994272793");
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
                         Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 

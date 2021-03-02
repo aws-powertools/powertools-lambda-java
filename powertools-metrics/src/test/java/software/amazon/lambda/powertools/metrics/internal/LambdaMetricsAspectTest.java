@@ -89,8 +89,8 @@ public class LambdaMetricsAspectTest {
                                 .containsEntry("Metric2", 1.0)
                                 .containsEntry("Dimension1", "Value1")
                                 .containsKey("_aws")
-                                .containsEntry("XrayTraceId", "1-5759e988-bd862e3fe1be46a994272793")
-                                .containsEntry("AwsRequestId", "123ABC");
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("function_request_id", "123ABC");
 
                         Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
@@ -103,7 +103,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
                     });
         }
@@ -127,7 +127,7 @@ public class LambdaMetricsAspectTest {
                                 .doesNotContainKey("Metric1")
                                 .containsEntry("ColdStart", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
 
                         logAsJson = readAsJson(s[1]);
@@ -136,7 +136,7 @@ public class LambdaMetricsAspectTest {
                                 .doesNotContainKey("ColdStart")
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
                     });
         }
@@ -160,7 +160,7 @@ public class LambdaMetricsAspectTest {
                                 .doesNotContainKey("Metric1")
                                 .containsEntry("ColdStart", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
 
                         logAsJson = readAsJson(s[1]);
@@ -169,7 +169,7 @@ public class LambdaMetricsAspectTest {
                                 .doesNotContainKey("ColdStart")
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
 
                         logAsJson = readAsJson(s[2]);
@@ -178,7 +178,7 @@ public class LambdaMetricsAspectTest {
                                 .doesNotContainKey("ColdStart")
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
                     });
         }
@@ -200,7 +200,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .containsEntry("Metric1", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
                     });
         }
@@ -277,7 +277,7 @@ public class LambdaMetricsAspectTest {
                         assertThat(logAsJson)
                                 .containsEntry("CoolMetric", 1.0)
                                 .containsEntry("Service", "booking")
-                                .containsEntry("AwsRequestId", "123ABC")
+                                .containsEntry("function_request_id", "123ABC")
                                 .containsKey("_aws");
                     });
         }

@@ -28,8 +28,8 @@ import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogg
 @Aspect
 public class LambdaMetricsAspect {
     private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
-    public static final String TRACE_ID_PROPERTY = "XrayTraceId";
-    public static final String REQUEST_ID_PROPERTY = "AwsRequestId";
+    public static final String TRACE_ID_PROPERTY = "xray_trace_id";
+    public static final String REQUEST_ID_PROPERTY = "function_request_id";
 
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(metrics)")
