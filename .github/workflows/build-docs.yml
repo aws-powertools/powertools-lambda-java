@@ -21,9 +21,6 @@ jobs:
         uses: actions/setup-python@v1
         with:
           python-version: "3.8"
-      - uses: actions/setup-node@v1
-        with:
-          node-version: '12'
       - name: Capture branch and tag
         id: branch_name
         run: |
