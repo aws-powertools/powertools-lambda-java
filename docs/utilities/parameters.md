@@ -57,7 +57,10 @@ in order to get data from other regions or use specific credentials.
 
 === "SSMProvider"
 
-    ```java hl_lines="14"
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.parameters.SSMProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         // Get an instance of the SSM Provider
         SSMProvider ssmProvider = ParamManager.getSsmProvider();
@@ -74,7 +77,10 @@ in order to get data from other regions or use specific credentials.
 
 === "SSMProvider with an explicit region"
 
-    ```java hl_lines="2 4"
+    ```java hl_lines="5 7"
+    import software.amazon.lambda.powertools.parameters.SSMProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         SsmClient client = SsmClient.builder().region(Region.EU_CENTRAL_1).build();
         // Get an instance of the SSM Provider
@@ -103,7 +109,10 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 
 === "AppWithSSM.java"
 
-    ```java hl_lines="6 9"
+    ```java hl_lines="9 12"
+    import software.amazon.lambda.powertools.parameters.SSMProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         // Get an instance of the SSM Provider
         SSMProvider ssmProvider = ParamManager.getSsmProvider();
@@ -127,7 +136,10 @@ in order to get data from other regions or use specific credentials.
 
 === "SecretsProvider"
 
-    ```java hl_lines="6"
+    ```java hl_lines="9"
+    import software.amazon.lambda.powertools.parameters.SecretsProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         // Get an instance of the Secrets Provider
         SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
@@ -140,7 +152,10 @@ in order to get data from other regions or use specific credentials.
 
 === "SecretsProvider with an explicit region"
 
-    ```java hl_lines="2 4"
+    ```java hl_lines="5 7"
+    import software.amazon.lambda.powertools.parameters.SecretsProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         SecretsManagerClient client = SecretsManagerClient.builder().region(Region.EU_CENTRAL_1).build();
         // Get an instance of the Secrets Provider
@@ -163,7 +178,10 @@ You can customize this default value using `defaultMaxAge`. You can also customi
 
 === "Provider with default Max age"
 
-    ```java hl_lines="6"
+    ```java hl_lines="9"
+    import software.amazon.lambda.powertools.parameters.SecretsProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         // Get an instance of the Secrets Provider
         SecretsProvider secretsProvider = ParamManager.getSecretsProvider()
@@ -176,7 +194,10 @@ You can customize this default value using `defaultMaxAge`. You can also customi
 
 === "Provider with age for each param"
 
-    ```java hl_lines="5"
+    ```java hl_lines="8"
+    import software.amazon.lambda.powertools.parameters.SecretsProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
     public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         SecretsManagerClient client = SecretsManagerClient.builder().region(Region.EU_CENTRAL_1).build();
         

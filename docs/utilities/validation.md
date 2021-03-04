@@ -90,7 +90,9 @@ While it is easier to specify a json schema file in the classpath (using the not
 
 === "MyFunctionHandler.java"
 
-    ```java hl_lines="4"
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.validation.Validation;
+
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         @Override
@@ -176,7 +178,9 @@ Envelopes are [JMESPath expressions](https://jmespath.org/tutorial.html) to extr
 
 === "MyCustomEventHandler.java"
 
-    ```java hl_lines="4 5"
+    ```java hl_lines="6 7"
+    import software.amazon.lambda.powertools.validation.Validation;
+
     public class MyCustomEventHandler implements RequestHandler<MyCustomEvent, String> {
     
         @Override
@@ -228,7 +232,9 @@ Below sample will decode the base64 value within the data key, and decode the JS
 
 === "MyEventHandler.java"
 
-    ```java hl_lines="5"
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.validation.ValidationUtils;
+
     public class MyEventHandler implements RequestHandler<MyEvent, String> {
     
         @Override
@@ -253,7 +259,9 @@ Below sample will decompress and decode base64 data.
 
 === "MyEventHandler.java"
 
-    ```java hl_lines="5"
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.validation.ValidationUtils;
+
     public class MyEventHandler implements RequestHandler<MyEvent, String> {
     
         @Override
@@ -310,9 +318,14 @@ to powertools.You can then use it to do your validation or using annotation.
 
 === "Handler with validation API"
 
-    ```java hl_lines="2 8"
+    ```java hl_lines="6 13"
     ...
-    ValidationConfig.get().addFunction(new XMLFunction());
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    import software.amazon.lambda.powertools.validation.ValidationUtils.validate;
+
+    static {
+        ValidationConfig.get().addFunction(new XMLFunction());
+    }
 
     public class MyXMLEventHandler implements RequestHandler<MyEventWithXML, String> {
     
@@ -326,9 +339,14 @@ to powertools.You can then use it to do your validation or using annotation.
 
 === "Handler with validation annotation"
 
-    ```java hl_lines="2 7"
+    ```java hl_lines="6 12"
     ...
-    ValidationConfig.get().addFunction(new XMLFunction());
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    import software.amazon.lambda.powertools.validation.Validation;
+
+    static {
+        ValidationConfig.get().addFunction(new XMLFunction());
+    }
 
     public class MyXMLEventHandler implements RequestHandler<MyEventWithXML, String> {
     
@@ -346,9 +364,14 @@ You can use the `ValidationConfig` to change that behaviour.
 
 === "Handler with custom schema version"
 
-    ```java hl_lines="2"
+    ```java hl_lines="6"
     ...
-    ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    import software.amazon.lambda.powertools.validation.Validation;
+
+    static {
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+    }
 
     public class MyXMLEventHandler implements RequestHandler<MyEventWithXML, String> {
     
@@ -365,10 +388,15 @@ If you need to configure the Jackson ObjectMapper, you can use the `ValidationCo
 
 === "Handler with custom ObjectMapper"
 
-    ```java hl_lines="2 3"
+    ```java hl_lines="6 7"
     ...
-    ObjectMapper objectMapper= ValidationConfig.get().getObjectMapper();
-    // update (de)serializationConfig or other properties
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    import software.amazon.lambda.powertools.validation.Validation;
+
+    static {
+        ObjectMapper objectMapper= ValidationConfig.get().getObjectMapper();
+        // update (de)serializationConfig or other properties
+    }
 
     public class MyXMLEventHandler implements RequestHandler<MyEventWithXML, String> {
     

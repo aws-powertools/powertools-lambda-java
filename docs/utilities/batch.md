@@ -12,11 +12,9 @@ The SQS batch processing utility provides a way to handle partial failures when 
 
 **Background**
 
-When using SQS as a Lambda event source mapping, Lambda functions can be triggered with a batch of messages from SQS.
-
-If your function fails to process any message from the batch, the entire batch returns to your SQS queue, and your Lambda function will be triggered with the same batch again.
-
-With this utility, messages within a batch will be handled individually - only messages that were not successfully processed
+When using SQS as a Lambda event source mapping, Lambda functions can be triggered with a batch of messages from SQS. 
+If your function fails to process any message from the batch, the entire batch returns to your SQS queue, and your 
+Lambda function will be triggered with the same batch again. With this utility, messages within a batch will be handled individually - only messages that were not successfully processed
 are returned to the queue.
 
 !!! warning
@@ -28,21 +26,17 @@ are returned to the queue.
 To install this utility, add the following dependency to your project.
 
 === "Maven"
-    ```xml
-    <dependency>
-        <groupId>software.amazon.lambda</groupId>
-        <artifactId>powertools-sqs</artifactId>
-        <version>1.2.0</version>
-    </dependency>
-    ```
-=== "Maven Configuration"
-
-    Configure the aspectj-maven-plugin to compile-time weave (CTW) the
-    aws-lambda-powertools-java aspects into your project. You may already have this
-    plugin in your pom. In that case add the dependency to the `aspectLibraries`
-    section.
-
-    ```xml hl_lines="13 14 15 16"
+    ```xml hl_lines="3 4 5 6 7 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-sqs</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        ...
+    </dependencies>
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
     <build>
         <plugins>
             ...
@@ -120,7 +114,7 @@ All records in the batch will be passed to this handler for processing, even if 
 * **Any unprocessed messages detected**, we will raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
 
 !!! warning
-    You will not have access to the **processed messages** within the Lambda Handler - all processing logic will and should be performed by the implemented `SqsMessageHandler#process()` function.
+    You will not have access to the **processed messages** within the Lambda Handler - all processing logic will and should be performed by the implemented `#!java SqsMessageHandler#process()` function.
 
 === "AppSqsEvent.java"
 
@@ -147,12 +141,10 @@ All records in the batch will be passed to this handler for processing, even if 
 
 ### SqsUtils Utility API
 
-If you require access to the result of processed messages, you can use this utility.
+If you require access to the result of processed messages, you can use this utility. The result from calling **`#!java SqsUtils#batchProcessor()`** on the context manager will be a list of all the return values 
+from your **`#!java SqsMessageHandler#process()`** function.
 
-The result from calling **`SqsUtils#batchProcessor()`** on the context manager will be a list of all the return values 
-from your **`SqsMessageHandler#process()`** function.
-
-You can also use the utility in functional way by providing inline implementation of functional interface **`SqsMessageHandler#process()`**
+You can also use the utility in functional way by providing inline implementation of functional interface **`#!java SqsMessageHandler#process()`**
 
 
 === "Utility API"

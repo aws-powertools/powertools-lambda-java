@@ -128,7 +128,10 @@ context for an operation using any native object.
 === "Annotations"
 
     You can add annotations using `putAnnotation()` method from TracingUtils
-    ```java hl_lines="5"
+    ```java hl_lines="8"
+    import software.amazon.lambda.powertools.tracing.Tracing;
+    import software.amazon.lambda.powertools.tracing.TracingUtils;
+
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         @Tracing
@@ -141,7 +144,10 @@ context for an operation using any native object.
 === "Metadata"
 
     You can add metadata using `putMetadata()` method from TracingUtils
-    ```java hl_lines="5"
+    ```java hl_lines="8"
+    import software.amazon.lambda.powertools.tracing.Tracing;
+    import software.amazon.lambda.powertools.tracing.TracingUtils;
+
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         @Tracing
@@ -158,7 +164,10 @@ under a subsegment, or you are doing multithreaded programming. Refer examples b
 
 === "Functional Api"
 
-    ```java hl_lines="4 5 6 8 9 10"
+    ```java hl_lines="7 8 9 11 12 13"
+    import software.amazon.lambda.powertools.tracing.Tracing;
+    import software.amazon.lambda.powertools.tracing.TracingUtils;
+    
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -175,7 +184,9 @@ under a subsegment, or you are doing multithreaded programming. Refer examples b
 
 === "Multi Threaded Programming"
 
-    ```java hl_lines="5 7 8 9"
+    ```java hl_lines="7 9 10 11"
+    import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
+
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {

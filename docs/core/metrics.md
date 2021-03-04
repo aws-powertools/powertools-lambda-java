@@ -55,7 +55,9 @@ Setting | Description | Environment variable | Constructor parameter
 
 === "MetricsEnabledHandler.java"
 
-    ```java hl_lines="6"
+    ```java hl_lines="8"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    
     public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
     
         MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
@@ -76,7 +78,10 @@ You can create metrics using `putMetric`, and manually create dimensions for all
 
 === "MetricsEnabledHandler.java"
 
-    ```java hl_lines="8 9"
+    ```java hl_lines="11 12"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+
     public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
     
         MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
@@ -108,12 +113,18 @@ not met, `ValidationException` exception will be raised.
 
 If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@Metrics** annotation:
 
-=== "App.java"
+=== "MetricsRaiseOnEmpty.java"
 
-    ```java hl_lines="1"
-    @Metrics(raiseOnEmptyMetrics = true)
-    public Object handleRequest(Object input, Context context) {
-    ...
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+
+    public class MetricsRaiseOnEmpty implements RequestHandler<Object, Object> {
+
+        @Override
+        @Metrics(raiseOnEmptyMetrics = true)
+        public Object handleRequest(Object input, Context context) {
+        ...
+        }
     }
     ```
 
@@ -121,12 +132,18 @@ If you want to ensure that at least one metric is emitted, you can pass `raiseOn
 
 You can capture cold start metrics automatically with `@Metrics` via the `captureColdStart` variable.
 
-=== "App.java"
+=== "MetricsColdStart.java"
 
-    ```java hl_lines="1"
-    @Metrics(captureColdStart = true)
-    public Object handleRequest(Object input, Context context) {
-    ...
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+
+    public class MetricsColdStart implements RequestHandler<Object, Object> {
+
+        @Override
+        @Metrics(captureColdStart = true)
+        public Object handleRequest(Object input, Context context) {
+        ...
+        }
     }
     ```
 
@@ -148,12 +165,19 @@ You can use `putMetadata` for advanced use cases, where you want to metadata as 
 
 === "App.java"
 
-    ```java hl_lines="3 4" 
-    @Metrics(namespace = "ServerlessAirline", service = "payment")
-    public APIGatewayProxyResponseEvent handleRequest(Object input, Context context) {
-        metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
-        metricsLogger().putMetadata("booking_id", "1234567890");
-        ...
+    ```java hl_lines="8 9" 
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+
+    public class App implements RequestHandler<Object, Object> {
+
+        @Override
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        public Object handleRequest(Object input, Context context) {
+            metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+            metricsLogger().putMetadata("booking_id", "1234567890");
+            ...
+        }
     }
     ```
 
@@ -169,8 +193,16 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `withSingle
 
 === "App.java"
 
-    ```java
-    withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
-        metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-    });
+    ```java hl_lines="7 8 9" 
+    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
+
+    public class App implements RequestHandler<Object, Object> {
+
+        @Override
+        public Object handleRequest(Object input, Context context) {
+             withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
+                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+            });
+        }
+    }
     ```

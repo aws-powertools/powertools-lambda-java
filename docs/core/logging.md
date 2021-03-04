@@ -8,17 +8,16 @@ Logging provides an opinionated logger with output structured as JSON.
 **Key features**
 
 * Capture key fields from Lambda context, cold start and structures logging output as JSON
-* Log Lambda event when instructed (disabled by default)
-    - Enable explicitly via annotation param
+* Log Lambda event when instructed, disabled by default, can be enabled explicitly via annotation param
 * Append additional keys to structured log at any point in time
 
 ## Initialization
 
-Powertools extends the functionality of Log4J. Below is an example log4j2.xml file, with the LambdaJsonLayout configured.
+Powertools extends the functionality of Log4J. Below is an example `#!xml log4j2.xml` file, with the `#!java LambdaJsonLayout` configured.
 
 === "log4j2.xml"
 
-    ```xml
+    ```xml hl_lines="5"
     <?xml version="1.0" encoding="UTF-8"?>
     <Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
         <Appenders>

@@ -99,7 +99,9 @@ which implements `com.amazonaws.services.lambda.runtime.RequestHandler` with
 
 === "SqsMessageHandler.java"
 
-    ```java hl_lines="4"
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.sqs.SqsLargeMessage;
+
     public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
     
         @Override
@@ -127,7 +129,9 @@ To disable deletion of payloads setting the following annotation parameter:
 
 === "Disable payload deletion"
 
-    ```java hl_lines="1"
+    ```java hl_lines="3"
+    import software.amazon.lambda.powertools.sqs.SqsLargeMessage;
+
     @SqsLargeMessage(deletePayloads=false)
     public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
     
@@ -144,7 +148,10 @@ processing.
 
 === "Functional API without annotation"
 
-    ```java hl_lines="6 7 8 9 10 11 14 15 16 17 18 19 24 25 26"
+    ```java hl_lines="9 10 11 14 15 16 17 18 19 20 21 22 27 28 29"
+    import software.amazon.lambda.powertools.sqs.SqsLargeMessage;
+    import software.amazon.lambda.powertools.sqs.SqsUtils;
+
     public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
     
         @Override
