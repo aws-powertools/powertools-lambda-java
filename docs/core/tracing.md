@@ -6,7 +6,7 @@ description: Core utility
 Powertools tracing is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/)
 a provides functionality to reduce the overhead of performing common tracing tasks.
 
-![Tracer showcase](../media/tracer_utility_showcase.png)
+![Tracing showcase](../media/tracing_utility_showcase.png)
 
  **Key Features**
 
@@ -85,7 +85,7 @@ By default, this annotation will automatically record method responses and excep
 the environment variables `POWERTOOLS_TRACER_CAPTURE_RESPONSE` and `POWERTOOLS_TRACER_CAPTURE_ERROR` as needed. Optionally, you can override behavior by
 different supported `captureMode` to record response, exception or both.
 
-!!! warning "Returning sensitive information from your Lambda handler or functions, where Tracer is used?"
+!!! warning "Returning sensitive information from your Lambda handler or functions, where `Tracing` is used?"
     You can disable annotation from capturing their responses and exception as tracing metadata with **`captureMode=DISABLED`**
     or globally by setting environment variables **`POWERTOOLS_TRACER_CAPTURE_RESPONSE`** and **`POWERTOOLS_TRACER_CAPTURE_ERROR`** to **`false`**
 
@@ -153,7 +153,7 @@ context for an operation using any native object.
 
 ## Utilities
 
-Tracer modules comes with certain utility method when you don't want to use annotation for capturing a code block
+Tracing modules comes with certain utility method when you don't want to use annotation for capturing a code block
 under a subsegment, or you are doing multithreaded programming. Refer examples below.
 
 === "Functional Api"

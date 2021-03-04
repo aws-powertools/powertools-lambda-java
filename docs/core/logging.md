@@ -3,7 +3,7 @@ title: Logging
 description: Core utility
 ---
 
-Logger provides an opinionated logger with output structured as JSON.
+Logging provides an opinionated logger with output structured as JSON.
 
 **Key features**
 
@@ -57,7 +57,7 @@ You can also explicitly set a service name via **`POWERTOOLS_SERVICE_NAME`** env
 
 ## Standard structured keys
 
-Your Logger will always include the following keys to your structured logging:
+Your logs will always include the following keys to your structured logging:
 
 Key | Type | Example | Description
 ------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------
@@ -126,7 +126,7 @@ to customise what is logged.
 
 ## Appending additional keys
 
-You can append your own keys to your existing Logger via `appendKey`.
+You can append your own keys to your existing logs via `appendKey`.
 
 === "App.java"
 
