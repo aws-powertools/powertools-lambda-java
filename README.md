@@ -82,7 +82,8 @@ See **[example](./example/README.md)** for maven or gradle configurations includ
 
 ## Credits
 
-* [Gatsby Apollo Theme for Docs](https://github.com/apollographql/gatsby-theme-apollo/tree/master/packages/gatsby-theme-apollo-docs)
+* [MkDocs](https://www.mkdocs.org/)
+* [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
 
 ## License
 

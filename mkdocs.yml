@@ -1,0 +1,61 @@
+site_name: Lambda Powertools Java
+site_description: AWS Lambda Powertools for Java
+site_author: Amazon Web Services
+nav:
+  - Homepage: index.md
+  - Changelog: changelog.md
+  - Core utilities:
+      - core/logging.md
+      - core/tracing.md
+      - core/metrics.md
+  - Utilities:
+      - utilities/parameters.md
+      - utilities/sqs_large_message_handling.md
+      - utilities/batch.md
+      - utilities/validation.md
+
+theme:
+  name: material
+  palette:
+    primary: deep purple
+  features:
+    - navigation.sections
+    - navigation.expand
+  icon:
+    repo: fontawesome/brands/github
+  logo: media/aws-logo-light.svg
+  favicon: media/aws-logo-light.svg
+  custom_dir: docs/overrides
+
+markdown_extensions:
+  - admonition
+  - pymdownx.tabbed
+  - pymdownx.inlinehilite
+  - pymdownx.highlight:
+      linenums: true
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.snippets:
+      base_path: '.'
+      check_paths: true
+  - meta
+  - toc:
+      permalink: true
+      toc_depth: 4
+  - attr_list
+
+copyright: Copyright &copy; 2021 Amazon Web Services
+
+plugins:
+  - git-revision-date
+  - search
+
+extra_css:
+  - stylesheets/extra.css
+extra_javascript:
+  - javascript/aws-amplify.min.js
+  - javascript/extra.js
+
+
+repo_url: https://github.com/awslabs/aws-lambda-powertools-java
+edit_uri: edit/develop/docs
