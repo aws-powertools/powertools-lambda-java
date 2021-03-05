@@ -8,4 +8,11 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
-## [1.3.0] - Coming soon!
+## [1.3.0] - 2021-03-05
+
+* **Powertools**: It now works out of the box with [code guru profile handler implementation](https://docs.aws.amazon.com/codeguru/latest/profiler-ug/lambda-custom.html).
+* **Logging**: Ability to override object mapper used for logging event. This provides customers ability to customize how and what they want to log from event.
+* **Metrics**: Module now by default captures AWS Request id as property if used together with Metrics annotation. It will also capture Xray Trace ID as property if tracing is enabled. This ensures good observability and tracing.
+* **Metrics**:`withSingleMetric` from `MetricsUtils can now pick the default namespace specified either on Metrics annotation or via POWERTOOLS_METRICS_NAMESPACE env var, without need to specify explicitly for each call.
+* **Metrics**:`Metrics` annotation captures metrics even in case of unhandled exception from Lambda function.
+* **Docs**: Migrated from Gatsby to MKdocs documentation system
