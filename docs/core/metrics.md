@@ -183,6 +183,35 @@ You can use `putMetadata` for advanced use cases, where you want to metadata as 
 
 This will be available in CloudWatch Logs to ease operations on high cardinal data.
 
+## Overriding default dimension set
+
+By default, all metrics emitted via module captures `Service` as one of the default dimension. This is either specified via
+`POWERTOOLS_SERVICE_NAME` environment variable or via `service` attribute on `Metrics` annotation. If you wish to override the default 
+Dimension, it can be done via `#!java MetricsUtils.defaultDimensionSet()`.
+
+=== "App.java"
+
+    ```java hl_lines="8 9 10"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import static software.amazon.lambda.powertools.metrics.MetricsUtils;
+    
+    public class App implements RequestHandler<Object, Object> {
+    
+        MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
+        
+        static {
+            MetricsUtils.defaultDimensionSet(DimensionSet.of("CustomDimension", "booking"));
+        }
+    
+        @Override
+        @Metrics(namespace = "ExampleApplication", service = "booking")
+        public Object handleRequest(Object input, Context context) {
+            ...
+            MetricsUtils.withSingleMetric("Metric2", 1, Unit.COUNT, log -> {});
+        }
+    }
+    ```
+
 ## Creating a metric with a different dimension
 
 CloudWatch EMF uses the same dimensions across all your metrics. Use `withSingleMetric` if you have a metric that should have different dimensions.
