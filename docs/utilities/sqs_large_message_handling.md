@@ -34,22 +34,17 @@ This utility is compatible with versions *[1.1.0+](https://github.com/awslabs/am
 To install this utility, add the following dependency to your project.
 
 === "Maven"
-    ```xml
-    <dependency>
-        <groupId>software.amazon.lambda</groupId>
-        <artifactId>powertools-sqs</artifactId>
-        <version>1.3.0</version>
-    </dependency>
-    ```
-
-=== "Maven Configuration"
-
-    Configure the aspectj-maven-plugin to compile-time weave (CTW) the
-    aws-lambda-powertools-java aspects into your project. You may already have this
-    plugin in your pom. In that case add the dependency to the `aspectLibraries`
-    section.
-
-    ```xml hl_lines="13 14 15 16"
+    ```xml hl_lines="3 4 5 6 7 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-sqs</artifactId>
+            <version>1.3.0</version>
+        </dependency>
+        ...
+    </dependencies>
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
     <build>
         <plugins>
             ...
