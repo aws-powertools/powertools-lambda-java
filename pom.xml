@@ -54,7 +54,7 @@
         <log4j.version>2.14.0</log4j.version>
         <jackson.version>2.12.2</jackson.version>
         <aspectj.version>1.9.6</aspectj.version>
-        <aws.sdk.version>2.16.12</aws.sdk.version>
+        <aws.sdk.version>2.16.14</aws.sdk.version>
         <aws.xray.recorder.version>2.8.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>1.1.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
