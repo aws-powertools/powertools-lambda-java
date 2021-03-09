@@ -296,16 +296,22 @@ public class LambdaMetricsAspectTest {
     }
 
     @Test
-    public void exceptionWhenNoDimensionsSet() {
+    public void allowWhenNoDimensionsSet() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-
             MetricsUtils.defaultDimensionSet(new DimensionSet());
-            requestHandler = new PowertoolsMetricsNoDimensionsHandler();
 
-            assertThatExceptionOfType(ValidationException.class)
-                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 0.");
+            requestHandler = new PowertoolsMetricsNoDimensionsHandler();
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+                        assertThat(logAsJson)
+                                .containsEntry("CoolMetric", 1.0)
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -321,7 +327,7 @@ public class LambdaMetricsAspectTest {
 
             assertThatExceptionOfType(ValidationException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 14.");
+                    .withMessage("Number of Dimensions must be in range of 0-9. Actual size: 14.");
         }
     }
 

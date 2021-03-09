@@ -108,7 +108,6 @@ if no metrics are provided no exception will be raised. If metrics are provided,
 not met, `ValidationException` exception will be raised.
 
 !!! tip "Metric validation"
-    * Minimum of 1 dimension
     * Maximum of 9 dimensions
 
 If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@Metrics** annotation:

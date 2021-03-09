@@ -95,8 +95,8 @@ public class LambdaMetricsAspect {
             throw new ValidationException("No metrics captured, at least one metrics must be emitted");
         }
 
-        if (dimensionsCount() == 0 || dimensionsCount() > 9) {
-            throw new ValidationException(String.format("Number of Dimensions must be in range of 1-9." +
+        if (dimensionsCount() > 9) {
+            throw new ValidationException(String.format("Number of Dimensions must be in range of 0-9." +
                     " Actual size: %d.", dimensionsCount()));
         }
     }
