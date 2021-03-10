@@ -4,11 +4,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.REQUEST_ID_PROPERTY;
@@ -22,6 +25,7 @@ import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAs
  */
 public final class MetricsUtils {
     private static final MetricsLogger metricsLogger = new MetricsLogger();
+    private static DimensionSet defaultDimensionSet;
 
     private MetricsUtils() {
     }
@@ -36,10 +40,21 @@ public final class MetricsUtils {
     }
 
     /**
+     * Configure default dimension to be used by logger.
+     * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
+     * @param dimensionSet Default value of dimension set for logger
+     */
+    public static void defaultDimensionSet(final DimensionSet dimensionSet) {
+        requireNonNull(dimensionSet, "Null dimension set not allowed");
+        MetricsUtils.defaultDimensionSet = dimensionSet;
+    }
+
+
+    /**
      * Add and immediately flush a single metric. It will use the default namespace
      * specified either on {@link Metrics} annotation or via POWERTOOLS_METRICS_NAMESPACE env var.
-     * It by default captures AwsRequestId as property if used together with {@link Metrics} annotation. It will also 
-     * capture XrayTraceId as property if tracing is enabled.
+     * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
+     * capture xray_trace_id as property if tracing is enabled.
      *
      * @param name   the name of the metric
      * @param value  the value of the metric
@@ -50,7 +65,8 @@ public final class MetricsUtils {
                                         final double value,
                                         final Unit unit,
                                         final Consumer<MetricsLogger> logger) {
-        MetricsLogger metricsLogger = new MetricsLogger();
+        MetricsLogger metricsLogger = logger();
+
         try {
             metricsLogger.setNamespace(defaultNameSpace());
             metricsLogger.putMetric(name, value, unit);
@@ -63,8 +79,8 @@ public final class MetricsUtils {
 
     /**
      * Add and immediately flush a single metric.
-     * It by default captures AwsRequestId as property if used together with {@link Metrics} annotation. It will also 
-     * capture XrayTraceId as property if tracing is enabled.
+     * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
+     * capture xray_trace_id as property if tracing is enabled.
      *
      * @param name the name of the metric
      * @param value the value of the metric
@@ -77,7 +93,8 @@ public final class MetricsUtils {
                                         final Unit unit,
                                         final String namespace,
                                         final Consumer<MetricsLogger> logger) {
-        MetricsLogger metricsLogger = new MetricsLogger();
+        MetricsLogger metricsLogger = logger();
+
         try {
             metricsLogger.setNamespace(namespace);
             metricsLogger.putMetric(name, value, unit);
@@ -86,6 +103,14 @@ public final class MetricsUtils {
         } finally {
             metricsLogger.flush();
         }
+    }
+
+    public static DimensionSet defaultDimensionSet() {
+        return defaultDimensionSet;
+    }
+
+    public static boolean hasDefaultDimension() {
+        return defaultDimensionSet.getDimensionKeys().size() > 0;
     }
 
     private static void captureRequestAndTraceId(MetricsLogger metricsLogger) {
@@ -106,5 +131,15 @@ public final class MetricsUtils {
         MetricsContext context = MetricsLoggerHelper.metricsContext();
         return ofNullable(context.getProperty(REQUEST_ID_PROPERTY))
                 .map(Object::toString);
+    }
+
+    private static MetricsLogger logger() {
+        MetricsContext metricsContext = new MetricsContext();
+
+        if (hasDefaultDimension()) {
+            metricsContext.setDefaultDimensions(defaultDimensionSet());
+        }
+
+        return new MetricsLogger(new EnvironmentProvider(), metricsContext);
     }
 }

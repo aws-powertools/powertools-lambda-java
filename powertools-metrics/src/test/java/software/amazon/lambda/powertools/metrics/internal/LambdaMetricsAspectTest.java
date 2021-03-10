@@ -18,9 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsColdStartEnabledHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledDefaultDimensionHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledStreamHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsExceptionWhenNoMetricsHandler;
@@ -62,7 +65,6 @@ public class LambdaMetricsAspectTest {
         setupContext();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         System.setOut(new PrintStream(out));
-        requestHandler = new PowertoolsMetricsEnabledHandler();
     }
 
     @AfterEach
@@ -78,6 +80,8 @@ public class LambdaMetricsAspectTest {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            requestHandler = new PowertoolsMetricsEnabledHandler();
             requestHandler.handleRequest("input", context);
 
             assertThat(out.toString().split("\n"))
@@ -110,12 +114,56 @@ public class LambdaMetricsAspectTest {
     }
 
     @Test
+    public void metricsWithDefaultDimensionSpecified() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+            MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+
+            requestHandler = new PowertoolsMetricsEnabledDefaultDimensionHandler();
+
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString().split("\n"))
+                    .hasSize(2)
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsEntry("CustomDimension", "booking")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("function_request_id", "123ABC");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
+
+                        logAsJson = readAsJson(s[1]);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("CustomDimension", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
+        }
+    }
+
+    @Test
     public void metricsWithColdStart() {
-        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
 
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+
             requestHandler.handleRequest("input", context);
 
             assertThat(out.toString().split("\n"))
@@ -144,10 +192,13 @@ public class LambdaMetricsAspectTest {
 
     @Test
     public void noColdStartMetricsWhenColdStartDone() {
-        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+
             requestHandler.handleRequest("input", context);
             requestHandler.handleRequest("input", context);
 
@@ -186,10 +237,12 @@ public class LambdaMetricsAspectTest {
 
     @Test
     public void metricsWithStreamHandler() throws IOException {
-        streamHandler = new PowertoolsMetricsEnabledStreamHandler();
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            streamHandler = new PowertoolsMetricsEnabledStreamHandler();
 
             streamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
 
@@ -208,9 +261,11 @@ public class LambdaMetricsAspectTest {
 
     @Test
     public void exceptionWhenNoMetricsEmitted() {
-        requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
 
             assertThatExceptionOfType(ValidationException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
@@ -220,10 +275,13 @@ public class LambdaMetricsAspectTest {
 
     @Test
     public void noExceptionWhenNoMetricsEmitted() {
-        requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
+
             requestHandler.handleRequest("input", context);
 
             assertThat(out.toString())
@@ -238,35 +296,49 @@ public class LambdaMetricsAspectTest {
     }
 
     @Test
-    public void exceptionWhenNoDimensionsSet() {
-        requestHandler = new PowertoolsMetricsNoDimensionsHandler();
+    public void allowWhenNoDimensionsSet() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
 
-            assertThatExceptionOfType(ValidationException.class)
-                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 0.");
+            requestHandler = new PowertoolsMetricsNoDimensionsHandler();
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString())
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s);
+                        assertThat(logAsJson)
+                                .containsEntry("CoolMetric", 1.0)
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
     @Test
     public void exceptionWhenTooManyDimensionsSet() {
-        requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+
+            requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
+
             assertThatExceptionOfType(ValidationException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 1-9. Actual size: 14.");
+                    .withMessage("Number of Dimensions must be in range of 0-9. Actual size: 14.");
         }
     }
 
     @Test
     public void metricsPublishedEvenHandlerThrowsException() {
-        requestHandler = new PowertoolsMetricsWithExceptionInHandler();
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+
+            MetricsUtils.defaultDimensionSet(new DimensionSet());
+            requestHandler = new PowertoolsMetricsWithExceptionInHandler();
+
             assertThatExceptionOfType(IllegalStateException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
                     .withMessage("Whoops, unexpected exception");

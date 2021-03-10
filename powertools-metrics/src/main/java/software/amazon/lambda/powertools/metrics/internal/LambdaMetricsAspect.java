@@ -23,6 +23,8 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.defaultDimensionSet;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
 @Aspect
@@ -47,8 +49,9 @@ public class LambdaMetricsAspect {
 
             MetricsLogger logger = metricsLogger();
 
-            logger.setNamespace(namespace(metrics))
-                    .putDimensions(DimensionSet.of("Service", service(metrics)));
+            refreshMetricsContext(metrics);
+
+            logger.setNamespace(namespace(metrics));
 
             extractContext(pjp).ifPresent((context) -> {
                 coldStartSingleMetricIfApplicable(context.getAwsRequestId(), context.getFunctionName(), metrics);
@@ -65,7 +68,7 @@ public class LambdaMetricsAspect {
                 coldStartDone();
                 validateMetricsAndRefreshOnFailure(metrics);
                 logger.flush();
-                refreshMetricsContext();
+                refreshMetricsContext(metrics);
             }
         }
 
@@ -92,8 +95,8 @@ public class LambdaMetricsAspect {
             throw new ValidationException("No metrics captured, at least one metrics must be emitted");
         }
 
-        if (dimensionsCount() == 0 || dimensionsCount() > 9) {
-            throw new ValidationException(String.format("Number of Dimensions must be in range of 1-9." +
+        if (dimensionsCount() > 9) {
+            throw new ValidationException(String.format("Number of Dimensions must be in range of 0-9." +
                     " Actual size: %d.", dimensionsCount()));
         }
     }
@@ -102,7 +105,7 @@ public class LambdaMetricsAspect {
         return !"".equals(metrics.namespace()) ? metrics.namespace() : NAMESPACE;
     }
 
-    private String service(Metrics metrics) {
+    private static String service(Metrics metrics) {
         return !"".equals(metrics.service()) ? metrics.service() : serviceName();
     }
 
@@ -110,17 +113,24 @@ public class LambdaMetricsAspect {
         try {
             validateBeforeFlushingMetrics(metrics);
         } catch (ValidationException e){
-            refreshMetricsContext();
+            refreshMetricsContext(metrics);
             throw e;
         }
     }
 
     // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed
-    private static void refreshMetricsContext() {
+    public static void refreshMetricsContext(Metrics metrics) {
         try {
             Field f = metricsLogger().getClass().getDeclaredField("context");
             f.setAccessible(true);
-            f.set(metricsLogger(), new MetricsContext());
+            MetricsContext context = new MetricsContext();
+
+            DimensionSet defaultDimensionSet = hasDefaultDimension() ? defaultDimensionSet()
+                    : DimensionSet.of("Service", service(metrics));
+
+            context.setDefaultDimensions(defaultDimensionSet);
+
+            f.set(metricsLogger(), context);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
