@@ -110,7 +110,7 @@ public final class MetricsUtils {
     }
 
     public static boolean hasDefaultDimension() {
-        return defaultDimensionSet.getDimensionKeys().size() > 0;
+        return null != defaultDimensionSet && defaultDimensionSet.getDimensionKeys().size() > 0;
     }
 
     private static void captureRequestAndTraceId(MetricsLogger metricsLogger) {
