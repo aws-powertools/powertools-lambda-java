@@ -51,7 +51,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <log4j.version>2.14.0</log4j.version>
+        <log4j.version>2.14.1</log4j.version>
         <jackson.version>2.12.2</jackson.version>
         <aspectj.version>1.9.6</aspectj.version>
         <aws.sdk.version>2.16.12</aws.sdk.version>
