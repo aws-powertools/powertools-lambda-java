@@ -7,14 +7,14 @@ import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.metrics.Metrics;
 
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.defaultDimensionSet;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.defaultDimensions;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 
 public class PowertoolsMetricsEnabledDefaultDimensionHandler implements RequestHandler<Object, Object> {
 
     static {
-        defaultDimensionSet(DimensionSet.of("CustomDimension", "booking"));
+        defaultDimensions(DimensionSet.of("CustomDimension", "booking"));
     }
 
     @Override
