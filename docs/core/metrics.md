@@ -186,7 +186,7 @@ This will be available in CloudWatch Logs to ease operations on high cardinal da
 
 By default, all metrics emitted via module captures `Service` as one of the default dimension. This is either specified via
 `POWERTOOLS_SERVICE_NAME` environment variable or via `service` attribute on `Metrics` annotation. If you wish to override the default 
-Dimension, it can be done via `#!java MetricsUtils.defaultDimensionSet()`.
+Dimension, it can be done via `#!java MetricsUtils.defaultDimensions()`.
 
 === "App.java"
 
@@ -199,7 +199,7 @@ Dimension, it can be done via `#!java MetricsUtils.defaultDimensionSet()`.
         MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
         
         static {
-            MetricsUtils.defaultDimensionSet(DimensionSet.of("CustomDimension", "booking"));
+            MetricsUtils.defaultDimensions(DimensionSet.of("CustomDimension", "booking"));
         }
     
         @Override
