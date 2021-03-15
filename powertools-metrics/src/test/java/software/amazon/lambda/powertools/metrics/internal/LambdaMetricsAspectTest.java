@@ -24,6 +24,7 @@ import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsColdStartEnabledHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledDefaultDimensionHandler;
+import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledDefaultNoDimensionHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledStreamHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsExceptionWhenNoMetricsHandler;
@@ -154,6 +155,45 @@ public class LambdaMetricsAspectTest {
     }
 
     @Test
+    public void metricsWithDefaultNoDimensionSpecified() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+
+            requestHandler = new PowertoolsMetricsEnabledDefaultNoDimensionHandler();
+
+            requestHandler.handleRequest("input", context);
+
+            assertThat(out.toString().split("\n"))
+                    .hasSize(2)
+                    .satisfies(s -> {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("function_request_id", "123ABC");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
+
+                        logAsJson = readAsJson(s[1]);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
+        }
+    }
+
+    @Test
     public void metricsWithColdStart() {
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
@@ -263,7 +303,7 @@ public class LambdaMetricsAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet) null);
+            MetricsUtils.defaultDimensions(null);
             requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
 
             assertThatExceptionOfType(ValidationException.class)
