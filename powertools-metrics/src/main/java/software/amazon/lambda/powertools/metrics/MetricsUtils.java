@@ -60,7 +60,7 @@ public final class MetricsUtils {
         requireNonNull(dimensionSet, "Null dimension set not allowed");
 
         if(dimensionSet.getDimensionKeys().size() > 0) {
-            MetricsUtils.defaultDimensions = new DimensionSet[]{dimensionSet};
+            defaultDimensions(dimensionSet);
         }
     }
 
@@ -120,7 +120,7 @@ public final class MetricsUtils {
         }
     }
 
-    public static DimensionSet[] defaultDimensions() {
+    public static DimensionSet[] getDefaultDimensions() {
         return defaultDimensions;
     }
 
@@ -152,7 +152,6 @@ public final class MetricsUtils {
         MetricsContext metricsContext = new MetricsContext();
 
         if (hasDefaultDimension()) {
-            metricsContext.setDefaultDimensions(new DimensionSet());
             metricsContext.setDimensions(defaultDimensions);
         }
 

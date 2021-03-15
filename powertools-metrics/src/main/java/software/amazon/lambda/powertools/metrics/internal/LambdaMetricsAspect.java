@@ -125,10 +125,9 @@ public class LambdaMetricsAspect {
             f.setAccessible(true);
             MetricsContext context = new MetricsContext();
 
-            DimensionSet[] defaultDimensions = hasDefaultDimension() ? MetricsUtils.defaultDimensions()
+            DimensionSet[] defaultDimensions = hasDefaultDimension() ? MetricsUtils.getDefaultDimensions()
                     : new DimensionSet[]{DimensionSet.of("Service", service(metrics))};
 
-            context.setDefaultDimensions(new DimensionSet());
             context.setDimensions(defaultDimensions);
 
             f.set(metricsLogger(), context);
