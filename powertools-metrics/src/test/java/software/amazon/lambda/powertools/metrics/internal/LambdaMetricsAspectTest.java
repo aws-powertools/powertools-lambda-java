@@ -79,7 +79,7 @@ public class LambdaMetricsAspectTest {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
             requestHandler = new PowertoolsMetricsEnabledHandler();
             requestHandler.handleRequest("input", context);
 
@@ -160,7 +160,7 @@ public class LambdaMetricsAspectTest {
 
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
             requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
 
             requestHandler.handleRequest("input", context);
@@ -195,7 +195,7 @@ public class LambdaMetricsAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
             requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
 
             requestHandler.handleRequest("input", context);
@@ -240,7 +240,7 @@ public class LambdaMetricsAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
             RequestStreamHandler streamHandler = new PowertoolsMetricsEnabledStreamHandler();
 
             streamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(), context);
@@ -278,7 +278,7 @@ public class LambdaMetricsAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
             requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
 
             requestHandler.handleRequest("input", context);
@@ -298,7 +298,7 @@ public class LambdaMetricsAspectTest {
     public void allowWhenNoDimensionsSet() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
 
             requestHandler = new PowertoolsMetricsNoDimensionsHandler();
             requestHandler.handleRequest("input", context);
@@ -320,7 +320,7 @@ public class LambdaMetricsAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
 
             requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
 
@@ -335,7 +335,7 @@ public class LambdaMetricsAspectTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
 
-            MetricsUtils.defaultDimensions((DimensionSet)null);
+            MetricsUtils.defaultDimensions(null);
             requestHandler = new PowertoolsMetricsWithExceptionInHandler();
 
             assertThatExceptionOfType(IllegalStateException.class)
