@@ -25,7 +25,7 @@ import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAs
  */
 public final class MetricsUtils {
     private static final MetricsLogger metricsLogger = new MetricsLogger();
-    private static DimensionSet defaultDimensionSet;
+    private static DimensionSet[] defaultDimensions;
 
     private MetricsUtils() {
     }
@@ -42,11 +42,26 @@ public final class MetricsUtils {
     /**
      * Configure default dimension to be used by logger.
      * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
-     * @param dimensionSet Default value of dimension set for logger
+     * @param dimensionSets Default value of dimensions set for logger
      */
+    public static void defaultDimensions(final DimensionSet... dimensionSets) {
+        MetricsUtils.defaultDimensions = dimensionSets;
+    }
+
+    /**
+     * Configure default dimension to be used by logger.
+     * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
+     * @param dimensionSet Default value of dimension set for logger
+     * @deprecated use {@link #defaultDimensions(DimensionSet...)} instead
+     *
+     */
+    @Deprecated
     public static void defaultDimensionSet(final DimensionSet dimensionSet) {
         requireNonNull(dimensionSet, "Null dimension set not allowed");
-        MetricsUtils.defaultDimensionSet = dimensionSet;
+
+        if(dimensionSet.getDimensionKeys().size() > 0) {
+            defaultDimensions(dimensionSet);
+        }
     }
 
 
@@ -105,12 +120,12 @@ public final class MetricsUtils {
         }
     }
 
-    public static DimensionSet defaultDimensionSet() {
-        return defaultDimensionSet;
+    public static DimensionSet[] getDefaultDimensions() {
+        return defaultDimensions;
     }
 
     public static boolean hasDefaultDimension() {
-        return null != defaultDimensionSet && defaultDimensionSet.getDimensionKeys().size() > 0;
+        return null != defaultDimensions;
     }
 
     private static void captureRequestAndTraceId(MetricsLogger metricsLogger) {
@@ -137,7 +152,7 @@ public final class MetricsUtils {
         MetricsContext metricsContext = new MetricsContext();
 
         if (hasDefaultDimension()) {
-            metricsContext.setDefaultDimensions(defaultDimensionSet());
+            metricsContext.setDimensions(defaultDimensions);
         }
 
         return new MetricsLogger(new EnvironmentProvider(), metricsContext);

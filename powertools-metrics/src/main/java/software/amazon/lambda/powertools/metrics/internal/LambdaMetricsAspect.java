@@ -12,6 +12,7 @@ import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 
 import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
@@ -23,7 +24,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.defaultDimensionSet;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
@@ -125,10 +125,10 @@ public class LambdaMetricsAspect {
             f.setAccessible(true);
             MetricsContext context = new MetricsContext();
 
-            DimensionSet defaultDimensionSet = hasDefaultDimension() ? defaultDimensionSet()
-                    : DimensionSet.of("Service", service(metrics));
+            DimensionSet[] defaultDimensions = hasDefaultDimension() ? MetricsUtils.getDefaultDimensions()
+                    : new DimensionSet[]{DimensionSet.of("Service", service(metrics))};
 
-            context.setDefaultDimensions(defaultDimensionSet);
+            context.setDimensions(defaultDimensions);
 
             f.set(metricsLogger(), context);
         } catch (NoSuchFieldException | IllegalAccessException e) {

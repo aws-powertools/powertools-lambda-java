@@ -52,7 +52,7 @@ class MetricsLoggerTest {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
-            MetricsUtils.defaultDimensionSet(DimensionSet.of("Service", "Booking"));
+            MetricsUtils.defaultDimensions(DimensionSet.of("Service", "Booking"));
 
             MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
                     metricsLogger -> {});
