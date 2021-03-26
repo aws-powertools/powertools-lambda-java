@@ -48,25 +48,18 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Build with Maven
         run: mvn -B package --file pom.xml
-
-  auto-merge:
+  savepr:
     runs-on: ubuntu-latest
-    needs: [ build ]
-    if: github.base_ref == 'master' && github.actor == 'dependabot[bot]'
+    name: Save PR number if running on PR by dependabot
+    if: github.actor == 'dependabot[bot]'
     steps:
-      - uses: actions/github-script@0.2.0
+      - name: Create Directory and save issue
+        run: |
+          mkdir -p ./pr
+          echo ${{ github.event.number }}
+          echo ${{ github.event.number }} > ./pr/NR
+      - uses: actions/upload-artifact@v2
+        name: Updload artifact
         with:
-          script: |
-            github.pullRequests.createReview({
-              owner: context.payload.repository.owner.login,
-              repo: context.payload.repository.name,
-              pull_number: context.payload.pull_request.number,
-              event: 'APPROVE'
-            })
-            github.pullRequests.merge({
-              owner: context.payload.repository.owner.login,
-              repo: context.payload.repository.name,
-              pull_number: context.payload.pull_request.number,
-              merge_method: 'squash'
-            })
-          github-token: ${{ secrets.AUTOMERGE }}
+          name: pr
+          path: pr/
