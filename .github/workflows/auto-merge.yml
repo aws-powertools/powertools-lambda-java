@@ -1,0 +1,54 @@
+name: Merge me!
+
+on:
+  workflow_run:
+    workflows: ["Build"]
+    types: [completed]
+
+jobs:
+  merge-me:
+    name: Merge me!
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && github.actor == 'dependabot[bot]'
+    steps:
+      - name: 'Download artifact'
+        uses: actions/github-script@v3.1.0
+        with:
+          script: |
+            var artifacts = await github.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{github.event.workflow_run.id }},
+            });
+            var matchArtifact = artifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "pr"
+            })[0];
+            var download = await github.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            var fs = require('fs');
+            fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
+      - run: unzip pr.zip
+      - name: Merge me!
+        uses: actions/github-script@v3
+        with:
+          script: |
+            var fs = require('fs');
+            var issue_number = Number(fs.readFileSync('./NR'));
+
+            github.pulls.createReview({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: issue_number,
+              event: 'APPROVE'
+            })
+            github.pulls.merge({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: issue_number,
+              merge_method: 'squash'
+            })
+          github-token: ${{ secrets.AUTOMERGE }}
