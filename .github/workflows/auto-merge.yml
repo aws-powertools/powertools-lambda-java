@@ -1,4 +1,4 @@
-name: Merge me!
+name: Auto merge if dependabot PR
 
 on:
   workflow_run:
