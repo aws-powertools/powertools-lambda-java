@@ -43,7 +43,7 @@ If you are working with lambda function on runtime **Java 9 or later**, please r
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-sqs</artifactId>
-            <version>1.4.0</version>
+            <version>1.5.0</version>
         </dependency>
         ...
     </dependencies>
@@ -84,8 +84,8 @@ If you are working with lambda function on runtime **Java 9 or later**, please r
     ```groovy
      dependencies {
         ...
-        implementation 'software.amazon.lambda:powertools-sqs:1.4.0'
-        aspectpath 'software.amazon.lambda:powertools-sqs:1.4.0'
+        implementation 'software.amazon.lambda:powertools-sqs:1.5.0'
+        aspectpath 'software.amazon.lambda:powertools-sqs:1.5.0'
     }
     ```
 
