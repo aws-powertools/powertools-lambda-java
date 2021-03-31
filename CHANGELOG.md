@@ -8,8 +8,19 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.5.0] - 2021-03-30
+
+* **Metrics**: Ability to set multiple dimensions as default dimensions via `MetricsUtils.defaultDimensions()`. 
+  Introduced in [v1.4.0](https://github.com/awslabs/aws-lambda-powertools-java/releases/tag/v1.4.0) 
+  `MetricsUtils.defaultDimensionSet()` is deprecated now for better user experience.
+
 ## [1.4.0] - 2021-03-11
 * **Metrics**: Ability to set default dimension for metrics via `MetricsUtils.defaultDimensionSet()`.
+  
+  **Note**: If your monitoring depends on [default dimensions](https://github.com/awslabs/aws-embedded-metrics-java/blob/master/src/main/java/software/amazon/cloudwatchlogs/emf/logger/MetricsLogger.java#L173) captured before via [aws-embedded-metrics-java](https://github.com/awslabs/aws-embedded-metrics-java), 
+  those either need to be updated or has to be explicitly captured via `MetricsUtils.defaultDimensionSet()`.
+  
+
 * **Metrics**: Remove validation of having minimum one dimension. EMF now support [Dimension set being empty](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html) as well.
 
 ## [1.3.0] - 2021-03-05
