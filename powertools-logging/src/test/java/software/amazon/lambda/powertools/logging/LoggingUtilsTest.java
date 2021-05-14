@@ -52,4 +52,37 @@ class LoggingUtilsTest {
                 .containsEntry("test", "value")
                 .containsEntry("test1", "value1");
     }
+
+    @Test
+    void shouldRemoveCustomKeyOnThreadContext() {
+        LoggingUtils.appendKey("test", "value");
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(1)
+                .containsEntry("test", "value");
+
+        LoggingUtils.removeKey("test");
+
+        assertThat(ThreadContext.getImmutableContext())
+                .isEmpty();
+    }
+
+    @Test
+    void shouldRemoveCustomKeysOnThreadContext() {
+        Map<String, String> customKeys = new HashMap<>();
+        customKeys.put("test", "value");
+        customKeys.put("test1", "value1");
+
+        LoggingUtils.appendKeys(customKeys);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(2)
+                .containsEntry("test", "value")
+                .containsEntry("test1", "value1");
+
+        LoggingUtils.removeKeys("test", "test1");
+
+        assertThat(ThreadContext.getImmutableContext())
+                .isEmpty();
+    }
 }

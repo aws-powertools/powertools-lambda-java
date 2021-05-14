@@ -18,6 +18,8 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.ThreadContext;
 
+import static java.util.Arrays.asList;
+
 /**
  * A class of helper functions to add additional functionality to Logging.
  *
@@ -49,6 +51,25 @@ public final class LoggingUtils {
      */
     public static void appendKeys(Map<String, String> customKeys) {
         ThreadContext.putAll(customKeys);
+    }
+
+    /**
+     * Remove an additional key from log entry.
+     *
+     * @param customKey The name of the key to be logged
+     */
+    public static void removeKey(String customKey) {
+        ThreadContext.remove(customKey);
+    }
+
+
+    /**
+     * Removes additional keys from log entry.
+     *
+     * @param keys Map of custom keys values to be appended to logs
+     */
+    public static void removeKeys(String... keys) {
+        ThreadContext.removeAll(asList(keys));
     }
 
     /**
