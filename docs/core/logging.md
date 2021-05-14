@@ -154,6 +154,40 @@ You can append your own keys to your existing logs via `appendKey`.
     }
     ```
 
+
+### Removing additional keys
+
+You can remove any additional key from entry using `LoggingUtils.removeKeys()`.
+
+=== "App.java"
+
+    ```java hl_lines="19 20"
+    /**
+     * Handler for requests to Lambda function.
+     */
+    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        Logger log = LogManager.getLogger();
+    
+        @Logging(logEvent = true)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            ...
+            LoggingUtils.appendKey("test", "willBeLogged");
+            ...
+            Map<String, String> customKeys = new HashMap<>();
+            customKeys.put("test1", "value");
+            customKeys.put("test2", "value1");
+    
+            LoggingUtils.appendKeys(customKeys);
+            ...
+            LoggingUtils.removeKey("test");
+            LoggingUtils.removeKeys("test1", "test2");
+            ...
+        }
+    }
+    ```
+
+
 ## Override default object mapper
 
 You can optionally choose to override default object mapper which is used to serialize lambda function events. You might
