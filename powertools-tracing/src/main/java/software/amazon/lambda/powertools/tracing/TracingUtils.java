@@ -29,7 +29,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 public final class TracingUtils {
 
     /**
-     * Put an annotation to the current subsegment.
+     * Put an annotation to the current subsegment with a String value.
      *
      * @param key the key of the annotation
      * @param value the value of the annotation
@@ -37,6 +37,28 @@ public final class TracingUtils {
     public static void putAnnotation(String key, String value) {
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
+    }
+
+    /**
+     * Put an annotation to the current subsegment with a Number value.
+     *
+     * @param key the key of the annotation
+     * @param value the value of the annotation
+     */
+    public static void putAnnotation(String key, Number value) {
+        AWSXRay.getCurrentSubsegmentOptional()
+          .ifPresent(segment -> segment.putAnnotation(key, value));
+    }
+
+    /**
+     * Put an annotation to the current subsegment with a Boolean value.
+     *
+     * @param key the key of the annotation
+     * @param value the value of the annotation
+     */
+    public static void putAnnotation(String key, Boolean value) {
+        AWSXRay.getCurrentSubsegmentOptional()
+          .ifPresent(segment -> segment.putAnnotation(key, value));
     }
 
     /**

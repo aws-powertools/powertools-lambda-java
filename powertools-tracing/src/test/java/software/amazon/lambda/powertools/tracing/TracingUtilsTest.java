@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
@@ -45,11 +46,17 @@ class TracingUtilsTest {
     void shouldSetAnnotationOnCurrentSubSegment() {
         AWSXRay.beginSubsegment("subSegment");
 
-        TracingUtils.putAnnotation("key", "val");
+        TracingUtils.putAnnotation("stringKey", "val");
+        TracingUtils.putAnnotation("numberKey", 10);
+        TracingUtils.putAnnotation("booleanKey", false);
 
         assertThat(AWSXRay.getTraceEntity().getAnnotations())
-                .hasSize(1)
-                .containsEntry("key", "val");
+            .hasSize(3)
+            .contains(
+                entry("stringKey", "val"),
+                entry("numberKey", 10),
+                entry("booleanKey", false)
+            );
     }
 
     @Test
