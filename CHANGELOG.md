@@ -8,6 +8,17 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.6.0] - 2021-06-21
+
+### Added
+
+* **Tracing**: Support for Boolean and Number type as value in `TracingUtils.putAnnotation()`([#423](https://github.com/awslabs/aws-lambda-powertools-java/pull/432)).
+* **Logging**: API to remove any additional custom key from logger entry using `LoggingUtils.removeKeys()`([#395](https://github.com/awslabs/aws-lambda-powertools-java/pull/395)).
+
+## Maintenance
+
+* **deps**: Bump third party dependencies to the latest versions.
+
 ## [1.5.0] - 2021-03-30
 
 * **Metrics**: Ability to set multiple dimensions as default dimensions via `MetricsUtils.defaultDimensions()`. 
