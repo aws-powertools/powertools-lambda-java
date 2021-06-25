@@ -19,11 +19,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +39,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.powertools.logging.CorrelationIdPath;
 import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
@@ -47,6 +54,8 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPath.AUTO_DETECT;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPath.DISABLED;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
@@ -92,6 +101,10 @@ public final class LambdaLoggingAspect {
 
         if (logging.logEvent()) {
             proceedArgs = logEvent(pjp);
+        }
+
+        if (logging.correlationIdPath() != DISABLED) {
+            proceedArgs = captureCorrelationId(logging.correlationIdPath(), pjp);
         }
 
         Object proceed = pjp.proceed(proceedArgs);
@@ -160,18 +173,69 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
+    private Object[] captureCorrelationId(final CorrelationIdPath correlationIdPath,
+                                          final ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
+        if (isHandlerMethod(pjp)) {
+            if (placedOnRequestHandler(pjp)) {
+                Object arg = pjp.getArgs()[0];
+                JsonNode jsonNode = objectMapper().valueToTree(arg);
+
+                setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
+
+                return args;
+            }
+
+            if (placedOnStreamHandler(pjp)) {
+                try {
+                    byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
+                    JsonNode jsonNode = objectMapper().readTree(bytes);
+                    args[0] = new ByteArrayInputStream(bytes);
+
+                    setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
+
+                    return args;
+                } catch (IOException e) {
+                    Logger log = logger(pjp);
+                    log.warn("Failed to capture correlation id on event from supplied input stream.", e);
+                }
+            }
+        }
+
+        return args;
+    }
+
+    private void setCorrelationIdFromNode(CorrelationIdPath correlationIdPath, ProceedingJoinPoint pjp, JsonNode jsonNode) {
+        if (correlationIdPath == AUTO_DETECT) {
+            autoDetect(pjp, jsonNode);
+        } else {
+            JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath.getPath()));
+            LoggingUtils.setCorrelationId(node.asText());
+        }
+    }
+
+    private void autoDetect(ProceedingJoinPoint pjp,
+                            JsonNode jsonNode) {
+        Arrays.stream(CorrelationIdPath.values())
+                .filter(path -> path != AUTO_DETECT && path != DISABLED)
+                .forEach(correlationIdPath1 -> {
+                    JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath1.getPath()));
+                    String asText = node.asText();
+
+                    if (null != asText && !asText.isEmpty()) {
+                        logger(pjp).debug("Auto detected correlation id from event type: {}", correlationIdPath1);
+                        LoggingUtils.setCorrelationId(asText);
+                    }
+                });
+    }
+
+
     private Object[] logFromInputStream(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
 
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
-             InputStreamReader reader = new InputStreamReader((InputStream) pjp.getArgs()[0], UTF_8)) {
-
-            IOUtils.copy(reader, writer);
-            writer.flush();
-            byte[] bytes = out.toByteArray();
+        try {
+            byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
             args[0] = new ByteArrayInputStream(bytes);
-
             Logger log = logger(pjp);
 
             asJson(pjp, objectMapper().readValue(bytes, Map.class))
@@ -183,6 +247,17 @@ public final class LambdaLoggingAspect {
         }
 
         return args;
+    }
+
+    private byte[] bytesFromInputStreamSafely(final InputStream inputStream) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             InputStreamReader reader = new InputStreamReader(inputStream)) {
+            OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
+
+            IOUtils.copy(reader, writer);
+            writer.flush();
+            return out.toByteArray();
+        }
     }
 
     private Optional<String> asJson(final ProceedingJoinPoint pjp,

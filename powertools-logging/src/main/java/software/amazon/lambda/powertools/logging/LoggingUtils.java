@@ -43,6 +43,7 @@ public final class LoggingUtils {
     }
 
 
+
     /**
      * Appends additional key and value to each log entry made. Duplicate values
      * for the same key will be replaced with the latest.
@@ -70,6 +71,15 @@ public final class LoggingUtils {
      */
     public static void removeKeys(String... keys) {
         ThreadContext.removeAll(asList(keys));
+    }
+
+    /**
+     * Sets correlation id attribute on the logs.
+     *
+     * @param value The value of the correlation id
+     */
+    public static void setCorrelationId(String value) {
+        ThreadContext.put("correlation_id", value);
     }
 
     /**

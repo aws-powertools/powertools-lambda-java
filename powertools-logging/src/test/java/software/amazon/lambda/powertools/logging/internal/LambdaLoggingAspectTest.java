@@ -30,7 +30,11 @@ import java.util.Map;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
+import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
@@ -38,10 +42,15 @@ import org.apache.logging.log4j.ThreadContext;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.core.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolAlbCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayRestApiCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolAutoCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
@@ -247,6 +256,51 @@ class LambdaLoggingAspectTest {
                     .containsEntry("xray_trace_id", xRayTraceId);
         }
     }
+
+    @ParameterizedTest
+    @Event(value = "apiGatewayProxyEventV1.json", type = APIGatewayProxyRequestEvent.class)
+    void shouldLogCorrelationIdOnAPIGatewayProxyRequestEvent(APIGatewayProxyRequestEvent event) {
+        RequestHandler<APIGatewayProxyRequestEvent, Object> handler = new PowerLogToolApiGatewayRestApiCorrelationId();
+        handler.handleRequest(event, context);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("correlation_id", event.getRequestContext().getRequestId());
+    }
+
+    @ParameterizedTest
+    @Event(value = "apiGatewayProxyEventV2.json", type = APIGatewayV2HTTPEvent.class)
+    void shouldLogCorrelationIdOnAPIGatewayV2HTTPEvent(APIGatewayV2HTTPEvent event) {
+        RequestHandler<APIGatewayV2HTTPEvent, Object> handler = new PowerLogToolApiGatewayHttpApiCorrelationId();
+        handler.handleRequest(event, context);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("correlation_id", event.getRequestContext().getRequestId());
+    }
+
+    @ParameterizedTest
+    @Event(value = "albEvent.json", type = ApplicationLoadBalancerRequestEvent.class)
+    void shouldLogCorrelationIdOnALBEvent(ApplicationLoadBalancerRequestEvent event) {
+        RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowerLogToolAlbCorrelationId();
+        handler.handleRequest(event, context);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
+    }
+
+    @ParameterizedTest
+    @Event(value = "albEvent.json", type = ApplicationLoadBalancerRequestEvent.class)
+    void shouldLogCorrelationIdOnAutoDetect(ApplicationLoadBalancerRequestEvent event) {
+        RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowerLogToolAutoCorrelationId();
+        handler.handleRequest(event, context);
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
+    }
+
 
     private void setupContext() {
         when(context.getFunctionName()).thenReturn("testFunction");

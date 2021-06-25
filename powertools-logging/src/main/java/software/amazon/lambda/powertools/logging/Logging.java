@@ -18,6 +18,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import static software.amazon.lambda.powertools.logging.CorrelationIdPath.DISABLED;
+
 /**
  * {@code Logging} is used to signal that the annotated method should be
  * extended with Logging functionality.
@@ -67,4 +69,6 @@ public @interface Logging {
     boolean logEvent() default false;
 
     double samplingRate() default 0;
+
+    CorrelationIdPath correlationIdPath() default DISABLED;
 }
