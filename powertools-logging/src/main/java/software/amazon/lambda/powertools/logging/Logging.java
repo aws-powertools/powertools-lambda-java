@@ -70,5 +70,8 @@ public @interface Logging {
 
     double samplingRate() default 0;
 
+    /**
+     * Type of Event from where to extract correlation id from.
+     */
     CorrelationIdPath correlationIdPath() default DISABLED;
 }

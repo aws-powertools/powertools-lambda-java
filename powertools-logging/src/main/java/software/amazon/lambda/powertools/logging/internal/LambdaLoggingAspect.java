@@ -210,7 +210,13 @@ public final class LambdaLoggingAspect {
             autoDetect(pjp, jsonNode);
         } else {
             JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath.getPath()));
-            LoggingUtils.setCorrelationId(node.asText());
+
+            String asText = node.asText();
+            if (null != asText && !asText.isEmpty()) {
+                LoggingUtils.setCorrelationId(asText);
+            } else {
+                logger(pjp).debug("Unable to extract any correlation id. Is your function expecting supported event type?");
+            }
         }
     }
 
