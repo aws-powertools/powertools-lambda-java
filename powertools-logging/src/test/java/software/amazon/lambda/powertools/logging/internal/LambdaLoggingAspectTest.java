@@ -50,7 +50,6 @@ import software.amazon.lambda.powertools.core.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayRestApiCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolAutoCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
@@ -289,18 +288,6 @@ class LambdaLoggingAspectTest {
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
     }
-
-    @ParameterizedTest
-    @Event(value = "albEvent.json", type = ApplicationLoadBalancerRequestEvent.class)
-    void shouldLogCorrelationIdOnAutoDetect(ApplicationLoadBalancerRequestEvent event) {
-        RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowerLogToolAutoCorrelationId();
-        handler.handleRequest(event, context);
-
-        assertThat(ThreadContext.getImmutableContext())
-                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
-                .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
-    }
-
 
     private void setupContext() {
         when(context.getFunctionName()).thenReturn("testFunction");

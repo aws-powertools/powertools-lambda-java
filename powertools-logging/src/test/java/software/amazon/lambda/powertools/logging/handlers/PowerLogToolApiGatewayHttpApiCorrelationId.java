@@ -15,14 +15,12 @@ package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPath.API_GATEWAY_HTTP;
-import static software.amazon.lambda.powertools.logging.CorrelationIdPath.API_GATEWAY_REST;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_HTTP;
 
 public class PowerLogToolApiGatewayHttpApiCorrelationId implements RequestHandler<APIGatewayV2HTTPEvent, Object> {
     private final Logger LOG = LogManager.getLogger(PowerLogToolApiGatewayHttpApiCorrelationId.class);
@@ -33,10 +31,5 @@ public class PowerLogToolApiGatewayHttpApiCorrelationId implements RequestHandle
         LOG.info("Test event");
         LOG.debug("Test debug event");
         return null;
-    }
-
-    @Logging
-    public void anotherMethod() {
-        System.out.println("test");
     }
 }

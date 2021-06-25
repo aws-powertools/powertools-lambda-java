@@ -19,12 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
 
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,7 +36,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.logging.CorrelationIdPath;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 
@@ -54,8 +50,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.logging.CorrelationIdPath.AUTO_DETECT;
-import static software.amazon.lambda.powertools.logging.CorrelationIdPath.DISABLED;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
@@ -103,7 +97,7 @@ public final class LambdaLoggingAspect {
             proceedArgs = logEvent(pjp);
         }
 
-        if (logging.correlationIdPath() != DISABLED) {
+        if (!logging.correlationIdPath().isEmpty()) {
             proceedArgs = captureCorrelationId(logging.correlationIdPath(), pjp);
         }
 
@@ -173,7 +167,7 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
-    private Object[] captureCorrelationId(final CorrelationIdPath correlationIdPath,
+    private Object[] captureCorrelationId(final String correlationIdPath,
                                           final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
         if (isHandlerMethod(pjp)) {
@@ -205,36 +199,16 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
-    private void setCorrelationIdFromNode(CorrelationIdPath correlationIdPath, ProceedingJoinPoint pjp, JsonNode jsonNode) {
-        if (correlationIdPath == AUTO_DETECT) {
-            autoDetect(pjp, jsonNode);
-        } else {
-            JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath.getPath()));
+    private void setCorrelationIdFromNode(String correlationIdPath, ProceedingJoinPoint pjp, JsonNode jsonNode) {
+        JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath));
 
-            String asText = node.asText();
-            if (null != asText && !asText.isEmpty()) {
-                LoggingUtils.setCorrelationId(asText);
-            } else {
-                logger(pjp).debug("Unable to extract any correlation id. Is your function expecting supported event type?");
-            }
+        String asText = node.asText();
+        if (null != asText && !asText.isEmpty()) {
+            LoggingUtils.setCorrelationId(asText);
+        } else {
+            logger(pjp).debug("Unable to extract any correlation id. Is your function expecting supported event type?");
         }
     }
-
-    private void autoDetect(ProceedingJoinPoint pjp,
-                            JsonNode jsonNode) {
-        Arrays.stream(CorrelationIdPath.values())
-                .filter(path -> path != AUTO_DETECT && path != DISABLED)
-                .forEach(correlationIdPath1 -> {
-                    JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath1.getPath()));
-                    String asText = node.asText();
-
-                    if (null != asText && !asText.isEmpty()) {
-                        logger(pjp).debug("Auto detected correlation id from event type: {}", correlationIdPath1);
-                        LoggingUtils.setCorrelationId(asText);
-                    }
-                });
-    }
-
 
     private Object[] logFromInputStream(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();

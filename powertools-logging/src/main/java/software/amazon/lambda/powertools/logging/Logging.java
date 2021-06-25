@@ -18,8 +18,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPath.DISABLED;
-
 /**
  * {@code Logging} is used to signal that the annotated method should be
  * extended with Logging functionality.
@@ -71,7 +69,8 @@ public @interface Logging {
     double samplingRate() default 0;
 
     /**
-     * Type of Event from where to extract correlation id from.
+     * Json Pointer path to extract correlation id from.
+     * @see  <a href=https://datatracker.ietf.org/doc/html/draft-ietf-appsawg-json-pointer-03/>
      */
-    CorrelationIdPath correlationIdPath() default DISABLED;
+    String correlationIdPath() default "";
 }
