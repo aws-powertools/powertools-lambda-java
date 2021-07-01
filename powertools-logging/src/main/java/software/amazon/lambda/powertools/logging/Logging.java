@@ -73,4 +73,11 @@ public @interface Logging {
      * @see  <a href=https://datatracker.ietf.org/doc/html/draft-ietf-appsawg-json-pointer-03/>
      */
     String correlationIdPath() default "";
+
+    /**
+     * Logger is commonly initialized in the global scope.
+     * Due to Lambda Execution Context reuse, this means that custom keys can be persisted across invocations.
+     * Set this attribute to true if you want all custom keys to be deleted on each request.
+     */
+    boolean clearState() default false;
 }
