@@ -33,9 +33,4 @@ public class PowerLogToolEnabledWithClearState implements RequestHandler<Object,
         COUNT++;
         return null;
     }
-
-    @Logging
-    public void anotherMethod() {
-        System.out.println("test");
-    }
 }
