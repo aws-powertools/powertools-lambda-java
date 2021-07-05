@@ -224,6 +224,9 @@ for known event sources, where either a request ID or X-Ray Trace ID are present
 	
 ## Appending additional keys
 
+!!! info "Custom keys are persisted across warm invocations"
+        Always set additional keys as part of your handler to ensure they have the latest value, or explicitly clear them with [`clearState=true`](#clearing-all-state).
+
 You can append your own keys to your existing logs via `appendKey`.
 
 === "App.java"
@@ -286,6 +289,67 @@ You can remove any additional key from entry using `LoggingUtils.removeKeys()`.
     }
     ```
 
+### Clearing all state
+
+Logger is commonly initialized in the global scope. Due to [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html), 
+this means that custom keys can be persisted across invocations. If you want all custom keys to be deleted, you can use 
+`clearState=true` attribute on `@Logging` annotation.
+
+
+=== "App.java"
+
+    ```java hl_lines="8 12"
+    /**
+     * Handler for requests to Lambda function.
+     */
+    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        Logger log = LogManager.getLogger();
+    
+        @Logging(clearState = true)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            ...
+            if(input.getHeaders().get("someSpecialHeader")) {
+                LoggingUtils.appendKey("specialKey", "value");
+            }
+            
+            log.info("Collecting payment");
+            ...
+        }
+    }
+    ```
+=== "#1 Request"
+
+    ```json hl_lines="11"
+	{
+		"level": "INFO",
+	  	"message": "Collecting payment",
+		"timestamp": "2021-05-03 11:47:12,494+0200",
+	  	"service": "payment",
+	  	"coldStart": true,
+	  	"functionName": "test",
+	  	"functionMemorySize": 128,
+	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+        "specialKey": "value"
+	}
+    ```
+
+=== "#2 Request"
+
+    ```json
+	{
+		"level": "INFO",
+	  	"message": "Collecting payment",
+		"timestamp": "2021-05-03 11:47:12,494+0200",
+	  	"service": "payment",
+	  	"coldStart": true,
+	  	"functionName": "test",
+	  	"functionMemorySize": 128,
+	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
+	}
+    ```
 
 ## Override default object mapper
 

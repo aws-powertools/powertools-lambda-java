@@ -25,7 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -52,6 +54,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGateway
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayRestApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledWithClearState;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
@@ -287,6 +290,26 @@ class LambdaLoggingAspectTest {
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
+    }
+
+    @Test
+    void shouldLogAndClearLogContextOnEachRequest() throws IOException {
+        requestHandler = new PowerLogToolEnabledWithClearState();
+        S3EventNotification s3EventNotification = s3EventNotification();
+
+        requestHandler.handleRequest(s3EventNotification, context);
+        requestHandler.handleRequest(s3EventNotification, context);
+
+        List<String> logLines = Files.lines(Paths.get("target/logfile.json")).collect(Collectors.toList());
+        Map<String, Object> invokeLog = parseToMap(logLines.get(0));
+
+        assertThat(invokeLog)
+                .containsEntry("TestKey", "TestValue");
+
+        invokeLog = parseToMap(logLines.get(1));
+
+        assertThat(invokeLog)
+                .doesNotContainKey("TestKey");
     }
 
     private void setupContext() {
