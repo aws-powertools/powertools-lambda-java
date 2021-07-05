@@ -23,7 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,6 +37,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
@@ -92,6 +95,10 @@ public final class LambdaLoggingAspect {
 
         if (logging.logEvent()) {
             proceedArgs = logEvent(pjp);
+        }
+
+        if (!logging.correlationIdPath().isEmpty()) {
+            proceedArgs = captureCorrelationId(logging.correlationIdPath(), pjp);
         }
 
         Object proceed = pjp.proceed(proceedArgs);
@@ -160,18 +167,55 @@ public final class LambdaLoggingAspect {
         return args;
     }
 
+    private Object[] captureCorrelationId(final String correlationIdPath,
+                                          final ProceedingJoinPoint pjp) {
+        Object[] args = pjp.getArgs();
+        if (isHandlerMethod(pjp)) {
+            if (placedOnRequestHandler(pjp)) {
+                Object arg = pjp.getArgs()[0];
+                JsonNode jsonNode = objectMapper().valueToTree(arg);
+
+                setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
+
+                return args;
+            }
+
+            if (placedOnStreamHandler(pjp)) {
+                try {
+                    byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
+                    JsonNode jsonNode = objectMapper().readTree(bytes);
+                    args[0] = new ByteArrayInputStream(bytes);
+
+                    setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
+
+                    return args;
+                } catch (IOException e) {
+                    Logger log = logger(pjp);
+                    log.warn("Failed to capture correlation id on event from supplied input stream.", e);
+                }
+            }
+        }
+
+        return args;
+    }
+
+    private void setCorrelationIdFromNode(String correlationIdPath, ProceedingJoinPoint pjp, JsonNode jsonNode) {
+        JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath));
+
+        String asText = node.asText();
+        if (null != asText && !asText.isEmpty()) {
+            LoggingUtils.setCorrelationId(asText);
+        } else {
+            logger(pjp).debug("Unable to extract any correlation id. Is your function expecting supported event type?");
+        }
+    }
+
     private Object[] logFromInputStream(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
 
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
-             InputStreamReader reader = new InputStreamReader((InputStream) pjp.getArgs()[0], UTF_8)) {
-
-            IOUtils.copy(reader, writer);
-            writer.flush();
-            byte[] bytes = out.toByteArray();
+        try {
+            byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
             args[0] = new ByteArrayInputStream(bytes);
-
             Logger log = logger(pjp);
 
             asJson(pjp, objectMapper().readValue(bytes, Map.class))
@@ -183,6 +227,17 @@ public final class LambdaLoggingAspect {
         }
 
         return args;
+    }
+
+    private byte[] bytesFromInputStreamSafely(final InputStream inputStream) throws IOException {
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
+             InputStreamReader reader = new InputStreamReader(inputStream)) {
+            OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
+
+            IOUtils.copy(reader, writer);
+            writer.flush();
+            return out.toByteArray();
+        }
     }
 
     private Optional<String> asJson(final ProceedingJoinPoint pjp,

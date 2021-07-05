@@ -67,4 +67,10 @@ public @interface Logging {
     boolean logEvent() default false;
 
     double samplingRate() default 0;
+
+    /**
+     * Json Pointer path to extract correlation id from.
+     * @see  <a href=https://datatracker.ietf.org/doc/html/draft-ietf-appsawg-json-pointer-03/>
+     */
+    String correlationIdPath() default "";
 }

@@ -123,6 +123,105 @@ to customise what is logged.
     }
     ```
 
+## Setting a Correlation ID
+
+You can set a Correlation ID using `correlationIdPath` attribute by passing a [JSON Pointer expression](https://datatracker.ietf.org/doc/html/draft-ietf-appsawg-json-pointer-03){target="_blank"}.
+
+=== "App.java"
+
+    ```java hl_lines="8"
+    /**
+     * Handler for requests to Lambda function.
+     */
+    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        Logger log = LogManager.getLogger();
+    
+        @Logging(correlationIdPath = "/headers/my_request_id_header")
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            ...
+            log.info("Collecting payment")
+            ...
+        }
+    }
+    ```
+=== "Example Event"
+
+	```json hl_lines="3"
+	{
+	  "headers": {
+		"my_request_id_header": "correlation_id_value"
+	  }
+	}
+	```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="11"
+	{
+		"level": "INFO",
+	  	"message": "Collecting payment",
+		"timestamp": "2021-05-03 11:47:12,494+0200",
+	  	"service": "payment",
+	  	"coldStart": true,
+	  	"functionName": "test",
+	  	"functionMemorySize": 128,
+	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+	  	"correlation_id": "correlation_id_value"
+	}
+    ```
+We provide [built-in JSON Pointer expression](https://datatracker.ietf.org/doc/html/draft-ietf-appsawg-json-pointer-03){target="_blank"} 
+for known event sources, where either a request ID or X-Ray Trace ID are present.
+
+=== "App.java"
+
+    ```java hl_lines="10"
+    import software.amazon.lambda.powertools.logging.CorrelationIdPathConstants;
+
+    /**
+     * Handler for requests to Lambda function.
+     */
+    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        Logger log = LogManager.getLogger();
+    
+        @Logging(correlationIdPath = CorrelationIdPathConstants.API_GATEWAY_REST)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            ...
+            log.info("Collecting payment")
+            ...
+        }
+    }
+    ```
+
+=== "Example Event"
+
+	```json hl_lines="3"
+	{
+	  "requestContext": {
+		"requestId": "correlation_id_value"
+	  }
+	}
+	```
+
+=== "Example CloudWatch Logs excerpt"
+
+    ```json hl_lines="11"
+	{
+		"level": "INFO",
+	  	"message": "Collecting payment",
+		"timestamp": "2021-05-03 11:47:12,494+0200",
+	  	"service": "payment",
+	  	"coldStart": true,
+	  	"functionName": "test",
+	  	"functionMemorySize": 128,
+	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+	  	"correlation_id": "correlation_id_value"
+	}
+    ```
+	
 ## Appending additional keys
 
 You can append your own keys to your existing logs via `appendKey`.
