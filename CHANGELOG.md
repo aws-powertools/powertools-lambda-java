@@ -8,6 +8,17 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.7.0] - 2021-07-05
+
+### Added
+
+* **Logging**: Support for extracting Correlation id using `@Logging` annotation via `correlationIdPath` attribute and `setCorrelationId()` method in `LoggingUtils`([#448](https://github.com/awslabs/aws-lambda-powertools-java/pull/448)).
+* **Logging**: New `clearState` attribute on `@Logging` annotation to clear previously added custom keys upon invocation([#453](https://github.com/awslabs/aws-lambda-powertools-java/pull/453)).
+
+## Maintenance
+
+* **deps**: Bump third party dependencies to the latest versions.
+
 ## [1.6.0] - 2021-06-21
 
 ### Added
