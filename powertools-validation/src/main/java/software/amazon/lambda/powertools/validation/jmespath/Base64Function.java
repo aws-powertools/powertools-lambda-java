@@ -13,15 +13,15 @@
  */
 package software.amazon.lambda.powertools.validation.jmespath;
 
+import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.util.List;
+
 import io.burt.jmespath.Adapter;
 import io.burt.jmespath.JmesPathType;
 import io.burt.jmespath.function.ArgumentConstraints;
 import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionArgument;
-
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -45,7 +45,7 @@ public class Base64Function extends BaseFunction {
     }
 
     public static String decode(String encodedString) {
-        return new String(decode(encodedString.getBytes(UTF_8)));
+        return new String(decode(encodedString.getBytes(UTF_8)), UTF_8);
     }
 
     public static String decode(ByteBuffer byteBuffer) {

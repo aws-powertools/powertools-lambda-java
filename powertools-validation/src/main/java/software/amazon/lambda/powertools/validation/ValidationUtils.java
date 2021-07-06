@@ -13,6 +13,13 @@
  */
 package software.amazon.lambda.powertools.validation;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -20,12 +27,6 @@ import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import io.burt.jmespath.Expression;
 import software.amazon.lambda.powertools.validation.internal.ValidationAspect;
-
-import java.io.InputStream;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * Validation utility, used to manually validate Json against Json Schema
@@ -229,30 +230,36 @@ public class ValidationUtils {
     public static JsonSchema getJsonSchema(String schema, boolean validateSchema) {
         JsonSchema jsonSchema = schemas.get(schema);
 
-        if (jsonSchema == null) {
-            if (schema.startsWith(CLASSPATH)) {
-                String filePath = schema.substring(CLASSPATH.length());
-                InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath);
+        if (jsonSchema != null) {
+            return jsonSchema;
+        }
+
+        if (schema.startsWith(CLASSPATH)) {
+            String filePath = schema.substring(CLASSPATH.length());
+            try (InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath)) {
                 if (schemaStream == null) {
                     throw new IllegalArgumentException("'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
                 }
+
                 jsonSchema = ValidationConfig.get().getFactory().getSchema(schemaStream);
-            } else {
-                jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
+            } catch (IOException e) {
+                throw new IllegalArgumentException("'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
             }
-
-            if (validateSchema) {
-                String version = ValidationConfig.get().getSchemaVersion().toString();
-                try {
-                    validate(jsonSchema.getSchemaNode(),
-                            getJsonSchema("classpath:/schemas/meta_schema_" + version));
-                } catch (ValidationException ve) {
-                    throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
-                }
-            }
-
-            schemas.put(schema, jsonSchema);
+        } else {
+            jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
         }
+
+        if (validateSchema) {
+            String version = ValidationConfig.get().getSchemaVersion().toString();
+            try {
+                validate(jsonSchema.getSchemaNode(),
+                        getJsonSchema("classpath:/schemas/meta_schema_" + version));
+            } catch (ValidationException ve) {
+                throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
+            }
+        }
+
+        schemas.put(schema, jsonSchema);
 
         return jsonSchema;
     }

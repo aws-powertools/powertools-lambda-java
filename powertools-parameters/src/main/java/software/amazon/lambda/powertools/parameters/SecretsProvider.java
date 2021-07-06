@@ -27,6 +27,8 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * AWS Secrets Manager Parameter Provider<br/><br/>
  *
@@ -94,7 +96,7 @@ public class SecretsProvider extends BaseProvider {
 
         String secretValue = client.getSecretValue(request).secretString();
         if (secretValue == null) {
-            secretValue = new String(Base64.getDecoder().decode(client.getSecretValue(request).secretBinary().asByteArray()));
+            secretValue = new String(Base64.getDecoder().decode(client.getSecretValue(request).secretBinary().asByteArray()), UTF_8);
         }
         return secretValue;
     }

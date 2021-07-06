@@ -13,9 +13,11 @@
  */
 package software.amazon.lambda.powertools.parameters.transform;
 
+import java.util.Base64;
+
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
-import java.util.Base64;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Transformer that take a base64 encoded string and return a decoded string.
@@ -25,7 +27,7 @@ public class Base64Transformer extends BasicTransformer {
     @Override
     public String applyTransformation(String value) throws TransformationException {
         try {
-            return new String(Base64.getDecoder().decode(value));
+            return new String(Base64.getDecoder().decode(value), UTF_8);
         } catch (Exception e) {
             throw new TransformationException(e);
         }
