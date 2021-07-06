@@ -236,7 +236,7 @@ public final class LambdaLoggingAspect {
 
     private byte[] bytesFromInputStreamSafely(final InputStream inputStream) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             InputStreamReader reader = new InputStreamReader(inputStream)) {
+             InputStreamReader reader = new InputStreamReader(inputStream, UTF_8)) {
             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
 
             IOUtils.copy(reader, writer);

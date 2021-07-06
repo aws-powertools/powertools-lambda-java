@@ -85,8 +85,13 @@ public class ValidationConfig {
      * @param <T> Must extends {@link BaseFunction}
      */
     public <T extends BaseFunction> void addFunction(T function) {
-        configuration.functionRegistry().extend(function);
-        jmesPath = new JacksonRuntime(configuration, getObjectMapper());
+        FunctionRegistry functionRegistryWithExtendedFunctions = configuration.functionRegistry().extend(function);
+
+        RuntimeConfiguration updatedConfig = new RuntimeConfiguration.Builder()
+                .withFunctionRegistry(functionRegistryWithExtendedFunctions)
+                .build();
+
+        jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
     }
 
     /**

@@ -1,5 +1,6 @@
 package software.amazon.lambda.powertools.metrics;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -121,7 +122,7 @@ public final class MetricsUtils {
     }
 
     public static DimensionSet[] getDefaultDimensions() {
-        return defaultDimensions;
+        return Arrays.copyOf(defaultDimensions, defaultDimensions.length);
     }
 
     public static boolean hasDefaultDimension() {

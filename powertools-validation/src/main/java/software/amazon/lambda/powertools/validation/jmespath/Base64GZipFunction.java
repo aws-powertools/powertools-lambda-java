@@ -13,12 +13,6 @@
  */
 package software.amazon.lambda.powertools.validation.jmespath;
 
-import io.burt.jmespath.Adapter;
-import io.burt.jmespath.JmesPathType;
-import io.burt.jmespath.function.ArgumentConstraints;
-import io.burt.jmespath.function.BaseFunction;
-import io.burt.jmespath.function.FunctionArgument;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +20,12 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
+
+import io.burt.jmespath.Adapter;
+import io.burt.jmespath.JmesPathType;
+import io.burt.jmespath.function.ArgumentConstraints;
+import io.burt.jmespath.function.BaseFunction;
+import io.burt.jmespath.function.FunctionArgument;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.validation.jmespath.Base64Function.decode;
@@ -68,7 +68,7 @@ public class Base64GZipFunction extends BaseFunction {
             }
             return out.toString();
         } catch (IOException e) {
-            return new String(compressed);
+            return new String(compressed, UTF_8);
         }
     }
 
