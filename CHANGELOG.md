@@ -8,6 +8,10 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.7.1] - 2021-07-06
+
+* **Powertools All Modules**: Fix static code analysis violations done via [spotbugs](https://github.com/spotbugs/spotbugs) ([#458](https://github.com/awslabs/aws-lambda-powertools-java/pull/458)).
+
 ## [1.7.0] - 2021-07-05
 
 ### Added
