@@ -419,7 +419,6 @@
                         </executions>
                         <configuration>
                             <xmlOutput>true</xmlOutput>
-                            <failOnError>true</failOnError>
                         </configuration>
                     </plugin>
                     <plugin>
