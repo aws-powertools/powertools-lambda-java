@@ -88,8 +88,8 @@ to customise what is logged.
     ```java hl_lines="14"
     import org.apache.logging.log4j.LogManager;
     import org.apache.logging.log4j.Logger;
-    import software.amazon.lambda.logging.LoggingUtils;
-    import software.amazon.lambda.logging.Logging;
+    import software.amazon.lambda.powertools.logging.LoggingUtils;
+    import software.amazon.lambda.powertools.logging.Logging;
     ...
     
     /**
