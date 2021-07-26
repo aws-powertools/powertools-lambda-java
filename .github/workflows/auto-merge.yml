@@ -2,7 +2,7 @@ name: Auto merge if dependabot PR
 
 on:
   workflow_run:
-    workflows: ["Build"]
+    workflows: ["Build", "SpotBugs"]
     types: [completed]
 
 jobs:
