@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event.workflow_run.event == 'pull_request' && github.actor == 'dependabot[bot]'
     steps:
-      - name: 'Wait until build and static code check is success'
       - uses: actions/checkout@v2
       - uses: ahmadnassri/action-workflow-run-wait@v1
         with:
