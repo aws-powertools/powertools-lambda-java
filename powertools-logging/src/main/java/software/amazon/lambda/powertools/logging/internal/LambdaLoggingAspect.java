@@ -86,10 +86,10 @@ public final class LambdaLoggingAspect {
 
         setLogLevelBasedOnSamplingRate(pjp, logging);
 
-        Context extractContext = extractContext(pjp);
+        Context extractedContext = extractContext(pjp);
 
-        if(null != extractContext) {
-            appendKeys(DefaultLambdaFields.values(extractContext));
+        if(null != extractedContext) {
+            appendKeys(DefaultLambdaFields.values(extractedContext));
             appendKey("coldStart", isColdStart() ? "true" : "false");
             appendKey("service", serviceName());
         }

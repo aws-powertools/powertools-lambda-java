@@ -54,11 +54,11 @@ public class LambdaMetricsAspect {
 
             logger.setNamespace(namespace(metrics));
 
-            Context extractContext = extractContext(pjp);
+            Context extractedContext = extractContext(pjp);
 
-            if( null != extractContext) {
-                coldStartSingleMetricIfApplicable(extractContext.getAwsRequestId(), extractContext.getFunctionName(), metrics);
-                logger.putProperty(REQUEST_ID_PROPERTY, extractContext.getAwsRequestId());
+            if( null != extractedContext) {
+                coldStartSingleMetricIfApplicable(extractedContext.getAwsRequestId(), extractedContext.getFunctionName(), metrics);
+                logger.putProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
             }
 
             LambdaHandlerProcessor.getXrayTraceId()
