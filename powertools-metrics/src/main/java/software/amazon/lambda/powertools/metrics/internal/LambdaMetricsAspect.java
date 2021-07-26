@@ -2,6 +2,7 @@ package software.amazon.lambda.powertools.metrics.internal;
 
 import java.lang.reflect.Field;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -53,10 +54,12 @@ public class LambdaMetricsAspect {
 
             logger.setNamespace(namespace(metrics));
 
-            extractContext(pjp).ifPresent((context) -> {
-                coldStartSingleMetricIfApplicable(context.getAwsRequestId(), context.getFunctionName(), metrics);
-                logger.putProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
-            });
+            Context extractContext = extractContext(pjp);
+
+            if( null != extractContext) {
+                coldStartSingleMetricIfApplicable(extractContext.getAwsRequestId(), extractContext.getFunctionName(), metrics);
+                logger.putProperty(REQUEST_ID_PROPERTY, extractContext.getAwsRequestId());
+            }
 
             LambdaHandlerProcessor.getXrayTraceId()
                     .ifPresent(traceId -> logger.putProperty(TRACE_ID_PROPERTY, traceId));
