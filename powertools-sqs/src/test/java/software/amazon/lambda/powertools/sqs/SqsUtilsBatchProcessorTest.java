@@ -216,6 +216,20 @@ class SqsUtilsBatchProcessorTest {
         }
     }
 
+    @Test
+    void shouldBatchProcessAndMoveNonRetryableExceptionToDlq() {
+        String failedId = "2e1424d4-f796-459a-8184-9c92662be6da";
+
+        List<String> batchProcessor = batchProcessor(event, (message) -> {
+            if (failedId.equals(message.getMessageId())) {
+                throw new IllegalStateException("Failed processing");
+            }
+
+            interactionClient.listQueues();
+            return "Success";
+        }, IllegalStateException.class, IllegalArgumentException.class);
+    }
+
     public class FailureSampleInnerSqsHandler implements SqsMessageHandler<String> {
         @Override
         public String process(SQSEvent.SQSMessage message) {

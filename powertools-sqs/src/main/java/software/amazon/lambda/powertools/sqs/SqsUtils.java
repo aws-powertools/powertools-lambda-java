@@ -131,6 +131,13 @@ public final class SqsUtils {
         return batchProcessor(event, false, handler);
     }
 
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final Class<? extends SqsMessageHandler<R>> handler,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+        return batchProcessor(event, false, handler, nonRetryableExceptions);
+    }
+
     /**
      * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
      *
@@ -166,6 +173,16 @@ public final class SqsUtils {
         return batchProcessor(event, suppressException, handlerInstance);
     }
 
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final Class<? extends SqsMessageHandler<R>> handler,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+
+        SqsMessageHandler<R> handlerInstance = instantiatedHandler(handler);
+        return batchProcessor(event, suppressException, handlerInstance, false, nonRetryableExceptions);
+    }
+
     /**
      * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
      *
@@ -199,6 +216,14 @@ public final class SqsUtils {
         return batchProcessor(event, false, handler);
     }
 
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final SqsMessageHandler<R> handler,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+        return batchProcessor(event, false, handler, false, nonRetryableExceptions);
+    }
+
+
     /**
      * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
      *
@@ -229,6 +254,16 @@ public final class SqsUtils {
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final SqsMessageHandler<R> handler) {
+        return batchProcessor(event, suppressException, handler, false);
+
+    }
+
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final SqsMessageHandler<R> handler,
+                                             final boolean deleteNonRetryableMessageFromQueue,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
         final List<R> handlerReturn = new ArrayList<>();
 
         if(client == null) {
@@ -246,7 +281,7 @@ public final class SqsUtils {
             }
         }
 
-        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException);
+        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
 
         return handlerReturn;
     }
@@ -255,12 +290,12 @@ public final class SqsUtils {
 
         try {
             if (null == handler.getDeclaringClass()) {
-                return handler.newInstance();
+                return handler.getDeclaredConstructor().newInstance();
             }
 
             final Constructor<? extends SqsMessageHandler<R>> constructor = handler.getDeclaredConstructor(handler.getDeclaringClass());
             constructor.setAccessible(true);
-            return constructor.newInstance(handler.getDeclaringClass().newInstance());
+            return constructor.newInstance(handler.getDeclaringClass().getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             LOG.error("Failed creating handler instance", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
@@ -275,5 +310,9 @@ public final class SqsUtils {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static ObjectMapper objectMapper() {
+        return objectMapper;
     }
 }

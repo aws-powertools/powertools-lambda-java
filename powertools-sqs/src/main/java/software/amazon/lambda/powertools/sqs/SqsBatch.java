@@ -59,4 +59,8 @@ public @interface SqsBatch {
     Class<? extends SqsMessageHandler<Object>> value();
 
     boolean suppressException() default false;
+
+    Class<? extends Exception>[] nonRetryableExceptions() default {};
+
+    boolean deleteNonRetryableMessageFromQueue() default false;
 }
