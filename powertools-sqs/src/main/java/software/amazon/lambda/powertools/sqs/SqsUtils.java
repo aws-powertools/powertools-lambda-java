@@ -41,7 +41,7 @@ public final class SqsUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SqsUtils.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static SqsClient client = SqsClient.create();
+    private static SqsClient client;
 
     private SqsUtils() {
     }
@@ -230,6 +230,10 @@ public final class SqsUtils {
                                              final boolean suppressException,
                                              final SqsMessageHandler<R> handler) {
         final List<R> handlerReturn = new ArrayList<>();
+
+        if(client == null) {
+            client = SqsClient.create();
+        }
 
         BatchContext batchContext = new BatchContext(client);
 

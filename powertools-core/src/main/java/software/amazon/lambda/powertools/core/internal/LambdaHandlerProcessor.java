@@ -56,19 +56,19 @@ public final class LambdaHandlerProcessor {
                 && pjp.getArgs()[2] instanceof Context;
     }
 
-    public static Optional<Context> extractContext(final ProceedingJoinPoint pjp) {
+    public static Context extractContext(final ProceedingJoinPoint pjp) {
 
         if (isHandlerMethod(pjp)) {
             if (placedOnRequestHandler(pjp)) {
-                return of((Context) pjp.getArgs()[1]);
+                return (Context) pjp.getArgs()[1];
             }
 
             if (placedOnStreamHandler(pjp)) {
-                return of((Context) pjp.getArgs()[2]);
+                return (Context) pjp.getArgs()[2];
             }
         }
 
-        return empty();
+        return null;
     }
 
     public static String serviceName() {

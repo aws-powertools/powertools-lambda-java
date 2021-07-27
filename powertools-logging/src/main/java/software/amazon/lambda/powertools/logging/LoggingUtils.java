@@ -26,7 +26,7 @@ import static java.util.Arrays.asList;
  * {@see Logging}
  */
 public final class LoggingUtils {
-    private static ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper objectMapper;
 
     private LoggingUtils() {
     }
@@ -93,6 +93,10 @@ public final class LoggingUtils {
     }
 
     public static ObjectMapper objectMapper() {
+        if(null == objectMapper) {
+            objectMapper =  new ObjectMapper();
+        }
+
         return objectMapper;
     }
 }

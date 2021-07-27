@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -85,12 +86,13 @@ public final class LambdaLoggingAspect {
 
         setLogLevelBasedOnSamplingRate(pjp, logging);
 
-        extractContext(pjp)
-                .ifPresent(context -> {
-                    appendKeys(DefaultLambdaFields.values(context));
-                    appendKey("coldStart", isColdStart() ? "true" : "false");
-                    appendKey("service", serviceName());
-                });
+        Context extractedContext = extractContext(pjp);
+
+        if(null != extractedContext) {
+            appendKeys(DefaultLambdaFields.values(extractedContext));
+            appendKey("coldStart", isColdStart() ? "true" : "false");
+            appendKey("service", serviceName());
+        }
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
 
@@ -120,9 +122,9 @@ public final class LambdaLoggingAspect {
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
                                                 final Logging logging) {
+        double samplingRate = samplingRate(logging);
+
         if (isHandlerMethod(pjp)) {
-            float sample = SAMPLER.nextFloat();
-            double samplingRate = samplingRate(logging);
 
             if (samplingRate < 0 || samplingRate > 1) {
                 LOG.debug("Skipping sampling rate configuration because of invalid value. Sampling rate: {}", samplingRate);
@@ -130,6 +132,12 @@ public final class LambdaLoggingAspect {
             }
 
             appendKey("samplingRate", String.valueOf(samplingRate));
+
+            if (samplingRate == 0) {
+                return;
+            }
+
+            float sample = SAMPLER.nextFloat();
 
             if (samplingRate > sample) {
                 resetLogLevels(Level.DEBUG);
