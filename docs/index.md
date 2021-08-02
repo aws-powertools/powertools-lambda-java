@@ -38,9 +38,6 @@ You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a ser
 
 For more information about the project and available options refer to this [repository](https://github.com/aws-samples/cookiecutter-aws-sam-powertools-java/blob/main/README.md)
 
-!!! note "Using Java 9 or later?"
-    If you are working with lambda function on runtime **Java 9 or later**, please refer **[issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50)** for a workaround.
-
 === "Maven"
 
     ```xml hl_lines="3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55" 
@@ -71,7 +68,7 @@ For more information about the project and available options refer to this [repo
             <plugin>
                  <groupId>org.codehaus.mojo</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.11</version>
+                 <version>1.14.0</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
