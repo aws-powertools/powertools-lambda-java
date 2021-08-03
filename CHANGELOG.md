@@ -8,6 +8,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.7.2] - 2021-08-03
+
+* **Powertools All Modules**: Upgrade to the latest(1.14.0) aspectj-maven-plugin which also supports Java 9 and newer versions. 
+Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/artifact/com.nickwongdev/aspectj-maven-plugin/1.12.6) as a workaround. [#489](https://github.com/awslabs/aws-lambda-powertools-java/pull/489)
+* **Logging**: Performance optimisation to improve cold start. [#484](https://github.com/awslabs/aws-lambda-powertools-java/pull/484)
+* **SQS Batch processing/Large message**: Module now lazy loads default SQS client. [#484](https://github.com/awslabs/aws-lambda-powertools-java/pull/484)
+
 ## [1.7.1] - 2021-07-06
 
 * **Powertools All Modules**: Fix static code analysis violations done via [spotbugs](https://github.com/spotbugs/spotbugs) ([#458](https://github.com/awslabs/aws-lambda-powertools-java/pull/458)).
