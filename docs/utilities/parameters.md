@@ -396,7 +396,7 @@ If you want to use the ```@Param``` annotation in your project add configuration
             <plugin>
                  <groupId>org.codehaus.mojo</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.11</version>
+                 <version>1.14.0</version>
                  <configuration>
                      ...
                      <aspectLibraries>
@@ -420,8 +420,6 @@ If you want to use the ```@Param``` annotation in your project add configuration
     </build>
     ```
     
-    **Note:** If you are working with lambda function on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
-
 === "Gradle"
 
     ```groovy

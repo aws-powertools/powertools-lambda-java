@@ -42,7 +42,7 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
         <plugin>
              <groupId>org.codehaus.mojo</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.11</version>
+             <version>1.14.0</version>
              <configuration>
                  <source>1.8</source>
                  <target>1.8</target>
@@ -74,7 +74,6 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
     </plugins>
 </build>
 ```
-**Note:** If you are working with Lambda on runtime post java8, please refer [issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/50) for workaround
 
 ## Example
 
