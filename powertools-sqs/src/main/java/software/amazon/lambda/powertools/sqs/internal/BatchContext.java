@@ -62,17 +62,21 @@ public final class BatchContext {
             List<SQSMessage> failedMessages = new ArrayList<>();
             Map<SQSMessage, Exception> nonRetryableMessageToException = new HashMap<>();
 
-            messageToException.forEach((sqsMessage, exception) -> {
-                boolean nonRetryableMessage = Arrays.stream(nonRetryableExceptions)
-                        .anyMatch(aClass -> aClass.isInstance(exception));
+            if (nonRetryableExceptions.length == 0) {
+                exceptions.addAll(messageToException.values());
+                failedMessages.addAll(messageToException.keySet());
+            } else {
+                messageToException.forEach((sqsMessage, exception) -> {
+                    boolean nonRetryableException = isNonRetryableException(exception, nonRetryableExceptions);
 
-                if (nonRetryableMessage) {
-                    nonRetryableMessageToException.put(sqsMessage, exception);
-                } else {
-                    exceptions.add(exception);
-                    failedMessages.add(sqsMessage);
-                }
-            });
+                    if (nonRetryableException) {
+                        nonRetryableMessageToException.put(sqsMessage, exception);
+                    } else {
+                        exceptions.add(exception);
+                        failedMessages.add(sqsMessage);
+                    }
+                });
+            }
 
             List<SQSMessage> messagesToBeDeleted = new ArrayList<>(success);
 
@@ -90,21 +94,33 @@ public final class BatchContext {
 
             deleteMessagesFromQueue(messagesToBeDeleted);
 
-            if (failedMessages.isEmpty()) {
-                return;
-            }
-
-            if (suppressException) {
-                List<String> messageIds = failedMessages.stream().
-                        map(SQSMessage::getMessageId)
-                        .collect(toList());
-
-                LOG.debug(format("[%s] records failed processing, but exceptions are suppressed. " +
-                        "Failed messages %s", failedMessages.size(), messageIds));
-            } else {
-                throw new SQSBatchProcessingException(exceptions, failedMessages, successReturns);
-            }
+            processFailedMessages(successReturns, suppressException, exceptions, failedMessages);
         }
+    }
+
+    private <T> void processFailedMessages(List<T> successReturns,
+                                           boolean suppressException,
+                                           List<Exception> exceptions,
+                                           List<SQSMessage> failedMessages) {
+        if (failedMessages.isEmpty()) {
+            return;
+        }
+
+        if (suppressException) {
+            List<String> messageIds = failedMessages.stream().
+                    map(SQSMessage::getMessageId)
+                    .collect(toList());
+
+            LOG.debug(format("[%s] records failed processing, but exceptions are suppressed. " +
+                    "Failed messages %s", failedMessages.size(), messageIds));
+        } else {
+            throw new SQSBatchProcessingException(exceptions, failedMessages, successReturns);
+        }
+    }
+
+    private boolean isNonRetryableException(Exception exception, Class<? extends Exception>[] nonRetryableExceptions) {
+        return Arrays.stream(nonRetryableExceptions)
+                .anyMatch(aClass -> aClass.isInstance(exception));
     }
 
     private boolean moveNonRetryableMessagesToDlqIfConfigured(Map<SQSMessage, Exception> nonRetryableMessageToException) {
@@ -143,7 +159,7 @@ public final class BatchContext {
         SendMessageBatchResponse sendMessageBatchResponse = client.sendMessageBatch(builder -> builder.queueUrl(dlqUrl.get())
                 .entries(dlqMessages));
 
-        LOG.debug(format("Response from send batch message to DLQ request %s", sendMessageBatchResponse));
+        LOG.debug("Response from send batch message to DLQ request {}", sendMessageBatchResponse);
 
         return true;
     }
@@ -190,7 +206,7 @@ public final class BatchContext {
                     .build();
 
             DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
-            LOG.debug(format("Response from delete request %s", deleteMessageBatchResponse));
+            LOG.debug("Response from delete request {}", deleteMessageBatchResponse);
         }
     }
 

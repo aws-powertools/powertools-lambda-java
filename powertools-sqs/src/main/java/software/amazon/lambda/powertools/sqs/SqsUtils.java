@@ -183,6 +183,17 @@ public final class SqsUtils {
         return batchProcessor(event, suppressException, handlerInstance, false, nonRetryableExceptions);
     }
 
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final Class<? extends SqsMessageHandler<R>> handler,
+                                             final boolean deleteNonRetryableMessageFromQueue,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+
+        SqsMessageHandler<R> handlerInstance = instantiatedHandler(handler);
+        return batchProcessor(event, suppressException, handlerInstance, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
+    }
+
     /**
      * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
      *

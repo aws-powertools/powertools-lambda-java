@@ -242,6 +242,36 @@ class SqsUtilsBatchProcessorTest {
         verify(sqsClient).sendMessageBatch(any(Consumer.class));
     }
 
+    @Test
+    void shouldBatchProcessAndDeleteNonRetryableException() {
+        String failedId = "2e1424d4-f796-459a-8184-9c92662be6da";
+        HashMap<QueueAttributeName, String> attributes = new HashMap<>();
+
+        attributes.put(QueueAttributeName.REDRIVE_POLICY, "{\n" +
+                "  \"deadLetterTargetArn\": \"arn:aws:sqs:us-east-2:123456789012:retry-queue\",\n" +
+                "  \"maxReceiveCount\": 2\n" +
+                "}");
+
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
+                .attributes(attributes)
+                .build());
+
+        List<String> batchProcessor = batchProcessor(event, false, (message) -> {
+            if (failedId.equals(message.getMessageId())) {
+                throw new IllegalStateException("Failed processing");
+            }
+
+            interactionClient.listQueues();
+            return "Success";
+        }, true, IllegalStateException.class, IllegalArgumentException.class);
+
+        Assertions.assertThat(batchProcessor)
+                .hasSize(1);
+
+        verify(sqsClient, times(0)).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
+    }
+
     public class FailureSampleInnerSqsHandler implements SqsMessageHandler<String> {
         @Override
         public String process(SQSEvent.SQSMessage message) {

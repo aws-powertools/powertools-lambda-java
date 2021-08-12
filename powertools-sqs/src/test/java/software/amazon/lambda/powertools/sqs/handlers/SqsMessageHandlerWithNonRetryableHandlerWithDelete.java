@@ -9,10 +9,12 @@ import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.mockedRandom;
 
-public class SqsMessageHandlerWithNonRetryableHandler implements RequestHandler<SQSEvent, String> {
+public class SqsMessageHandlerWithNonRetryableHandlerWithDelete implements RequestHandler<SQSEvent, String> {
 
     @Override
-    @SqsBatch(value = InnerMessageHandler.class, nonRetryableExceptions = {IllegalStateException.class, IllegalArgumentException.class})
+    @SqsBatch(value = InnerMessageHandler.class,
+            nonRetryableExceptions = {IllegalStateException.class, IllegalArgumentException.class},
+            deleteNonRetryableMessageFromQueue = true)
     public String handleRequest(final SQSEvent sqsEvent,
                                 final Context context) {
         return "Success";

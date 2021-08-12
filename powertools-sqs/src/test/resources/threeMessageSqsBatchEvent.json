@@ -1,0 +1,70 @@
+{
+  "records": [
+    {
+      "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+      "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+      "body": "Test message.",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1545082649183",
+        "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+        "ApproximateFirstReceiveTimestamp": "1545082649185"
+      },
+      "messageAttributes": {},
+      "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+      "eventSource": "aws:sqs",
+      "eventSourceArn": "arn:aws:sqs:us-east-1:906126917321:sqs-lambda-MySqsQueue-4DYWWJIE97N5",
+      "awsRegion": "us-east-2"
+    },
+    {
+      "messageId": "2e1424d4-f796-459a-8184-9c92662be6da",
+      "receiptHandle": "AQEBzWwaftRI0KuVm4tP+/7q1rGgNqicHq...",
+      "body": "Test message.",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1545082650636",
+        "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+        "ApproximateFirstReceiveTimestamp": "1545082650649"
+      },
+      "messageAttributes": {
+        "Attribute3" : {
+          "binaryValue" : "MTEwMA==",
+          "dataType" : "Binary"
+        },
+        "Attribute2" : {
+          "stringValue" : "123",
+          "dataType" : "Number"
+        },
+        "Attribute1" : {
+          "stringValue" : "AttributeValue1",
+          "dataType" : "String"
+        }
+      },
+      "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+      "eventSource": "aws:sqs",
+      "eventSourceArn": "arn:aws:sqs:us-east-1:906126917321:sqs-lambda-MySqsQueue-4DYWWJIE97N5",
+      "awsRegion": "us-east-2"
+    },
+    {
+      "messageId": "2e1424d4-f796-459a-9696-9c92662ba5da",
+      "receiptHandle": "AQEBzWwaftRI0KuVm4tP+/7q1rGgNqicHq...",
+      "body": "Test message.",
+      "attributes": {
+        "ApproximateReceiveCount": "1",
+        "SentTimestamp": "1545082650636",
+        "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+        "ApproximateFirstReceiveTimestamp": "1545082650649"
+      },
+      "messageAttributes": {
+        "Attribute2" : {
+          "stringValue" : "123",
+          "dataType" : "Number"
+        }
+      },
+      "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+      "eventSource": "aws:sqs",
+      "eventSourceArn": "arn:aws:sqs:us-east-1:906126917321:sqs-lambda-MySqsQueue-4DYWWJIE97N5",
+      "awsRegion": "us-east-2"
+    }
+  ]
+}
