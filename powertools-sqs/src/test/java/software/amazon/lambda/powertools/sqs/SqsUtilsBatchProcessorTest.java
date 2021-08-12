@@ -1,10 +1,13 @@
 package software.amazon.lambda.powertools.sqs;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.function.Consumer;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -12,8 +15,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,11 +43,6 @@ class SqsUtilsBatchProcessorTest {
     void setUp() throws IOException {
         reset(sqsClient, interactionClient);
         event = MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEvent.json"), SQSEvent.class);
-
-        when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class))).thenReturn(GetQueueUrlResponse.builder()
-                .queueUrl("test")
-                .build());
-
         overrideSqsClient(sqsClient);
     }
 
@@ -107,14 +106,12 @@ class SqsUtilsBatchProcessorTest {
                 });
 
         verify(interactionClient).listQueues();
-        verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
 
-        ArgumentCaptor<GetQueueUrlRequest> captor = ArgumentCaptor.forClass(GetQueueUrlRequest.class);
-        verify(sqsClient).getQueueUrl(captor.capture());
+        ArgumentCaptor<DeleteMessageBatchRequest> captor = ArgumentCaptor.forClass(DeleteMessageBatchRequest.class);
+        verify(sqsClient).deleteMessageBatch(captor.capture());
 
         assertThat(captor.getValue())
-                .hasFieldOrPropertyWithValue("queueName", "my-queue")
-                .hasFieldOrPropertyWithValue("queueOwnerAWSAccountId", "123456789012");
+                .hasFieldOrPropertyWithValue("queueUrl", "https://sqs.us-east-2.amazonaws.com/123456789012/my-queue");
     }
 
     @Test
@@ -219,6 +216,16 @@ class SqsUtilsBatchProcessorTest {
     @Test
     void shouldBatchProcessAndMoveNonRetryableExceptionToDlq() {
         String failedId = "2e1424d4-f796-459a-8184-9c92662be6da";
+        HashMap<QueueAttributeName, String> attributes = new HashMap<>();
+
+        attributes.put(QueueAttributeName.REDRIVE_POLICY, "{\n" +
+                "  \"deadLetterTargetArn\": \"arn:aws:sqs:us-east-2:123456789012:retry-queue\",\n" +
+                "  \"maxReceiveCount\": 2\n" +
+                "}");
+
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
+                        .attributes(attributes)
+                .build());
 
         List<String> batchProcessor = batchProcessor(event, (message) -> {
             if (failedId.equals(message.getMessageId())) {
@@ -228,6 +235,11 @@ class SqsUtilsBatchProcessorTest {
             interactionClient.listQueues();
             return "Success";
         }, IllegalStateException.class, IllegalArgumentException.class);
+
+        Assertions.assertThat(batchProcessor)
+                .hasSize(1);
+
+        verify(sqsClient).sendMessageBatch(any(Consumer.class));
     }
 
     public class FailureSampleInnerSqsHandler implements SqsMessageHandler<String> {

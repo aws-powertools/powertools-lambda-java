@@ -1,7 +1,9 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Random;
+import java.util.function.Consumer;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -12,13 +14,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlResponse;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
+import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
+import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 import software.amazon.lambda.powertools.sqs.handlers.LambdaHandlerApiGateway;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchFailureSuppressedHandler;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchPartialFailureHandler;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchSuccessHandler;
+import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandlerWithNonRetryableHandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
@@ -48,11 +52,6 @@ public class SqsMessageBatchProcessorAspectTest {
         reset(sqsClient);
         setupContext();
         event = MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEvent.json"), SQSEvent.class);
-
-        when(sqsClient.getQueueUrl(any(GetQueueUrlRequest.class))).thenReturn(GetQueueUrlResponse.builder()
-                .queueUrl("test")
-                .build());
-
         requestHandler = new PartialBatchSuccessHandler();
     }
 
@@ -107,6 +106,29 @@ public class SqsMessageBatchProcessorAspectTest {
         handlerApiGateway.handleRequest(mock(APIGatewayProxyRequestEvent.class), context);
 
         verifyNoInteractions(sqsClient);
+    }
+
+    @Test
+    void shouldBatchProcessAndMoveNonRetryableExceptionToDlq() {
+        requestHandler = new SqsMessageHandlerWithNonRetryableHandler();
+        event.getRecords().get(0).setMessageId("");
+
+        HashMap<QueueAttributeName, String> attributes = new HashMap<>();
+
+        attributes.put(QueueAttributeName.REDRIVE_POLICY, "{\n" +
+                "  \"deadLetterTargetArn\": \"arn:aws:sqs:us-east-2:123456789012:retry-queue\",\n" +
+                "  \"maxReceiveCount\": 2\n" +
+                "}");
+
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
+                .attributes(attributes)
+                .build());
+
+        requestHandler.handleRequest(event, context);
+
+        verify(mockedRandom).nextInt();
+        verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
+        verify(sqsClient).sendMessageBatch(any(Consumer.class));
     }
 
     private void setupContext() {

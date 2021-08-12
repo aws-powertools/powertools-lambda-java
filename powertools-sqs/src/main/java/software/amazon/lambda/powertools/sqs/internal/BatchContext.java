@@ -18,7 +18,6 @@ import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchResponse;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
-import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
@@ -28,12 +27,12 @@ import software.amazon.lambda.powertools.sqs.SqsUtils;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
 public final class BatchContext {
     private static final Logger LOG = LoggerFactory.getLogger(BatchContext.class);
-    private static final Map<String, String> queueArnToQueueUrlMapping = new HashMap<>();
-    private static final Map<String, String> queueArnToDlqUrlMapping = new HashMap<>();
+    private static final Map<String, String> QUEUE_ARN_TO_DLQ_URL_MAPPING = new HashMap<>();
 
     private final Map<SQSMessage, Exception> messageToException = new HashMap<>();
     private final List<SQSMessage> success = new ArrayList<>();
@@ -90,6 +89,10 @@ public final class BatchContext {
             }
 
             deleteMessagesFromQueue(messagesToBeDeleted);
+
+            if (failedMessages.isEmpty()) {
+                return;
+            }
 
             if (suppressException) {
                 List<String> messageIds = failedMessages.stream().
@@ -148,7 +151,7 @@ public final class BatchContext {
     private Optional<String> fetchDlqUrl(Map<SQSMessage, Exception> nonRetryableMessageToException) {
         return nonRetryableMessageToException.keySet().stream()
                 .findFirst()
-                .map(sqsMessage -> queueArnToDlqUrlMapping.computeIfAbsent(sqsMessage.getEventSourceArn(), sourceArn -> {
+                .map(sqsMessage -> QUEUE_ARN_TO_DLQ_URL_MAPPING.computeIfAbsent(sqsMessage.getEventSourceArn(), sourceArn -> {
                     String queueUrl = url(sourceArn);
 
                     GetQueueAttributesResponse queueAttributes = client.getQueueAttributes(GetQueueAttributesRequest.builder()
@@ -156,13 +159,19 @@ public final class BatchContext {
                             .queueUrl(queueUrl)
                             .build());
 
-                    try {
-                        JsonNode jsonNode = SqsUtils.objectMapper().readTree(queueAttributes.attributes().get(QueueAttributeName.REDRIVE_POLICY));
-                        return url(jsonNode.get("deadLetterTargetArn").asText());
-                    } catch (JsonProcessingException e) {
-                        LOG.debug("Unable to parse Re drive policy for queue {}. Even if DLQ exists, failed messages will be send back to main queue.", queueUrl, e);
-                        return null;
-                    }
+                    return ofNullable(queueAttributes.attributes().get(QueueAttributeName.REDRIVE_POLICY))
+                            .map(policy -> {
+                                try {
+                                    return SqsUtils.objectMapper().readTree(policy);
+                                } catch (JsonProcessingException e) {
+                                    LOG.debug("Unable to parse Re drive policy for queue {}. Even if DLQ exists, failed messages will be send back to main queue.", queueUrl, e);
+                                    return null;
+                                }
+                            })
+                            .map(node -> node.get("deadLetterTargetArn"))
+                            .map(JsonNode::asText)
+                            .map(this::url)
+                            .orElse(null);
                 }));
     }
 
@@ -186,14 +195,7 @@ public final class BatchContext {
     }
 
     private String url(String queueArn) {
-        return queueArnToQueueUrlMapping.computeIfAbsent(queueArn, s -> {
-            String[] arnArray = queueArn.split(":");
-
-            return client.getQueueUrl(GetQueueUrlRequest.builder()
-                            .queueOwnerAWSAccountId(arnArray[4])
-                            .queueName(arnArray[5])
-                            .build())
-                    .queueUrl();
-        });
+        String[] arnArray = queueArn.split(":");
+        return String.format("https://sqs.%s.amazonaws.com/%s/%s", arnArray[3], arnArray[4], arnArray[5]);
     }
 }
