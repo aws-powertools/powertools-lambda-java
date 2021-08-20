@@ -61,7 +61,10 @@ public final class LambdaTracingAspect {
                 segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", methodReturn);
             }
 
-            coldStartDone();
+            if (placedOnHandlerMethod(pjp)) {
+                coldStartDone();
+            }
+
             return methodReturn;
         } catch (Exception e) {
             if (captureError) {
