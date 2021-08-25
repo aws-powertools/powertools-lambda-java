@@ -29,7 +29,11 @@ public class SqsMessageBatchProcessorAspect {
 
             SQSEvent sqsEvent = (SQSEvent) proceedArgs[0];
 
-            batchProcessor(sqsEvent, sqsBatch.suppressException(), sqsBatch.value());
+            batchProcessor(sqsEvent,
+                    sqsBatch.suppressException(),
+                    sqsBatch.value(),
+                    sqsBatch.deleteNonRetryableMessageFromQueue(),
+                    sqsBatch.nonRetryableExceptions());
         }
 
         return pjp.proceed(proceedArgs);

@@ -99,16 +99,16 @@ public final class SqsUtils {
     }
 
     /**
-     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
-     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
      * in the received {@link SQSEvent}
      * </p>
      *
      * </p>
-     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
-     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a message,
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
      * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
      * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
      * <p>
@@ -117,7 +117,7 @@ public final class SqsUtils {
      * </p>
      *
      * <p>
-     * If you dont want to utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * If you dont want the utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
      * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}
      * </p>
      *
@@ -132,16 +132,69 @@ public final class SqsUtils {
     }
 
     /**
-     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
-     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
      * in the received {@link SQSEvent}
      * </p>
+     * <p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a message,
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
      *
      * </p>
-     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
-     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     *
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * <p>
+     * If you dont want the utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}
+     * </p>
+     *
+     * <p>
+     * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
+     * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
+     * you can use nonRetryableExceptions parameter to configure such exceptions.
+     *
+     * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
+     * sqs:SendMessageBatch permission for configured DLQ.
+     *
+     * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
+     * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
+     * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
+     * for some reason the utility is unable to move the message to the DLQ. An example of this could be because the function
+     * is missing the correct permissions.
+     * </p>
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
+     * @param event   {@link SQSEvent} received by lambda function.
+     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
+     *                               to DLQ.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing.
+     */
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final Class<? extends SqsMessageHandler<R>> handler,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+        return batchProcessor(event, false, handler, nonRetryableExceptions);
+    }
+
+    /**
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
+     *
+     * <p>
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     * </p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a message,
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
      * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
      * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
      * <p>
@@ -167,10 +220,134 @@ public final class SqsUtils {
     }
 
     /**
-     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
-     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     * <p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a message,
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     *
+     * </p>
+     *
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * <p>
+     * If you dont want the utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}
+     * </p>
+     *
+     * <p>
+     * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
+     * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
+     * you can use nonRetryableExceptions parameter to configure such exceptions.
+     *
+     * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
+     * sqs:SendMessageBatch permission for configured DLQ.
+     *
+     * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
+     * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
+     * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
+     * for some reason the utility is unable to move the message to the DLQ. An example of this could be because the function
+     * is missing the correct permissions.
+     * </p>
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
+     *
+     * @param event   {@link SQSEvent} received by lambda function.
+     * @param suppressException if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
+     *                          messages.
+     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
+     *                               to DLQ.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing.
+     */
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final Class<? extends SqsMessageHandler<R>> handler,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+
+        SqsMessageHandler<R> handlerInstance = instantiatedHandler(handler);
+        return batchProcessor(event, suppressException, handlerInstance, false, nonRetryableExceptions);
+    }
+
+    /**
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
+     *
+     * <p>
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     *
+     * <p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a message,
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     *
+     * </p>
+     *
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * <p>
+     * If you dont want the utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}
+     * </p>
+     *
+     * <p>
+     * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
+     * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
+     * you can use nonRetryableExceptions parameter to configure such exceptions.
+     *
+     * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
+     * sqs:SendMessageBatch permission for configured DLQ.
+     *
+     * If you want such messages to be deleted instead, set deleteNonRetryableMessageFromQueue to true.
+     *
+     * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
+     * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
+     * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
+     * for some reason the utility is unable to move the message to the DLQ. An example of this could be because the function
+     * is missing the correct permissions.
+     * </p>
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
+     * @param event   {@link SQSEvent} received by lambda function.
+     * @param suppressException if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
+     *                          messages.
+     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @param deleteNonRetryableMessageFromQueue If messages with nonRetryableExceptions are to be deleted from SQS queue.
+     * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
+     *                               to DLQ.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing.
+     */
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final Class<? extends SqsMessageHandler<R>> handler,
+                                             final boolean deleteNonRetryableMessageFromQueue,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+
+        SqsMessageHandler<R> handlerInstance = instantiatedHandler(handler);
+        return batchProcessor(event, suppressException, handlerInstance, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
+    }
+
+    /**
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
+     *
+     * <p>
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
      * in the received {@link SQSEvent}
      * </p>
      *
@@ -185,7 +362,7 @@ public final class SqsUtils {
      * </p>
      *
      * <p>
-     * If you dont want to utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * If you dont want the utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
      * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, SqsMessageHandler)}
      * </p>
      *
@@ -199,17 +376,74 @@ public final class SqsUtils {
         return batchProcessor(event, false, handler);
     }
 
+
     /**
-     * This utility method is used to processes each {@link SQSMessage} inside received {@link SQSEvent}
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
-     * Utility will take care of calling {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
+     * in the received {@link SQSEvent}
+     * </p>
+     *
+     * <p>
+     * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a message,
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
+     * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
+     *
+     * </p>
+     *
+     * <p>
+     * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
+     * Lambda execution context for deletion.
+     * </p>
+     *
+     * <p>
+     * If you dont want the utility to throw {@link SQSBatchProcessingException} in case of failures but rather suppress
+     * it, Refer {@link SqsUtils#batchProcessor(SQSEvent, boolean, Class)}
+     * </p>
+     *
+     * <p>
+     * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
+     * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
+     * you can use nonRetryableExceptions parameter to configure such exceptions.
+     *
+     * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
+     * sqs:SendMessageBatch permission for configured DLQ.
+     *
+     * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
+     * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
+     * exceptions and the message will be moved back to source SQS queue for reprocessing.The same behaviour will occur if
+     * for some reason the utility is unable to moved the message to the DLQ. An example of this could be because the function
+     * is missing the correct permissions.
+     * </p>
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
+     * @param event   {@link SQSEvent} received by lambda function.
+     * @param handler Instance of class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
+     *                               to DLQ.
+     * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
+     * @throws SQSBatchProcessingException if some messages fail during processing.
+     */
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final SqsMessageHandler<R> handler,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
+        return batchProcessor(event, false, handler, false, nonRetryableExceptions);
+    }
+
+
+    /**
+     * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
+     *
+     * <p>
+     * The Utility will call {@link SqsMessageHandler#process(SQSMessage)} method for each {@link SQSMessage}
      * in the received {@link SQSEvent}
      * </p>
      *
      * </p>
      * If any exception is thrown from {@link SqsMessageHandler#process(SQSMessage)} during processing of a messages,
-     * Utility will take care of deleting all the successful messages from SQS. When one or more single message fails
+     * the utility will take care of deleting all the successful messages from SQS. When one or more single message fails
      * processing due to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}
      * {@link SQSBatchProcessingException} is thrown with all the details of successful and failed messages.
      * <p>
@@ -229,6 +463,16 @@ public final class SqsUtils {
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final SqsMessageHandler<R> handler) {
+        return batchProcessor(event, suppressException, handler, false);
+
+    }
+
+    @SafeVarargs
+    public static <R> List<R> batchProcessor(final SQSEvent event,
+                                             final boolean suppressException,
+                                             final SqsMessageHandler<R> handler,
+                                             final boolean deleteNonRetryableMessageFromQueue,
+                                             final Class<? extends Exception>... nonRetryableExceptions) {
         final List<R> handlerReturn = new ArrayList<>();
 
         if(client == null) {
@@ -246,7 +490,7 @@ public final class SqsUtils {
             }
         }
 
-        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException);
+        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
 
         return handlerReturn;
     }
@@ -255,12 +499,12 @@ public final class SqsUtils {
 
         try {
             if (null == handler.getDeclaringClass()) {
-                return handler.newInstance();
+                return handler.getDeclaredConstructor().newInstance();
             }
 
             final Constructor<? extends SqsMessageHandler<R>> constructor = handler.getDeclaredConstructor(handler.getDeclaringClass());
             constructor.setAccessible(true);
-            return constructor.newInstance(handler.getDeclaringClass().newInstance());
+            return constructor.newInstance(handler.getDeclaringClass().getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             LOG.error("Failed creating handler instance", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
@@ -275,5 +519,9 @@ public final class SqsUtils {
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static ObjectMapper objectMapper() {
+        return objectMapper;
     }
 }
