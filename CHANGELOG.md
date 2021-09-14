@@ -8,6 +8,10 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.7.3] - 2021-09-14
+
+* **SQS Batch processing**: Ability to move non retryable message to configured dead letter queue(DLQ). [#500](https://github.com/awslabs/aws-lambda-powertools-java/pull/500)
+
 ## [1.7.2] - 2021-08-03
 
 * **Powertools All Modules**: Upgrade to the latest(1.14.0) aspectj-maven-plugin which also supports Java 9 and newer versions. 

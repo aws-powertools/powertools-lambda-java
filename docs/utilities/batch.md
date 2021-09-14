@@ -32,7 +32,7 @@ To install this utility, add the following dependency to your project.
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-sqs</artifactId>
-            <version>1.7.2</version>
+            <version>1.7.3</version>
         </dependency>
         ...
     </dependencies>
@@ -73,8 +73,8 @@ To install this utility, add the following dependency to your project.
     ```groovy
      dependencies {
         ...
-        implementation 'software.amazon.lambda:powertools-sqs:1.7.2'
-        aspectpath 'software.amazon.lambda:powertools-sqs:1.7.2'
+        implementation 'software.amazon.lambda:powertools-sqs:1.7.3'
+        aspectpath 'software.amazon.lambda:powertools-sqs:1.7.3'
     }
     ```
 
