@@ -1,11 +1,13 @@
 package software.amazon.lambda.powertools.sqs;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -48,7 +50,7 @@ public class SQSBatchProcessingException extends RuntimeException {
      * @return List of exceptions that occurred while processing messages
      */
     public List<Exception> getExceptions() {
-        return exceptions;
+        return unmodifiableList(exceptions);
     }
 
     /**
@@ -56,7 +58,7 @@ public class SQSBatchProcessingException extends RuntimeException {
      * @return List of returns from successfully processed messages
      */
     public List<Object> successMessageReturnValues() {
-        return returnValues;
+        return unmodifiableList(returnValues);
     }
 
     /**
@@ -64,7 +66,7 @@ public class SQSBatchProcessingException extends RuntimeException {
      * @return List of failed messages
      */
     public List<SQSMessage> getFailures() {
-        return failures;
+        return unmodifiableList(failures);
     }
 
     @Override

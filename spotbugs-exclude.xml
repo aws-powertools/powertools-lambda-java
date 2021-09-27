@@ -1,0 +1,91 @@
+<!-- This file specifies a spotbugs filter for excluding reports that
+     should not be considered errors.
+     The format of this file is documented at:
+       https://spotbugs.readthedocs.io/en/latest/filter.html
+     When possible, please specify the full names of the bug codes,
+     using the pattern attribute, to make it clearer what reports are
+     being suppressed.  You can find a listing of codes at:
+       https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html
+  -->
+<FindBugsFilter>
+    <!-- Internals of Log event for apache log4j-->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Or>
+            <And>
+                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Method name="getLogEvent"/>
+            </And>
+            <And>
+                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Method name="getAdditionalFields"/>
+            </And>
+        </Or>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <And>
+                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Field name="logEvent"/>
+            </And>
+            <And>
+                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Field name="additionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.internal.BatchContext"/>
+                <Field name="client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
+                <Field name="transformer"/>
+            </And>
+        </Or>
+    </Match>
+    <!--Functionally needed-->
+    <Match>
+        <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
+                <Method name="defaultObjectMapper"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
+                <Method name="overrideSqsClient"/>
+            </And>
+        </Or>
+    </Match>
+    <Match>
+        <Bug pattern="MS_EXPOSE_REP"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
+                <Method name="objectMapper"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
+                <Method name="objectMapper"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
+                <Method name="getCacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
+                <Method name="getTransformationManager"/>
+            </And>
+        </Or>
+    </Match>
+    <!--False positive https://github.com/spotbugs/spotbugs/issues/1539-->
+    <Match>
+        <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE"/>
+        <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
+        <Method name="setLogLevelBasedOnSamplingRate"/>
+    </Match>
+</FindBugsFilter>

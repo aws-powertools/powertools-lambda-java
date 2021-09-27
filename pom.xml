@@ -418,6 +418,7 @@
                         </executions>
                         <configuration>
                             <xmlOutput>true</xmlOutput>
+                            <excludeFilterFile>../spotbugs-exclude.xml</excludeFilterFile>
                         </configuration>
                     </plugin>
                     <plugin>

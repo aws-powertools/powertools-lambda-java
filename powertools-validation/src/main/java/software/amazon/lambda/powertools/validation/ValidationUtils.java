@@ -15,6 +15,7 @@ package software.amazon.lambda.powertools.validation;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -271,12 +272,12 @@ public class ValidationUtils {
 
         private final Set<ValidationMessage> validationErrors;
 
-        public ValidationErrors(Set<ValidationMessage> validationErrors) {
+        private ValidationErrors(Set<ValidationMessage> validationErrors) {
             this.validationErrors = validationErrors;
         }
 
         public Set<ValidationMessage> getValidationErrors() {
-            return validationErrors;
+            return Collections.unmodifiableSet(validationErrors);
         }
     }
 }
