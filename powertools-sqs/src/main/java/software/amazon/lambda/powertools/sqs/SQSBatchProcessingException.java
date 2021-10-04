@@ -33,6 +33,7 @@ public class SQSBatchProcessingException extends RuntimeException {
     private final List<SQSMessage> failures;
     private final List<Object> returnValues;
 
+
     public <T> SQSBatchProcessingException(final List<Exception> exceptions,
                                            final List<SQSMessage> failures,
                                            final List<T> successReturns) {
