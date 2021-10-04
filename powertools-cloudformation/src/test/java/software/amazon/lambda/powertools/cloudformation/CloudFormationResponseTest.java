@@ -2,6 +2,7 @@ package software.amazon.lambda.powertools.cloudformation;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.http.ExecutableHttpRequest;
@@ -69,21 +70,13 @@ public class CloudFormationResponseTest {
     }
 
     @Test
-    void mapperRequiredToCreateInstance() {
-        SdkHttpClient client = mock(SdkHttpClient.class);
-
-        assertThatThrownBy(() -> new CloudFormationResponse(client, null))
-                .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
     void eventRequiredToSend() {
         SdkHttpClient client = mock(SdkHttpClient.class);
         CloudFormationResponse response = new CloudFormationResponse(client);
 
         Context context = mock(Context.class);
         assertThatThrownBy(() -> response.send(null, context, ResponseStatus.SUCCESS))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(ResponseException.class);
     }
 
     @Test
@@ -93,7 +86,7 @@ public class CloudFormationResponseTest {
 
         Context context = mock(Context.class);
         assertThatThrownBy(() -> response.send(null, context, ResponseStatus.SUCCESS))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(ResponseException.class);
     }
 
     @Test
@@ -103,8 +96,10 @@ public class CloudFormationResponseTest {
 
         CloudFormationCustomResourceEvent event = mock(CloudFormationCustomResourceEvent.class);
         Context context = mock(Context.class);
+        // not a ResponseSerializationException since the URL is not part of the response but
+        // rather the location the response is sent to
         assertThatThrownBy(() -> response.send(event, context, ResponseStatus.SUCCESS))
-                .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -117,7 +112,7 @@ public class CloudFormationResponseTest {
         when(context.getLogStreamName()).thenReturn(logStreamName);
 
         ResponseBody body = new ResponseBody(
-                event, context, ResponseStatus.SUCCESS, null, null, false);
+                event, context, ResponseStatus.SUCCESS, null, false);
         assertThat(body.getPhysicalResourceId()).isEqualTo(logStreamName);
     }
 
@@ -131,8 +126,53 @@ public class CloudFormationResponseTest {
 
         String customPhysicalResourceId = "Custom-Physical-Resource-ID";
         ResponseBody body = new ResponseBody(
-                event, context, ResponseStatus.SUCCESS, null, customPhysicalResourceId, false);
+                event, context, ResponseStatus.SUCCESS, customPhysicalResourceId, false);
         assertThat(body.getPhysicalResourceId()).isEqualTo(customPhysicalResourceId);
+    }
+
+    @Test
+    void responseBodyWithNullDataNode() {
+        CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
+        Context context = mock(Context.class);
+
+        ResponseBody responseBody = new ResponseBody(event, context, ResponseStatus.FAILED, null, true);
+        String actualJson = responseBody.toObjectNode(null).toString();
+
+        String expectedJson = "{" +
+                "\"Status\":\"FAILED\"," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
+                "\"PhysicalResourceId\":null," +
+                "\"StackId\":null," +
+                "\"RequestId\":null," +
+                "\"LogicalResourceId\":null," +
+                "\"NoEcho\":true," +
+                "\"Data\":null" +
+                "}";
+        assertThat(actualJson).isEqualTo(expectedJson);
+    }
+
+    @Test
+    void responseBodyWithNonNullDataNode() {
+        CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
+        Context context = mock(Context.class);
+        ObjectNode dataNode = ResponseBody.MAPPER.createObjectNode();
+        dataNode.put("foo", "bar");
+        dataNode.put("baz", 10);
+
+        ResponseBody responseBody = new ResponseBody(event, context, ResponseStatus.FAILED, null, true);
+        String actualJson = responseBody.toObjectNode(dataNode).toString();
+
+        String expectedJson = "{" +
+                "\"Status\":\"FAILED\"," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
+                "\"PhysicalResourceId\":null," +
+                "\"StackId\":null," +
+                "\"RequestId\":null," +
+                "\"LogicalResourceId\":null," +
+                "\"NoEcho\":true," +
+                "\"Data\":{\"foo\":\"bar\",\"baz\":10}" +
+                "}";
+        assertThat(actualJson).isEqualTo(expectedJson);
     }
 
     @Test
@@ -141,7 +181,7 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
 
         ResponseBody body = new ResponseBody(
-                event, context, null, null, null, false);
+                event, context, null, null, false);
         assertThat(body.getStatus()).isEqualTo("SUCCESS");
     }
 
@@ -151,7 +191,7 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
 
         ResponseBody body = new ResponseBody(
-                event, context, ResponseStatus.FAILED, null, null, false);
+                event, context, ResponseStatus.FAILED, null, false);
         assertThat(body.getStatus()).isEqualTo("FAILED");
     }
 
@@ -164,12 +204,12 @@ public class CloudFormationResponseTest {
         when(context.getLogStreamName()).thenReturn(logStreamName);
 
         ResponseBody body = new ResponseBody(
-                event, context, ResponseStatus.SUCCESS, null, null, false);
+                event, context, ResponseStatus.SUCCESS, null, false);
         assertThat(body.getReason()).contains(logStreamName);
     }
 
     @Test
-    public void sendWithNoResponseData() throws IOException {
+    public void sendWithNoResponseData() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         Context context = mock(Context.class);
         CloudFormationResponse cfnResponse = mockCloudFormationResponse();
@@ -191,15 +231,16 @@ public class CloudFormationResponseTest {
     }
 
     @Test
-    public void sendWithNonNullResponseData() throws IOException {
+    public void sendWithNonNullResponseData() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         Context context = mock(Context.class);
         CloudFormationResponse cfnResponse = mockCloudFormationResponse();
 
         Map<String, String> responseData = new LinkedHashMap<>();
         responseData.put("Property", "Value");
+        Response resp = Response.builder().value(responseData).build();
 
-        HttpExecuteResponse response = cfnResponse.send(event, context, ResponseStatus.SUCCESS, responseData);
+        HttpExecuteResponse response = cfnResponse.send(event, context, ResponseStatus.SUCCESS, resp);
 
         String actualJson = responseAsString(response);
         String expectedJson = "{" +
