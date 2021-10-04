@@ -37,6 +37,7 @@ import org.apache.logging.log4j.core.util.IOUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
@@ -57,6 +58,7 @@ import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
 
 @Aspect
+@DeclarePrecedence("*, LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
