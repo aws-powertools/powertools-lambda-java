@@ -24,11 +24,14 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: 8
-      - name: Build with Maven for spotbugs check to gather reports
-        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=false
-      - uses: jwgmeligmeyling/spotbugs-github-action@master
-        with:
-          path: '**/spotbugsXml.xml'
-      # Can be simplified post this issue is fixed https://github.com/jwgmeligmeyling/spotbugs-github-action/issues/9
+          # https://github.com/jwgmeligmeyling/spotbugs-github-action/issues/6
+          # https://github.blog/2020-08-03-github-actions-improvements-for-fork-and-pull-request-workflows/
+          # Avoid complexity of git action with publishing report. Just build with spotbugs profile.
+#      - name: Build with Maven for spotbugs check to gather reports
+#        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=false
+#      - uses: jwgmeligmeyling/spotbugs-github-action@master
+#        with:
+#          path: '**/spotbugsXml.xml'
+#      # Can be simplified post this issue is fixed https://github.com/jwgmeligmeyling/spotbugs-github-action/issues/9
       - name: Build with Maven for spotbugs check to mark build as fail if voilations found
         run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=true
