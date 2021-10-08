@@ -58,7 +58,7 @@ import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
 
 @Aspect
-@DeclarePrecedence("*, LambdaLoggingAspect")
+@DeclarePrecedence("*, SqsLargeMessageAspect, LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
