@@ -111,7 +111,7 @@ public final class BatchContext {
                     map(SQSMessage::getMessageId)
                     .collect(toList());
 
-            LOG.debug(format("[%s] records failed processing, but exceptions are suppressed. " +
+            LOG.debug(format("[%d] records failed processing, but exceptions are suppressed. " +
                     "Failed messages %s", failedMessages.size(), messageIds));
         } else {
             throw new SQSBatchProcessingException(exceptions, failedMessages, successReturns);
