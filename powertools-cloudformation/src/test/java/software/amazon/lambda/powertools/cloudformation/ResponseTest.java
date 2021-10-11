@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ResponseTest {
 
@@ -26,40 +25,64 @@ public class ResponseTest {
     }
 
     @Test
-    void buildWithNoValueFails() {
-        assertThatThrownBy(() -> Response.builder().build())
-                .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    void buildWithNullValueFails() {
-        assertThatThrownBy(() -> Response.builder().value(null).build())
-                .isInstanceOf(NullPointerException.class);
-    }
-
-    @Test
-    void buildWithNoObjectMapperSucceeds() {
-        Response response = Response.builder()
-                .value("test")
-                .build();
+    void defaultValues() {
+        Response response = Response.builder().build();
 
         assertThat(response).isNotNull();
-        assertThat(response.getJsonNode()).isNotNull();
+        assertThat(response.getJsonNode()).isNull();
+        assertThat(response.getStatus()).isEqualTo(Response.Status.SUCCESS);
+        assertThat(response.getPhysicalResourceId()).isNull();
+        assertThat(response.isNoEcho()).isFalse();
+
+        assertThat(response.toString()).contains("JSON = null");
+        assertThat(response.toString()).contains("Status = SUCCESS");
+        assertThat(response.toString()).contains("PhysicalResourceId = null");
+        assertThat(response.toString()).contains("NoEcho = false");
     }
 
     @Test
-    void buildWithNullObjectMapperSucceeds() {
+    void explicitNullValues() {
         Response response = Response.builder()
-                .value(100)
+                .value(null)
                 .objectMapper(null)
+                .physicalResourceId(null)
+                .status(null)
                 .build();
 
         assertThat(response).isNotNull();
-        assertThat(response.getJsonNode()).isNotNull();
+        assertThat(response.getJsonNode()).isNull();
+        assertThat(response.getStatus()).isEqualTo(Response.Status.SUCCESS);
+        assertThat(response.getPhysicalResourceId()).isNull();
+        assertThat(response.isNoEcho()).isFalse();
+
+        assertThat(response.toString()).contains("JSON = null");
+        assertThat(response.toString()).contains("Status = SUCCESS");
+        assertThat(response.toString()).contains("PhysicalResourceId = null");
+        assertThat(response.toString()).contains("NoEcho = false");
     }
 
     @Test
-    void jsonToStringWithDefaultMapperMapValue() {
+    void customNonJsonRelatedValues() {
+        Response response = Response.builder()
+                .status(Response.Status.FAILED)
+                .physicalResourceId("test")
+                .noEcho(true)
+                .build();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getJsonNode()).isNull();
+        assertThat(response.getStatus()).isEqualTo(Response.Status.FAILED);
+        assertThat(response.getPhysicalResourceId()).isEqualTo("test");
+        assertThat(response.isNoEcho()).isTrue();
+
+        assertThat(response.toString()).contains("JSON = null");
+        assertThat(response.toString()).contains("Status = FAILED");
+        assertThat(response.toString()).contains("PhysicalResourceId = test");
+        assertThat(response.toString()).contains("NoEcho = true");
+    }
+
+    @Test
+    void jsonMapValueWithDefaultObjectMapper() {
         Map<String, String> value = new HashMap<>();
         value.put("foo", "bar");
 
@@ -68,11 +91,13 @@ public class ResponseTest {
                 .build();
 
         String expected = "{\"foo\":\"bar\"}";
-        assertThat(response.toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode()).isNotNull();
+        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.toString()).contains("JSON = " + expected);
     }
 
     @Test
-    void jsonToStringWithDefaultMapperObjectValue() {
+    void jsonObjectValueWithDefaultObjectMapper() {
         DummyBean value = new DummyBean("test");
 
         Response response = Response.builder()
@@ -80,11 +105,12 @@ public class ResponseTest {
                 .build();
 
         String expected = "{\"PropertyWithLongName\":\"test\"}";
-        assertThat(response.toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.toString()).contains("JSON = " + expected);
     }
 
     @Test
-    void jsonToStringWithCustomMapper() {
+    void jsonObjectValueWithCustomObjectMapper() {
         ObjectMapper customMapper = new ObjectMapper()
                 .setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
 
@@ -95,6 +121,23 @@ public class ResponseTest {
                 .build();
 
         String expected = "{\"property-with-long-name\":10}";
-        assertThat(response.toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.toString()).contains("JSON = " + expected);
+    }
+
+    @Test
+    void successFactoryMethod() {
+        Response response = Response.success();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(Response.Status.SUCCESS);
+    }
+
+    @Test
+    void failedFactoryMethod() {
+        Response response = Response.failed();
+
+        assertThat(response).isNotNull();
+        assertThat(response.getStatus()).isEqualTo(Response.Status.FAILED);
     }
 }

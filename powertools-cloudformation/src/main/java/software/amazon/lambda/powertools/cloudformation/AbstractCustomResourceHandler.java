@@ -6,7 +6,6 @@ import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResource
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.lambda.powertools.cloudformation.CloudFormationResponse.ResponseStatus;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -51,18 +50,18 @@ public abstract class AbstractCustomResourceHandler
         try {
             response = getResponse(event, context);
             LOG.debug("Preparing to send response {} to {}.", response, responseUrl);
-            client.send(event, context, ResponseStatus.SUCCESS, response);
+            client.send(event, context, response);
         } catch (IOException ioe) {
             LOG.error("Unable to send {} success to {}.", responseUrl, ioe);
             onSendFailure(event, context, response, ioe);
-        } catch (ResponseException rse) {
+        } catch (CustomResourceResponseException rse) {
             LOG.error("Unable to create/serialize Response. Sending empty failure to {}", responseUrl, rse);
             // send a failure with a null response on account of response serialization issues
             try {
-                client.send(event, context, ResponseStatus.FAILED);
+                client.send(event, context, Response.failed());
             } catch (Exception e) {
                 // unable to serialize response AND send an empty response
-                LOG.error("Unable to send failure to {}.", responseUrl, e);
+                LOG.error("Unable to send empty failure to {}.", responseUrl, e);
                 onSendFailure(event, context, null, e);
             }
         }
@@ -70,7 +69,7 @@ public abstract class AbstractCustomResourceHandler
     }
 
     private Response getResponse(CloudFormationCustomResourceEvent event, Context context)
-            throws ResponseException {
+            throws CustomResourceResponseException {
         try {
             switch (event.getRequestType()) {
                 case "Create":
@@ -84,7 +83,7 @@ public abstract class AbstractCustomResourceHandler
                     return null;
             }
         } catch (RuntimeException e) {
-            throw new ResponseException("Unable to get Response", e);
+            throw new CustomResourceResponseException("Unable to get Response", e);
         }
     }
 
