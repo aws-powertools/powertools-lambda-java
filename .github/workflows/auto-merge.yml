@@ -2,14 +2,14 @@ name: Auto merge if dependabot PR
 
 on:
   workflow_run:
-    workflows: ["Build", "SpotBugs"]
+    workflows: ["Build"]
     types: [completed]
 
 jobs:
   merge-me:
     name: Merge me!
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.event == 'pull_request' && github.actor == 'dependabot[bot]'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && github.actor == 'dependabot[bot]'
     steps:
       - uses: actions/checkout@v2
       - uses: ahmadnassri/action-workflow-run-wait@v1

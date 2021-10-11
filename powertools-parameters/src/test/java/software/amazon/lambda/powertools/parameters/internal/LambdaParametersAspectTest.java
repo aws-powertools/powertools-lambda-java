@@ -49,7 +49,7 @@ public class LambdaParametersAspectTest {
             when(defaultProvider.get("/default")).thenReturn("value");
 
             assertThat(defaultValue).isEqualTo("value");
-            mocked.verify(times(1), () -> ParamManager.getProvider(SSMProvider.class));
+            mocked.verify(() -> ParamManager.getProvider(SSMProvider.class), times(1));
             verify(defaultProvider, times(1)).get("/default");
 
             mocked.reset();
