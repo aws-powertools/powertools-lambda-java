@@ -239,12 +239,6 @@ public class ValidationUtils {
      * @return the loaded json schema
      */
     public static JsonSchema getJsonSchema(String schema, boolean validateSchema) {
-        JsonSchema jsonSchema = schemas.get(schema);
-
-        if (jsonSchema != null) {
-            return jsonSchema;
-        }
-
         if (schema.startsWith(CLASSPATH)) {
             String filePath = schema.substring(CLASSPATH.length());
             try (InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath)) {
@@ -270,7 +264,7 @@ public class ValidationUtils {
             }
         }
 
-        schemas.put(schema, jsonSchema);
+        schemas.putIfAbsent(schema, jsonSchema);
 
         return jsonSchema;
     }
