@@ -110,6 +110,20 @@ public class ResponseTest {
     }
 
     @Test
+    void jsonObjectValueWithNullObjectMapper() {
+        DummyBean value = new DummyBean("test");
+
+        Response response = Response.builder()
+                .objectMapper(null)
+                .value(value)
+                .build();
+
+        String expected = "{\"PropertyWithLongName\":\"test\"}";
+        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.toString()).contains("JSON = " + expected);
+    }
+
+    @Test
     void jsonObjectValueWithCustomObjectMapper() {
         ObjectMapper customMapper = new ObjectMapper()
                 .setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
@@ -119,6 +133,25 @@ public class ResponseTest {
                 .objectMapper(customMapper)
                 .value(value)
                 .build();
+
+        String expected = "{\"property-with-long-name\":10}";
+        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.toString()).contains("JSON = " + expected);
+    }
+
+    @Test
+    void jsonObjectValueWithPostConfiguredObjectMapper() {
+        ObjectMapper customMapper = new ObjectMapper()
+                .setPropertyNamingStrategy(PropertyNamingStrategies.KEBAB_CASE);
+
+        DummyBean value = new DummyBean(10);
+        Response response = Response.builder()
+                .objectMapper(customMapper)
+                .value(value)
+                .build();
+
+        // changing the mapper config should not affect serialization
+        customMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 
         String expected = "{\"property-with-long-name\":10}";
         assertThat(response.getJsonNode().toString()).isEqualTo(expected);

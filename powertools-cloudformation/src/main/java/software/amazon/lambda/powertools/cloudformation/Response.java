@@ -14,14 +14,14 @@ import java.util.stream.Collectors;
 public class Response {
 
     /**
-     * Indicates whether this response should be sent to the custom resource as a success or failure.
+     * Indicates whether a response is a success or failure.
      */
     public enum Status {
         SUCCESS, FAILED
     }
 
     /**
-     * For building Response instances that wrap a single, arbitrary value.
+     * For building Response instances.
      */
     public static class Builder {
         private Object value;
@@ -45,13 +45,15 @@ public class Response {
         }
 
         /**
-         * Configures a custom ObjectMapper for serializing the value object.
+         * Configures a custom ObjectMapper for serializing the value object. Creates a copy of the mapper provided;
+         * future mutations of the ObjectMapper made using the provided reference will not affect Response
+         * serialization.
          *
          * @param objectMapper if null, a default mapper will be used
          * @return a reference to this builder
          */
         public Builder objectMapper(ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
+            this.objectMapper = objectMapper == null ? null : objectMapper.copy();
             return this;
         }
 
@@ -166,7 +168,7 @@ public class Response {
     }
 
     /**
-     * Returns a JsonNode representation of the response.
+     * Returns a JsonNode representation of the Response.
      *
      * @return a non-null JsonNode representation
      */
@@ -175,7 +177,7 @@ public class Response {
     }
 
     /**
-     * The success/failed status of the response.
+     * The success/failed status of the Response.
      *
      * @return a non-null Status
      */
@@ -184,7 +186,7 @@ public class Response {
     }
 
     /**
-     * The physical resource ID of the custom resource. If null, the default resource ID will be used.
+     * The physical resource ID. If null, the default physical resource ID will be provided to the custom resource.
      *
      * @return a potentially null physical resource ID
      */
@@ -202,9 +204,9 @@ public class Response {
     }
 
     /**
-     * The Response JSON.
+     * Includes all Response attributes, including its value in JSON format
      *
-     * @return a String in JSON format
+     * @return a full description of the Response
      */
     @Override
     public String toString() {

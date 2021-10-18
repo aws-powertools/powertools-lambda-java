@@ -5,6 +5,7 @@ on:
     branches:
       - master
     paths:
+      - 'powertools-cloudformation/**'
       - 'powertools-core/**'
       - 'powertools-logging/**'
       - 'powertools-sqs/**'

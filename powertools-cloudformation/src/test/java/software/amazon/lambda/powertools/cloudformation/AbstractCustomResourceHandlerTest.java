@@ -24,17 +24,14 @@ import static org.mockito.Mockito.when;
 public class AbstractCustomResourceHandlerTest {
 
     /**
-     * Uses a mocked CloudFormationResponse to avoid sending actual HTTP requests.
+     * Bare-bones implementation that returns null for abstract methods.
      */
-    static class NoOpCustomResourceHandler extends AbstractCustomResourceHandler {
-
-        NoOpCustomResourceHandler() {
-            super(mock(SdkHttpClient.class));
+    static class NullCustomResourceHandler extends AbstractCustomResourceHandler {
+        NullCustomResourceHandler() {
         }
 
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            return mock(CloudFormationResponse.class);
+        NullCustomResourceHandler(SdkHttpClient client) {
+            super(client);
         }
 
         @Override
@@ -50,6 +47,21 @@ public class AbstractCustomResourceHandlerTest {
         @Override
         protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
             return null;
+        }
+    }
+
+    /**
+     * Uses a mocked CloudFormationResponse to avoid sending actual HTTP requests.
+     */
+    static class NoOpCustomResourceHandler extends NullCustomResourceHandler {
+
+        NoOpCustomResourceHandler() {
+            super(mock(SdkHttpClient.class));
+        }
+
+        @Override
+        protected CloudFormationResponse buildResponseClient() {
+            return mock(CloudFormationResponse.class);
         }
     }
 
@@ -107,6 +119,27 @@ public class AbstractCustomResourceHandlerTest {
         event.setResponseUrl("https://mandatory-url.amazon.com");
         event.setRequestType(requestType);
         return event;
+    }
+
+    @Test
+    void defaultAndCustomSdkHttpClients() {
+        AbstractCustomResourceHandler defaultClientHandler = new NullCustomResourceHandler();
+
+        SdkHttpClient defaultClient = defaultClientHandler.buildResponseClient().getClient();
+        assertThat(defaultClient).isNotNull();
+
+        String customClientName = "mockCustomClient";
+        SdkHttpClient customClientArg = mock(SdkHttpClient.class);
+        when(customClientArg.clientName()).thenReturn(customClientName);
+        AbstractCustomResourceHandler customClientHandler = new NullCustomResourceHandler(customClientArg);
+
+        SdkHttpClient customClient = customClientHandler.buildResponseClient().getClient();
+        assertThat(customClient).isNotNull();
+        assertThat(customClient.clientName())
+                .isEqualTo(customClientName);
+
+        assertThat(customClient.clientName())
+                .isNotEqualTo(defaultClient.clientName());
     }
 
     @ParameterizedTest

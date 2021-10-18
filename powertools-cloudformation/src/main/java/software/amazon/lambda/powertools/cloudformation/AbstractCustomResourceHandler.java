@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResource
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -23,11 +24,18 @@ public abstract class AbstractCustomResourceHandler
     private final SdkHttpClient client;
 
     /**
+     * Creates a new Handler that uses the default HTTP client for communicating with custom CloudFormation resources.
+     */
+    protected AbstractCustomResourceHandler() {
+        this.client = UrlConnectionHttpClient.create();
+    }
+
+    /**
      * Creates a new Handler that uses the provided HTTP client for communicating with custom CloudFormation resources.
      *
      * @param client cannot be null
      */
-    public AbstractCustomResourceHandler(SdkHttpClient client) {
+    protected AbstractCustomResourceHandler(SdkHttpClient client) {
         this.client = Objects.requireNonNull(client, "SdkHttpClient cannot be null.");
     }
 
@@ -52,16 +60,15 @@ public abstract class AbstractCustomResourceHandler
             LOG.debug("Preparing to send response {} to {}.", response, responseUrl);
             client.send(event, context, response);
         } catch (IOException ioe) {
-            LOG.error("Unable to send {} success to {}.", responseUrl, ioe);
+            LOG.error("Unable to send response {} to {}.", response, responseUrl, ioe);
             onSendFailure(event, context, response, ioe);
         } catch (CustomResourceResponseException rse) {
-            LOG.error("Unable to create/serialize Response. Sending empty failure to {}", responseUrl, rse);
-            // send a failure with a null response on account of response serialization issues
+            LOG.error("Unable to generate response. Sending empty failure to {}", responseUrl, rse);
             try {
                 client.send(event, context, Response.failed());
             } catch (Exception e) {
-                // unable to serialize response AND send an empty response
-                LOG.error("Unable to send empty failure to {}.", responseUrl, e);
+                // unable to generate response AND send the failure
+                LOG.error("Unable to send failure response to {}.", responseUrl, e);
                 onSendFailure(event, context, null, e);
             }
         }
@@ -92,7 +99,7 @@ public abstract class AbstractCustomResourceHandler
      *
      * @return a client for sending the response
      */
-    protected CloudFormationResponse buildResponseClient() {
+    CloudFormationResponse buildResponseClient() {
         return new CloudFormationResponse(client);
     }
 

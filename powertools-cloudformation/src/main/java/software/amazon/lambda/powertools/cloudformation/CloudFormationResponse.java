@@ -30,7 +30,7 @@ import java.util.Objects;
  * <p>
  * This class is thread-safe provided the SdkHttpClient instance used is also thread-safe.
  */
-public class CloudFormationResponse {
+class CloudFormationResponse {
 
     /**
      * Internal representation of the payload to be sent to the event target URL. Retains all properties of the payload
@@ -120,8 +120,17 @@ public class CloudFormationResponse {
      *
      * @param client HTTP client to use for sending requests; cannot be null
      */
-    public CloudFormationResponse(SdkHttpClient client) {
+    CloudFormationResponse(SdkHttpClient client) {
         this.client = Objects.requireNonNull(client, "SdkHttpClient cannot be null");
+    }
+
+    /**
+     * The underlying SdkHttpClient used by this class.
+     *
+     * @return a non-null client
+     */
+    SdkHttpClient getClient() {
+        return client;
     }
 
     /**

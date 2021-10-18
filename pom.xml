@@ -128,6 +128,11 @@
                 <version>${aws.sdk.version}</version>
             </dependency>
             <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>url-connection-client</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>io.burt</groupId>
                 <artifactId>jmespath-jackson</artifactId>
                 <version>${jmespath.version}</version>
