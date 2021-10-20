@@ -3,12 +3,12 @@ title: Custom Resources description: Utility
 ---
 
 [Custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html)
-provide a way for [AWS lambdas](
+provide a way for [AWS Lambda functions](
 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) to execute
 provisioning logic whenever CloudFormation stacks are created, updated, or deleted. The CloudFormation utility enables
-developers to write these lambdas in Java.
+developers to write these Lambda functions in Java.
 
-The utility provides a base `AbstractCustomResourceHandler` class that listens for [custom resource request events](
+The utility provides a base `AbstractCustomResourceHandler` class which handles [custom resource request events](
 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html), constructs
 [custom resource responses](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-responses.html), and
 sends them to the custom resources. Subclasses implement the provisioning logic and configure certain properties of
@@ -43,8 +43,8 @@ To install this utility, add the following dependency to your project.
 Create a new `AbstractCustomResourceHandler` subclass and implement the `create`, `update`, and `delete` methods with
 provisioning logic in the appropriate methods(s).
 
-As an example, if a lambda only needs to provision something when a stack is created, put the provisioning logic
-exclusively within the `create` method; the other methods can just return `null`.
+As an example, if a Lambda function only needs to provision something when a stack is created, put the provisioning
+logic exclusively within the `create` method; the other methods can just return `null`.
 
 ```java hl_lines="8 9 10 11"
 import com.amazonaws.services.lambda.runtime.Context;
@@ -82,8 +82,8 @@ If provisioning fails, the stack creation/modification/deletion as a whole can b
 When provisioning results in data to be shared with other parts of the stack, include this data within the returned
 `Response` instance.
 
-This lambda creates a [Chime AppInstance](https://docs.aws.amazon.com/chime/latest/dg/create-app-instance.html) and maps
-the returned ARN to a "ChimeAppInstanceArn" attribute.
+This Lambda function creates a [Chime AppInstance](https://docs.aws.amazon.com/chime/latest/dg/create-app-instance.html)
+and maps the returned ARN to a "ChimeAppInstanceArn" attribute.
 
 ```java hl_lines="11 12 13 14"
 public class ChimeAppInstanceHandler extends AbstractCustomResourceHandler {
@@ -104,8 +104,7 @@ public class ChimeAppInstanceHandler extends AbstractCustomResourceHandler {
 }
 ```
 
-Assuming the method executes successfully, the handler will send a response to the custom resource with a payload that
-looks something like the following:
+For the example above the following response payload will be sent.
 
 ```json
 {
