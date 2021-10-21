@@ -12,6 +12,7 @@ on:
       - 'powertools-validation/**'
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
+      - 'powertools-test-suite/**'
       - 'pom.xml'
       - '.github/workflows/**'
   push:
@@ -25,6 +26,7 @@ on:
       - 'powertools-validation/**'
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
+      - 'powertools-test-suite/**'
       - 'pom.xml'
       - '.github/workflows/**'
 jobs:
