@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -62,6 +63,11 @@ public class LoggingOrderTest {
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         resetLogLevel(Level.INFO);
         AWSXRay.beginSegment(LoggingOrderTest.class.getName());
+    }
+
+    @AfterEach
+    void tearDown() {
+        AWSXRay.endSegment();
     }
 
     /**

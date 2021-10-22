@@ -12,7 +12,6 @@ public class LoggingOrderMessageHandler implements RequestHandler<SQSEvent, Stri
     @SqsLargeMessage
     @Logging(logEvent = true)
     public String handleRequest(SQSEvent sqsEvent, Context context) {
-        System.out.println(sqsEvent.getRecords().get(0).getBody());
         return sqsEvent.getRecords().get(0).getBody();
     }
 }

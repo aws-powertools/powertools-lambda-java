@@ -5,9 +5,13 @@
             <LambdaJsonLayout compact="true" eventEol="true"/>
         </File>
     </Appenders>
+
     <Loggers>
         <Logger name="JsonLogger" level="INFO" additivity="false">
             <AppenderRef ref="JsonAppender"/>
+        </Logger>
+        <Logger name="com.amazonaws.auth.profile.internal" level="ERROR" additivity="false">
+            <Appender-ref ref="JsonAppender"/>
         </Logger>
         <Root level="info">
             <AppenderRef ref="JsonAppender"/>
