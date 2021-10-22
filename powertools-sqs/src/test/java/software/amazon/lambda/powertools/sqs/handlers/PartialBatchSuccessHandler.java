@@ -7,7 +7,7 @@ import software.amazon.lambda.powertools.sqs.SqsBatch;
 import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.mockedRandom;
+import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.interactionClient;
 
 public class PartialBatchSuccessHandler implements RequestHandler<SQSEvent, String> {
     @Override
@@ -21,7 +21,7 @@ public class PartialBatchSuccessHandler implements RequestHandler<SQSEvent, Stri
 
         @Override
         public String process(SQSMessage message) {
-            mockedRandom.nextInt();
+            interactionClient.listQueues();
             return "Success";
         }
     }
