@@ -33,6 +33,10 @@
         </developer>
     </developers>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
