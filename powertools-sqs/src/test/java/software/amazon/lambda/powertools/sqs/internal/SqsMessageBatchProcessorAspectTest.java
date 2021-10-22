@@ -1,8 +1,8 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.function.Consumer;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -10,6 +10,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -28,6 +29,7 @@ import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandlerWithNonRe
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.in;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -39,7 +41,7 @@ import static org.mockito.Mockito.when;
 import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
 
 public class SqsMessageBatchProcessorAspectTest {
-    public static final Random mockedRandom = mock(Random.class);
+    public static final SqsClient interactionClient = mock(SqsClient.class);
     private static final SqsClient sqsClient = mock(SqsClient.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -51,7 +53,7 @@ public class SqsMessageBatchProcessorAspectTest {
     @BeforeEach
     void setUp() throws IOException {
         overrideSqsClient(sqsClient);
-        reset(mockedRandom);
+        reset(interactionClient);
         reset(sqsClient);
         setupContext();
         event = MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEvent.json"), SQSEvent.class);
@@ -62,7 +64,7 @@ public class SqsMessageBatchProcessorAspectTest {
     void shouldBatchProcessAllMessageSuccessfullyAndNotDeleteFromSQS() {
         requestHandler.handleRequest(event, context);
 
-        verify(mockedRandom, times(2)).nextInt();
+        verify(interactionClient, times(2)).listQueues();
         verify(sqsClient, times(0)).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
@@ -75,7 +77,7 @@ public class SqsMessageBatchProcessorAspectTest {
                 .satisfies(e -> {
                     assertThat(e.getExceptions())
                             .hasSize(1)
-                            .extracting("detailMessage")
+                            .extracting("message")
                             .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
 
                     assertThat(e.getFailures())
@@ -88,7 +90,7 @@ public class SqsMessageBatchProcessorAspectTest {
                             .contains("Success");
                 });
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
@@ -98,7 +100,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         requestHandler.handleRequest(event, context);
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
@@ -129,7 +131,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         requestHandler.handleRequest(event, context);
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
         verify(sqsClient).sendMessageBatch(any(Consumer.class));
     }
@@ -141,7 +143,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         requestHandler.handleRequest(event, context);
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         ArgumentCaptor<DeleteMessageBatchRequest> captor = ArgumentCaptor.forClass(DeleteMessageBatchRequest.class);
         verify(sqsClient).deleteMessageBatch(captor.capture());
         verify(sqsClient, never()).sendMessageBatch(any(Consumer.class));
@@ -169,7 +171,7 @@ public class SqsMessageBatchProcessorAspectTest {
                 .satisfies(e -> {
                     assertThat(e.getExceptions())
                             .hasSize(1)
-                            .extracting("detailMessage")
+                            .extracting("message")
                             .containsExactly("Invalid message and was moved to DLQ");
 
                     assertThat(e.getFailures())
@@ -182,7 +184,7 @@ public class SqsMessageBatchProcessorAspectTest {
                             .contains("Success");
                 });
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
         verify(sqsClient, never()).sendMessageBatch(any(Consumer.class));
     }
@@ -206,7 +208,7 @@ public class SqsMessageBatchProcessorAspectTest {
                 .satisfies(e -> {
                     assertThat(e.getExceptions())
                             .hasSize(1)
-                            .extracting("detailMessage")
+                            .extracting("message")
                             .containsExactly("Invalid message and was moved to DLQ");
 
                     assertThat(e.getFailures())
@@ -219,7 +221,7 @@ public class SqsMessageBatchProcessorAspectTest {
                             .contains("Success");
                 });
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
         verify(sqsClient, never()).sendMessageBatch(any(Consumer.class));
     }
@@ -247,7 +249,7 @@ public class SqsMessageBatchProcessorAspectTest {
                 .satisfies(e -> {
                     assertThat(e.getExceptions())
                             .hasSize(1)
-                            .extracting("detailMessage")
+                            .extracting("message")
                             .containsExactly("Invalid message and should be reprocessed");
 
                     assertThat(e.getFailures())
@@ -260,7 +262,7 @@ public class SqsMessageBatchProcessorAspectTest {
                             .contains("Success");
                 });
 
-        verify(mockedRandom).nextInt();
+        verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
         verify(sqsClient).sendMessageBatch(any(Consumer.class));
     }
