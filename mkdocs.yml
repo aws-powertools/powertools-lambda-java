@@ -13,6 +13,7 @@ nav:
       - utilities/sqs_large_message_handling.md
       - utilities/batch.md
       - utilities/validation.md
+      - utilities/custom_resources.md
 
 theme:
   name: material
