@@ -34,6 +34,7 @@
         <module>powertools-metrics</module>
         <module>powertools-parameters</module>
         <module>powertools-validation</module>
+        <module>powertools-test-suite</module>
     </modules>
 
     <scm>
@@ -86,6 +87,21 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-sqs</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-tracing</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
