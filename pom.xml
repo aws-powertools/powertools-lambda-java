@@ -35,6 +35,7 @@
         <module>powertools-parameters</module>
         <module>powertools-validation</module>
         <module>powertools-test-suite</module>
+        <module>powertools-cloudformation</module>
     </modules>
 
     <scm>
@@ -120,6 +121,16 @@
                 <version>${aws.sdk.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>http-client-spi</artifactId>
+                <version>${aws.sdk.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>url-connection-client</artifactId>
+                <version>${aws.sdk.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.burt</groupId>
