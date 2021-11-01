@@ -181,3 +181,30 @@ processing.
         }
     }
     ```
+
+## Passing custom S3Client
+
+If you need to pass custom S3Client such as region to the SDK, you can pass your own `S3Client` to be used by utility either for
+**[SqsLargeMessage annotation](#lambda-handler)**, or **[SqsUtils Utility API](#utility)**.
+
+=== "App.java"
+
+    ```java hl_lines="4 5 11"
+    import software.amazon.lambda.powertools.sqs.SqsLargeMessage;
+
+    static {
+        SqsUtils.overrideS3Client(S3Client.builder()
+                .build());
+    }
+
+    public class SqsMessageHandler implements RequestHandler<SQSEvent, String> {
+    
+        @Override
+        @SqsLargeMessage
+        public String handleRequest(SQSEvent sqsEvent, Context context) {
+        // process messages
+    
+        return "ok";
+        }
+    }
+    ```

@@ -16,8 +16,6 @@ import java.util.Map;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.xray.AWSXRay;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,9 +25,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import software.amazon.awssdk.core.ResponseInputStream;
+import software.amazon.awssdk.http.AbortableInputStream;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
-import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
+import software.amazon.lambda.powertools.sqs.SqsUtils;
 import software.amazon.lambda.powertools.testsuite.handler.LoggingOrderMessageHandler;
 import software.amazon.lambda.powertools.testsuite.handler.TracingLoggingStreamMessageHandler;
 
@@ -38,6 +41,7 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -50,12 +54,12 @@ public class LoggingOrderTest {
     private Context context;
 
     @Mock
-    private AmazonS3 amazonS3;
+    private S3Client s3Client;
 
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
         openMocks(this);
-        writeStaticField(SqsLargeMessageAspect.class, "amazonS3", amazonS3, true);
+        SqsUtils.overrideS3Client(s3Client);
         ThreadContext.clearAll();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
@@ -76,10 +80,9 @@ public class LoggingOrderTest {
      */
     @Test
     public void testThatLoggingAnnotationActsLast()  throws IOException {
-        S3Object s3Response = new S3Object();
-        s3Response.setObjectContent(new ByteArrayInputStream("A big message".getBytes()));
+        ResponseInputStream<GetObjectResponse> s3Response = new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new ByteArrayInputStream("A big message".getBytes())));
 
-        when(amazonS3.getObject(BUCKET_NAME, BUCKET_KEY)).thenReturn(s3Response);
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3Response);
         SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         LoggingOrderMessageHandler requestHandler = new LoggingOrderMessageHandler();
