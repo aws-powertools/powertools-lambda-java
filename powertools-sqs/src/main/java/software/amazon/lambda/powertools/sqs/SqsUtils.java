@@ -99,8 +99,8 @@ public final class SqsUtils {
     }
 
     /**
-     * Provides ability to set default {@link S3Client} to be used by utility.
-     * If no default configuration is provided, client is instantiated via {@link S3Client#create()}
+     * By default, the S3Client is instantiated via {@link S3Client#create()}.
+     * This method provides the ability to override the S3Client with your own custom version.
      *
      * @param s3Client {@link S3Client} to be used by utility
      */
