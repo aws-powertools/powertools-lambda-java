@@ -22,7 +22,7 @@ To install this utility, add the following dependency to your project.
     <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>powertools-validation</artifactId>
-        <version>1.7.3</version>
+        <version>1.8.0</version>
     </dependency>
     ...
     </dependencies>
@@ -62,8 +62,8 @@ To install this utility, add the following dependency to your project.
 
     ```groovy
      dependencies {
-        implementation 'software.amazon.lambda:powertools-validation:1.7.3'
-        aspectpath 'software.amazon.lambda:powertools-validation:1.7.3'
+        implementation 'software.amazon.lambda:powertools-validation:1.8.0'
+        aspectpath 'software.amazon.lambda:powertools-validation:1.8.0'
     }
     ```
 
