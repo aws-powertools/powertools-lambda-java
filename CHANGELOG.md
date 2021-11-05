@@ -8,6 +8,21 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.8.0] - 2021-11-05
+
+### Added
+
+* **Powertools Cloudformation module (NEW)**: New module simplifying [AWS Lambda-backed custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) written in Java. [#560](https://github.com/awslabs/aws-lambda-powertools-java/pull/560)
+* **SQS Large message processing**: Ability to override the default `S3Client` use to fetch payload from S3. [#602](https://github.com/awslabs/aws-lambda-powertools-java/pull/602)
+
+### Regression
+
+* **Logging**: `@Logging` annotation now works with `@Tracing` annotation on `RequestStreamHandler` when used in `logEvent` mode. [#567](https://github.com/awslabs/aws-lambda-powertools-java/pull/567)
+
+## Maintenance
+
+* **deps**: Bump third party dependencies to the latest versions.
+
 ## [1.7.3] - 2021-09-14
 
 * **SQS Batch processing**: Ability to move non retryable message to configured dead letter queue(DLQ). [#500](https://github.com/awslabs/aws-lambda-powertools-java/pull/500)
