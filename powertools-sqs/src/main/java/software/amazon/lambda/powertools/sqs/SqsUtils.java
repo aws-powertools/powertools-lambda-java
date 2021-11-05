@@ -22,14 +22,13 @@ import java.util.stream.Collectors;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
-import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
+import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
@@ -42,6 +41,7 @@ public final class SqsUtils {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static SqsClient client;
+    private static S3Client s3Client;
 
     private SqsUtils() {
     }
@@ -96,6 +96,16 @@ public final class SqsUtils {
      */
     public static void overrideSqsClient(SqsClient client) {
         SqsUtils.client = client;
+    }
+
+    /**
+     * By default, the S3Client is instantiated via {@link S3Client#create()}.
+     * This method provides the ability to override the S3Client with your own custom version.
+     *
+     * @param s3Client {@link S3Client} to be used by utility
+     */
+    public static void overrideS3Client(S3Client s3Client) {
+        SqsUtils.s3Client = s3Client;
     }
 
     /**
@@ -523,5 +533,13 @@ public final class SqsUtils {
 
     public static ObjectMapper objectMapper() {
         return objectMapper;
+    }
+
+    public static S3Client s3Client() {
+        if(null == s3Client) {
+            SqsUtils.s3Client = S3Client.create();
+        }
+
+        return s3Client;
     }
 }

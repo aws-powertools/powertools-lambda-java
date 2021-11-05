@@ -59,6 +59,10 @@
                 <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
                 <Method name="overrideSqsClient"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
+                <Method name="overrideS3Client"/>
+            </And>
         </Or>
     </Match>
     <Match>
@@ -75,6 +79,10 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
                 <Method name="getCacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
+                <Method name="s3Client"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
