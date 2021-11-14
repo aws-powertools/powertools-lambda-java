@@ -17,6 +17,8 @@ nav:
 
 theme:
   name: material
+  font:
+    text: Ubuntu
   palette:
     primary: deep purple
   features:
