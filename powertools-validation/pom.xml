@@ -69,7 +69,7 @@
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>1.0.63</version>
+            <version>1.0.64</version>
         </dependency>
 
         <!-- Test dependencies -->
