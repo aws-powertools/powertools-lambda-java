@@ -73,7 +73,7 @@
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
         <junit-jupiter.version>5.8.2</junit-jupiter.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
-        <jmespath.version>0.5.0</jmespath.version>
+        <jmespath.version>0.5.1</jmespath.version>
     </properties>
 
     <distributionManagement>
