@@ -104,12 +104,13 @@ class LambdaTracingAspectTest {
     void shouldCaptureTraces() {
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
                     assertThat(subsegment.getAnnotations())
-                            .hasSize(1)
-                            .containsEntry("ColdStart", true);
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "lambdaHandler");
 
                     assertThat(subsegment.getMetadata())
                             .hasSize(1)
@@ -123,12 +124,13 @@ class LambdaTracingAspectTest {
 
         Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
                     assertThat(subsegment.getAnnotations())
-                            .hasSize(1)
-                            .containsEntry("ColdStart", true);
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "lambdaHandler");
 
                     assertThat(subsegment.getMetadata())
                             .hasSize(1)
@@ -144,12 +146,13 @@ class LambdaTracingAspectTest {
     void shouldCaptureTracesForStream() throws IOException {
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
                     assertThat(subsegment.getAnnotations())
-                            .hasSize(1)
-                            .containsEntry("ColdStart", true);
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "streamHandler");
 
                     assertThat(subsegment.getMetadata())
                             .hasSize(1)
@@ -162,13 +165,13 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerToolDisabled();
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .isEmpty();
 
         streamHandler = new PowerToolDisabledForStream();
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .isEmpty();
     }
 
@@ -178,12 +181,13 @@ class LambdaTracingAspectTest {
 
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
                     assertThat(subsegment.getAnnotations())
-                            .hasSize(1)
-                            .containsEntry("ColdStart", true);
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "service_undefined");
 
                     assertThat(subsegment.getMetadata())
                             .isEmpty();
@@ -196,12 +200,13 @@ class LambdaTracingAspectTest {
 
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
                     assertThat(subsegment.getAnnotations())
-                            .hasSize(1)
-                            .containsEntry("ColdStart", true);
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "service_undefined");
 
                     assertThat(subsegment.getMetadata())
                             .isEmpty();
@@ -214,12 +219,13 @@ class LambdaTracingAspectTest {
 
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
                     assertThat(subsegment.getAnnotations())
-                            .hasSize(1)
-                            .containsEntry("ColdStart", true);
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "service_undefined");
 
                     assertThat(subsegment.getMetadata())
                             .isEmpty();
@@ -234,12 +240,13 @@ class LambdaTracingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
-            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
                         assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("ColdStart", true);
+                                .hasSize(2)
+                                .containsEntry("ColdStart", true)
+                                .containsEntry("Service", "lambdaHandler");
 
                         assertThat(subsegment.getMetadata())
                                 .isEmpty();
@@ -255,12 +262,13 @@ class LambdaTracingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
-            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
                         assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("ColdStart", true);
+                                .hasSize(2)
+                                .containsEntry("ColdStart", true)
+                                .containsEntry("Service", "lambdaHandler");
 
                         assertThat(subsegment.getMetadata())
                                 .hasSize(1)
@@ -280,12 +288,13 @@ class LambdaTracingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
-            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
                         assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("ColdStart", true);
+                                .hasSize(2)
+                                .containsEntry("ColdStart", true)
+                                .containsEntry("Service", "lambdaHandler");
 
                         assertThat(subsegment.getMetadata())
                                 .hasSize(1)
@@ -303,12 +312,13 @@ class LambdaTracingAspectTest {
 
             catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
 
-            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
                         assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("ColdStart", true);
+                                .hasSize(2)
+                                .containsEntry("ColdStart", true)
+                                .containsEntry("Service", "lambdaHandler");
 
                         assertThat(subsegment.getMetadata())
                                 .isEmpty();
@@ -325,12 +335,13 @@ class LambdaTracingAspectTest {
 
             Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
 
-            assertThat(AWSXRay.getTraceEntity().getSubsegments())
+            assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
                         assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("ColdStart", true);
+                                .hasSize(2)
+                                .containsEntry("ColdStart", true)
+                                .containsEntry("Service", "lambdaHandler");
 
                         assertThat(subsegment.getMetadata())
                                 .hasSize(1)

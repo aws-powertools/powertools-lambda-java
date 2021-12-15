@@ -50,6 +50,7 @@ public final class LambdaTracingAspect {
 
         if (placedOnHandlerMethod(pjp)) {
             segment.putAnnotation("ColdStart", isColdStart());
+            segment.putAnnotation("Service", namespace(tracing));
         }
 
         boolean captureResponse = captureResponse(tracing);
