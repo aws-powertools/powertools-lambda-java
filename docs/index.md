@@ -46,17 +46,17 @@ For more information about the project and available options refer to this [repo
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-tracing</artifactId>
-            <version>1.8.1</version>
+            <version>1.8.2</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
-            <version>1.8.1</version>
+            <version>1.8.2</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-metrics</artifactId>
-            <version>1.8.1</version>
+            <version>1.8.2</version>
         </dependency>
         ...
     </dependencies>
@@ -112,12 +112,12 @@ For more information about the project and available options refer to this [repo
         jcenter()
     }
     dependencies {
-        implementation 'software.amazon.lambda:powertools-tracing:1.8.1'
-        aspectpath 'software.amazon.lambda:powertools-tracing:1.8.1'
-        implementation 'software.amazon.lambda:powertools-logging:1.8.1'
-        aspectpath 'software.amazon.lambda:powertools-logging:1.8.1'
-        implementation 'software.amazon.lambda:powertools-metrics:1.8.1'
-        aspectpath 'software.amazon.lambda:powertools-metrics:1.8.1'
+        implementation 'software.amazon.lambda:powertools-tracing:1.8.2'
+        aspectpath 'software.amazon.lambda:powertools-tracing:1.8.2'
+        implementation 'software.amazon.lambda:powertools-logging:1.8.2'
+        aspectpath 'software.amazon.lambda:powertools-logging:1.8.2'
+        implementation 'software.amazon.lambda:powertools-metrics:1.8.2'
+        aspectpath 'software.amazon.lambda:powertools-metrics:1.8.2'
     }
     ```
     **Note:**
