@@ -106,7 +106,7 @@ For more information about the project and available options refer to this [repo
     ```groovy
     plugins{
         id 'java'
-        id 'aspectj.AspectjGradlePlugin' version '0.0.6'
+        id 'aspectj.AspectjGradlePlugin' version '0.0.7'
     }
     repositories {
         jcenter()
@@ -122,8 +122,7 @@ For more information about the project and available options refer to this [repo
     ```
     **Note:**
     
-    Please add `aspectjVersion = '1.9.6'` to the `gradle.properties` file. The aspectj plugin works at the moment with gradle 5.x only if
-    you are using `java 8` as runtime. Please refer to [open issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/146) for more details.
+    Please add `aspectjVersion = '1.9.6'` to the `gradle.properties` file.
 
 ## Environment variables
 
