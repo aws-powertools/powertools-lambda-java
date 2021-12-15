@@ -8,6 +8,12 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.8.2] - 2021-12-15
+
+## Security
+
+* Upgrading Log4j to version 2.16.0 for [CVE-2021-45046](https://nvd.nist.gov/vuln/detail/CVE-2021-45046)
+
 ## [1.8.1] - 2021-12-10
 
 ## Security
