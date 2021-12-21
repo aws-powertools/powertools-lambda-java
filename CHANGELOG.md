@@ -8,6 +8,11 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.9.0] - 2021-12-21
+
+* **Logging**: Upgrade Log4j to version 2.17.0 for [CVE-2021-45105](https://nvd.nist.gov/vuln/detail/CVE-2021-45105)
+* **Tracing**: add `Service` annotation. [#654](https://github.com/awslabs/aws-lambda-powertools-java/issues/654)
+
 ## [1.8.2] - 2021-12-15
 
 ## Security
