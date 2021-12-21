@@ -19,6 +19,7 @@ import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 import software.amazon.lambda.powertools.sqs.handlers.LambdaHandlerApiGateway;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchFailureSuppressedHandler;
@@ -133,7 +134,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
-        verify(sqsClient).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient).sendMessageBatch(any(SendMessageBatchRequest.class));
     }
 
     @Test
@@ -146,7 +147,7 @@ public class SqsMessageBatchProcessorAspectTest {
         verify(interactionClient).listQueues();
         ArgumentCaptor<DeleteMessageBatchRequest> captor = ArgumentCaptor.forClass(DeleteMessageBatchRequest.class);
         verify(sqsClient).deleteMessageBatch(captor.capture());
-        verify(sqsClient, never()).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient, never()).sendMessageBatch(any(SendMessageBatchRequest.class));
         verify(sqsClient, never()).getQueueAttributes(any(GetQueueAttributesRequest.class));
 
         assertThat(captor.getValue())
@@ -186,7 +187,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
-        verify(sqsClient, never()).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient, never()).sendMessageBatch(any(SendMessageBatchRequest.class));
     }
 
     @Test
@@ -223,7 +224,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
-        verify(sqsClient, never()).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient, never()).sendMessageBatch(any(SendMessageBatchRequest.class));
     }
 
     @Test
@@ -264,7 +265,7 @@ public class SqsMessageBatchProcessorAspectTest {
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
-        verify(sqsClient).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient).sendMessageBatch(any(SendMessageBatchRequest.class));
     }
 
     private void setupContext() {
