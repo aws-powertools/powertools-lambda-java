@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package org.apache.logging.log4j.core.layout;
+package software.amazon.lambda.powertools.logging.internal;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -26,6 +26,7 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderAttribute;
 import org.apache.logging.log4j.core.config.plugins.PluginBuilderFactory;
 import org.apache.logging.log4j.core.jackson.XmlConstants;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.util.KeyValuePair;
 import org.apache.logging.log4j.util.Strings;
 
@@ -43,14 +44,14 @@ import static java.time.Instant.ofEpochMilli;
 import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 @Plugin(name = "LambdaJsonLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
-public class LambdaJsonLayout extends AbstractJacksonLayout {
+public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
     private static final String DEFAULT_FOOTER = "]";
 
     private static final String DEFAULT_HEADER = "[";
 
     static final String CONTENT_TYPE = "application/json";
 
-    public static class Builder<B extends Builder<B>> extends AbstractJacksonLayout.Builder<B>
+    public static class Builder<B extends Builder<B>> extends AbstractJacksonLayoutCopy.Builder<B>
             implements org.apache.logging.log4j.core.util.Builder<LambdaJsonLayout> {
 
         @PluginBuilderAttribute
@@ -101,7 +102,7 @@ public class LambdaJsonLayout extends AbstractJacksonLayout {
                              final boolean includeStacktrace, final boolean stacktraceAsString,
                              final boolean includeNullDelimiter,
                              final KeyValuePair[] additionalFields, final boolean objectMessageAsJsonObject) {
-        super(config, new JacksonFactory.JSON(encodeThreadContextAsList, includeStacktrace, stacktraceAsString, objectMessageAsJsonObject).newWriter(
+        super(config, new JacksonFactoryCopy.JSON(encodeThreadContextAsList, includeStacktrace, stacktraceAsString, objectMessageAsJsonObject).newWriter(
                 locationInfo, properties, compact),
                 charset, compact, complete, eventEol,
                 null,

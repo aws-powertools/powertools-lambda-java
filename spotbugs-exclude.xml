@@ -13,11 +13,19 @@
         <Bug pattern="EI_EXPOSE_REP"/>
         <Or>
             <And>
-                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
                 <Method name="getLogEvent"/>
             </And>
             <And>
-                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
                 <Method name="getAdditionalFields"/>
             </And>
         </Or>
@@ -26,11 +34,19 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
         <Or>
             <And>
-                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
                 <Field name="logEvent"/>
             </And>
             <And>
-                <Class name="org.apache.logging.log4j.core.layout.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Field name="additionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
+                <Field name="additionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
                 <Field name="additionalFields"/>
             </And>
             <And>
