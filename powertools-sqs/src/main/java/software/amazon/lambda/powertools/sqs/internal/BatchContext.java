@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
+import java.util.function.Consumer;
+import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
@@ -156,13 +158,19 @@ public final class BatchContext {
                 })
                 .collect(toList());
 
-        SendMessageBatchResponse sendMessageBatchResponse = client.sendMessageBatch(builder -> builder.queueUrl(dlqUrl.get())
-                .entries(dlqMessages));
+        batchRequest(dlqMessages, 10, entriesToSend -> {
 
-        LOG.debug("Response from send batch message to DLQ request {}", sendMessageBatchResponse);
+            SendMessageBatchResponse sendMessageBatchResponse = client.sendMessageBatch(SendMessageBatchRequest.builder()
+                            .entries(entriesToSend)
+                            .queueUrl(dlqUrl.get())
+                            .build());
+
+            LOG.debug("Response from send batch message to DLQ request {}", sendMessageBatchResponse);
+        });
 
         return true;
     }
+
 
     private Optional<String> fetchDlqUrl(Map<SQSMessage, Exception> nonRetryableMessageToException) {
         return nonRetryableMessageToException.keySet().stream()
@@ -197,17 +205,32 @@ public final class BatchContext {
 
     private void deleteMessagesFromQueue(final List<SQSMessage> messages) {
         if (!messages.isEmpty()) {
-            DeleteMessageBatchRequest request = DeleteMessageBatchRequest.builder()
-                    .queueUrl(url(messages.get(0).getEventSourceArn()))
-                    .entries(messages.stream().map(m -> DeleteMessageBatchRequestEntry.builder()
-                            .id(m.getMessageId())
-                            .receiptHandle(m.getReceiptHandle())
-                            .build()).collect(toList()))
-                    .build();
 
-            DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
-            LOG.debug("Response from delete request {}", deleteMessageBatchResponse);
+            List<DeleteMessageBatchRequestEntry> entries = messages.stream().map(m -> DeleteMessageBatchRequestEntry.builder()
+                    .id(m.getMessageId())
+                    .receiptHandle(m.getReceiptHandle())
+                    .build()).collect(toList());
+
+            batchRequest(entries, 10, entriesToDelete -> {
+                DeleteMessageBatchRequest request = DeleteMessageBatchRequest.builder()
+                        .queueUrl(url(messages.get(0).getEventSourceArn()))
+                        .entries(entriesToDelete)
+                        .build();
+
+                DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
+
+                LOG.debug("Response from delete request {}", deleteMessageBatchResponse);
+            });
         }
+    }
+
+    private <T> void batchRequest(final List<T> listOFEntries,
+                                  final int size,
+                                  final Consumer<List<T>> batchLogic) {
+        IntStream.range(0, listOFEntries.size())
+                .filter(index -> index % size == 0)
+                .mapToObj(index -> listOFEntries.subList(index, Math.min(index + size, listOFEntries.size())))
+                .forEach(batchLogic);
     }
 
     private String url(String queueArn) {

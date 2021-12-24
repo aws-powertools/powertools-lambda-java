@@ -1,10 +1,11 @@
 package software.amazon.lambda.powertools.sqs;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-
+import java.util.function.Function;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.assertj.core.api.Assertions;
@@ -18,8 +19,11 @@ import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.ArgumentMatchers.any;
@@ -236,10 +240,10 @@ class SqsUtilsBatchProcessorTest {
             return "Success";
         }, IllegalStateException.class, IllegalArgumentException.class);
 
-        Assertions.assertThat(batchProcessor)
+        assertThat(batchProcessor)
                 .hasSize(1);
 
-        verify(sqsClient).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient).sendMessageBatch(any(SendMessageBatchRequest.class));
     }
 
     @Test
@@ -265,11 +269,82 @@ class SqsUtilsBatchProcessorTest {
             return "Success";
         }, true, IllegalStateException.class, IllegalArgumentException.class);
 
-        Assertions.assertThat(batchProcessor)
+        assertThat(batchProcessor)
                 .hasSize(1);
 
-        verify(sqsClient, times(0)).sendMessageBatch(any(Consumer.class));
+        verify(sqsClient, times(0)).sendMessageBatch(any(SendMessageBatchRequest.class));
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
+    }
+
+    @Test
+    void shouldDeleteSuccessfulMessageInBatchesOfT10orLess() throws IOException {
+        SQSEvent batch25Message =  MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEventBatchSize25.json"), SQSEvent.class);
+
+        assertThatExceptionOfType(SQSBatchProcessingException.class)
+                .isThrownBy(() -> batchProcessor(batch25Message, FailureSampleInnerSqsHandler.class))
+                .satisfies(e -> {
+
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(24)
+                            .contains("Success");
+
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .contains("2e1424d4-f796-459a-8184-9c92662be6da");
+
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("detailMessage")
+                            .contains("Failed processing");
+                });
+
+        ArgumentCaptor<DeleteMessageBatchRequest> captor = ArgumentCaptor.forClass(DeleteMessageBatchRequest.class);
+
+        verify(sqsClient, times(3)).deleteMessageBatch(captor.capture());
+
+        assertThat(captor.getAllValues())
+                .hasSize(3)
+                .flatMap(DeleteMessageBatchRequest::entries)
+                .hasSize(24);
+    }
+
+    @Test
+    void shouldBatchProcessAndMoveNonRetryableExceptionToDlqInBatchesOfT10orLess() throws IOException {
+        SQSEvent batch25Message =  MAPPER.readValue(this.getClass().getResource("/sampleSqsBatchEventBatchSize25.json"), SQSEvent.class);
+
+        HashMap<QueueAttributeName, String> attributes = new HashMap<>();
+
+        attributes.put(QueueAttributeName.REDRIVE_POLICY, "{\n" +
+                "  \"deadLetterTargetArn\": \"arn:aws:sqs:us-east-2:123456789012:retry-queue\",\n" +
+                "  \"maxReceiveCount\": 2\n" +
+                "}");
+
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
+                .attributes(attributes)
+                .build());
+
+        List<String> batchProcessor = batchProcessor(batch25Message, (message) -> {
+            if ("2e1424d4-f796-459a-8184-9c92662be6da".equals(message.getMessageId())) {
+                interactionClient.listQueues();
+                return "Success";
+            }
+
+            throw new IllegalStateException("Failed processing");
+        }, IllegalStateException.class, IllegalArgumentException.class);
+
+        assertThat(batchProcessor)
+                .hasSize(1);
+
+        ArgumentCaptor<SendMessageBatchRequest> captor = ArgumentCaptor.forClass(SendMessageBatchRequest.class);
+
+
+        verify(sqsClient, times(3)).sendMessageBatch(captor.capture());
+
+        assertThat(captor.getAllValues())
+                .hasSize(3)
+                .flatMap(SendMessageBatchRequest::entries)
+                .hasSize(24);
     }
 
     public class FailureSampleInnerSqsHandler implements SqsMessageHandler<String> {
