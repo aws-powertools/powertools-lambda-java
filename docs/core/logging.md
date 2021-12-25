@@ -143,7 +143,7 @@ If you need to customize format and timezone, you can do so by configuring `log4
     ```
 
 - Utility also provides sample template for [Elastic Common Schema(ECS)](https://www.elastic.co/guide/en/ecs/current/ecs-reference.html) layout.
-The filed emitted in logs will follow specs from [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-reference.html) together with field captured by utility as mentioned [above](#standard-structured-keys).
+The field emitted in logs will follow specs from [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-reference.html) together with field captured by utility as mentioned [above](#standard-structured-keys).
 
     Use `LambdaEcsLayout.json` as `eventTemplateUri` when configuring `JsonTemplateLayout`.
 

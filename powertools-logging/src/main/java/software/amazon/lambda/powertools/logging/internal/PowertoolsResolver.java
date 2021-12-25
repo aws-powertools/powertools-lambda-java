@@ -1,11 +1,11 @@
-package software.amazon.lambda.powertools.logging;
+package software.amazon.lambda.powertools.logging.internal;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.layout.template.json.resolver.EventResolver;
 import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 
-public final class PowertoolsResolver implements EventResolver {
+final class PowertoolsResolver implements EventResolver {
 
     private final EventResolver internalResolver;
 

@@ -33,6 +33,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
+@Deprecated
 abstract class AbstractJacksonLayoutCopy extends AbstractStringLayout {
 
     protected static final String DEFAULT_EOL = "\r\n";

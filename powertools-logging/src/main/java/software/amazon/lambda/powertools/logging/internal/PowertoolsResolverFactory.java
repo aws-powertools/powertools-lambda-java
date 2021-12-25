@@ -1,4 +1,4 @@
-package software.amazon.lambda.powertools.logging;
+package software.amazon.lambda.powertools.logging.internal;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
