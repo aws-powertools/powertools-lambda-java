@@ -13,16 +13,23 @@ Logging provides an opinionated logger with output structured as JSON.
 
 ## Initialization
 
-Powertools extends the functionality of Log4J. Below is an example `#!xml log4j2.xml` file, with the `#!java LambdaJsonLayout` configured.
+Powertools extends the functionality of Log4J. Below is an example `#!xml log4j2.xml` file, with the `JsonTemplateLayout` using `#!json LambdaJsonLayout.json` configured. 
+
+!!! info "LambdaJsonLayout is now deprecated"
+
+    Configuring utiltiy using `<LambdaJsonLayout/>` plugin is deprecated now. While utility still supports the old configuration, we strongly recommend upgrading the 
+    `log4j2.xml` configuration to `JsonTemplateLayout` instead. [JsonTemplateLayout](https://logging.apache.org/log4j/2.x/manual/json-template-layout.html) is recommended way of doing structured logging.
+    
+    Please follow [this guide](#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) for upgrade steps.
 
 === "log4j2.xml"
 
     ```xml hl_lines="5"
     <?xml version="1.0" encoding="UTF-8"?>
-    <Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
+    <Configuration>
         <Appenders>
             <Console name="JsonAppender" target="SYSTEM_OUT">
-                <LambdaJsonLayout compact="true" eventEol="true"/>
+                <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
             </Console>
         </Appenders>
         <Loggers>
@@ -121,6 +128,44 @@ to customise what is logged.
          ...
         }
     }
+    ```
+
+### Customising  fields in logs
+
+- Utility by default emits `timestamp` field in the logs in format `yyyy-MM-dd'T'HH:mm:ss.SSSZz` and in system default timezone. 
+If you need to customize format and timezone, you can do so by configuring `log4j2.component.properties` and configuring properties as shown in example below:
+
+=== "log4j2.component.properties"
+
+    ```properties hl_lines="1 2"
+    log4j.layout.jsonTemplate.timestampFormatPattern=yyyy-MM-dd'T'HH:mm:ss.SSSZz
+    log4j.layout.jsonTemplate.timeZone=Europe/Oslo
+    ```
+
+- Utility also provides sample template for [Elastic Common Schema(ECS)](https://www.elastic.co/guide/en/ecs/current/ecs-reference.html) layout.
+The filed emitted in logs will follow specs from [ECS](https://www.elastic.co/guide/en/ecs/current/ecs-reference.html) together with field captured by utility as mentioned [above](#standard-structured-keys).
+
+    Use `LambdaEcsLayout.json` as `eventTemplateUri` when configuring `JsonTemplateLayout`.
+
+=== "log4j2.xml"
+
+    ```xml hl_lines="5"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration>
+        <Appenders>
+            <Console name="JsonAppender" target="SYSTEM_OUT">
+                <JsonTemplateLayout eventTemplateUri="classpath:LambdaEcsLayout.json" />
+            </Console>
+        </Appenders>
+        <Loggers>
+            <Logger name="JsonLogger" level="INFO" additivity="false">
+                <AppenderRef ref="JsonAppender"/>
+            </Logger>
+            <Root level="info">
+                <AppenderRef ref="JsonAppender"/>
+            </Root>
+        </Loggers>
+    </Configuration>
     ```
 
 ## Setting a Correlation ID
@@ -417,3 +462,54 @@ via `samplingRate` attribute on annotation.
                 Variables:
                     POWERTOOLS_LOGGER_SAMPLE_RATE: 0.5
     ```
+
+
+## Upgrade to JsonTemplateLayout from deprecated LambdaJsonLayout configuration in log4j2.xml
+
+Prior to version [1.10.0](https://github.com/awslabs/aws-lambda-powertools-java/releases/tag/v1.10.0), only supported way of configuring `log4j2.xml` was via  `<LambdaJsonLayout/>`. This plugin is 
+deprecated now and will be removed in future version. Switching to `JsonTemplateLayout` is straight forward. 
+
+Below examples shows deprecated and new configuration of `log4j2.xml`.
+
+=== "Deprecated configuration of log4j2.xml"
+
+    ```xml hl_lines="5"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration>
+        <Appenders>
+            <Console name="JsonAppender" target="SYSTEM_OUT">
+                <LambdaJsonLayout compact="true" eventEol="true"/>
+            </Console>
+        </Appenders>
+        <Loggers>
+            <Logger name="JsonLogger" level="INFO" additivity="false">
+                <AppenderRef ref="JsonAppender"/>
+            </Logger>
+            <Root level="info">
+                <AppenderRef ref="JsonAppender"/>
+            </Root>
+        </Loggers>
+    </Configuration>
+    ```
+
+=== "New configuration of log4j2.xml"
+
+    ```xml hl_lines="5"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration>
+        <Appenders>
+            <Console name="JsonAppender" target="SYSTEM_OUT">
+                <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+            </Console>
+        </Appenders>
+        <Loggers>
+            <Logger name="JsonLogger" level="INFO" additivity="false">
+                <AppenderRef ref="JsonAppender"/>
+            </Logger>
+            <Root level="info">
+                <AppenderRef ref="JsonAppender"/>
+            </Root>
+        </Loggers>
+    </Configuration>
+    ```
+

@@ -46,6 +46,7 @@ import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 /***
  *  Note: The LambdaJsonLayout should be considered to be deprecated. Please use JsonTemplateLayout instead.
  */
+@Deprecated
 @Plugin(name = "LambdaJsonLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
     private static final String DEFAULT_FOOTER = "]";
