@@ -14,6 +14,7 @@ import org.apache.logging.log4j.core.jackson.Log4jJsonObjectMapper;
 import java.util.HashSet;
 import java.util.Set;
 
+@Deprecated
 abstract class JacksonFactoryCopy {
 
     static class JSON extends JacksonFactoryCopy {
