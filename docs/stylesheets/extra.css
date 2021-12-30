@@ -25,3 +25,7 @@
 .md-typeset .admonition, .md-typeset details {
     font-size: 0.70rem
 }
+
+p > code {
+    font-weight: bold
+}
