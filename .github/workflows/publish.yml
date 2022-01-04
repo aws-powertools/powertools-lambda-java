@@ -25,3 +25,9 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+      - name: Close issues related to this release
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const post_release = require('.github/workflows/post_release.js')
+            await post_release({github, context, core})
