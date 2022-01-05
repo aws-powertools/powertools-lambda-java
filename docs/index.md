@@ -108,6 +108,7 @@ For more information about the project and available options refer to this [repo
         id 'java'
         id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
     }
+
     repositories {
         mavenCentral()
     }

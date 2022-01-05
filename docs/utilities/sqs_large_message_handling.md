@@ -79,7 +79,20 @@ To install this utility, add the following dependency to your project.
 === "Gradle"
 
     ```groovy
-     dependencies {
+    plugins{
+        id 'java'
+        id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
+    }
+
+    repositories {
+        mavenCentral()
+    }
+
+    aspectj {
+        version  = "1.9.7"
+    }
+
+    dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-sqs:1.10.0'
     }

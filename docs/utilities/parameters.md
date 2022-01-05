@@ -427,7 +427,7 @@ If you want to use the ```@Param``` annotation in your project add configuration
         id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
     }
     repositories {
-        jcenter()
+        mavenCentral()
     }
     dependencies {
         ...
