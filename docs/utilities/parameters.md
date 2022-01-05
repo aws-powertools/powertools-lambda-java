@@ -32,8 +32,7 @@ To install this utility, add the following dependency to your project.
     ```groovy
      dependencies {
         ...
-        implementation 'software.amazon.lambda:powertools-parameters:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-parameters:1.10.0'
+        aspect 'software.amazon.lambda:powertools-parameters:1.10.0'
     }
     ```
 
@@ -425,19 +424,13 @@ If you want to use the ```@Param``` annotation in your project add configuration
     ```groovy
     plugins{
         id 'java'
-        id 'aspectj.AspectjGradlePlugin' version '0.0.6'
+        id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
     }
     repositories {
         jcenter()
     }
     dependencies {
         ...
-        implementation 'software.amazon.lambda:powertools-parameters:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-parameters:1.10.0'
+        aspect 'software.amazon.lambda:powertools-parameters:1.10.0'
     }
     ```
-
-    **Note:**
-    
-    Please add `aspectjVersion = '1.9.6'` to the `gradle.properties` file. The aspectj plugin works at the moment with gradle 5.x only if
-    you are using `java 8` as runtime. Please refer to [open issue](https://github.com/awslabs/aws-lambda-powertools-java/issues/146) for more details.

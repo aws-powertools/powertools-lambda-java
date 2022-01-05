@@ -106,23 +106,22 @@ For more information about the project and available options refer to this [repo
     ```groovy
     plugins{
         id 'java'
-        id 'aspectj.AspectjGradlePlugin' version '0.0.7'
+        id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
     }
     repositories {
-        jcenter()
+        mavenCentral()
     }
+
+    aspectj {
+        version  = "1.9.7"
+    }
+
     dependencies {
-        implementation 'software.amazon.lambda:powertools-tracing:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-tracing:1.10.0'
-        implementation 'software.amazon.lambda:powertools-logging:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-logging:1.10.0'
-        implementation 'software.amazon.lambda:powertools-metrics:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-metrics:1.10.0'
+        aspect 'software.amazon.lambda:powertools-logging:1.10.0'
+        aspect 'software.amazon.lambda:powertools-tracing:1.10.0'
+        aspect 'software.amazon.lambda:powertools-metrics:1.10.0'
     }
     ```
-    **Note:**
-    
-    Please add `aspectjVersion = '1.9.6'` to the `gradle.properties` file.
 
 ## Environment variables
 
