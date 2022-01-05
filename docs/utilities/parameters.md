@@ -424,11 +424,13 @@ If you want to use the ```@Param``` annotation in your project add configuration
     ```groovy
     plugins{
         id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
+        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
     }
+
     repositories {
         mavenCentral()
     }
+
     dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-parameters:1.10.0'

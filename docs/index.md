@@ -106,15 +106,11 @@ For more information about the project and available options refer to this [repo
     ```groovy
     plugins{
         id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
+        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
     }
 
     repositories {
         mavenCentral()
-    }
-
-    aspectj {
-        version  = "1.9.7"
     }
 
     dependencies {

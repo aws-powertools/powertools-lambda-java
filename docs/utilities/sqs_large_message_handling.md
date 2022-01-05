@@ -81,15 +81,11 @@ To install this utility, add the following dependency to your project.
     ```groovy
     plugins{
         id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '5.0.1'
+        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
     }
 
     repositories {
         mavenCentral()
-    }
-
-    aspectj {
-        version  = "1.9.7"
     }
 
     dependencies {
