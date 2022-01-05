@@ -34,7 +34,6 @@ To install this utility, add the following dependency to your project.
      dependencies {
         ...
         implementation 'software.amazon.lambda:powertools-cloudformation:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-cloudformation:1.10.0'
     }
     ```
 

@@ -73,8 +73,7 @@ To install this utility, add the following dependency to your project.
     ```groovy
      dependencies {
         ...
-        implementation 'software.amazon.lambda:powertools-sqs:1.10.0'
-        aspectpath 'software.amazon.lambda:powertools-sqs:1.10.0'
+        aspect 'software.amazon.lambda:powertools-sqs:1.10.0'
     }
     ```
 
