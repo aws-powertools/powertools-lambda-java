@@ -24,7 +24,7 @@ To install this utility, add the following dependency to your project.
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-cloudformation</artifactId>
-        <version>1.10.1</version>
+        <version>{{ powertools.version }}</version>
     </dependency>
     ```
 
@@ -33,7 +33,7 @@ To install this utility, add the following dependency to your project.
     ```groovy
      dependencies {
         ...
-        implementation 'software.amazon.lambda:powertools-cloudformation:1.10.1'
+        implementation 'software.amazon.lambda:powertools-cloudformation:{{ powertools.version }}'
     }
     ```
 

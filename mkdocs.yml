@@ -65,6 +65,7 @@ copyright: Copyright &copy; 2021 Amazon Web Services
 plugins:
   - git-revision-date
   - search
+  - macros
 
 extra_css:
   - stylesheets/extra.css
@@ -72,6 +73,9 @@ extra_javascript:
   - javascript/aws-amplify.min.js
   - javascript/extra.js
 
+extra:
+  powertools:
+    version: 1.10.1
 
 repo_url: https://github.com/awslabs/aws-lambda-powertools-java
 edit_uri: edit/master/docs

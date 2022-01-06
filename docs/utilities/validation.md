@@ -22,7 +22,7 @@ To install this utility, add the following dependency to your project.
     <dependency>
         <groupId>com.amazonaws</groupId>
         <artifactId>powertools-validation</artifactId>
-        <version>1.10.1</version>
+        <version>{{ powertools.version }}</version>
     </dependency>
     ...
     </dependencies>
@@ -71,7 +71,7 @@ To install this utility, add the following dependency to your project.
     }
 
     dependencies {
-        aspect 'software.amazon.lambda:powertools-validation:1.10.1'
+        aspect 'software.amazon.lambda:powertools-validation:{{ powertools.version }}'
     }
     ```
 
