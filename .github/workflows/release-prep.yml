@@ -17,13 +17,27 @@ jobs:
       - name: Set current release version env variable
         run: |
           echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }}
+      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in mkdocs.yml
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: 'version: ${{ env.CURRENT_VERSION }}'
+          replace: 'version: ${{ github.event.inputs.targetRelease }}'
+          regex: false
+          include: "mkdocs.yml"
+      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in pom.xml
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
-          exclude: CHANGELOG.md
+          include: "**/*pom.xml"
+      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in build.gradle
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: ${{ env.CURRENT_VERSION }}
+          replace: ${{ github.event.inputs.targetRelease }}
+          regex: false
+          include: "**/*build.gradle"
       - name: Create changelog placeholder for ${{ github.event.inputs.targetRelease }}
         uses: jacobtomlinson/gha-find-replace@v2
         with:
