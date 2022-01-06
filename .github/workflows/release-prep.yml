@@ -1,0 +1,35 @@
+name: Prepare for maven central release
+on:
+  workflow_dispatch:
+    inputs:
+      targetRelease:
+        description: 'Release number to upgrade to. For example X.X.X'
+        required: true
+      previousRelease:
+        description: 'Current latest maven release'
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Find and Replace ${{ github.event.inputs.previousRelease }} with ${{ github.event.inputs.targetRelease }}
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: ${{ github.event.inputs.previousRelease }}
+          replace: ${{ github.event.inputs.targetRelease }}
+          regex: false
+      - name: Create Release Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: 'chore: prep release ' + ${{ github.event.inputs.targetRelease }}
+          token: ${{ secrets.RELEASE }}
+          committer: Release bot <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: prep-release-${{ github.event.inputs.targetRelease }}
+          delete-branch: true
+          title: 'chore: Prep release ' + ${{ github.event.inputs.targetRelease }}
+          body: |
+            - Auto-generated release prep pull request for version ${{ github.event.inputs.targetRelease }}
