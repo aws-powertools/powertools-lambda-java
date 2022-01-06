@@ -3,20 +3,50 @@ on:
   workflow_dispatch:
     inputs:
       targetRelease:
-        description: 'Release number to upgrade to. For example X.X.X'
+        description: 'Release number to upgrade to. For example X.X.X. Follow Semantic Versioning when deciding on next version.'
         required: true
-      previousRelease:
-        description: 'Current latest maven release'
-        required: false
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Find and Replace ${{ github.event.inputs.previousRelease }} with ${{ github.event.inputs.targetRelease }}
+      - name: Get current date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Set current release version env variable
+        run: |
+          echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }}
         uses: jacobtomlinson/gha-find-replace@v2
         with:
-          find: ${{ github.event.inputs.previousRelease }}
+          find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
+          exclude: CHANGELOG.md
+      - name: Create changelog placeholder for ${{ github.event.inputs.targetRelease }}
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: '## [Unreleased]'
+          replace: |
+            ## [Unreleased]
+            
+            ## [${{ github.event.inputs.targetRelease }}] - ${{ steps.date.outputs.date }}
+            
+            <PLEASE REMEBER TO UPDATE CHANGE LOG>
+
+          regex: false
+          include: CHANGELOG.md
+      - name: Create Release Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: chore:prep release ${{ github.event.inputs.targetRelease }}
+          token: ${{ secrets.RELEASE }}
+          signoff: false
+          branch: prep-release-${{ github.event.inputs.targetRelease }}
+          delete-branch: true
+          title: chore:Prep release ${{ github.event.inputs.targetRelease }}
+          body: |
+            This is automated release prep. Remember to update [CHANGELOG.md](https://github.com/awslabs/aws-lambda-powertools-java/blob/prep-release-${{ github.event.inputs.targetRelease }}/CHANGELOG.md) to capture changes in this release. Please review changes carefully before merging.
+            
+            * [ ] Updated CHANGELOG.md
