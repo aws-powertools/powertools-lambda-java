@@ -20,3 +20,14 @@ jobs:
           find: ${{ github.event.inputs.previousRelease }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
+          exclude: CHANGELOG.md
+      - name: Create Release Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          commit-message: chore:prep release ${{ github.event.inputs.targetRelease }}
+          token: ${{ secrets.RELEASE }}
+          signoff: false
+          branch: prep-release-${{ github.event.inputs.targetRelease }}
+          delete-branch: true
+          title: chore:Prep release ${{ github.event.inputs.targetRelease }}
+          body: This is automated release prep. Remember to update [CHANGELOG.md](CHANGELOG.md) to capture changes in this release. Please review changes carefully before merging.
