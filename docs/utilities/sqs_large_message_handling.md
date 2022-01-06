@@ -40,7 +40,7 @@ To install this utility, add the following dependency to your project.
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-sqs</artifactId>
-            <version>1.10.0</version>
+            <version>1.10.1</version>
         </dependency>
         ...
     </dependencies>
@@ -90,7 +90,7 @@ To install this utility, add the following dependency to your project.
 
     dependencies {
         ...
-        aspect 'software.amazon.lambda:powertools-sqs:1.10.0'
+        aspect 'software.amazon.lambda:powertools-sqs:1.10.1'
     }
     ```
 
