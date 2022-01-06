@@ -8,7 +8,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
-## [1.10.0] - 2021-12-27
+## [1.10.1] - 2021-12-27
 
 * **Logging**: Modern log4j configuration to customise structured logging. Refer [docs](https://awslabs.github.io/aws-lambda-powertools-java/core/logging/#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) to start using new config. [#670](https://github.com/awslabs/aws-lambda-powertools-java/pull/670)
 * **SQS Batch**: Support batch size greater than 10. [#667](https://github.com/awslabs/aws-lambda-powertools-java/pull/667)
