@@ -8,6 +8,10 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.10.1] - 2022-01-06
+
+* **Logging**: Upgrade Log4j to version 2.17.1 for [CVE-2021-44832](https://nvd.nist.gov/vuln/detail/CVE-2021-44832)
+
 ## [1.10.0] - 2021-12-27
 
 * **Logging**: Modern log4j configuration to customise structured logging. Refer [docs](https://awslabs.github.io/aws-lambda-powertools-java/core/logging/#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) to start using new config. [#670](https://github.com/awslabs/aws-lambda-powertools-java/pull/670)
