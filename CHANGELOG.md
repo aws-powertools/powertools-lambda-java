@@ -10,7 +10,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.10.1] - 2022-01-06
 
-* **Logging**: Upgrading Powertool to version 1.10.1 for Log4j version upgrade for [CVE-2021-45105](https://nvd.nist.gov/vuln/detail/CVE-2021-45105)
+* **Logging**: Upgrading Powertool to version 1.10.1 for Log4j version 2.17.1
 
 ## [1.10.0] - 2021-12-27
 
