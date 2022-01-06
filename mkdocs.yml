@@ -4,6 +4,7 @@ site_author: Amazon Web Services
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
+  - FAQs: FAQs.md
   - Core utilities:
       - core/logging.md
       - core/tracing.md
