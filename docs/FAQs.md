@@ -10,8 +10,9 @@ Poweretools uses `aspectj-maven-plugin` to compile-time weave (CTW) aspects into
 
 To enable in-place weaving feature you need to use following `aspectj-maven-plugin` configuration:
 
-```xml hl_lines="5"
+```xml hl_lines="2-6"
 <configuration>
+    <forceAjcCompile>true</forceAjcCompile> 
     <sources/>
     <weaveDirectories>
         <weaveDirectory>${project.build.directory}/classes</weaveDirectory>
