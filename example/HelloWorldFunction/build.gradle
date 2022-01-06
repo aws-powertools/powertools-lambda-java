@@ -8,23 +8,23 @@ repositories {
 }
 
 dependencies {
-    implementation 'software.amazon.lambda:powertools-tracing:1.10.0'
-    aspectpath 'software.amazon.lambda:powertools-tracing:1.10.0'
+    implementation 'software.amazon.lambda:powertools-tracing:1.10.2'
+    aspectpath 'software.amazon.lambda:powertools-tracing:1.10.2'
 
-    implementation 'software.amazon.lambda:powertools-logging:1.10.0'
-    aspectpath 'software.amazon.lambda:powertools-logging:1.10.0'
+    implementation 'software.amazon.lambda:powertools-logging:1.10.2'
+    aspectpath 'software.amazon.lambda:powertools-logging:1.10.2'
 
-    implementation 'software.amazon.lambda:powertools-metrics:1.10.0'
-    aspectpath 'software.amazon.lambda:powertools-metrics:1.10.0'
+    implementation 'software.amazon.lambda:powertools-metrics:1.10.2'
+    aspectpath 'software.amazon.lambda:powertools-metrics:1.10.2'
 
-    implementation 'software.amazon.lambda:powertools-sqs:1.10.0'
-    aspectpath 'software.amazon.lambda:powertools-sqs:1.10.0'
+    implementation 'software.amazon.lambda:powertools-sqs:1.10.2'
+    aspectpath 'software.amazon.lambda:powertools-sqs:1.10.2'
 
-    implementation 'software.amazon.lambda:powertools-parameters:1.10.0'
-    aspectpath 'software.amazon.lambda:powertools-parameters:1.10.0'
+    implementation 'software.amazon.lambda:powertools-parameters:1.10.2'
+    aspectpath 'software.amazon.lambda:powertools-parameters:1.10.2'
 
-    implementation 'software.amazon.lambda:powertools-validation:1.10.0'
-    aspectpath 'software.amazon.lambda:powertools-validation:1.10.0'
+    implementation 'software.amazon.lambda:powertools-validation:1.10.2'
+    aspectpath 'software.amazon.lambda:powertools-validation:1.10.2'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
