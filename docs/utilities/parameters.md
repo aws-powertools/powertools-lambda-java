@@ -24,7 +24,7 @@ To install this utility, add the following dependency to your project.
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-parameters</artifactId>
-        <version>1.10.0</version>
+        <version>1.10.2</version>
     </dependency>
     ```
 === "Gradle"
@@ -32,7 +32,7 @@ To install this utility, add the following dependency to your project.
     ```groovy
      dependencies {
         ...
-        aspect 'software.amazon.lambda:powertools-parameters:1.10.0'
+        aspect 'software.amazon.lambda:powertools-parameters:1.10.2'
     }
     ```
 
@@ -433,6 +433,6 @@ If you want to use the ```@Param``` annotation in your project add configuration
 
     dependencies {
         ...
-        aspect 'software.amazon.lambda:powertools-parameters:1.10.0'
+        aspect 'software.amazon.lambda:powertools-parameters:1.10.2'
     }
     ```
