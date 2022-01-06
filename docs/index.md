@@ -46,17 +46,17 @@ For more information about the project and available options refer to this [repo
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-tracing</artifactId>
-            <version>1.10.1</version>
+            <version>{{ powertools.version }}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
-            <version>1.10.1</version>
+            <version>{{ powertools.version }}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-metrics</artifactId>
-            <version>1.10.1</version>
+            <version>{{ powertools.version }}</version>
         </dependency>
         ...
     </dependencies>
@@ -114,9 +114,9 @@ For more information about the project and available options refer to this [repo
     }
 
     dependencies {
-        aspect 'software.amazon.lambda:powertools-logging:1.10.1'
-        aspect 'software.amazon.lambda:powertools-tracing:1.10.1'
-        aspect 'software.amazon.lambda:powertools-metrics:1.10.1'
+        aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+        aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+        aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
     }
     ```
 
