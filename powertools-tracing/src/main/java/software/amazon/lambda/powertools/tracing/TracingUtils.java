@@ -13,11 +13,11 @@
  */
 package software.amazon.lambda.powertools.tracing;
 
+import java.util.function.Consumer;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
-
-import java.util.function.Consumer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 
@@ -27,6 +27,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
  *
  */
 public final class TracingUtils {
+    private static ObjectMapper objectMapper;
 
     /**
      * Put an annotation to the current subsegment with a String value.
@@ -154,5 +155,19 @@ public final class TracingUtils {
         } finally {
             AWSXRay.endSubsegment();
         }
+    }
+
+    /**
+     * Sets the instance of ObjectMapper object which is used for serialising object response when
+     * {@code @Tracing(captureMode=CaptureMode.RESPONSE)}.
+     *
+     * @param objectMapper Custom implementation of object mapper to be used for serializing response
+     */
+    public static void defaultObjectMapper(ObjectMapper objectMapper) {
+        TracingUtils.objectMapper = objectMapper;
+    }
+
+    public static ObjectMapper objectMapper() {
+        return objectMapper;
     }
 }

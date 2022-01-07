@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.tracing.internal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -34,6 +33,7 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledExplicitlyForResponseAndError;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForError;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponse;
+import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponseWithCustomMapper;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
@@ -43,6 +43,7 @@ import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -85,7 +86,11 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureNonHandlerMethod() {
         nonHandlerMethod.doSomething();
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .anySatisfy(segment ->
                         assertThat(segment.getName()).isEqualTo("## doSomething"));
@@ -94,7 +99,11 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureNonHandlerMethodWithCustomSegmentName() {
         nonHandlerMethod.doSomethingCustomName();
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .anySatisfy(segment ->
                         assertThat(segment.getName()).isEqualTo("custom"));
@@ -103,6 +112,9 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureTraces() {
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -123,6 +135,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledWithException();
 
         Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -146,6 +161,9 @@ class LambdaTracingAspectTest {
     void shouldCaptureTracesForStream() throws IOException {
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
@@ -165,6 +183,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerToolDisabled();
         requestHandler.handleRequest(new Object(), context);
 
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .isEmpty();
 
@@ -180,6 +201,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledWithNoMetaData();
 
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -200,6 +224,9 @@ class LambdaTracingAspectTest {
 
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
@@ -218,6 +245,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledWithNoMetaDataDeprecated();
 
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -239,6 +269,9 @@ class LambdaTracingAspectTest {
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
 
             requestHandler.handleRequest(new Object(), context);
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
@@ -262,6 +295,9 @@ class LambdaTracingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
+
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
@@ -278,6 +314,31 @@ class LambdaTracingAspectTest {
     }
 
     @Test
+    void shouldCaptureTracesForSelfReferencingReturnTypesViaCustomMapper() {
+        requestHandler = new PowerTracerToolEnabledForResponseWithCustomMapper();
+
+        requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
+                .hasSize(1)
+                .allSatisfy(subsegment -> {
+                    assertThat(subsegment.getMetadata())
+                            .hasSize(1)
+                            .containsKey("lambdaHandler");
+
+                    assertThat(subsegment.getMetadata().get("lambdaHandler"))
+                            .hasFieldOrPropertyWithValue("handleRequest response", "{\"name\":\"parent\",\"c\":{\"name\":\"child\",\"p\":\"parent\"}}");
+                });
+
+        assertThatNoException().isThrownBy(AWSXRay::endSegment);
+
+        AWSXRay.beginSegment(LambdaTracingAspectTest.class.getName());
+    }
+
+    @Test
     void shouldCaptureTracesIfExplicitlyEnabledBothAndEnvironmentVariableIsDisabled() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.containsKey("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn(true);
@@ -287,6 +348,9 @@ class LambdaTracingAspectTest {
             requestHandler = new PowerTracerToolEnabledExplicitlyForResponseAndError();
 
             requestHandler.handleRequest(new Object(), context);
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
@@ -310,7 +374,13 @@ class LambdaTracingAspectTest {
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledWithException();
 
-            catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+            Throwable throwable = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+            assertThat(throwable)
+                    .isInstanceOf(RuntimeException.class);
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
@@ -334,6 +404,9 @@ class LambdaTracingAspectTest {
             requestHandler = new PowerTracerToolEnabledForError();
 
             Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)

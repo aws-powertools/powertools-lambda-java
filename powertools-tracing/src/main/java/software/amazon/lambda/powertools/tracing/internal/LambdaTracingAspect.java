@@ -14,7 +14,6 @@
 package software.amazon.lambda.powertools.tracing.internal;
 
 import java.util.function.Supplier;
-
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Subsegment;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -30,6 +29,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.tracing.TracingUtils.objectMapper;
 
 @Aspect
 public final class LambdaTracingAspect {
@@ -59,7 +59,7 @@ public final class LambdaTracingAspect {
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
             if (captureResponse) {
-                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", methodReturn);
+                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", null != objectMapper() ? objectMapper().writeValueAsString(methodReturn): methodReturn);
             }
 
             if (placedOnHandlerMethod(pjp)) {
@@ -69,7 +69,7 @@ public final class LambdaTracingAspect {
             return methodReturn;
         } catch (Exception e) {
             if (captureError) {
-                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " error", e);
+                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " error", null != objectMapper() ? objectMapper().writeValueAsString(e) : e);
             }
             throw e;
         } finally {
