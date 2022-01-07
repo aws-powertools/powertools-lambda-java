@@ -8,6 +8,11 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.10.2] - 2022-01-07
+
+<PLEASE REMEBER TO UPDATE CHANGE LOG>
+
+
 ## [1.10.1] - 2022-01-06
 
 * **Logging**: Upgrade Log4j to version 2.17.1 for [CVE-2021-44832](https://nvd.nist.gov/vuln/detail/CVE-2021-44832)
