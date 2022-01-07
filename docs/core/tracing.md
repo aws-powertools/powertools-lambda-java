@@ -164,6 +164,38 @@ context for an operation using any native object.
     }
     ```
 
+## Override default object mapper
+
+You can optionally choose to override default object mapper which is used to serialize method response and exceptions when enabled. You might
+want to supply custom object mapper in order to control how serialisation is done, for example, when you want to log only
+specific fields from received event due to security.
+
+=== "App.java"
+
+    ```java hl_lines="10-14"
+    import software.amazon.lambda.powertools.tracing.Tracing;
+    import software.amazon.lambda.powertools.tracing.TracingUtils;
+    import static software.amazon.lambda.powertools.tracing.CaptureMode.RESPONSE;
+
+    /**
+     * Handler for requests to Lambda function.
+     */
+    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> { 
+        static {
+            ObjectMapper objectMapper = new ObjectMapper();
+            SimpleModule simpleModule = new SimpleModule();
+            objectMapper.registerModule(simpleModule);
+
+            TracingUtils.defaultObjectMapper(objectMapper);
+        }
+    
+        @Tracing(captureMode = RESPONSE)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            ...
+        }
+    }
+    ```
+
 ## Utilities
 
 Tracing modules comes with certain utility method when you don't want to use annotation for capturing a code block
