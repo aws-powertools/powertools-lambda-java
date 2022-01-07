@@ -30,7 +30,7 @@ jobs:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
-          include: "**/*pom.xml"
+          include: "pom.xml"
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in build.gradle
         uses: jacobtomlinson/gha-find-replace@v2
         with:
