@@ -24,13 +24,20 @@ jobs:
           replace: 'version: ${{ github.event.inputs.targetRelease }}'
           regex: false
           include: "mkdocs.yml"
-      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in pom.xml
+      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in main pom.xml
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
           include: "pom.xml"
+      - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in modules pom.xml
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: ${{ env.CURRENT_VERSION }}
+          replace: ${{ github.event.inputs.targetRelease }}
+          regex: false
+          include: "**/*pom.xml"
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in build.gradle
         uses: jacobtomlinson/gha-find-replace@v2
         with:
