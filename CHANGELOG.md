@@ -8,6 +8,10 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.10.2] - 2022-01-07
+
+* **Tracing**: Ability to override object mapper used for serializing method response as trace metadata when enabled. This provides users ability to customize how and what you want to capture as metadata from method response object. [#698](https://github.com/awslabs/aws-lambda-powertools-java/pull/698)
+
 ## [1.10.1] - 2022-01-06
 
 * **Logging**: Upgrade Log4j to version 2.17.1 for [CVE-2021-44832](https://nvd.nist.gov/vuln/detail/CVE-2021-44832)
