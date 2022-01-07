@@ -86,7 +86,11 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureNonHandlerMethod() {
         nonHandlerMethod.doSomething();
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .anySatisfy(segment ->
                         assertThat(segment.getName()).isEqualTo("## doSomething"));
@@ -95,7 +99,11 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureNonHandlerMethodWithCustomSegmentName() {
         nonHandlerMethod.doSomethingCustomName();
-        assertThat(AWSXRay.getTraceEntity().getSubsegments())
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .anySatisfy(segment ->
                         assertThat(segment.getName()).isEqualTo("custom"));
@@ -104,6 +112,9 @@ class LambdaTracingAspectTest {
     @Test
     void shouldCaptureTraces() {
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -124,6 +135,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledWithException();
 
         Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -147,6 +161,9 @@ class LambdaTracingAspectTest {
     void shouldCaptureTracesForStream() throws IOException {
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
@@ -166,6 +183,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerToolDisabled();
         requestHandler.handleRequest(new Object(), context);
 
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .isEmpty();
 
@@ -181,6 +201,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledWithNoMetaData();
 
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -201,6 +224,9 @@ class LambdaTracingAspectTest {
 
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
                 .allSatisfy(subsegment -> {
@@ -219,6 +245,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledWithNoMetaDataDeprecated();
 
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -240,6 +269,9 @@ class LambdaTracingAspectTest {
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_RESPONSE")).thenReturn("false");
 
             requestHandler.handleRequest(new Object(), context);
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
@@ -263,6 +295,9 @@ class LambdaTracingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
+
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
@@ -283,6 +318,9 @@ class LambdaTracingAspectTest {
         requestHandler = new PowerTracerToolEnabledForResponseWithCustomMapper();
 
         requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                 .hasSize(1)
@@ -311,6 +349,9 @@ class LambdaTracingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
+
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
                     .allSatisfy(subsegment -> {
@@ -333,7 +374,13 @@ class LambdaTracingAspectTest {
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_TRACER_CAPTURE_ERROR")).thenReturn("false");
             requestHandler = new PowerTracerToolEnabledWithException();
 
-            catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+            Throwable throwable = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+            assertThat(throwable)
+                    .isInstanceOf(RuntimeException.class);
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
@@ -357,6 +404,9 @@ class LambdaTracingAspectTest {
             requestHandler = new PowerTracerToolEnabledForError();
 
             Throwable exception = catchThrowable(() -> requestHandler.handleRequest(new Object(), context));
+
+            assertThat(AWSXRay.getTraceEntity())
+                    .isNotNull();
 
             assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
                     .hasSize(1)
