@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.tracing.internal;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -34,6 +33,7 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledExplicitlyForResponseAndError;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForError;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponse;
+import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponseWithCustomMapper;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
@@ -43,6 +43,7 @@ import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -275,6 +276,28 @@ class LambdaTracingAspectTest {
                                 .containsKey("lambdaHandler");
                     });
         }
+    }
+
+    @Test
+    void shouldCaptureTracesForSelfReferencingReturnTypesViaCustomMapper() {
+        requestHandler = new PowerTracerToolEnabledForResponseWithCustomMapper();
+
+        requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
+                .hasSize(1)
+                .allSatisfy(subsegment -> {
+                    assertThat(subsegment.getMetadata())
+                            .hasSize(1)
+                            .containsKey("lambdaHandler");
+
+                    assertThat(subsegment.getMetadata().get("lambdaHandler"))
+                            .hasFieldOrPropertyWithValue("handleRequest response", "{\"name\":\"parent\",\"c\":{\"name\":\"child\",\"p\":\"parent\"}}");
+                });
+
+        assertThatNoException().isThrownBy(AWSXRay::endSegment);
+
+        AWSXRay.beginSegment(LambdaTracingAspectTest.class.getName());
     }
 
     @Test
