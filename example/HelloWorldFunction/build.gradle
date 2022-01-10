@@ -1,6 +1,6 @@
 plugins{
     id 'java'
-    id 'aspectj.AspectjGradlePlugin' version '0.0.7'
+    id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
 }
 
 repositories {
@@ -8,23 +8,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'software.amazon.lambda:powertools-tracing:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-tracing:1.10.2'
-
-    implementation 'software.amazon.lambda:powertools-logging:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-logging:1.10.2'
-
-    implementation 'software.amazon.lambda:powertools-metrics:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-metrics:1.10.2'
-
-    implementation 'software.amazon.lambda:powertools-sqs:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-sqs:1.10.2'
-
-    implementation 'software.amazon.lambda:powertools-parameters:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-parameters:1.10.2'
-
-    implementation 'software.amazon.lambda:powertools-validation:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-validation:1.10.2'
+    aspect 'software.amazon.lambda:powertools-logging:1.10.2'
+    aspect 'software.amazon.lambda:powertools-tracing:1.10.2'
+    aspect 'software.amazon.lambda:powertools-metrics:1.10.2'
+    aspect 'software.amazon.lambda:powertools-sqs:1.10.2'
+    aspect 'software.amazon.lambda:powertools-parameters:1.10.2'
+    aspect 'software.amazon.lambda:powertools-validation:1.10.2'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.1.0'
@@ -32,5 +21,8 @@ dependencies {
     implementation 'org.apache.logging.log4j:log4j-api:2.16.0'
     implementation 'org.apache.logging.log4j:log4j-core:2.16.0'
 
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
 }
+
+sourceCompatibility = 11
+targetCompatibility = 11

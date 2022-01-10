@@ -118,6 +118,9 @@ For more information about the project and available options refer to this [repo
         aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
         aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
     }
+
+    sourceCompatibility = 11
+    targetCompatibility = 11
     ```
 
 ## Environment variables
