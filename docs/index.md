@@ -117,9 +117,6 @@ For more information about the project and available options refer to this [repo
         aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
         aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
         aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
-        implementation 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
-        implementation 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
-        implementation 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
     }
 
     sourceCompatibility = 11
