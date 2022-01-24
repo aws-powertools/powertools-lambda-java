@@ -11,29 +11,26 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.validation;
+package software.amazon.lambda.powertools.utilities.jmespath;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import io.burt.jmespath.Expression;
 import org.junit.jupiter.api.Test;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class Base64FunctionTest {
+public class Base64GZipFunctionTest {
 
     @Test
-    public void testPowertoolsBase64() throws IOException {
-        JsonNode event = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event.json"));
-        Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile("basket.powertools_base64(hiddenProduct)");
+    public void testPowertoolsGzip() throws IOException {
+        JsonNode event = JsonConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
+        Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(hiddenProduct)");
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
-        assertThat(result.asText()).isEqualTo("{\n" +
-                "  \"id\": 43242,\n" +
-                "  \"name\": \"FooBar XY\",\n" +
-                "  \"price\": 258\n" +
-                "}");
+        assertThat(result.asText()).isEqualTo("{  \"id\": 43242,  \"name\": \"FooBar XY\",  \"price\": 258}");
     }
 }
