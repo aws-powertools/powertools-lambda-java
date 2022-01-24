@@ -28,6 +28,7 @@
 
     <modules>
         <module>powertools-core</module>
+        <module>powertools-utilities</module>
         <module>powertools-logging</module>
         <module>powertools-tracing</module>
         <module>powertools-sqs</module>
@@ -36,6 +37,7 @@
         <module>powertools-validation</module>
         <module>powertools-test-suite</module>
         <module>powertools-cloudformation</module>
+        <module>powertools-idempotency</module>
     </modules>
 
     <scm>
@@ -103,6 +105,11 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-tracing</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-utilities</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

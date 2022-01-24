@@ -28,6 +28,10 @@
                 <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
                 <Method name="getAdditionalFields"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
+                <Method name="getPersistenceStore"/>
+            </And>
         </Or>
     </Match>
     <Match>
@@ -60,6 +64,18 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
                 <Field name="transformer"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
+                <Field name="store"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
+                <Field name="pjp"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore$Builder"/>
+                <Field name="dynamoDbClient"/>
             </And>
         </Or>
     </Match>
