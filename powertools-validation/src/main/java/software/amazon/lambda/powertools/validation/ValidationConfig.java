@@ -18,18 +18,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import io.burt.jmespath.JmesPath;
-import io.burt.jmespath.RuntimeConfiguration;
 import io.burt.jmespath.function.BaseFunction;
-import io.burt.jmespath.function.FunctionRegistry;
-import io.burt.jmespath.jackson.JacksonRuntime;
-import software.amazon.lambda.powertools.validation.jmespath.Base64Function;
-import software.amazon.lambda.powertools.validation.jmespath.Base64GZipFunction;
-
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
+import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
+import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 
 /**
  * Use this if you need to customize some part of the JSON Schema validation
- * (eg. specification version, Jackson ObjectMapper, or adding functions to JMESPath)
+ * (eg. specification version, Jackson ObjectMapper, or adding functions to JMESPath).
+ *
+ * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
+ * is just a wrapper of {@link JsonConfig}.
  */
 public class ValidationConfig {
     private ValidationConfig() {
@@ -43,23 +42,8 @@ public class ValidationConfig {
         return ConfigHolder.instance;
     }
 
-    private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(() -> {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper;
-    });
-
     private SpecVersion.VersionFlag jsonSchemaVersion = SpecVersion.VersionFlag.V7;
     private JsonSchemaFactory factory = JsonSchemaFactory.getInstance(jsonSchemaVersion);
-
-    private final FunctionRegistry defaultFunctions = FunctionRegistry.defaultRegistry();
-    private final FunctionRegistry customFunctions = defaultFunctions.extend(
-            new Base64Function(),
-            new Base64GZipFunction());
-    private final RuntimeConfiguration configuration = new RuntimeConfiguration.Builder()
-            .withFunctionRegistry(customFunctions)
-            .build();
-    private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
     /**
      * Set the version of the json schema specifications (default is V7)
@@ -85,13 +69,7 @@ public class ValidationConfig {
      * @param <T> Must extends {@link BaseFunction}
      */
     public <T extends BaseFunction> void addFunction(T function) {
-        FunctionRegistry functionRegistryWithExtendedFunctions = configuration.functionRegistry().extend(function);
-
-        RuntimeConfiguration updatedConfig = new RuntimeConfiguration.Builder()
-                .withFunctionRegistry(functionRegistryWithExtendedFunctions)
-                .build();
-
-        jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
+        JsonConfig.get().addFunction(function);
     }
 
     /**
@@ -109,7 +87,7 @@ public class ValidationConfig {
      * @return the {@link JmesPath}
      */
     public JmesPath<JsonNode> getJmesPath() {
-        return jmesPath;
+        return JsonConfig.get().getJmesPath();
     }
 
     /**
@@ -118,6 +96,6 @@ public class ValidationConfig {
      * @return the {@link ObjectMapper} to serialize / deserialize JSON
      */
     public ObjectMapper getObjectMapper() {
-        return om.get();
+        return JsonConfig.get().getObjectMapper();
     }
 }
