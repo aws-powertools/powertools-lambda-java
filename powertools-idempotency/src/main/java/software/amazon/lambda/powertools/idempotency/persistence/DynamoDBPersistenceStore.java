@@ -275,7 +275,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         }
 
         /**
-         * DynamoDB attribute value for partition key (optional), by default "idempotency#<function-name>".
+         * DynamoDB attribute value for partition key (optional), by default "idempotency#[function-name]".
          * This will be used if the {@link #sortKeyAttr} is set.
          *
          * @param staticPkValue name of the partition key attribute in the table
