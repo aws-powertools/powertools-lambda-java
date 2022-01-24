@@ -19,8 +19,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.IdempotencyKey;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
@@ -39,8 +37,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
  */
 @Aspect
 public class IdempotentAspect {
-    private static final Logger LOG = LoggerFactory.getLogger(IdempotentAspect.class);
-
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(idempotent)")
     public void callAt(Idempotent idempotent) {
@@ -59,8 +55,24 @@ public class IdempotentAspect {
         if (method.getReturnType().equals(void.class)) {
             throw new IdempotencyConfigurationException("The annotated method doesn't return anything. Unable to perform idempotency on void return type");
         }
-        JsonNode payload = null;
 
+        JsonNode payload = getPayload(pjp, method);
+        if (payload == null) {
+            throw new IdempotencyConfigurationException("Unable to get payload from the method. Ensure there is at least one parameter or that you use @IdempotencyKey");
+        }
+
+        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(pjp, method.getName(), payload);
+        return idempotencyHandler.handle();
+    }
+
+    /**
+     * Retrieve the payload from the annotated method parameters
+     * @param pjp joinPoint
+     * @param method the annotated method
+     * @return the payload used for idempotency
+     */
+    private JsonNode getPayload(ProceedingJoinPoint pjp, Method method) {
+        JsonNode payload = null;
         // handleRequest or method with one parameter: get the first one
         if ((isHandlerMethod(pjp) && placedOnRequestHandler(pjp))
                 || pjp.getArgs().length == 1) {
@@ -77,12 +89,6 @@ public class IdempotentAspect {
                 }
             }
         }
-
-        if (payload == null) {
-            throw new IdempotencyConfigurationException("Unable to get payload from the method. Ensure there is at least one parameter or that you use @IdempotencyKey");
-        }
-
-        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(pjp, method.getName(), payload);
-        return idempotencyHandler.handle();
+        return payload;
     }
 }
