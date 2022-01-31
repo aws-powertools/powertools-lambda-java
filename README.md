@@ -77,7 +77,8 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 
 ## Example
 
-See **[example](./example/README.md)** for maven or gradle configurations including all features, and a SAM template with all Powertools env vars.
+See **[example](https://github.com/aws-samples/aws-lambda-powertools-examples/tree/main/java)** for example project showcasing usage of different utilities. 
+Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](https://github.com/aws-samples/aws-lambda-powertools-examples/blob/main/CONTRIBUTING.md#security-issue-notifications).
 
 ## Credits
 
