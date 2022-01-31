@@ -12,24 +12,6 @@ Globals:
     Runtime: java11
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-    Properties:
-      CodeUri: HelloWorldFunction
-      Handler: helloworld.App::handleRequest
-      MemorySize: 512
-      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
-        Variables:
-          POWERTOOLS_SERVICE_NAME: "Payment Service"
-          POWERTOOLS_LOG_LEVEL: INFO
-      Tracing: Active
-      Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
-          Properties:
-            Path: /hello
-            Method: get
-
   HelloWorldValidationFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
@@ -43,23 +25,6 @@ Resources:
           Properties:
             Path: /hello
             Method: post
-
-  HelloWorldStreamFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: HelloWorldFunction
-      Handler: helloworld.AppStream::handleRequest
-      MemorySize: 512
-      Tracing: Active
-      Environment:
-        Variables:
-          POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
-      Events:
-        HelloWorld:
-          Type: Api
-          Properties:
-            Path: /hellostream
-            Method: get
 
   HelloWorldParamsFunction:
     Type: AWS::Serverless::Function
@@ -194,16 +159,10 @@ Outputs:
   HelloWorldApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
 
   HelloWorldStreamApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World stream function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hellostream/"
-  HelloWorldStreamFunction:
-    Description: "Hello World Stream Lambda Function ARN"
-    Value: !GetAtt HelloWorldStreamFunction.Arn
 
   HelloWorldParamsApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World params function"
