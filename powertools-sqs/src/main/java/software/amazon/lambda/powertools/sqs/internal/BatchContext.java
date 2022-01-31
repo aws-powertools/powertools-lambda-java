@@ -174,7 +174,7 @@ public final class BatchContext {
 
         return sendMessageBatchResponses.stream()
                 .filter(response -> null != response && response.hasFailed())
-                .peek(sendMessageBatchResponse -> LOG.error("Failed sending message to the DLQ. Entire batch will be re processed. Check if need permissions are configured for the function. Response: {}", sendMessageBatchResponse))
+                .peek(sendMessageBatchResponse -> LOG.error("Failed sending message to the DLQ. Entire batch will be re processed. Check if needed permissions are configured for the function. Response: {}", sendMessageBatchResponse))
                 .count()  == 0;
     }
 
