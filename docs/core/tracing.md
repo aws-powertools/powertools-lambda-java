@@ -243,3 +243,89 @@ under a subsegment, or you are doing multithreaded programming. Refer examples b
 
 User should make sure to instrument the SDK clients explicitly based on the function dependency. Refer details on
 [how to instrument SDK client with Xray](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-awssdkclients.html) and [outgoing http calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-httpclients.html).
+
+## Testing your code
+
+When using `@Tracing` annotation, your Junit test cases needs to be configured to create parent Segment required by [AWS X-Ray SDK for Java](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html).
+
+Below are two ways in which you can configure your tests.
+
+#### Configure environment variable on project level (Recommended)
+
+You can choose to configure environment variable on project level for your test cases run. This is recommended approach as it will avoid the need of configuring each test case specifically.
+
+Below are examples configuring your maven/gradle projects. You can choose to configure it differently as well as long as you are making sure that environment variable `LAMBDA_TASK_ROOT` is set. This variable is 
+used internally via AWS X-Ray SDK to configure itself properly for lambda runtime.
+
+=== "Maven (pom.xml)"
+
+    ```xml hl_lines="4-13"
+    <build>
+        ...
+      <plugins>
+        <!--  Configures environment variable to avoid initialization of AWS X-Ray segments for each tests-->
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-surefire-plugin</artifactId>
+              <configuration>
+                  <environmentVariables>
+                      <LAMBDA_TASK_ROOT>handler</LAMBDA_TASK_ROOT>
+                  </environmentVariables>
+              </configuration>
+          </plugin>
+      </plugins>
+    </build>
+    
+    ```
+
+=== "Gradle (build.gradle) "
+    
+    ```json hl_lines="2-4"
+    // Configures environment variable to avoid initialization of AWS X-Ray segments for each tests
+    test {
+        environment "LAMBDA_TASK_ROOT", "handler"
+    }
+    ```
+
+#### Configure test cases (Not Recommended)
+
+You can choose to configure each of your test case instead as well if you choose not to configure environment variable on project level. 
+Below is an example configuration needed for each test case.
+
+=== "AppTest.java"
+
+    ```java hl_lines="10 11 12 17 18 19 20 21 22 23 24"
+    import com.amazonaws.xray.AWSXRay;
+    import org.junit.After;
+    import org.junit.Before;
+    import org.junit.Test;
+
+    public class AppTest {
+
+        @Before
+        public void setup() {
+            if(null == System.getenv("LAMBDA_TASK_ROOT")) {
+                AWSXRay.beginSegment("test");
+            }
+        }
+        
+        @After
+        public void tearDown() {
+            // Needed when using sam build --use-container
+            if (AWSXRay.getCurrentSubsegmentOptional().isPresent()) {
+                AWSXRay.endSubsegment();
+            }
+
+            if(null == System.getenv("LAMBDA_TASK_ROOT")) {
+              AWSXRay.endSegment();
+            }
+        }
+
+        @Test
+        public void successfulResponse() {
+            // test logic
+        }
+    ```
+
+
+
