@@ -6,7 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -158,17 +159,23 @@ public final class BatchContext {
                 })
                 .collect(toList());
 
-        batchRequest(dlqMessages, 10, entriesToSend -> {
+        List<SendMessageBatchResponse> sendMessageBatchResponses = batchRequest(dlqMessages, 10, entriesToSend -> {
 
             SendMessageBatchResponse sendMessageBatchResponse = client.sendMessageBatch(SendMessageBatchRequest.builder()
-                            .entries(entriesToSend)
-                            .queueUrl(dlqUrl.get())
-                            .build());
+                    .entries(entriesToSend)
+                    .queueUrl(dlqUrl.get())
+                    .build());
+
 
             LOG.debug("Response from send batch message to DLQ request {}", sendMessageBatchResponse);
+
+            return sendMessageBatchResponse;
         });
 
-        return true;
+        return sendMessageBatchResponses.stream()
+                .filter(response -> null != response && response.hasFailed())
+                .peek(sendMessageBatchResponse -> LOG.error("Failed sending message to the DLQ. Entire batch will be re processed. Check if needed permissions are configured for the function. Response: {}", sendMessageBatchResponse))
+                .count()  == 0;
     }
 
 
@@ -220,17 +227,21 @@ public final class BatchContext {
                 DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
 
                 LOG.debug("Response from delete request {}", deleteMessageBatchResponse);
+
+                return deleteMessageBatchResponse;
             });
         }
     }
 
-    private <T> void batchRequest(final List<T> listOFEntries,
-                                  final int size,
-                                  final Consumer<List<T>> batchLogic) {
-        IntStream.range(0, listOFEntries.size())
+    private <T, R> List<R> batchRequest(final List<T> listOFEntries,
+                                        final int size,
+                                        final Function<List<T>, R> batchLogic) {
+
+        return IntStream.range(0, listOFEntries.size())
                 .filter(index -> index % size == 0)
                 .mapToObj(index -> listOFEntries.subList(index, Math.min(index + size, listOFEntries.size())))
-                .forEach(batchLogic);
+                .map(batchLogic)
+                .collect(Collectors.toList());
     }
 
     private String url(String queueArn) {

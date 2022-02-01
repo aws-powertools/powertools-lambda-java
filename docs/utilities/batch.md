@@ -93,7 +93,11 @@ This utility requires additional permissions to work as expected. Lambda functio
 If you are also using [nonRetryableExceptions](#move-non-retryable-messages-to-a-dead-letter-queue) attribute, utility will need additional permission of `sqs:GetQueueAttributes` on source SQS. 
 It also needs `sqs:SendMessage` and `sqs:SendMessageBatch` on configured dead letter queue.  
 
-Refer [example project](https://github.com/aws-samples/aws-lambda-powertools-examples/blob/main/java/SqsBatchProcessing/template.yaml#L67) for policy details example.
+If source or dead letter queue is configured to use encryption at rest using [AWS Key Management Service (KMS)](https://aws.amazon.com/kms/), function will need additional permissions of 
+`kms:GenerateDataKey` and `kms:Decrypt` on the KMS key being used for encryption. Refer [docs](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-key-management.html#compatibility-with-aws-services) for more details.
+
+Refer [example project](https://github.com/aws-samples/aws-lambda-powertools-examples/blob/main/java/SqsBatchProcessing/template.yaml#L105) for policy details example.
+
 
 ## Processing messages from SQS
 

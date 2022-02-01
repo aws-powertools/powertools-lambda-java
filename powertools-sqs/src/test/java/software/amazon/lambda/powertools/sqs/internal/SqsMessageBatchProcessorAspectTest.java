@@ -1,10 +1,7 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.HashMap;
-import java.util.function.Consumer;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
@@ -15,11 +12,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.BatchResultErrorEntry;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesRequest;
 import software.amazon.awssdk.services.sqs.model.GetQueueAttributesResponse;
 import software.amazon.awssdk.services.sqs.model.QueueAttributeName;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 import software.amazon.lambda.powertools.sqs.handlers.LambdaHandlerApiGateway;
 import software.amazon.lambda.powertools.sqs.handlers.PartialBatchFailureSuppressedHandler;
@@ -30,7 +29,6 @@ import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandlerWithNonRe
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.in;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -135,6 +133,38 @@ public class SqsMessageBatchProcessorAspectTest {
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
         verify(sqsClient).sendMessageBatch(any(SendMessageBatchRequest.class));
+    }
+
+    @Test
+    void shouldBatchProcessAndThrowExceptionForNonRetryableExceptionWhenMoveToDlqReturnFailedResponse() {
+        requestHandler = new SqsMessageHandlerWithNonRetryableHandler();
+        event.getRecords().get(0).setMessageId("");
+
+        when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenReturn(SendMessageBatchResponse.builder()
+                        .failed(BatchResultErrorEntry.builder()
+                                .message("Permission Error")
+                                .code("KMS.AccessDeniedException")
+                                .senderFault(true)
+                                .build())
+                .build());
+
+        HashMap<QueueAttributeName, String> attributes = new HashMap<>();
+
+        attributes.put(QueueAttributeName.REDRIVE_POLICY, "{\n" +
+                "  \"deadLetterTargetArn\": \"arn:aws:sqs:us-east-2:123456789012:retry-queue\",\n" +
+                "  \"maxReceiveCount\": 2\n" +
+                "}");
+
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
+                .attributes(attributes)
+                .build());
+
+        Assertions.assertThatExceptionOfType(SQSBatchProcessingException.class).
+                isThrownBy(() -> requestHandler.handleRequest(event, context));
+
+        verify(interactionClient).listQueues();
+        verify(sqsClient).sendMessageBatch(any(SendMessageBatchRequest.class));
+        verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
 
     @Test
