@@ -8,6 +8,18 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.10.3] - 2022-02-01
+
+### Bug Fixes
+
+* **SQS Batch processing**: Prevent message to be marked as success if failed sending to DLQ for non retryable exceptions. [#731]https://github.com/awslabs/aws-lambda-powertools-java/pull/731
+
+### Documentation
+
+
+* **SQS Batch processing**: Improve [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/batch/#iam-permissions) on IAM premissions required by function when using utility with an encrypted SQS queue with customer managed KMS keys.
+
+
 ## [1.10.2] - 2022-01-07
 
 * **Tracing**: Ability to override object mapper used for serializing method response as trace metadata when enabled. This provides users ability to customize how and what you want to capture as metadata from method response object. [#698](https://github.com/awslabs/aws-lambda-powertools-java/pull/698)
