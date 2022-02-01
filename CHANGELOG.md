@@ -12,7 +12,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Bug Fixes
 
-* **SQS Batch processing**: Prevent message to be marked as success if failed sending to DLQ for non retryable exceptions. [#731]https://github.com/awslabs/aws-lambda-powertools-java/pull/731
+* **SQS Batch processing**: Prevent message to be marked as success if failed sending to DLQ for non retryable exceptions. [#731](https://github.com/awslabs/aws-lambda-powertools-java/pull/731)
 
 ### Documentation
 
