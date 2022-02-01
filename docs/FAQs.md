@@ -26,3 +26,24 @@ To enable in-place weaving feature you need to use following `aspectj-maven-plug
     </aspectLibraries>
 </configuration>
 ```
+
+## How can I use Powertools with Kotlin projects?
+
+Poweretools uses `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. When using it with Kotlin projects, it is required to `forceAjcCompile`. 
+No explicit configuration should be required for gradle projects. 
+
+To enable `forceAjcCompile` you need to use following `aspectj-maven-plugin` configuration:
+
+```xml hl_lines="2"
+<configuration>
+    <forceAjcCompile>true</forceAjcCompile> 
+    ...
+    <aspectLibraries>
+        <aspectLibrary>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+        </aspectLibrary>
+    </aspectLibraries>
+</configuration>
+```
+
