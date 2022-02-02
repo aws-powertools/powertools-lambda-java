@@ -13,6 +13,9 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+/**
+ * Exception thrown when trying to store an item which already exists.
+ */
 public class IdempotencyItemAlreadyExistsException extends RuntimeException {
     private static final long serialVersionUID = 9027152772149436500L;
 

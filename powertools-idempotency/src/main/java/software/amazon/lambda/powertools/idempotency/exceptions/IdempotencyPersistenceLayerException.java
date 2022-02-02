@@ -13,7 +13,10 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
-public class IdempotencyPersistenceLayerException extends RuntimeException{
+/**
+ * Exception thrown when a technical error occurred with the persistence layer (eg. insertion, deletion, ... in database)
+ */
+public class IdempotencyPersistenceLayerException extends RuntimeException {
     private static final long serialVersionUID = 6781832947434168547L;
 
     public IdempotencyPersistenceLayerException(String msg, Exception e) {

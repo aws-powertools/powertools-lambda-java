@@ -13,7 +13,15 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
-public class IdempotencyConfigurationException extends RuntimeException{
+/**
+ * Exception thrown when Idempotency is not well configured:
+ * <ul>
+ *     <li>An annotated method does not return anything</li>
+ *     <li>An annotated method does not have parameters or more than one without
+ *     the {@link software.amazon.lambda.powertools.idempotency.IdempotencyKey} annotation</li>
+ * </ul>
+ */
+public class IdempotencyConfigurationException extends RuntimeException {
     private static final long serialVersionUID = 560587720373305487L;
 
     public IdempotencyConfigurationException(String message) {

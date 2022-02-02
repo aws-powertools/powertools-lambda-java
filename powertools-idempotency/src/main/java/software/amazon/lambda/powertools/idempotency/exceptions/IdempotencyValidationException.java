@@ -13,6 +13,12 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+
+/**
+ * Exception thrown only when using {@link IdempotencyConfig#getPayloadValidationJMESPath()} is configured
+ * and the payload changed between two calls (but with the same idempotency key).
+ */
 public class IdempotencyValidationException extends RuntimeException {
     private static final long serialVersionUID = -4218652810664634761L;
 

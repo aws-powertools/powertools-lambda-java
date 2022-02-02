@@ -13,6 +13,9 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+/**
+ * Exception thrown when the item was not found in the persistence store.
+ */
 public class IdempotencyItemNotFoundException extends RuntimeException{
     private static final long serialVersionUID = 4818288566747993032L;
 

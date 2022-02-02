@@ -13,6 +13,10 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+/**
+ * Exception thrown only when using {@link software.amazon.lambda.powertools.idempotency.IdempotencyConfig#throwOnNoIdempotencyKey()},
+ * and if a key could not be found in the event (for example when having a bad JMESPath configured)
+ */
 public class IdempotencyKeyException extends RuntimeException {
     private static final long serialVersionUID = -8514965705001281773L;
 

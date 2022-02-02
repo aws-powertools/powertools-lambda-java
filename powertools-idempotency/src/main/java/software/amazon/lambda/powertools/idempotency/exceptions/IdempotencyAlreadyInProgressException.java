@@ -13,6 +13,10 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+/**
+ * This exception is thrown when the same payload is sent
+ * while the previous one was not yet fully stored in the persistence layer (marked as COMPLETED).
+ */
 public class IdempotencyAlreadyInProgressException extends RuntimeException {
     private static final long serialVersionUID = 7229475093418832265L;
 

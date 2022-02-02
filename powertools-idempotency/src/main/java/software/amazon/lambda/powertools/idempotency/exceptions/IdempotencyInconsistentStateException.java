@@ -13,6 +13,10 @@
  */
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+/**
+ * IdempotencyInconsistentStateException can happen under rare but expected cases
+ * when persistent state changes in the small-time between put & get requests.
+ */
 public class IdempotencyInconsistentStateException extends RuntimeException {
     private static final long serialVersionUID = -4293951999802300672L;
 
