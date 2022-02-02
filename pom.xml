@@ -113,11 +113,6 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-utilities</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-core</artifactId>
                 <version>${lambda.core.version}</version>
