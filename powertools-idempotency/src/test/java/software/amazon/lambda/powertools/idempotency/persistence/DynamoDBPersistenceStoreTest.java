@@ -299,6 +299,7 @@ public class DynamoDBPersistenceStoreTest {
 
     @BeforeAll
     public static void setupDynamo() {
+        System.setProperty("sqlite4java.library.path", "src/test/native-libs");
         int port = getFreePort();
         try {
             dynamoProxy = ServerRunner.createServerFromCommandLineArgs(new String[]{
