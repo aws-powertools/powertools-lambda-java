@@ -1,4 +1,4 @@
-package helloworld;
+package software.amazon.lambda.powertools.idempotency.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -6,6 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
@@ -20,10 +21,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class AppIdempotency implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+public class IdempotencyFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger LOG = LogManager.getLogger();
 
-    public AppIdempotency() {
+    public boolean handlerExecuted = false;
+
+    public IdempotencyFunction(DynamoDbClient client) {
         // we need to initialize idempotency configuration before the handleRequest method is called
         Idempotency.config().withConfig(
                         IdempotencyConfig.builder()
@@ -32,22 +35,14 @@ public class AppIdempotency implements RequestHandler<APIGatewayProxyRequestEven
                 .withPersistenceStore(
                         DynamoDBPersistenceStore.builder()
                                 .withTableName("idempotency_table")
+                                .withDynamoDbClient(client)
                                 .build()
                 ).configure();
     }
 
-
-    /**
-     * Try with:
-     * <pre>
-     *     curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/helloidem/ -H "Content-Type: application/json" -d '{"address": "https://checkip.amazonaws.com"}'
-     * </pre>
-     * @param input
-     * @param context
-     * @return
-     */
     @Idempotent
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+        handlerExecuted = true;
         Map<String, String> headers = new HashMap<>();
 
         headers.put("Content-Type", "application/json");

@@ -13,22 +13,15 @@
  */
 package software.amazon.lambda.powertools.idempotency.persistence;
 
-import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
-import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
-import org.junit.jupiter.api.*;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.lambda.powertools.idempotency.DynamoDBConfig;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.URI;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -42,11 +35,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * These test are using DynamoDBLocal and sqlite, see https://nickolasfisher.com/blog/Configuring-an-In-Memory-DynamoDB-instance-with-Java-for-Integration-Testing
  * NOTE: on a Mac with Apple Chipset, you need to use the Oracle JDK x86 64-bit
  */
-public class DynamoDBPersistenceStoreTest {
-    private static final String TABLE_NAME = "idempotency_table";
-    private static final String TABLE_NAME_CUSTOM = "idempotency_table_custom";
-    private static DynamoDBProxyServer dynamoProxy;
-    private static DynamoDbClient client;
+public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
+    protected static final String TABLE_NAME_CUSTOM = "idempotency_table_custom";
     private Map<String, AttributeValue> key;
     private DynamoDBPersistenceStore dynamoDBPersistenceStore;
 
@@ -270,17 +260,6 @@ public class DynamoDBPersistenceStoreTest {
         }
     }
 
-    private static int getFreePort() {
-        try {
-            ServerSocket socket = new ServerSocket(0);
-            int port = socket.getLocalPort();
-            socket.close();
-            return port;
-        } catch (IOException ioe) {
-            throw new RuntimeException(ioe);
-        }
-    }
-
     @BeforeEach
     public void setup() {
         dynamoDBPersistenceStore = DynamoDBPersistenceStore.builder()
@@ -294,53 +273,6 @@ public class DynamoDBPersistenceStoreTest {
         if (key != null) {
             client.deleteItem(DeleteItemRequest.builder().tableName(TABLE_NAME).key(key).build());
             key = null;
-        }
-    }
-
-    @BeforeAll
-    public static void setupDynamo() {
-        System.setProperty("sqlite4java.library.path", "src/test/native-libs");
-        int port = getFreePort();
-        try {
-            dynamoProxy = ServerRunner.createServerFromCommandLineArgs(new String[]{
-                    "-inMemory",
-                    "-port",
-                    Integer.toString(port)
-            });
-            dynamoProxy.start();
-        } catch (Exception e) {
-            throw new RuntimeException();
-        }
-
-        client = DynamoDbClient.builder()
-                .httpClient(UrlConnectionHttpClient.builder().build())
-                .region(Region.EU_WEST_1)
-                .endpointOverride(URI.create("http://localhost:" + port))
-                .credentialsProvider(StaticCredentialsProvider.create(
-                        AwsBasicCredentials.create("FAKE", "FAKE")))
-                .build();
-
-        client.createTable(CreateTableRequest.builder()
-                .tableName(TABLE_NAME)
-                .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("id").build())
-                .attributeDefinitions(
-                        AttributeDefinition.builder().attributeName("id").attributeType(ScalarAttributeType.S).build()
-                )
-                .billingMode(BillingMode.PAY_PER_REQUEST)
-                .build());
-
-        DescribeTableResponse response = client.describeTable(DescribeTableRequest.builder().tableName(TABLE_NAME).build());
-        if (response == null) {
-            throw new RuntimeException("Table was not created within expected time");
-        }
-    }
-
-    @AfterAll
-    public static void teardownDynamo() {
-        try {
-            dynamoProxy.stop();
-        } catch (Exception e) {
-            throw new RuntimeException();
         }
     }
 }
