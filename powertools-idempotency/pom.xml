@@ -7,7 +7,7 @@
     <parent>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-parent</artifactId>
-        <version>1.10.2</version>
+        <version>1.10.3</version>
     </parent>
 
     <artifactId>powertools-idempotency</artifactId>
@@ -48,7 +48,6 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-utilities</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
