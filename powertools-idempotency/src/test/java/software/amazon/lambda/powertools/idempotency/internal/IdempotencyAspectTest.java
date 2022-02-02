@@ -205,8 +205,7 @@ public class IdempotencyAspectTest {
 
         ArgumentCaptor<Basket> resultCaptor = ArgumentCaptor.forClass(Basket.class);
         verify(store).saveSuccess(any(), resultCaptor.capture(), any());
-        assertThat(resultCaptor.getValue().getProducts()).contains(basket.getProducts().get(0));
-        assertThat(resultCaptor.getValue().getProducts()).contains(new Product(0, "fake", 0));
+        assertThat(resultCaptor.getValue().getProducts()).contains(basket.getProducts().get(0), new Product(0, "fake", 0));
     }
 
     @Test

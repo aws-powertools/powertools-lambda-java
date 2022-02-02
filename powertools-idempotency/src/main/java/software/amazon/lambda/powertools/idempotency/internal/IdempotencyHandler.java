@@ -84,7 +84,7 @@ public class IdempotencyHandler {
         } catch (IdempotencyKeyException ike) {
             throw ike;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store", e);
+            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a powertools bug, please open an issue.", e);
         }
         return getFunctionResponse();
     }
@@ -101,10 +101,10 @@ public class IdempotencyHandler {
             // This code path will only be triggered if the record is removed between saveInProgress and getRecord
             LOG.debug("An existing idempotency record was deleted before we could fetch it");
             throw new IdempotencyInconsistentStateException("saveInProgress and getRecord return inconsistent results", e);
-        } catch (IdempotencyValidationException ve) {
-            throw ve;
+        } catch (IdempotencyValidationException | IdempotencyKeyException vke) {
+            throw vke;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store", e);
+            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store. If you believe this is a powertools bug, please open an issue.", e);
         }
     }
 
@@ -142,8 +142,10 @@ public class IdempotencyHandler {
             // also raises an exception
             try {
                 persistenceStore.deleteRecord(data, handlerException);
+            } catch (IdempotencyKeyException ke) {
+                throw ke;
             } catch (Exception e) {
-                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store", e);
+                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store. If you believe this is a powertools bug, please open an issue.", e);
             }
             throw handlerException;
         }
@@ -151,7 +153,7 @@ public class IdempotencyHandler {
         try {
             persistenceStore.saveSuccess(data, response, Instant.now());
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store", e);
+            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store. If you believe this is a powertools bug, please open an issue.", e);
         }
         return response;
     }

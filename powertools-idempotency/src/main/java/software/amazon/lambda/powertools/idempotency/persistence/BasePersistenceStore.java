@@ -26,8 +26,8 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemA
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
-import software.amazon.lambda.powertools.idempotency.persistence.cache.LRUCache;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
+import software.amazon.lambda.powertools.utilities.cache.LRUCache;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -70,7 +70,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      */
     public void configure(IdempotencyConfig config, String functionName) {
         String funcEnv = System.getenv(Constants.LAMBDA_FUNCTION_NAME_ENV);
-        this.functionName = funcEnv != null ? funcEnv : "test-func";
+        this.functionName = funcEnv != null ? funcEnv : "testFunction";
         if (!StringUtils.isEmpty(functionName)) {
             this.functionName += "." + functionName;
         }

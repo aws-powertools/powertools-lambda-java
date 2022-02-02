@@ -131,7 +131,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             );
         } catch (ConditionalCheckFailedException e) {
             LOG.debug("Failed to put record for already existing idempotency key: {}", record.getIdempotencyKey());
-            throw new IdempotencyItemAlreadyExistsException("Failed to put record for already existing idempotency key: {}", e);
+            throw new IdempotencyItemAlreadyExistsException("Failed to put record for already existing idempotency key: " + record.getIdempotencyKey(), e);
         }
     }
 
