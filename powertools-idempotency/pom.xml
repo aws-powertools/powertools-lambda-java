@@ -48,6 +48,7 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-utilities</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
