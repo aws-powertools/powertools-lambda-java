@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.idempotency.persistence.cache;
+package software.amazon.lambda.powertools.utilities.cache;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

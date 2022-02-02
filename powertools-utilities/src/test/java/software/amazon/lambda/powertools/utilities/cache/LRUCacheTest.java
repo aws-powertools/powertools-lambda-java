@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.idempotency.persistence.cache;
+package software.amazon.lambda.powertools.utilities.cache;
 
 import org.junit.jupiter.api.Test;
 
@@ -28,8 +28,6 @@ public class LRUCacheTest {
         cache.put("key4", "value4");
         cache.put("key5", "value5");
 
-        assertThat(cache).hasSize(3);
-        assertThat(cache.get("key1")).isNull();
-        assertThat(cache.get("key2")).isNull();
+        assertThat(cache).hasSize(3).doesNotContainKeys("key1", "key2");
     }
 }
