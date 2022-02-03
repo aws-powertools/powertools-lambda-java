@@ -122,7 +122,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             DataRecord record = new DataRecord(
                     getHashedIdempotencyKey(data),
                     DataRecord.Status.COMPLETED,
-                    getExpiryEpochMilli(now),
+                    getExpiryEpochSecond(now),
                     responseJson,
                     getHashedPayload(data)
             );
@@ -151,7 +151,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         DataRecord record = new DataRecord(
                 idempotencyKey,
                 DataRecord.Status.INPROGRESS,
-                getExpiryEpochMilli(now),
+                getExpiryEpochSecond(now),
                 null,
                 getHashedPayload(data)
         );
@@ -298,8 +298,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param now
      * @return unix timestamp of expiry date for idempotency record
      */
-    private long getExpiryEpochMilli(Instant now) {
-        return now.plus(expirationInSeconds, ChronoUnit.SECONDS).toEpochMilli();
+    private long getExpiryEpochSecond(Instant now) {
+        return now.plus(expirationInSeconds, ChronoUnit.SECONDS).getEpochSecond();
     }
 
     /**

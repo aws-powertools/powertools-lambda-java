@@ -44,7 +44,7 @@ public class DataRecord {
      * @return Whether the record is currently expired or not
      */
     public boolean isExpired(Instant now) {
-        return expiryTimestamp != 0 && now.isAfter(Instant.ofEpochMilli(expiryTimestamp));
+        return expiryTimestamp != 0 && now.isAfter(Instant.ofEpochSecond(expiryTimestamp));
     }
 
     public Status getStatus() {

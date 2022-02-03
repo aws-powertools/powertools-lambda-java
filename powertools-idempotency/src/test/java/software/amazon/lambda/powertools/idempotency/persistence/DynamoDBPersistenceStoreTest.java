@@ -45,7 +45,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
     @Test
     public void putRecord_shouldCreateRecordInDynamoDB() throws IdempotencyItemAlreadyExistsException {
         Instant now = Instant.now();
-        long expiry = now.plus(3600, ChronoUnit.SECONDS).toEpochMilli();
+        long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         dynamoDBPersistenceStore.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
 
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
@@ -62,14 +62,14 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         // GIVEN: Insert a fake item with same id
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
-        long expiry = now.plus(30, ChronoUnit.SECONDS).toEpochMilli();
+        long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
         item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
         item.put("status", AttributeValue.builder().s(DataRecord.Status.COMPLETED.toString()).build());
         item.put("data", AttributeValue.builder().s("Fake Data").build());
         client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
 
         // WHEN: call putRecord
-        long expiry2 = now.plus(3600, ChronoUnit.SECONDS).toEpochMilli();
+        long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         assertThatThrownBy(() -> dynamoDBPersistenceStore.putRecord(
                 new DataRecord("key",
                         DataRecord.Status.INPROGRESS,
@@ -100,7 +100,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         // GIVEN: Insert a fake item with same id
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
-        long expiry = now.plus(30, ChronoUnit.SECONDS).toEpochMilli();
+        long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
         item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
         item.put("status", AttributeValue.builder().s(DataRecord.Status.COMPLETED.toString()).build());
         item.put("data", AttributeValue.builder().s("Fake Data").build());
@@ -133,7 +133,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
-        long expiry = now.plus(360, ChronoUnit.SECONDS).toEpochMilli();
+        long expiry = now.plus(360, ChronoUnit.SECONDS).getEpochSecond();
         item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
         item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
         client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
@@ -141,7 +141,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         dynamoDBPersistenceStore.configure(IdempotencyConfig.builder().withPayloadValidationJMESPath("path").build(), null);
 
         // WHEN
-        expiry = now.plus(3600, ChronoUnit.SECONDS).toEpochMilli();
+        expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         DataRecord record = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, "Fake result", "hash");
         dynamoDBPersistenceStore.updateRecord(record);
 
@@ -165,7 +165,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
-        long expiry = now.plus(360, ChronoUnit.SECONDS).toEpochMilli();
+        long expiry = now.plus(360, ChronoUnit.SECONDS).getEpochSecond();
         item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
         item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
         client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
@@ -213,7 +213,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
             DataRecord record = new DataRecord(
                     "mykey",
                     DataRecord.Status.INPROGRESS,
-                    now.plus(400, ChronoUnit.SECONDS).toEpochMilli(),
+                    now.plus(400, ChronoUnit.SECONDS).getEpochSecond(),
                     null,
                     null
             );
@@ -239,7 +239,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
             DataRecord updatedRecord = new DataRecord(
                     "mykey",
                     DataRecord.Status.COMPLETED,
-                    now.plus(500, ChronoUnit.SECONDS).toEpochMilli(),
+                    now.plus(500, ChronoUnit.SECONDS).getEpochSecond(),
                     "response",
                     null
             );

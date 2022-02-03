@@ -100,7 +100,7 @@ public class IdempotencyAspectTest {
         DataRecord record = new DataRecord(
                 "42",
                 DataRecord.Status.COMPLETED,
-                Instant.now().plus(356, SECONDS).toEpochMilli(),
+                Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null);
         doReturn(record).when(store).getRecord(any(), any());
@@ -131,7 +131,7 @@ public class IdempotencyAspectTest {
         DataRecord record = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
-                Instant.now().plus(356, SECONDS).toEpochMilli(),
+                Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null);
         doReturn(record).when(store).getRecord(any(), any());
@@ -187,8 +187,7 @@ public class IdempotencyAspectTest {
     public void idempotencyOnSubMethodAnnotated_firstCall_shouldPutInStore() {
         Idempotency.config()
                 .withPersistenceStore(store)
-                .withConfig(IdempotencyConfig.builder().build()
-                ).configure();
+                .configure();
 
         // WHEN
         IdempotencyInternalFunction function = new IdempotencyInternalFunction();
@@ -213,8 +212,7 @@ public class IdempotencyAspectTest {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
-                .withConfig(IdempotencyConfig.builder().build()
-                ).configure();
+                .configure();
 
         doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any());
 
@@ -223,7 +221,7 @@ public class IdempotencyAspectTest {
         DataRecord record = new DataRecord(
                 "fake",
                 DataRecord.Status.COMPLETED,
-                Instant.now().plus(356, SECONDS).toEpochMilli(),
+                Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null);
         doReturn(record).when(store).getRecord(any(), any());
@@ -235,6 +233,27 @@ public class IdempotencyAspectTest {
         // THEN
         assertThat(basket).isEqualTo(b);
         assertThat(function.subMethodCalled()).isFalse();
+    }
+
+    @Test
+    public void idempotencyOnSubMethodAnnotated_keyJMESPath_shouldPutInStoreWithKey() {
+        BasePersistenceStore persistenceStore = spy(BasePersistenceStore.class);
+
+        Idempotency.config()
+                .withPersistenceStore(persistenceStore)
+                .withConfig(IdempotencyConfig.builder().withEventKeyJMESPath("id").build())
+                .configure();
+
+        // WHEN
+        IdempotencyInternalFunctionInternalKey function = new IdempotencyInternalFunctionInternalKey();
+        Product p = new Product(42, "fake product", 12);
+        function.handleRequest(p, context);
+
+        // THEN
+        ArgumentCaptor<DataRecord> recordCaptor = ArgumentCaptor.forClass(DataRecord.class);
+        verify(persistenceStore).putRecord(recordCaptor.capture(), any());
+        // a1d0c6e83f027327d8461063f4ac58a6 = MD5(42)
+        assertThat(recordCaptor.getValue().getIdempotencyKey()).isEqualTo("testFunction.createBasket#a1d0c6e83f027327d8461063f4ac58a6");
     }
 
     @Test

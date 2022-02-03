@@ -126,7 +126,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                             .item(item)
                             .conditionExpression("attribute_not_exists(#id) OR #expiry < :now")
                             .expressionAttributeNames(expressionAttributeNames)
-                            .expressionAttributeValues(Collections.singletonMap(":now", AttributeValue.builder().n(String.valueOf(now.toEpochMilli())).build()))
+                            .expressionAttributeValues(Collections.singletonMap(":now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()))
                             .build()
             );
         } catch (ConditionalCheckFailedException e) {

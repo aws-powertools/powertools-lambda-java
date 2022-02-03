@@ -51,7 +51,7 @@ public class BasePersistenceStoreTest {
             @Override
             public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
                 status = 0;
-                return new DataRecord(idempotencyKey, DataRecord.Status.INPROGRESS, Instant.now().plus(3600, ChronoUnit.SECONDS).toEpochMilli(), "Response", validationHash);
+                return new DataRecord(idempotencyKey, DataRecord.Status.INPROGRESS, Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond(), "Response", validationHash);
             }
 
             @Override
@@ -84,7 +84,7 @@ public class BasePersistenceStoreTest {
         Instant now = Instant.now();
         persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
-        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).toEpochMilli());
+        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
         assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#47261bd5b456f400f8d191cfb3a7482f");
         assertThat(dr.getPayloadHash()).isEqualTo("");
@@ -102,7 +102,7 @@ public class BasePersistenceStoreTest {
         Instant now = Instant.now();
         persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
-        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).toEpochMilli());
+        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
         assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction.myfunc#2fef178cc82be5ce3da6c5e0466a6182");
         assertThat(dr.getPayloadHash()).isEqualTo("");
@@ -149,7 +149,7 @@ public class BasePersistenceStoreTest {
                 new DataRecord(
                         "testFunction#2fef178cc82be5ce3da6c5e0466a6182",
                         DataRecord.Status.INPROGRESS,
-                        now.plus(3600, ChronoUnit.SECONDS).toEpochMilli(),
+                        now.plus(3600, ChronoUnit.SECONDS).getEpochSecond(),
                         null, null)
         );
         assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now))
@@ -170,7 +170,7 @@ public class BasePersistenceStoreTest {
                 new DataRecord(
                         "testFunction#2fef178cc82be5ce3da6c5e0466a6182",
                         DataRecord.Status.INPROGRESS,
-                        now.minus(3, ChronoUnit.SECONDS).toEpochMilli(),
+                        now.minus(3, ChronoUnit.SECONDS).getEpochSecond(),
                         null, null)
         );
         persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
@@ -195,7 +195,7 @@ public class BasePersistenceStoreTest {
         persistenceStore.saveSuccess(JsonConfig.get().getObjectMapper().valueToTree(event), product, now);
 
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
-        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).toEpochMilli());
+        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
         assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#47261bd5b456f400f8d191cfb3a7482f");
         assertThat(dr.getPayloadHash()).isEqualTo("");
@@ -217,7 +217,7 @@ public class BasePersistenceStoreTest {
         assertThat(cache).hasSize(1);
         DataRecord record = cache.get("testFunction#47261bd5b456f400f8d191cfb3a7482f");
         assertThat(record.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
-        assertThat(record.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).toEpochMilli());
+        assertThat(record.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(record.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
         assertThat(record.getIdempotencyKey()).isEqualTo("testFunction#47261bd5b456f400f8d191cfb3a7482f");
         assertThat(record.getPayloadHash()).isEqualTo("");
@@ -253,7 +253,7 @@ public class BasePersistenceStoreTest {
         DataRecord dr = new DataRecord(
                 "testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f",
                 DataRecord.Status.COMPLETED,
-                now.plus(3600, ChronoUnit.SECONDS).toEpochMilli(),
+                now.plus(3600, ChronoUnit.SECONDS).getEpochSecond(),
                 "result of the function",
                 null);
         cache.put("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f", dr);
@@ -275,7 +275,7 @@ public class BasePersistenceStoreTest {
         DataRecord dr = new DataRecord(
                 "testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f",
                 DataRecord.Status.COMPLETED,
-                now.minus(3, ChronoUnit.SECONDS).toEpochMilli(),
+                now.minus(3, ChronoUnit.SECONDS).getEpochSecond(),
                 "result of the function",
                 null);
         cache.put("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f", dr);
