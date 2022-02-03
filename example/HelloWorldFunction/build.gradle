@@ -16,8 +16,8 @@ dependencies {
     aspect 'software.amazon.lambda:powertools-parameters:1.10.3'
     aspect 'software.amazon.lambda:powertools-validation:1.10.3'
 
-    implementation 'software.amazon.lambda:powertools-idempotency:1.10.2'
-    aspectpath 'software.amazon.lambda:powertools-idempotency:1.10.2'
+    implementation 'software.amazon.lambda:powertools-idempotency:1.10.3'
+    aspectpath 'software.amazon.lambda:powertools-idempotency:1.10.3'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
