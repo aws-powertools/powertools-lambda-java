@@ -30,6 +30,11 @@ public class AuroraUtils {
     private AuroraUtils(){
     }
 
+    public static <R> List<R> process(KinesisEvent input, final Class<? extends DataStreamHandler<R>> handler) {
+
+        return process(input, true, handler);
+    }
+
     public static <R> List<R> process(KinesisEvent input, boolean skipHeartbeat,
                                       final Class<? extends DataStreamHandler<R>> handler) {
 
@@ -39,13 +44,11 @@ public class AuroraUtils {
         for (KinesisEvent.KinesisEventRecord record : input.getRecords()) {
             PostgresActivityRecords records = processPostgresActivity(record);
             for (PostgresActivityEvent event : records.getDatabaseActivityEventList()) {
-                if ("heartbeat".equalsIgnoreCase(event.getType()) && skipHeartbeat)
-                    break;
-                handlerInstance.process(event);
-                //handlerReturn.add(event);
+                if (!skipHeartbeat || (!"heartbeat".equalsIgnoreCase(event.getType()) && skipHeartbeat)) {
+                    LOG.debug("Process event " + event.toString());
+                    handlerReturn.add(handlerInstance.process(event));
+                }
             }
-
-            LOG.info(handlerReturn.toString());
         }
 
         return handlerReturn;
