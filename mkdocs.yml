@@ -10,11 +10,13 @@ nav:
       - core/tracing.md
       - core/metrics.md
   - Utilities:
+      - utilities/idempotency.md
       - utilities/parameters.md
       - utilities/sqs_large_message_handling.md
       - utilities/batch.md
       - utilities/validation.md
       - utilities/custom_resources.md
+      - utilities/utilities.md
 
 theme:
   name: material
