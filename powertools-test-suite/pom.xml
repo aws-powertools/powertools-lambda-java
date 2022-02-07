@@ -10,7 +10,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>1.8.2</version>
+        <version>1.10.3</version>
     </parent>
 
     <name>AWS Lambda Powertools Java library Test Suite</name>

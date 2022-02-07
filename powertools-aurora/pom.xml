@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>powertools-core</artifactId>
+    <artifactId>powertools-aurora</artifactId>
     <packaging>jar</packaging>
 
     <parent>
@@ -13,19 +13,20 @@
         <version>1.10.3</version>
     </parent>
 
-    <name>AWS Lambda Powertools Java library Core</name>
+    <name>AWS Lambda Powertools Java library Aurora</name>
     <description>
-        A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+        A suite of Aurora handlers for AWS Lambda Functions that makes the integration easier.
     </description>
     <url>https://aws.amazon.com/lambda/</url>
+
     <issueManagement>
         <system>GitHub Issues</system>
         <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
     </issueManagement>
-
     <scm>
         <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
     </scm>
+
     <developers>
         <developer>
             <name>AWS Lambda Powertools team</name>
@@ -43,8 +44,36 @@
 
     <dependencies>
         <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-encryption-sdk-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>kms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>utils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>apache-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -60,6 +89,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -83,5 +117,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
 
 </project>

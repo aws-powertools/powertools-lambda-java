@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>1.8.2</version>
+    <version>1.10.3</version>
     <packaging>pom</packaging>
 
     <name>AWS Lambda Powertools Java library Parent</name>
@@ -36,6 +36,7 @@
         <module>powertools-validation</module>
         <module>powertools-test-suite</module>
         <module>powertools-cloudformation</module>
+        <module>powertools-aurora</module>
     </modules>
 
     <scm>
@@ -56,12 +57,13 @@
         <log4j.version>2.17.0</log4j.version>
         <jackson.version>2.13.1</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.17.100</aws.sdk.version>
+        <aws.sdk.version>2.17.120</aws.sdk.version>
         <aws.xray.recorder.version>2.10.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>1.1.1</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.1</lambda.core.version>
         <lambda.events.version>3.11.0</lambda.events.version>
+        <encryption.sdk.version>2.3.3</encryption.sdk.version>
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <aspectj-maven-plugin.version>1.14.0</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
@@ -114,6 +116,11 @@
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-events</artifactId>
                 <version>${lambda.events.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-encryption-sdk-java</artifactId>
+                <version>${encryption.sdk.version}</version>
             </dependency>
             <dependency>
                 <groupId>software.amazon.awssdk</groupId>
