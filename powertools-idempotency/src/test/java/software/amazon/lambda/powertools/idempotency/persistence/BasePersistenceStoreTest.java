@@ -29,6 +29,7 @@ import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 import software.amazon.lambda.powertools.utilities.cache.LRUCache;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -163,7 +164,7 @@ public class BasePersistenceStoreTest {
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
         persistenceStore.configure(IdempotencyConfig.builder()
                 .withEventKeyJMESPath("powertools_json(body).id")
-                .withExpirationInSeconds(2)
+                .withExpiration(Duration.of(2, ChronoUnit.SECONDS))
                 .build(), null, cache);
         Instant now = Instant.now();
         cache.put("testFunction#2fef178cc82be5ce3da6c5e0466a6182",

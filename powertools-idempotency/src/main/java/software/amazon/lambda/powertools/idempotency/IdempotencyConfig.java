@@ -15,19 +15,21 @@ package software.amazon.lambda.powertools.idempotency;
 
 import software.amazon.lambda.powertools.utilities.cache.LRUCache;
 
+import java.time.Duration;
+
 /**
  * Configuration of the idempotency feature. Use the {@link Builder} to create an instance.
  */
 public class IdempotencyConfig {
     private final int localCacheMaxItems;
     private final boolean useLocalCache;
-    private final int expirationInSeconds;
+    private final long expirationInSeconds;
     private final String eventKeyJMESPath;
     private final String payloadValidationJMESPath;
     private final boolean throwOnNoIdempotencyKey;
     private final String hashFunction;
 
-    private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath, boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems, int expirationInSeconds, String hashFunction) {
+    private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath, boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems, long expirationInSeconds, String hashFunction) {
         this.localCacheMaxItems = localCacheMaxItems;
         this.useLocalCache = useLocalCache;
         this.expirationInSeconds = expirationInSeconds;
@@ -45,7 +47,7 @@ public class IdempotencyConfig {
         return useLocalCache;
     }
 
-    public int getExpirationInSeconds() {
+    public long getExpirationInSeconds() {
         return expirationInSeconds;
     }
 
@@ -79,7 +81,7 @@ public class IdempotencyConfig {
 
         private int localCacheMaxItems = 256;
         private boolean useLocalCache = true;
-        private int expirationInSeconds = 60 * 60; // 1 hour
+        private long expirationInSeconds = 60 * 60; // 1 hour
         private String eventKeyJMESPath;
         private String payloadValidationJMESPath;
         private boolean throwOnNoIdempotencyKey = false;
@@ -156,11 +158,11 @@ public class IdempotencyConfig {
         /**
          * The number of seconds to wait before a record is expired
          *
-         * @param expirationInSeconds expiration of the record in the store (in seconds)
+         * @param expiration expiration of the record in the store
          * @return the instance of the builder (to chain operations)
          */
-        public Builder withExpirationInSeconds(int expirationInSeconds) {
-            this.expirationInSeconds = expirationInSeconds;
+        public Builder withExpiration(Duration expiration) {
+            this.expirationInSeconds = expiration.getSeconds();
             return this;
         }
 

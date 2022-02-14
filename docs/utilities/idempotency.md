@@ -392,7 +392,7 @@ IdempotencyConfig.builder()
                 .withEventKeyJMESPath("id")
                 .withPayloadValidationJMESPath("paymentId")
                 .withThrowOnNoIdempotencyKey(true)
-                .withExpirationInSeconds(5 * 60) // 5 minutes
+                .withExpiration(Duration.of(5, ChronoUnit.MINUTES))
                 .withUseLocalCache(false)
                 .withLocalCacheMaxItems(432)
                 .withHashFunction("SHA-256")
@@ -451,7 +451,7 @@ In most cases, it is not desirable to store the idempotency records forever. Rat
 You can change this window with the **`ExpirationInSeconds`** parameter:
 ```java title="Customizing expiration time"
 IdempotencyConfig.builder()
-    .withExpirationInSeconds(5 * 60) // 5 minutes
+    .withExpiration(Duration.of(5, ChronoUnit.MINUTES))
     .build()
 ```
 
