@@ -3,7 +3,7 @@ title: Utilities
 description: Utility
 ---
 
-This module contains a set of utilities used internally in powertools and that you may also use in your Lambda functions.
+This module contains a set of utilities you may use in your Lambda functions, mainly associated with other modules like [validation](validation.md) and [idempotency](idempotency.md).
 
 ## JMESPath functions
 
@@ -19,7 +19,7 @@ This module contains a set of utilities used internally in powertools and that y
 
 You might have events that contain encoded JSON payloads as string, base64, or even in compressed format. It is a common use case to decode and extract them partially or fully as part of your Lambda function invocation.
 
-Lambda Powertools also have utilities like [validation](validation.md) and [idempotency](idempotency.md) where you might need to extract a portion of your data before using them.
+You will generally use this in combination with other Lambda Powertools modules ([validation](validation.md) and [idempotency](idempotency.md)) where you might need to extract a portion of your data before using them.
 
 ### Built-in functions
 
