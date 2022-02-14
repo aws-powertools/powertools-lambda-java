@@ -6,25 +6,6 @@ package software.amazon.lambda.powertools.aurora.model;
 import java.io.Serializable;
 import java.util.Objects;
 
-/*
- * Copyright 2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License"). You may not use this file except in compliance with
- * the License. A copy of the License is located at
- *
- * http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
- * CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions
- * and limitations under the License.
- * 
- * This class recplicated the structure of the Aurora DAS message
- * The databaseActivityEvents contains a base 64 encoded version of 
- * the byte array for an encrypted JSON string that is replicated by the 
- * PostgresActivityRecords class.
- * The Key contains the base 64 encoded byte array that contains the key
- * that is used to encrypt the Aurora DAS message
- */
 public class PostgresActivity implements Serializable {
 	String type;
 	String version;
