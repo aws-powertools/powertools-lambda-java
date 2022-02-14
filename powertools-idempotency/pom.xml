@@ -129,6 +129,14 @@
             <version>[1.12,2.0)</version>
             <scope>test</scope>
         </dependency>
+        <!--Needed when building locally on M1 Mac-->
+        <dependency>
+            <groupId>io.github.ganadist.sqlite4java</groupId>
+            <artifactId>libsqlite4java-osx-aarch64</artifactId>
+            <version>1.0.392</version>
+            <scope>test</scope>
+            <type>dylib</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -137,7 +145,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <sqlite4java.library.path>${project.basedir}/src/test/native-libs</sqlite4java.library.path>
+                        <sqlite4java.library.path>${project.build.directory}/native-libs</sqlite4java.library.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -154,22 +162,10 @@
                         <configuration>
                             <includeScope>test</includeScope>
                             <includeTypes>so,dll,dylib</includeTypes>
-                            <outputDirectory>${project.basedir}/src/test/native-libs</outputDirectory>
+                            <outputDirectory>${project.build.directory}/native-libs</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.basedir}/src/test/native-libs</directory>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                    </filesets>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
