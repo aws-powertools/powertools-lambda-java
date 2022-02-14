@@ -726,6 +726,15 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
            <groupId>com.amazonaws</groupId>
            <artifactId>DynamoDBLocal</artifactId>
            <version>[1.12,2.0)</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Needed when building locally on M1 Mac -->
+        <dependency>
+            <groupId>io.github.ganadist.sqlite4java</groupId>
+            <artifactId>libsqlite4java-osx-aarch64</artifactId>
+            <version>1.0.392</version>
+            <scope>test</scope>
+            <type>dylib</type>
         </dependency>
     </dependencies>
     <repositories>
@@ -868,13 +877,6 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
     }
     ```
 
-!!! Warning
-    You may encounter some errors on Macs with Apple M1 chips, due to sqlite: 
-    ```
-    com.almworks.sqlite4java.SQLiteException: [-91] cannot load library: java.lang.UnsatisfiedLinkError: native-libs/libsqlite4java-osx-1.0.392.dylib: dlopen(native-libs/libsqlite4java-osx-1.0.392.dylib, 1): no suitable image found.  Did find:
-    native-libs/libsqlite4java-osx-1.0.392.dylib: no matching architecture in universal wrapper
-    ```
-    In such case, try with another JDK. See [stackoverflow](https://stackoverflow.com/questions/66635424/dynamodb-local-setup-on-m1-apple-silicon-mac) and this [issue](https://github.com/aws-samples/aws-dynamodb-examples/issues/22) for more info.
 
 #### SAM Local
 
