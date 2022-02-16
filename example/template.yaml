@@ -53,6 +53,35 @@ Resources:
             Path: /helloparams
             Method: get
 
+  IdempotencyTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: idempotency_table
+      PrimaryKey:
+        Name: id
+        Type: String
+
+  HelloWorldIdempotentFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: HelloWorldFunction
+      Handler: helloworld.AppIdempotency::handleRequest
+      MemorySize: 512
+      Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
+        Variables:
+          POWERTOOLS_LOG_LEVEL: INFO
+          AWS_ENDPOINT_DISCOVERY_ENABLED: false
+      Tracing: Active
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref IdempotencyTable
+      Events:
+        HelloWorld:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /helloidem
+            Method: post
+
   UserPwd:
     Type: AWS::SecretsManager::Secret
     Properties:
@@ -171,3 +200,9 @@ Outputs:
     Description: "Hello World Params Lambda Function ARN"
     Value: !GetAtt HelloWorldParamsFunction.Arn
 
+  HelloWorldIdempotencyApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World idempotency function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/helloidem/"
+  HelloWorldIdempotencyFunction:
+    Description: "Hello World Idempotency Lambda Function ARN"
+    Value: !GetAtt HelloWorldIdempotentFunction.Arn

@@ -1,0 +1,350 @@
+/*
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+package software.amazon.lambda.powertools.idempotency.persistence;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import io.burt.jmespath.Expression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.idempotency.Constants;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
+
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+/**
+ * Persistence layer that will store the idempotency result.
+ * Base implementation. See {@link DynamoDBPersistenceStore} for an implementation (default one)
+ * Extends this class to use your own implementation (DocumentDB, Elasticache, ...)
+ */
+public abstract class BasePersistenceStore implements PersistenceStore {
+
+    private static final Logger LOG = LoggerFactory.getLogger(BasePersistenceStore.class);
+
+    private String functionName = "";
+    private boolean configured = false;
+    private long expirationInSeconds = 60 * 60; // 1 hour default
+    private boolean useLocalCache = false;
+    private LRUCache<String, DataRecord> cache;
+    private String eventKeyJMESPath;
+    private Expression<JsonNode> eventKeyCompiledJMESPath;
+    protected boolean payloadValidationEnabled = false;
+    private Expression<JsonNode> validationKeyJMESPath;
+    private boolean throwOnNoIdempotencyKey = false;
+    private MessageDigest hashAlgorithm;
+
+    /**
+     * Initialize the base persistence layer from the configuration settings
+     *
+     * @param config       Idempotency configuration settings
+     * @param functionName The name of the function being decorated
+     */
+    public void configure(IdempotencyConfig config, String functionName) {
+        String funcEnv = System.getenv(Constants.LAMBDA_FUNCTION_NAME_ENV);
+        this.functionName = funcEnv != null ? funcEnv : "testFunction";
+        if (!StringUtils.isEmpty(functionName)) {
+            this.functionName += "." + functionName;
+        }
+
+        if (configured) {
+            // prevent being reconfigured multiple times
+            return;
+        }
+
+        eventKeyJMESPath = config.getEventKeyJMESPath();
+        if (eventKeyJMESPath != null) {
+            eventKeyCompiledJMESPath = JsonConfig.get().getJmesPath().compile(eventKeyJMESPath);
+        }
+        if (config.getPayloadValidationJMESPath() != null) {
+            validationKeyJMESPath = JsonConfig.get().getJmesPath().compile(config.getPayloadValidationJMESPath());
+            payloadValidationEnabled = true;
+        }
+        throwOnNoIdempotencyKey = config.throwOnNoIdempotencyKey();
+
+        useLocalCache = config.useLocalCache();
+        if (useLocalCache) {
+            cache = new LRUCache<>(config.getLocalCacheMaxItems());
+        }
+        expirationInSeconds = config.getExpirationInSeconds();
+
+        try {
+            hashAlgorithm = MessageDigest.getInstance(config.getHashFunction());
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Error instantiating {} hash function, trying with MD5", config.getHashFunction());
+            try {
+                hashAlgorithm = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException ex) {
+                throw new RuntimeException("Unable to instantiate MD5 digest", ex);
+            }
+        }
+        configured = true;
+    }
+
+    /**
+     * Save record of function's execution completing successfully
+     *
+     * @param data   Payload
+     * @param result the response from the function
+     */
+    public void saveSuccess(JsonNode data, Object result, Instant now) {
+        ObjectWriter writer = JsonConfig.get().getObjectMapper().writer();
+        try {
+            String responseJson = writer.writeValueAsString(result);
+            DataRecord record = new DataRecord(
+                    getHashedIdempotencyKey(data),
+                    DataRecord.Status.COMPLETED,
+                    getExpiryEpochSecond(now),
+                    responseJson,
+                    getHashedPayload(data)
+            );
+            LOG.debug("Function successfully executed. Saving record to persistence store with idempotency key: {}", record.getIdempotencyKey());
+            updateRecord(record);
+            saveToCache(record);
+        } catch (JsonProcessingException e) {
+            // TODO : throw ?
+            throw new RuntimeException("Error while serializing the response", e);
+        }
+    }
+
+    /**
+     * Save record of function's execution being in progress
+     *
+     * @param data Payload
+     * @param now
+     */
+    public void saveInProgress(JsonNode data, Instant now) throws IdempotencyItemAlreadyExistsException {
+        String idempotencyKey = getHashedIdempotencyKey(data);
+
+        if (retrieveFromCache(idempotencyKey, now) != null) {
+            throw new IdempotencyItemAlreadyExistsException();
+        }
+
+        DataRecord record = new DataRecord(
+                idempotencyKey,
+                DataRecord.Status.INPROGRESS,
+                getExpiryEpochSecond(now),
+                null,
+                getHashedPayload(data)
+        );
+        LOG.debug("saving in progress record for idempotency key: {}", record.getIdempotencyKey());
+        putRecord(record, now);
+    }
+
+    /**
+     * Delete record from the persistence store
+     *
+     * @param data      Payload
+     * @param throwable The throwable thrown by the function
+     */
+    public void deleteRecord(JsonNode data, Throwable throwable) {
+        String idemPotencyKey = getHashedIdempotencyKey(data);
+
+        LOG.debug("Function raised an exception {}. " +
+                        "Clearing in progress record in persistence store for idempotency key: {}",
+                throwable.getClass(),
+                idemPotencyKey);
+
+        deleteRecord(idemPotencyKey);
+        deleteFromCache(idemPotencyKey);
+    }
+
+    /**
+     * Retrieve idempotency key for data provided, fetch from persistence store, and convert to DataRecord.
+     *
+     * @param data Payload
+     * @return DataRecord representation of existing record found in persistence store
+     * @throws IdempotencyValidationException   Payload doesn't match the stored record for the given idempotency key
+     * @throws IdempotencyItemNotFoundException Exception thrown if no record exists in persistence store with the idempotency key
+     */
+    public DataRecord getRecord(JsonNode data, Instant now) throws IdempotencyValidationException, IdempotencyItemNotFoundException {
+        String idemPotencyKey = getHashedIdempotencyKey(data);
+
+        DataRecord cachedRecord = retrieveFromCache(idemPotencyKey, now);
+        if (cachedRecord != null) {
+            LOG.debug("Idempotency record found in cache with idempotency key: {}", idemPotencyKey);
+            validatePayload(data, cachedRecord);
+            return cachedRecord;
+        }
+
+        DataRecord record = getRecord(idemPotencyKey);
+        saveToCache(record);
+        validatePayload(data, record);
+        return record;
+    }
+
+    /**
+     * Extract idempotency key and return a hashed representation
+     *
+     * @param data incoming data
+     * @return Hashed representation of the data extracted by the jmespath expression
+     */
+    private String getHashedIdempotencyKey(JsonNode data) {
+        JsonNode node = data;
+
+        if (eventKeyJMESPath != null) {
+            node = eventKeyCompiledJMESPath.search(data);
+        }
+
+        if (isMissingIdemPotencyKey(node)) {
+            if (throwOnNoIdempotencyKey) {
+                throw new IdempotencyKeyException("No data found to create a hashed idempotency key");
+            }
+            LOG.warn("No data found to create a hashed idempotency key. JMESPath: {}", eventKeyJMESPath);
+        }
+
+        String hash = generateHash(node);
+        return functionName + "#" + hash;
+    }
+
+    private boolean isMissingIdemPotencyKey(JsonNode data) {
+        if (data.isContainerNode()) {
+            Stream<Map.Entry<String, JsonNode>> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(), Spliterator.ORDERED), false);
+            return stream.allMatch(e -> e.getValue().isNull());
+        }
+        return data.isNull();
+    }
+
+    /**
+     * Extract payload using validation key jmespath and return a hashed representation
+     *
+     * @param data Payload
+     * @return Hashed representation of the data extracted by the jmespath expression
+     */
+    private String getHashedPayload(JsonNode data) {
+        if (!payloadValidationEnabled) {
+            return "";
+        }
+        JsonNode object = validationKeyJMESPath.search(data);
+        return generateHash(object);
+    }
+
+    /**
+     * Generate a hash value from the provided data
+     *
+     * @param data data to hash
+     * @return Hashed representation of the provided data
+     */
+    String generateHash(JsonNode data) {
+        Object node;
+        // if array or object, use the json string representation, otherwise get the real value
+        if (data.isContainerNode()) {
+            node = data.toString();
+        } else if (data.isTextual()) {
+            node = data.asText();
+        } else if (data.isInt()) {
+            node = data.asInt();
+        } else if (data.isLong()) {
+            node = data.asLong();
+        } else if (data.isDouble()) {
+            node = data.asDouble();
+        } else if (data.isFloat()) {
+            node = data.floatValue();
+        } else if (data.isBigInteger()) {
+            node = data.bigIntegerValue();
+        } else if (data.isBigDecimal()) {
+            node = data.decimalValue();
+        } else if (data.isBoolean()) {
+            node = data.asBoolean();
+        } else node = data; // anything else
+        byte[] digest = hashAlgorithm.digest(node.toString().getBytes(StandardCharsets.UTF_8));
+        return String.format("%032x", new BigInteger(1, digest));
+    }
+
+    /**
+     * Validate that the hashed payload matches data provided and stored data record
+     *
+     * @param data       Payload
+     * @param dataRecord DataRecord instance
+     */
+    private void validatePayload(JsonNode data, DataRecord dataRecord) throws IdempotencyValidationException {
+        if (payloadValidationEnabled) {
+            String dataHash = getHashedPayload(data);
+            if (!StringUtils.equals(dataHash, dataRecord.getPayloadHash())) {
+                throw new IdempotencyValidationException("Payload does not match stored record for this event key");
+            }
+        }
+    }
+
+    /**
+     * @param now
+     * @return unix timestamp of expiry date for idempotency record
+     */
+    private long getExpiryEpochSecond(Instant now) {
+        return now.plus(expirationInSeconds, ChronoUnit.SECONDS).getEpochSecond();
+    }
+
+    /**
+     * Save data_record to local cache except when status is "INPROGRESS"
+     * <br/>
+     * NOTE: We can't cache "INPROGRESS" records as we have no way to reflect updates that can happen outside of the
+     * execution environment
+     *
+     * @param dataRecord DataRecord to save in cache
+     */
+    private void saveToCache(DataRecord dataRecord) {
+        if (!useLocalCache)
+            return;
+        if (dataRecord.getStatus().equals(DataRecord.Status.INPROGRESS))
+            return;
+
+        cache.put(dataRecord.getIdempotencyKey(), dataRecord);
+    }
+
+    private DataRecord retrieveFromCache(String idempotencyKey, Instant now) {
+        if (!useLocalCache)
+            return null;
+
+        DataRecord record = cache.get(idempotencyKey);
+        if (record != null) {
+            if (!record.isExpired(now)) {
+                return record;
+            }
+            LOG.debug("Removing expired local cache record for idempotency key: {}", idempotencyKey);
+            deleteFromCache(idempotencyKey);
+        }
+        return null;
+    }
+
+    private void deleteFromCache(String idempotencyKey) {
+        if (!useLocalCache)
+            return;
+        cache.remove(idempotencyKey);
+    }
+
+    /**
+     * For test purpose only (adding a cache to mock)
+     */
+    void configure(IdempotencyConfig config, String functionName, LRUCache<String, DataRecord> cache) {
+        this.configure(config, functionName);
+        this.cache = cache;
+    }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,7 +11,13 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.validation.jmespath;
+package software.amazon.lambda.powertools.utilities.jmespath;
+
+import io.burt.jmespath.Adapter;
+import io.burt.jmespath.JmesPathType;
+import io.burt.jmespath.function.ArgumentConstraints;
+import io.burt.jmespath.function.BaseFunction;
+import io.burt.jmespath.function.FunctionArgument;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -21,14 +27,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import io.burt.jmespath.Adapter;
-import io.burt.jmespath.JmesPathType;
-import io.burt.jmespath.function.ArgumentConstraints;
-import io.burt.jmespath.function.BaseFunction;
-import io.burt.jmespath.function.FunctionArgument;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.validation.jmespath.Base64Function.decode;
+import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 
 /**
  * Function used by JMESPath to decode a Base64 encoded GZipped String into a decoded String

@@ -7,11 +7,13 @@ on:
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
+      - 'powertools-serialization/**'
       - 'powertools-logging/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
       - 'powertools-parameters/**'
+      - 'powertools-idempotency/**'
       - 'powertools-metrics/**'
       - 'powertools-test-suite/**'
       - 'pom.xml'

@@ -26,10 +26,10 @@ import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
+import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
-import static software.amazon.lambda.powertools.validation.jmespath.Base64Function.decode;
-import static software.amazon.lambda.powertools.validation.jmespath.Base64GZipFunction.decompress;
 
 /**
  * Aspect for {@link Validation} annotation

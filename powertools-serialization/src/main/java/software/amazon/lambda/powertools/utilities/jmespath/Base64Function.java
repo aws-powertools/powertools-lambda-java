@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,17 +11,17 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.validation.jmespath;
-
-import java.nio.ByteBuffer;
-import java.util.Base64;
-import java.util.List;
+package software.amazon.lambda.powertools.utilities.jmespath;
 
 import io.burt.jmespath.Adapter;
 import io.burt.jmespath.JmesPathType;
 import io.burt.jmespath.function.ArgumentConstraints;
 import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionArgument;
+
+import java.nio.ByteBuffer;
+import java.util.Base64;
+import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
