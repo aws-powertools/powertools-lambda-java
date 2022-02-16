@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.utilities.cache;
+package software.amazon.lambda.powertools.idempotency.internal.cache;
 
 import org.junit.jupiter.api.Test;
 

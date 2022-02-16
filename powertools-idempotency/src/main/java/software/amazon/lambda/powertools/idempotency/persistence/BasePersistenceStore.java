@@ -26,8 +26,8 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemA
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-import software.amazon.lambda.powertools.utilities.cache.LRUCache;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
