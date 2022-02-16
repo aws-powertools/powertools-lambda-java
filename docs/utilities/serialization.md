@@ -1,9 +1,9 @@
 ---
-title: Utilities
+title: Serialization Utilities
 description: Utility
 ---
 
-This module contains a set of utilities you may use in your Lambda functions, mainly associated with other modules like [validation](validation.md) and [idempotency](idempotency.md).
+This module contains a set of utilities you may use in your Lambda functions, mainly associated with other modules like [validation](validation.md) and [idempotency](idempotency.md), to manipulate JSON.
 
 ## JMESPath functions
 

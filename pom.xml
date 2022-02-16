@@ -28,7 +28,7 @@
 
     <modules>
         <module>powertools-core</module>
-        <module>powertools-utilities</module>
+        <module>powertools-serialization</module>
         <module>powertools-logging</module>
         <module>powertools-tracing</module>
         <module>powertools-sqs</module>
@@ -94,7 +94,7 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-utilities</artifactId>
+                <artifactId>powertools-serialization</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

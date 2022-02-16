@@ -7,7 +7,7 @@ on:
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
-      - 'powertools-utilities/**'
+      - 'powertools-serialization/**'
       - 'powertools-logging/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'
@@ -24,7 +24,7 @@ on:
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
-      - 'powertools-utilities/**'
+      - 'powertools-serialization/**'
       - 'powertools-logging/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'

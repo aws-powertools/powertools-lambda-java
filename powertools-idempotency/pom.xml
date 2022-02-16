@@ -47,7 +47,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-utilities</artifactId>
+            <artifactId>powertools-serialization</artifactId>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

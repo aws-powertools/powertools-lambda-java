@@ -16,7 +16,7 @@ nav:
       - utilities/batch.md
       - utilities/validation.md
       - utilities/custom_resources.md
-      - utilities/utilities.md
+      - utilities/serialization.md
 
 theme:
   name: material
