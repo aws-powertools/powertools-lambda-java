@@ -18,12 +18,58 @@ times with the same parameters**. This makes idempotent operations safe to retry
 
 ## Key features
 
-* Prevent Lambda handler from executing more than once on the same event payload during a time window
+* Prevent Lambda handler function from executing more than once on the same event payload during a time window
 * Ensure Lambda handler returns the same result when called with the same payload
 * Select a subset of the event as the idempotency key using JMESPath expressions
 * Set a time window in which records with the same payload should be considered duplicates
 
 ## Getting started
+
+### Installation
+=== "Maven"
+    ```xml hl_lines="3-7 24-27"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-idempotency</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.14.0</version>
+                 <configuration>
+                     <source>1.8</source>
+                     <target>1.8</target>
+                     <complianceLevel>1.8</complianceLevel>
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-idempotency</artifactId>
+                         </aspectLibrary>
+                         ...
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
 
 ### Required resources
 
@@ -43,33 +89,33 @@ If you're not [changing the default configuration for the DynamoDB persistence l
 !!! Tip "Tip: You can share a single state table for all functions"
     You can reuse the same DynamoDB table to store idempotency state. We add your function name in addition to the idempotency key as a hash key.
 
-```yaml hl_lines="5-13 21-23" title="AWS Serverless Application Model (SAM) example"
+```yaml hl_lines="5-13 21-23 26" title="AWS Serverless Application Model (SAM) example"
 Resources:
   IdempotencyTable:
-	Type: AWS::DynamoDB::Table
-	Properties:
-	  AttributeDefinitions:
-		-   AttributeName: id
-			AttributeType: S
-	  KeySchema:
-		-   AttributeName: id
-			KeyType: HASH
-	  TimeToLiveSpecification:
-		AttributeName: expiration
-		Enabled: true
-	  BillingMode: PAY_PER_REQUEST
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiration
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
 
-  HelloWorldFunction:
+  IdempotencyFunction:
     Type: AWS::Serverless::Function
     Properties:
-	  Runtime: python3.8
-	  ...
-	  Policies:
-	    - DynamoDBCrudPolicy:
-		    TableName: !Ref IdempotencyTable
+      CodeUri: Function
+      Handler: helloworld.App::handleRequest
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref IdempotencyTable
       Environment:
         Variables:
-          TABLE_NAME: !Ref IdempotencyTable
+          IDEMPOTENCY_TABLE: !Ref IdempotencyTable
 ```
 
 !!! warning "Warning: Large responses with DynamoDB persistence layer"
@@ -227,7 +273,7 @@ Imagine the function executes successfully, but the client never receives the re
 !!! warning "Warning: Idempotency for JSON payloads"
     The payload extracted by the `EventKeyJMESPath` is treated as a string by default, so will be sensitive to differences in whitespace even when the JSON payload itself is identical.
 
-    To alter this behaviour, you can use the [JMESPath built-in function](jmespath_functions.md#powertools_json-function) `powertools_json()` to treat the payload as a JSON object rather than a string.
+    To alter this behaviour, you can use the [JMESPath built-in function](utilities.md#powertools_json-function) `powertools_json()` to treat the payload as a JSON object rather than a string.
 
 === "PaymentFunction.java"
 
@@ -252,7 +298,6 @@ Imagine the function executes successfully, but the client never receives the re
       APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
 
       try {
-        // TODO you can use our Jackson ObjectMapper if you want
         Subscription subscription = JsonConfig.get().getObjectMapper().readValue(event.getBody(), Subscription.class);
 
         SubscriptionPayment payment = createSubscriptionPayment(
@@ -393,7 +438,7 @@ IdempotencyConfig.builder()
                 .withPayloadValidationJMESPath("paymentId")
                 .withThrowOnNoIdempotencyKey(true)
                 .withExpiration(Duration.of(5, ChronoUnit.MINUTES))
-                .withUseLocalCache(false)
+                .withUseLocalCache(true)
                 .withLocalCacheMaxItems(432)
                 .withHashFunction("SHA-256")
                 .build()
@@ -403,11 +448,11 @@ These are the available options for further configuration:
 
 | Parameter                                         | Default | Description                                                                                                                      |
 |---------------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------|
-| **EventKeyJMESPath**                              | `""`    | JMESPath expression to extract the idempotency key from the event record. See available [built-in functions](utilities) |
+| **EventKeyJMESPath**                              | `""`    | JMESPath expression to extract the idempotency key from the event record. See available [built-in functions](serialization) |
 | **PayloadValidationJMESPath**                     | `""`    | JMESPath expression to validate whether certain parameters have changed in the event                                             |
 | **ThrowOnNoIdempotencyKey**                       | `False` | Throw exception if no idempotency key was found in the request                                                                   |
 | **ExpirationInSeconds**                           | 3600    | The number of seconds to wait before a record is expired                                                                         |
-| **UseLocalCache**                                 | `true`  | Whether to locally cache idempotency results (LRU cache)                                                                         |
+| **UseLocalCache**                                 | `false` | Whether to locally cache idempotency results (LRU cache)                                                                         |
 | **LocalCacheMaxItems**                            | 256     | Max number of items to store in local cache                                                                                      |
 | **HashFunction**                                  | `MD5`   | Algorithm to use for calculating hashes, as supported by `java.security.MessageDigest` (eg. SHA-1, SHA-256, ...)                 |
 
@@ -424,18 +469,18 @@ This is a locking mechanism for correctness. Since we don't know the result from
 
 ### Using in-memory cache
 
-**By default, in-memory local caching is enabled**, to improve performance of your Lambda function. 
-We cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`LocalCacheMaxItems`** parameter.
+**By default, in-memory local caching is disabled**, to avoid using memory in an unpredictable way. 
 
 !!! warning Memory configuration of your function
     Be sure to configure the Lambda memory according to the number of records and the potential size of each record.
 
-You can disable it as seen before with:
-```java title="Disable local cache"
+You can enable it as seen before with:
+```java title="Enable local cache"
     IdempotencyConfig.builder()
-        .withUseLocalCache(false)
+        .withUseLocalCache(true)
         .build()
 ```
+When enabled, we cache a maximum of 256 records in each Lambda execution environment - You can change it with the **`LocalCacheMaxItems`** parameter.
 
 !!! note "Note: This in-memory cache is local to each Lambda execution environment"
     This means it will be effective in cases where your function's concurrency is low in comparison to the number of "retry" invocations with the same payload, because cache might be empty.
@@ -597,13 +642,19 @@ This means that we will throw **`IdempotencyKeyException`** if the evaluation of
 
 When creating the `DynamoDBPersistenceStore`, you can set a custom [`DynamoDbClient`](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/dynamodb/DynamoDbClient.html) if you need to customize the configuration:
 
-=== "Custom DynamoDbClient"
+=== "Custom DynamoDbClient with X-Ray interceptor"
 
-    ```java hl_lines="2 7"
+    ```java hl_lines="2-8 13"
     public App() {
-      DynamoDbClient customClient = DynamoDbClient.builder().httpClient(AwsCrtAsyncHttpClient.create());
-
-      Idempotency.config().withPersistenceStore(
+        DynamoDbClient customClient = DynamoDbClient.builder()
+            .region(Region.US_WEST_2)
+            .overrideConfiguration(ClientOverrideConfiguration.builder()
+                .addExecutionInterceptor(new TracingInterceptor())
+                .build()
+            )
+            .build();
+      
+        Idempotency.config().withPersistenceStore(
           DynamoDBPersistenceStore.builder()
                 .withTableName(System.getenv("TABLE_NAME"))
                 .withDynamoDbClient(customClient)
@@ -674,7 +725,7 @@ public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent in
 ```
 
 !!! tip "Tip: JMESPath Powertools functions are also available"
-    Built-in functions like `powertools_json`, `powertools_base64`, `powertools_base64_gzip` are also available to use in this utility. See [JMESPath Powertools functions](utilities.md)
+    Built-in functions like `powertools_json`, `powertools_base64`, `powertools_base64_gzip` are also available to use in this utility. See [JMESPath Powertools functions](serialization.md)
 
 
 ## Testing your code
@@ -682,8 +733,8 @@ public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent in
 The idempotency utility provides several routes to test your code.
 
 ### Disabling the idempotency utility
-When testing your code, you may wish to disable the idempotency logic altogether and focus on testing your business logic. To do this, you can set the environment variable `POWERTOOLS_IDEMPOTENCY_DISABLED`
-with a truthy value. If you prefer setting this for specific tests, and are using JUnit 5, you can use [junit-pioneer](https://junit-pioneer.org/docs/environment-variables/) library:
+When testing your code, you may wish to disable the idempotency logic altogether and focus on testing your business logic. To do this, you can set the environment variable `POWERTOOLS_IDEMPOTENCY_DISABLED` to true. 
+If you prefer setting this for specific tests, and are using JUnit 5, you can use [junit-pioneer](https://junit-pioneer.org/docs/environment-variables/) library:
 
 === "MyFunctionTest.java"
 
@@ -739,6 +790,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
     </dependencies>
     <repositories>
         <!-- custom repository to get the dependency -->
+        <!-- see https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.DownloadingAndRunning.html#apache-maven -->
         <repository>
            <id>dynamodb-local-oregon</id>
            <name>DynamoDB Local Release Repository</name>
