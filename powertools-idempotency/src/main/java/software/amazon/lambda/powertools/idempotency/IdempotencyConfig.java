@@ -13,7 +13,7 @@
  */
 package software.amazon.lambda.powertools.idempotency;
 
-import software.amazon.lambda.powertools.utilities.cache.LRUCache;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 
 import java.time.Duration;
 
@@ -80,7 +80,7 @@ public class IdempotencyConfig {
     public static class Builder {
 
         private int localCacheMaxItems = 256;
-        private boolean useLocalCache = true;
+        private boolean useLocalCache = false;
         private long expirationInSeconds = 60 * 60; // 1 hour
         private String eventKeyJMESPath;
         private String payloadValidationJMESPath;
@@ -144,7 +144,7 @@ public class IdempotencyConfig {
         }
 
         /**
-         * Whether to locally cache idempotency results, by default true
+         * Whether to locally cache idempotency results, by default false
          *
          * @param useLocalCache boolean that indicate if a local cache must be used in addition to the persistence store.
          *                      If set to true, will use the {@link LRUCache}

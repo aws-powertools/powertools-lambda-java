@@ -25,9 +25,9 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemA
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-import software.amazon.lambda.powertools.utilities.cache.LRUCache;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -97,7 +97,6 @@ public class BasePersistenceStoreTest {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         persistenceStore.configure(IdempotencyConfig.builder()
                 .withEventKeyJMESPath("powertools_json(body).id")
-                .withUseLocalCache(false)
                 .build(), "myfunc");
 
         Instant now = Instant.now();
@@ -114,7 +113,6 @@ public class BasePersistenceStoreTest {
     public void saveInProgress_jmespath_NotFound_shouldThrowException() {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         persistenceStore.configure(IdempotencyConfig.builder()
-                .withUseLocalCache(false)
                 .withEventKeyJMESPath("unavailable")
                 .withThrowOnNoIdempotencyKey(true) // should throw
                 .build(), "");
@@ -129,7 +127,6 @@ public class BasePersistenceStoreTest {
     public void saveInProgress_jmespath_NotFound_shouldNotThrowException() {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         persistenceStore.configure(IdempotencyConfig.builder()
-                .withUseLocalCache(false)
                 .withEventKeyJMESPath("unavailable")
                 .build(), "");
         Instant now = Instant.now();
@@ -143,6 +140,7 @@ public class BasePersistenceStoreTest {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
         persistenceStore.configure(IdempotencyConfig.builder()
+                .withUseLocalCache(true)
                 .withEventKeyJMESPath("powertools_json(body).id")
                 .build(), null, cache);
         Instant now = Instant.now();
@@ -164,6 +162,7 @@ public class BasePersistenceStoreTest {
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
         persistenceStore.configure(IdempotencyConfig.builder()
                 .withEventKeyJMESPath("powertools_json(body).id")
+                .withUseLocalCache(true)
                 .withExpiration(Duration.of(2, ChronoUnit.SECONDS))
                 .build(), null, cache);
         Instant now = Instant.now();
@@ -189,7 +188,7 @@ public class BasePersistenceStoreTest {
     public void saveSuccess_shouldUpdateRecord() throws JsonProcessingException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
-        persistenceStore.configure(IdempotencyConfig.builder().withUseLocalCache(false).build(), null, cache);
+        persistenceStore.configure(IdempotencyConfig.builder().build(), null, cache);
 
         Product product = new Product(34543, "product", 42);
         Instant now = Instant.now();
@@ -208,7 +207,8 @@ public class BasePersistenceStoreTest {
     public void saveSuccess_withCacheEnabled_shouldSaveInCache() throws JsonProcessingException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
-        persistenceStore.configure(IdempotencyConfig.builder().build(), null, cache);
+        persistenceStore.configure(IdempotencyConfig.builder()
+                .withUseLocalCache(true).build(), null, cache);
 
         Product product = new Product(34543, "product", 42);
         Instant now = Instant.now();
@@ -234,7 +234,7 @@ public class BasePersistenceStoreTest {
     public void getRecord_shouldReturnRecordFromPersistence() throws IdempotencyItemNotFoundException, IdempotencyValidationException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
-        persistenceStore.configure(IdempotencyConfig.builder().withUseLocalCache(false).build(), "myfunc", cache);
+        persistenceStore.configure(IdempotencyConfig.builder().build(), "myfunc", cache);
 
         Instant now = Instant.now();
         DataRecord record = persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), now);
@@ -248,7 +248,8 @@ public class BasePersistenceStoreTest {
     public void getRecord_cacheEnabledNotExpired_shouldReturnRecordFromCache() throws IdempotencyItemNotFoundException, IdempotencyValidationException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
-        persistenceStore.configure(IdempotencyConfig.builder().build(), "myfunc", cache);
+        persistenceStore.configure(IdempotencyConfig.builder()
+                .withUseLocalCache(true).build(), "myfunc", cache);
 
         Instant now = Instant.now();
         DataRecord dr = new DataRecord(
@@ -270,7 +271,8 @@ public class BasePersistenceStoreTest {
     public void getRecord_cacheEnabledExpired_shouldReturnRecordFromPersistence() throws IdempotencyItemNotFoundException, IdempotencyValidationException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
-        persistenceStore.configure(IdempotencyConfig.builder().build(), "myfunc", cache);
+        persistenceStore.configure(IdempotencyConfig.builder()
+                .withUseLocalCache(true).build(), "myfunc", cache);
 
         Instant now = Instant.now();
         DataRecord dr = new DataRecord(
@@ -323,7 +325,8 @@ public class BasePersistenceStoreTest {
     public void deleteRecord_cacheEnabled_shouldDeleteRecordFromCache() {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
-        persistenceStore.configure(IdempotencyConfig.builder().build(), null, cache);
+        persistenceStore.configure(IdempotencyConfig.builder()
+                .withUseLocalCache(true).build(), null, cache);
 
         cache.put("testFunction#47261bd5b456f400f8d191cfb3a7482f",
                 new DataRecord("testFunction#47261bd5b456f400f8d191cfb3a7482f", DataRecord.Status.COMPLETED, 123, null, null));
