@@ -8,6 +8,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.11.0] - 2022-02-16
+
+### Added
+ * Powertools Idempotency module: New module to get your Lambda function [Idempotent](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/) (#717)
+ * Powertools Serialization module: New module to handle JSON (de)serialization (Jackson ObjectMapper, JMESPath functions)
+
+
 ## [1.10.3] - 2022-02-01
 
 ### Bug Fixes
