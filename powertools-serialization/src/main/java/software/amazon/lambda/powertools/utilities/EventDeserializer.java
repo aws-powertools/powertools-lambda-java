@@ -30,7 +30,7 @@ public class EventDeserializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventDeserializer.class);
 
-    public static EventPart from(Object obj) {
+    public static EventPart extractDataFrom(Object obj) {
         if (obj instanceof String) {
             return new EventPart((String) obj);
         } else if (obj instanceof Map) {
@@ -110,7 +110,7 @@ public class EventDeserializer {
             this.contentObject = content;
         }
 
-        public <T> T extractDataAs(Class<T> clazz) {
+        public <T> T as(Class<T> clazz) {
             try {
                 if (content != null) {
                     if (content.getClass().equals(clazz)) {
@@ -134,7 +134,7 @@ public class EventDeserializer {
             }
         }
 
-        public <T> List<T> extractDataAsListOf(Class<T> clazz) {
+        public <T> List<T> asListOf(Class<T> clazz) {
             if (contentList == null) {
                 throw new EventDeserializationException("Event content is null");
             }

@@ -26,21 +26,21 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static software.amazon.lambda.powertools.utilities.EventDeserializer.from;
+import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
 
 public class EventDeserializerTest {
 
     @Test
     public void testDeserializeStringAsString_shouldReturnString() {
         String stringEvent = "Hello World";
-        String result = from(stringEvent).extractDataAs(String.class);
+        String result = extractDataFrom(stringEvent).as(String.class);
         assertThat(result).isEqualTo(stringEvent);
     }
 
     @Test
     public void testDeserializeStringAsObject_shouldReturnObject() {
         String productStr = "{\"id\":1234, \"name\":\"product\", \"price\":42}";
-        Product product = from(productStr).extractDataAs(Product.class);
+        Product product = extractDataFrom(productStr).as(Product.class);
         assertProduct(product);
     }
 
@@ -50,21 +50,21 @@ public class EventDeserializerTest {
         map.put("id", 1234);
         map.put("name", "product");
         map.put("price", 42);
-        Product product = from(map).extractDataAs(Product.class);
+        Product product = extractDataFrom(map).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
     public void testDeserializeAPIGWEventBodyAsObject_shouldReturnObject(APIGatewayProxyRequestEvent event) {
-        Product product = from(event).extractDataAs(Product.class);
+        Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
     public void testDeserializeAPIGWEventBodyAsWrongObjectType_shouldThrowException(APIGatewayProxyRequestEvent event) {
-        assertThatThrownBy(() -> from(event).extractDataAs(Basket.class))
+        assertThatThrownBy(() -> extractDataFrom(event).as(Basket.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessage("Cannot load the event as Basket");
     }
@@ -72,14 +72,14 @@ public class EventDeserializerTest {
     @ParameterizedTest
     @Event(value = "sns_event.json", type = SNSEvent.class)
     public void testDeserializeSNSEventMessageAsObject_shouldReturnObject(SNSEvent event) {
-        Product product = from(event).extractDataAs(Product.class);
+        Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
     public void testDeserializeSQSEventMessageAsList_shouldReturnList(SQSEvent event) {
-        List<Product> products = from(event).extractDataAsListOf(Product.class);
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
     }
@@ -87,7 +87,7 @@ public class EventDeserializerTest {
     @ParameterizedTest
     @Event(value = "kinesis_event.json", type = KinesisEvent.class)
     public void testDeserializeKinesisEventMessageAsList_shouldReturnList(KinesisEvent event) {
-        List<Product> products = from(event).extractDataAsListOf(Product.class);
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
     }
@@ -95,7 +95,7 @@ public class EventDeserializerTest {
     @ParameterizedTest
     @Event(value = "kafka_event.json", type = KafkaEvent.class)
     public void testDeserializeKafkaEventMessageAsList_shouldReturnList(KafkaEvent event) {
-        List<Product> products = from(event).extractDataAsListOf(Product.class);
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
     }
@@ -103,7 +103,7 @@ public class EventDeserializerTest {
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
     public void testDeserializeSQSEventMessageAsObject_shouldThrowException(SQSEvent event) {
-        assertThatThrownBy(() -> from(event).extractDataAs(Product.class))
+        assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessageContaining("consider using 'extractDataAsListOf' instead");
     }
@@ -111,7 +111,7 @@ public class EventDeserializerTest {
     @Test
     public void testDeserializeProductAsProduct_shouldReturnProduct() {
         Product myProduct = new Product(1234, "product", 42);
-        Product product = from(myProduct).extractDataAs(Product.class);
+        Product product = extractDataFrom(myProduct).as(Product.class);
         assertProduct(product);
     }
 
