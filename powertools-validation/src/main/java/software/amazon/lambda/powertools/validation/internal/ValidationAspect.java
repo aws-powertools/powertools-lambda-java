@@ -91,8 +91,14 @@ public class ValidationAspect {
                     event.getRecords().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else if (obj instanceof KafkaEvent) {
                     KafkaEvent event = (KafkaEvent) obj;
-                    event.getRecords().forEach((s, records) -> records.forEach(record -> validate(record.getValue(), inboundJsonSchema)));
-                }else if (obj instanceof KinesisAnalyticsFirehoseInputPreprocessingEvent) {
+                    event.getRecords().forEach((s, records) -> records.forEach(record -> validate(decode(record.getValue()), inboundJsonSchema)));
+                } else if (obj instanceof ActiveMQEvent) {
+                    ActiveMQEvent event = (ActiveMQEvent) obj;
+                    event.getMessages().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
+                } else if (obj instanceof RabbitMQEvent) {
+                    RabbitMQEvent event = (RabbitMQEvent) obj;
+                    event.getRmqMessagesByQueue().forEach((s, records) -> records.forEach(record -> validate(decode(record.getData()), inboundJsonSchema)));
+                } else if (obj instanceof KinesisAnalyticsFirehoseInputPreprocessingEvent) {
                     KinesisAnalyticsFirehoseInputPreprocessingEvent event = (KinesisAnalyticsFirehoseInputPreprocessingEvent) obj;
                     event.getRecords().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else if (obj instanceof KinesisAnalyticsStreamsInputPreprocessingEvent) {
