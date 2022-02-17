@@ -15,37 +15,12 @@
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-tracing</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-metrics</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-parameters</artifactId>
             <version>1.11.0</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-validation</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-sqs</artifactId>
-            <version>1.11.0</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency</artifactId>
             <version>1.11.0</version>
         </dependency>
         <dependency>
@@ -93,22 +68,6 @@
                     <target>${maven.compiler.target}</target>
                     <complianceLevel>${maven.compiler.target}</complianceLevel>
                     <aspectLibraries>
-                        <aspectLibrary>
-                            <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-tracing</artifactId>
-                        </aspectLibrary>
-                        <aspectLibrary>
-                            <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-logging</artifactId>
-                        </aspectLibrary>
-                        <aspectLibrary>
-                            <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-metrics</artifactId>
-                        </aspectLibrary>
-                        <aspectLibrary>
-                            <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-sqs</artifactId>
-                        </aspectLibrary>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
                             <artifactId>powertools-validation</artifactId>
