@@ -9,15 +9,8 @@ repositories {
 }
 
 dependencies {
-    aspect 'software.amazon.lambda:powertools-logging:1.11.0'
-    aspect 'software.amazon.lambda:powertools-tracing:1.11.0'
-    aspect 'software.amazon.lambda:powertools-metrics:1.11.0'
-    aspect 'software.amazon.lambda:powertools-sqs:1.11.0'
     aspect 'software.amazon.lambda:powertools-parameters:1.11.0'
     aspect 'software.amazon.lambda:powertools-validation:1.11.0'
-
-    implementation 'software.amazon.lambda:powertools-idempotency:1.11.0'
-    aspectpath 'software.amazon.lambda:powertools-idempotency:1.11.0'
 
     implementation 'com.amazonaws:aws-lambda-java-core:1.2.1'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
