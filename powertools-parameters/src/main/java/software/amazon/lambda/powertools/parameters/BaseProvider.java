@@ -123,13 +123,15 @@ public abstract class BaseProvider implements ParamProvider {
      */
     @Override
     public Map<String, String> getMultiple(String path) {
+        // remove trailing whitespace
+        String pathWithoutTrailingSlash = path.replaceAll("\\/+$", "");
         try {
-            return (Map<String, String>) cacheManager.getIfNotExpired(path, now()).orElseGet(() -> {
-                Map<String, String> params = getMultipleValues(path);
+            return (Map<String, String>) cacheManager.getIfNotExpired(pathWithoutTrailingSlash, now()).orElseGet(() -> {
+                Map<String, String> params = getMultipleValues(pathWithoutTrailingSlash);
 
-                cacheManager.putInCache(path, params);
+                cacheManager.putInCache(pathWithoutTrailingSlash, params);
 
-                params.forEach((k, v) -> cacheManager.putInCache(path + "/" + k, v));
+                params.forEach((k, v) -> cacheManager.putInCache(pathWithoutTrailingSlash + "/" + k, v));
 
                 return params;
             });

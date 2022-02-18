@@ -104,6 +104,29 @@ public class SSMProviderTest {
     }
 
     @Test
+    public void getMultipleWithTrailingSlash() {
+        List<Parameter> parameters = new ArrayList<>();
+        parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
+        parameters.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
+        parameters.add(Parameter.builder().name("/prod/app1/key3").value("foo3").build());
+        GetParametersByPathResponse response = GetParametersByPathResponse.builder().parameters(parameters).build();
+        when(client.getParametersByPath(paramByPathCaptor.capture())).thenReturn(response);
+
+        Map<String, String> params = provider.getMultiple("/prod/app1/");
+        assertThat(params).contains(
+                MapEntry.entry("key1", "foo1"),
+                MapEntry.entry("key2", "foo2"),
+                MapEntry.entry("key3", "foo3"));
+        assertThat(provider.get("/prod/app1/key1")).isEqualTo("foo1");
+        assertThat(provider.get("/prod/app1/key2")).isEqualTo("foo2");
+        assertThat(provider.get("/prod/app1/key3")).isEqualTo("foo3");
+
+        assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
+        assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
+        assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
+    }
+
+    @Test
     public void getMultiple_cached_shouldNotCallSSM() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
