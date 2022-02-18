@@ -117,9 +117,9 @@ public class EventDeserializerTest {
 
 
     private void assertProduct(Product product) {
-        assertThat(product.getId()).isEqualTo(1234);
-        assertThat(product.getName()).isEqualTo("product");
-        assertThat(product.getPrice()).isEqualTo(42);
+assertThat(product)
+                .isEqualTo(new Product(1234, "product", 42))
+                .usingRecursiveComparison();
     }
 
 }
