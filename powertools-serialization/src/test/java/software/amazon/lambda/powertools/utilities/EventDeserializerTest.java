@@ -105,7 +105,38 @@ public class EventDeserializerTest {
     public void testDeserializeSQSEventMessageAsObject_shouldThrowException(SQSEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
-                .hasMessageContaining("consider using 'extractDataAsListOf' instead");
+                .hasMessageContaining("consider using 'asListOf' instead");
+    }
+
+    @ParameterizedTest
+    @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
+    public void testDeserializeAPIGatewayEventAsList_shouldThrowException(APIGatewayProxyRequestEvent event) {
+        assertThatThrownBy(() -> extractDataFrom(event).asListOf(Product.class))
+                .isInstanceOf(EventDeserializationException.class)
+                .hasMessageContaining("consider using 'as' instead");
+    }
+
+    @ParameterizedTest
+    @Event(value = "sqs_event.json", type = SQSEvent.class)
+    public void testDeserializeSQSEventBodyAsWrongObjectType_shouldThrowException(SQSEvent event) {
+        assertThatThrownBy(() -> extractDataFrom(event).asListOf(Basket.class))
+                .isInstanceOf(EventDeserializationException.class)
+                .hasMessage("Cannot load the event as Basket");
+    }
+
+    @ParameterizedTest
+    @Event(value = "apigw_event_no_body.json", type = APIGatewayProxyRequestEvent.class)
+    public void testDeserializeAPIGatewayNoBody_shouldThrowException(APIGatewayProxyRequestEvent event) {
+        assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Event content is null");
+    }
+
+    @ParameterizedTest
+    @Event(value = "sqs_event_no_body.json", type = SQSEvent.class)
+    public void testDeserializeSQSEventNoBody_shouldThrowException(SQSEvent event) {
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
+        assertThat(products.get(0)).isNull();
     }
 
     @Test
