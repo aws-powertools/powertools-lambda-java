@@ -45,6 +45,22 @@ public class EventDeserializerTest {
     }
 
     @Test
+    public void testDeserializeStringArrayAsList_shouldReturnList() {
+        String productStr = "[{\"id\":1234, \"name\":\"product\", \"price\":42}, {\"id\":2345, \"name\":\"product2\", \"price\":43}]";
+        List<Product> products = extractDataFrom(productStr).asListOf(Product.class);
+        assertThat(products).hasSize(2);
+        assertProduct(products.get(0));
+    }
+
+    @Test
+    public void testDeserializeStringAsList_shouldThrowException() {
+        String productStr = "{\"id\":1234, \"name\":\"product\", \"price\":42}";
+        assertThatThrownBy(() -> extractDataFrom(productStr).asListOf(Product.class))
+                .isInstanceOf(EventDeserializationException.class)
+                .hasMessage("Cannot load the event as a list of Product, consider using 'as' instead");
+    }
+
+    @Test
     public void testDeserializeMapAsObject_shouldReturnObject() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", 1234);
@@ -121,7 +137,7 @@ public class EventDeserializerTest {
     public void testDeserializeSQSEventBodyAsWrongObjectType_shouldThrowException(SQSEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).asListOf(Basket.class))
                 .isInstanceOf(EventDeserializationException.class)
-                .hasMessage("Cannot load the event as Basket");
+                .hasMessage("Cannot load the event as a list of Basket");
     }
 
     @ParameterizedTest

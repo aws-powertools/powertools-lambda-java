@@ -14,6 +14,8 @@
 package software.amazon.lambda.powertools.utilities;
 
 import com.amazonaws.services.lambda.runtime.events.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,20 +203,29 @@ public class EventDeserializer {
          * @return a list of objects of type T (deserialized from the content)
          */
         public <T> List<T> asListOf(Class<T> clazz) {
-            if (contentList == null) {
-                if (content != null || contentMap != null || contentObject != null) {
+            if (contentList == null && content == null) {
+                if (contentMap != null || contentObject != null) {
                     throw new EventDeserializationException("The content of this event is not a list, consider using 'as' instead");
                 }
                 // should not occur, except if the event is really malformed
                 throw new IllegalStateException("Event content is null: the event may be malformed (missing fields)");
             }
-            return contentList.stream().map(s -> {
+            if (content != null) {
+                ObjectReader reader = JsonConfig.get().getObjectMapper().readerForListOf(clazz);
                 try {
-                    return s == null ? null : JsonConfig.get().getObjectMapper().reader().readValue(s, clazz);
-                } catch (IOException e) {
-                    throw new EventDeserializationException("Cannot load the event as " + clazz.getSimpleName(), e);
+                    return reader.readValue(content);
+                } catch (JsonProcessingException e) {
+                    throw new EventDeserializationException("Cannot load the event as a list of " + clazz.getSimpleName() + ", consider using 'as' instead", e);
                 }
-            }).collect(Collectors.toList());
+            } else {
+                return contentList.stream().map(s -> {
+                    try {
+                        return s == null ? null : JsonConfig.get().getObjectMapper().reader().readValue(s, clazz);
+                    } catch (IOException e) {
+                        throw new EventDeserializationException("Cannot load the event as a list of " + clazz.getSimpleName(), e);
+                    }
+                }).collect(Collectors.toList());
+            }
         }
     }
 }
