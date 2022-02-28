@@ -188,7 +188,7 @@ public class EventDeserializer {
                     throw new EventDeserializationException("The content of this event is a list, consider using 'asListOf' instead");
                 }
                 // should not occur, except if the event is malformed (missing fields)
-                throw new IllegalStateException("Event content is null");
+                throw new IllegalStateException("Event content is null: the event may be malformed (missing fields)");
             } catch (IOException e) {
                 throw new EventDeserializationException("Cannot load the event as " + clazz.getSimpleName(), e);
             }
@@ -206,7 +206,7 @@ public class EventDeserializer {
                     throw new EventDeserializationException("The content of this event is not a list, consider using 'as' instead");
                 }
                 // should not occur, except if the event is really malformed
-                throw new IllegalStateException("Event content is null");
+                throw new IllegalStateException("Event content is null: the event may be malformed (missing fields)");
             }
             return contentList.stream().map(s -> {
                 try {

@@ -129,7 +129,7 @@ public class EventDeserializerTest {
     public void testDeserializeAPIGatewayNoBody_shouldThrowException(APIGatewayProxyRequestEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Event content is null");
+                .hasMessageContaining("Event content is null");
     }
 
     @ParameterizedTest
