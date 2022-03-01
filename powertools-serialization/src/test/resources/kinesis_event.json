@@ -4,7 +4,7 @@
       "kinesis": {
         "partitionKey": "partitionKey-03",
         "kinesisSchemaVersion": "1.0",
-        "data": "ewogICJpZCI6IDQzMjQyLAogICJuYW1lIjogIkZvb0JhciBYWSIsCiAgInByaWNlIjogMjU4Cn0=",
+        "data": "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=",
         "sequenceNumber": "49545115243490985018280067714973144582180062593244200961",
         "approximateArrivalTimestamp": 1428537600,
         "encryptionType": "NONE"
@@ -19,9 +19,9 @@
     },
     {
       "kinesis": {
-        "partitionKey": "partitionKey-04",
+        "partitionKey": "partitionKey-03",
         "kinesisSchemaVersion": "1.0",
-        "data": "ewogICJpZCI6IDQyNSwKICAibmFtZSI6ICJCYXJGb28iLAogICJwcmljZSI6IDQzCn0=",
+        "data": "eyJpZCI6MTIzNDUsICJuYW1lIjoicHJvZHVjdDUiLCAicHJpY2UiOjQ1fQ==",
         "sequenceNumber": "49545115243490985018280067714973144582180062593244200961",
         "approximateArrivalTimestamp": 1428537600,
         "encryptionType": "NONE"

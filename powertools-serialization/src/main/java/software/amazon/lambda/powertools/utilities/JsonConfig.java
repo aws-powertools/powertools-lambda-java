@@ -24,8 +24,6 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 import software.amazon.lambda.powertools.utilities.jmespath.JsonFunction;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-
 public class JsonConfig {
     private JsonConfig() {
     }
@@ -38,11 +36,7 @@ public class JsonConfig {
         return ConfigHolder.instance;
     }
 
-    private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(() -> {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return objectMapper;
-    });
+    private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(ObjectMapper::new);
 
     private final FunctionRegistry defaultFunctions = FunctionRegistry.defaultRegistry();
     private final FunctionRegistry customFunctions = defaultFunctions.extend(

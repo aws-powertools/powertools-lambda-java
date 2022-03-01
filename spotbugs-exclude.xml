@@ -77,6 +77,14 @@
                 <Class name="software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore$Builder"/>
                 <Field name="dynamoDbClient"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.utilities.EventDeserializer$EventPart"/>
+                <Field name="contentMap"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.utilities.EventDeserializer$EventPart"/>
+                <Field name="contentList"/>
+            </And>
         </Or>
     </Match>
     <!--Functionally needed-->

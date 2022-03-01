@@ -45,6 +45,14 @@
             <groupId>io.burt</groupId>
             <artifactId>jmespath-jackson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -55,6 +63,11 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-tests</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

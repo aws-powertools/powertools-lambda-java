@@ -18,12 +18,14 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
+import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import software.amazon.lambda.powertools.validation.ValidationException;
 import software.amazon.lambda.powertools.validation.ValidationConfig;
+import software.amazon.lambda.powertools.validation.ValidationException;
 import software.amazon.lambda.powertools.validation.handlers.*;
 import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
 
@@ -91,16 +93,18 @@ public class ValidationAspectTest {
     }
 
     @Test
-    public void validate_SQS() throws IOException {
-        SQSEvent event = ValidationConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/sqs.json"), SQSEvent.class);
+    public void validate_SQS() {
+        PojoSerializer<SQSEvent> pojoSerializer = LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
+        SQSEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/sqs.json"));
 
         SQSHandler handler = new SQSHandler();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 
     @Test
-    public void validate_Kinesis() throws IOException {
-        KinesisEvent event = ValidationConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream("/kinesis.json"), KinesisEvent.class);
+    public void validate_Kinesis() {
+        PojoSerializer<KinesisEvent> pojoSerializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, ClassLoader.getSystemClassLoader());
+        KinesisEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/kinesis.json"));
 
         KinesisHandler handler = new KinesisHandler();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
