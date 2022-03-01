@@ -10,7 +10,11 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.12.0] - 2022-03-01
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
+### Added
+ * **Easy Event Deserialization**: Extraction and deserialization of the main content of events (body, messages, ...) [#757](https://github.com/awslabs/aws-lambda-powertools-java/pull/757)
+
+### Bug Fixes
+ * Different behavior while using SSMProvider with or without trailing slash in parameter names [#758](https://github.com/awslabs/aws-lambda-powertools-java/issues/758)
 
 
 ## [1.11.0] - 2022-02-16
