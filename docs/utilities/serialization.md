@@ -14,7 +14,6 @@ This module contains a set of utilities you may use in your Lambda functions, to
 
 ### Getting started
 
-
 === "Maven"
 
     ```xml hl_lines="5" 
@@ -27,6 +26,12 @@ This module contains a set of utilities you may use in your Lambda functions, to
         </dependency>
         ...
     </dependencies>
+    ```
+
+=== "Gradle"
+
+    ```
+    implementation 'software.amazon.lambda:powertools-serialization:{{ powertools.version }}'
     ```
 
 ### EventDeserializer
