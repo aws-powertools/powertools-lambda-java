@@ -13,7 +13,7 @@
     <artifactId>powertools-idempotency</artifactId>
     <packaging>jar</packaging>
 
-    <name>AWS Lambda Powertools Java library Idempotency</name>
+    <name>AWS Lambda Powertools for Java library Idempotency</name>
     <description>
 
     </description>

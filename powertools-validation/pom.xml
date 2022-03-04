@@ -13,7 +13,7 @@
         <version>1.12.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools Java validation library</name>
+    <name>AWS Lambda Powertools for Java validation library</name>
     <description>
         Json schema validation for Lambda events and responses
     </description>

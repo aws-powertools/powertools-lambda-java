@@ -13,7 +13,7 @@
     <artifactId>powertools-serialization</artifactId>
     <packaging>jar</packaging>
 
-    <name>AWS Lambda Powertools Java library Serialization Utilities</name>
+    <name>AWS Lambda Powertools for Java library Serialization Utilities</name>
     <description>
 
     </description>

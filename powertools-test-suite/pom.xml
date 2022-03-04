@@ -13,7 +13,7 @@
         <version>1.12.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools Java library Test Suite</name>
+    <name>AWS Lambda Powertools for Java library Test Suite</name>
     <description>
         A suite of tests for interactions between the various Powertools modules.
     </description>

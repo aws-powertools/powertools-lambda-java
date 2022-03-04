@@ -13,7 +13,7 @@
         <version>1.12.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools Java library Cloudformation</name>
+    <name>AWS Lambda Powertools for Java library Cloudformation</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating
         custom metrics asynchronously easier.
