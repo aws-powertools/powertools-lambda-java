@@ -30,7 +30,7 @@ Powertools dependencies are available in Maven Central. You can use your favouri
 
 **Quick hello world examples using SAM CLI**
 
-You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including AWS Lambda Powertools Java.
+You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including AWS Lambda Powertools for Java.
 
 ```bash
   sam init --location gh:aws-samples/cookiecutter-aws-sam-powertools-java
