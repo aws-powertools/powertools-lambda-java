@@ -79,7 +79,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             this.dynamoDbClient = client;
         } else {
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
-            if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equals("false")) {
+            if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
                 DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
                         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                         .httpClient(UrlConnectionHttpClient.builder().build())
