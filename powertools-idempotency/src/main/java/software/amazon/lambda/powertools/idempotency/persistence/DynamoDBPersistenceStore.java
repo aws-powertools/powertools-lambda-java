@@ -78,11 +78,18 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         if (client != null) {
             this.dynamoDbClient = client;
         } else {
-            DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
-                    .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                    .httpClient(UrlConnectionHttpClient.builder().build())
-                    .region(Region.of(System.getenv(AWS_REGION_ENV)));
-            this.dynamoDbClient = ddbBuilder.build();
+            String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
+            if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equals("false")) {
+                DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
+                        .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                        .httpClient(UrlConnectionHttpClient.builder().build())
+                        .region(Region.of(System.getenv(AWS_REGION_ENV)));
+                this.dynamoDbClient = ddbBuilder.build();
+            } else {
+                // we do not want to create a DynamoDbClient if idempotency is disabled
+                // null is ok as idempotency won't be called
+                this.dynamoDbClient = null;
+            }
         }
     }
 

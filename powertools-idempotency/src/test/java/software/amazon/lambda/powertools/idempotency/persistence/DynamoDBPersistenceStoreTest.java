@@ -16,7 +16,9 @@ package software.amazon.lambda.powertools.idempotency.persistence;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.DynamoDBConfig;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
@@ -258,6 +260,13 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                 // OK
             }
         }
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = Constants.IDEMPOTENCY_DISABLED_ENV, value = "true")
+    public void idempotencyDisabled_noClientShouldBeCreated() {
+        DynamoDBPersistenceStore store = DynamoDBPersistenceStore.builder().withTableName(TABLE_NAME).build();
+        assertThatThrownBy(() -> store.getRecord("fake")).isInstanceOf(NullPointerException.class);
     }
 
     @BeforeEach
