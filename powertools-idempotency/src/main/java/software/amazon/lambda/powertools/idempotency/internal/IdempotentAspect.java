@@ -47,7 +47,7 @@ public class IdempotentAspect {
                          Idempotent idempotent) throws Throwable {
 
         String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
-        if (idempotencyDisabledEnv != null && !idempotencyDisabledEnv.equals("false")) {
+        if (idempotencyDisabledEnv != null && !idempotencyDisabledEnv.equalsIgnoreCase("false")) {
             return pjp.proceed(pjp.getArgs());
         }
 
