@@ -42,7 +42,8 @@ public class IdempotentAspect {
     public void callAt(Idempotent idempotent) {
     }
 
-    @Around(value = "callAt(idempotent) && execution(@Idempotent * *.*(..))", argNames = "pjp,idempotent")
+    @Around(value = "callAt(idempotent) " +
+      "&& execution(@software.amazon.lambda.powertools.idempotency.Idempotent * *.*(..))", argNames = "pjp,idempotent")
     public Object around(ProceedingJoinPoint pjp,
                          Idempotent idempotent) throws Throwable {
 
