@@ -60,7 +60,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     protected boolean payloadValidationEnabled = false;
     private Expression<JsonNode> validationKeyJMESPath;
     private boolean throwOnNoIdempotencyKey = false;
-    private MessageDigest hashAlgorithm;
+    private String hashFunctionName;
 
     /**
      * Initialize the base persistence layer from the configuration settings
@@ -95,17 +95,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             cache = new LRUCache<>(config.getLocalCacheMaxItems());
         }
         expirationInSeconds = config.getExpirationInSeconds();
-
-        try {
-            hashAlgorithm = MessageDigest.getInstance(config.getHashFunction());
-        } catch (NoSuchAlgorithmException e) {
-            LOG.warn("Error instantiating {} hash function, trying with MD5", config.getHashFunction());
-            try {
-                hashAlgorithm = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException ex) {
-                throw new RuntimeException("Unable to instantiate MD5 digest", ex);
-            }
-        }
+        hashFunctionName = config.getHashFunction();
         configured = true;
     }
 
@@ -275,8 +265,25 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         } else if (data.isBoolean()) {
             node = data.asBoolean();
         } else node = data; // anything else
+
+        MessageDigest hashAlgorithm = getHashAlgorithm();
         byte[] digest = hashAlgorithm.digest(node.toString().getBytes(StandardCharsets.UTF_8));
         return String.format("%032x", new BigInteger(1, digest));
+    }
+
+    private MessageDigest getHashAlgorithm() {
+        MessageDigest hashAlgorithm;
+        try {
+            hashAlgorithm = MessageDigest.getInstance(hashFunctionName);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Error instantiating {} hash function, trying with MD5", hashFunctionName);
+            try {
+                hashAlgorithm = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException ex) {
+                throw new RuntimeException("Unable to instantiate MD5 digest", ex);
+            }
+        }
+        return hashAlgorithm;
     }
 
     /**
