@@ -13,6 +13,7 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
@@ -36,7 +37,7 @@ public final class ParamManager {
 
     /**
      * Get a concrete implementation of {@link BaseProvider}.<br/>
-     * You can specify {@link SecretsProvider} or {@link SSMProvider} or create your custom provider
+     * You can specify {@link SecretsProvider} or {@link SSMProvider} or {@link AppConfigProvider} or create your custom provider
      * by extending {@link BaseProvider} if you need to integrate with a different parameter store.
      * @return a {@link SecretsProvider}
      */
@@ -66,6 +67,15 @@ public final class ParamManager {
     }
 
     /**
+     * Get a {@link AppConfigProvider} with default {@link AppConfigDataClient}.<br/>
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigDataClient)} instead.
+     * @return a {@link AppConfigProvider}
+     */
+    public static AppConfigProvider getAppConfigProvider() {
+        return getProvider(AppConfigProvider.class);
+    }
+
+    /**
      * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
      * @return a {@link SecretsProvider}
@@ -85,6 +95,19 @@ public final class ParamManager {
      */
     public static SSMProvider getSsmProvider(SsmClient client) {
         return (SSMProvider) providers.computeIfAbsent(SSMProvider.class, (k) -> SSMProvider.builder()
+                .withClient(client)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .build());
+    }
+
+    /**
+     * Get a {@link AppConfigProvider} with your custom {@link AppConfigDataClient}.<br/>
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider()} if you don't need this customization.
+     * @return a {@link AppConfigProvider}
+     */
+    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client) {
+        return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
                 .withClient(client)
                 .withCacheManager(cacheManager)
                 .withTransformationManager(transformationManager)

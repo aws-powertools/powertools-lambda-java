@@ -19,12 +19,20 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
+import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
+import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.*;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +60,10 @@ public class ParamManagerIntegrationTest {
 
     @Captor
     ArgumentCaptor<GetSecretValueRequest> secretsCaptor;
+
+    @Mock
+    AppConfigDataClient appConfigDataClient;
+
 
 
     @BeforeEach
@@ -115,5 +127,23 @@ public class ParamManagerIntegrationTest {
 
         assertThat(secretsProvider.get("keys")).isEqualTo(expectedValue); // second time is from cache
         verify(secretsManagerClient, times(1)).getSecretValue(any(GetSecretValueRequest.class));
+    }
+
+    @Test
+    public void appConfigProvider_get() {
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider(appConfigDataClient);
+
+        StartConfigurationSessionResponse session = StartConfigurationSessionResponse.builder().initialConfigurationToken("fakeToken").build();
+        Mockito.when(appConfigDataClient.startConfigurationSession(any(StartConfigurationSessionRequest.class))).thenReturn(session);
+
+        String expectedValue = "Value1";
+        GetLatestConfigurationResponse response = GetLatestConfigurationResponse.builder()
+                .configuration(SdkBytes.fromString(expectedValue, StandardCharsets.UTF_8))
+                .build();
+        when(appConfigDataClient.getLatestConfiguration(any(GetLatestConfigurationRequest.class))).thenReturn(response);
+
+        assertThat(appConfigProvider.get("/app/env/key")).isEqualTo(expectedValue);
+        assertThat(appConfigProvider.get("/app/env/key")).isEqualTo(expectedValue); // second time is from cache
+        verify(appConfigDataClient, times(1)).getLatestConfiguration(any(GetLatestConfigurationRequest.class));
     }
 }
