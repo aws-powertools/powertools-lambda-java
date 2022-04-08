@@ -4,9 +4,13 @@ description: Utility
 ---
 
 
-The parameters utility provides a way to retrieve parameter values from
-[AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) or
-[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). It also provides a base class to create your parameter provider implementation.
+The parameters utility provides a way to retrieve parameter values from:
+
+ - [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html)
+ - [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/)
+ - [AWS AppConfig](https://aws.amazon.com/systems-manager/features/appconfig/)
+
+It also provides a base class to create your parameter provider implementation.
 
 **Key features**
 
@@ -40,11 +44,12 @@ To install this utility, add the following dependency to your project.
 
 This utility requires additional permissions to work as expected. See the table below:
 
-Provider | Function/Method | IAM Permission
-------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-SSM Parameter Store | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`  | `ssm:GetParameter`
-SSM Parameter Store | `SSMProvider.getMultiple(String)` | `ssm:GetParametersByPath`
-Secrets Manager | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)` | `secretsmanager:GetSecretValue`
+| Provider            | Function/Method                                                        | IAM Permission                                                              |
+|---------------------|------------------------------------------------------------------------|-----------------------------------------------------------------------------|
+| SSM Parameter Store | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`             | `ssm:GetParameter`                                                          |
+| SSM Parameter Store | `SSMProvider.getMultiple(String)`                                      | `ssm:GetParametersByPath`                                                   |
+| Secrets Manager     | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)`     | `secretsmanager:GetSecretValue`                                             |
+| AppConfig           | `AppConfigProvider.get(String)` `AppConfigProvider.get(String, Class)` | `appconfig:GetLatestConfiguration` & `appconfig:StartConfigurationSession`  |
 
 ## SSM Parameter Store
 
@@ -99,10 +104,10 @@ in order to get data from other regions or use specific credentials.
 
 The AWS Systems Manager Parameter Store provider supports two additional arguments for the `get()` and `getMultiple()` methods:
 
-| Option     | Default | Description |
-|---------------|---------|-------------|
-| **withDecryption()**   | `False` | Will automatically decrypt the parameter. |
-| **recursive()** | `False`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
+| Option               | Default | Description                                                                                   |
+|----------------------|---------|-----------------------------------------------------------------------------------------------|
+| **withDecryption()** | `False` | Will automatically decrypt the parameter.                                                     |
+| **recursive()**      | `False` | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
 **Example:**
 
@@ -162,6 +167,86 @@ in order to get data from other regions or use specific credentials.
     
         // Retrieve a single secret
         String value = secretsProvider.get("/my/secret");
+    
+    }
+    ```
+
+## AppConfig
+To retrieve parameters from AppConfig, you can choose to use the [AppConfig Lambda Extension](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html)
+or the client SDK. 
+
+!!! info
+    See how to create configuration in AppConfig in the [documentation](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-working.html).
+
+=== "AppConfigProvider"
+
+    ```java hl_lines="5 8-9"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWithConfig implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an instance of the AppConfig Provider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider();
+    
+        // Retrieve some configuration
+        // The key must be in form /application/environment/configuration and match your AppConfig setup
+        String value = appConfigProvider.get("/app/prod/config");
+    
+    }
+    ```
+
+=== "AppConfigProvider with a custom client"
+
+    ```java hl_lines="5 8 11"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWithConfig implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        AppConfigDataClient client = AppConfigDataClient.builder().region(Region.EU_CENTRAL_1).build();
+        
+        // Get an instance of the AppConfig Provider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider(client);
+    
+        // Retrieve a single secret
+        String value = appConfigProvider.get("/app/prod/config");
+    
+    }
+    ```
+
+### Using the AppConfig Extension for Lambda
+To use the extension, add it as a layer to your function and add the `POWERTOOLS_APPCONFIG_EXTENSION` environment variable set to true.
+Note that in this case, you cannot customize the client.
+
+!!! info "Info: Extension ARN"
+    Make sure you use the ARN for the target region. See the [list](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html).
+
+=== "SAM configuration"
+```yaml hl_lines="7 10"
+ParametersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: org.demo.parameters.ParametersFunction::handleRequest
+      Layers:
+        - arn:aws:lambda:us-east-1:027255383542:layer:AWS-AppConfig-Extension:68
+      Environment:
+        Variables:
+          POWERTOOLS_APPCONFIG_EXTENSION: 'true'
+```
+
+=== "AppConfigProvider"
+
+    ```java hl_lines="5 8-9"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWithConfig implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an instance of the AppConfig Provider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider();
+    
+        // Retrieve some configuration
+        // The key must be in form /application/environment/configuration and match your AppConfig setup
+        String value = appConfigProvider.get("/app/prod/config");
     
     }
     ```
