@@ -180,7 +180,7 @@ or the client SDK.
 
 === "AppConfigProvider"
 
-    ```java hl_lines="5 8-9"
+    ```java hl_lines="5 9-10"
     import software.amazon.lambda.powertools.parameters.AppConfigProvider;
     import software.amazon.lambda.powertools.parameters.ParamManager;
 
@@ -236,7 +236,7 @@ ParametersFunction:
 
 === "AppConfigProvider"
 
-    ```java hl_lines="5 8-9"
+    ```java hl_lines="5 9-10"
     import software.amazon.lambda.powertools.parameters.AppConfigProvider;
     import software.amazon.lambda.powertools.parameters.ParamManager;
 
