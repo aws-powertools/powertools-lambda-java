@@ -37,7 +37,7 @@ import static software.amazon.lambda.powertools.cors.Constants.*;
  * <p>You can use the annotation and customize the parameters:<br/>
  * <pre>
  *    &#64;CrossOrigin(
- *         origins = "origin.com",
+ *         origins = "http://origin.com",
  *         allowedHeaders = "Content-Type",
  *         methods = "POST, OPTIONS"
  *     )
