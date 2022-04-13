@@ -50,7 +50,7 @@ public class CrossOriginTest {
         APIGatewayProxyResponseEvent response = function.handleRequest(event, context);
 
         Map<String, String> headers = response.getHeaders();
-        assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "origin.com");
+        assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "http://origin.com");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_METHODS, "POST, OPTIONS");
         assertThat(headers).containsEntry(ACCESS_CONTROL_MAX_AGE, String.valueOf(DEFAULT_ACCESS_CONTROL_MAX_AGE));
@@ -61,7 +61,7 @@ public class CrossOriginTest {
     @Test
     @SetEnvironmentVariable.SetEnvironmentVariables(value = {
             @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_ALLOW_HEADERS, value = "Content-Type, X-Amz-Date"),
-            @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_ALLOW_ORIGIN, value = "example.com, origin.com"),
+            @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_ALLOW_ORIGIN, value = "https://example.com, http://origin.com"),
             @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_ALLOW_METHODS, value = "OPTIONS, POST"),
             @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_EXPOSE_HEADERS, value = "Content-Type, X-Amz-Date"),
             @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_ALLOW_CREDENTIALS, value = "true"),
@@ -73,7 +73,7 @@ public class CrossOriginTest {
         APIGatewayProxyResponseEvent response = function.handleRequest(event, context);
 
         Map<String, String> headers = response.getHeaders();
-        assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "origin.com");
+        assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "http://origin.com");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, X-Amz-Date");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_METHODS, "OPTIONS, POST");
         assertThat(headers).containsEntry(ACCESS_CONTROL_MAX_AGE, "42");

@@ -39,7 +39,7 @@ public class CrossOriginHandler {
     private final String allowCredentials;
     private final String maxAge;
 
-    public CrossOriginHandler(CrossOrigin crossOrigin) {
+    CrossOriginHandler(CrossOrigin crossOrigin) {
          allowHeaders = Optional.ofNullable(System.getenv(ENV_ACCESS_CONTROL_ALLOW_HEADERS)).orElse(crossOrigin.allowedHeaders());
          exposedHeaders = Optional.ofNullable(System.getenv(ENV_ACCESS_CONTROL_EXPOSE_HEADERS)).orElse(crossOrigin.exposedHeaders());
          allowMethods = Optional.ofNullable(System.getenv(ENV_ACCESS_CONTROL_ALLOW_METHODS)).orElse(crossOrigin.methods());

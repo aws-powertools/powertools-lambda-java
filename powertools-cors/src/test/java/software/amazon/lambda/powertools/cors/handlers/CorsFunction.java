@@ -22,7 +22,7 @@ import software.amazon.lambda.powertools.cors.CrossOrigin;
 public class CorsFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     @CrossOrigin(
-            origins = "origin.com",
+            origins = "http://origin.com",
             allowedHeaders = "Content-Type",
             methods = "POST, OPTIONS"
     )
