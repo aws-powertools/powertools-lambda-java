@@ -38,6 +38,7 @@
         <module>powertools-test-suite</module>
         <module>powertools-cloudformation</module>
         <module>powertools-idempotency</module>
+        <module>powertools-cors</module>
     </modules>
 
     <scm>
