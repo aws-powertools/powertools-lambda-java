@@ -172,8 +172,6 @@ in order to get data from other regions or use specific credentials.
     ```
 
 ## AppConfig
-To retrieve parameters from AppConfig, you can choose to use the [AppConfig Lambda Extension](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions.html)
-or the client SDK. 
 
 !!! info
     See how to create configuration in AppConfig in the [documentation](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-working.html).
@@ -208,44 +206,6 @@ or the client SDK.
         AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider(client);
     
         // Retrieve a single secret
-        String value = appConfigProvider.get("/app/prod/config");
-    
-    }
-    ```
-
-### Using the AppConfig Extension for Lambda
-To use the extension, add it as a layer to your function and add the `POWERTOOLS_APPCONFIG_EXTENSION` environment variable set to true.
-Note that in this case, you cannot customize the client.
-
-!!! info "Info: Extension ARN"
-    Make sure you use the ARN for the target region. See the [list](https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html).
-
-=== "SAM configuration"
-```yaml hl_lines="7 10"
-ParametersFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: Function
-      Handler: org.demo.parameters.ParametersFunction::handleRequest
-      Layers:
-        - arn:aws:lambda:us-east-1:027255383542:layer:AWS-AppConfig-Extension:68
-      Environment:
-        Variables:
-          POWERTOOLS_APPCONFIG_EXTENSION: 'true'
-```
-
-=== "AppConfigProvider"
-
-    ```java hl_lines="5 9-10"
-    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
-
-    public class AppWithConfig implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an instance of the AppConfig Provider
-        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider();
-    
-        // Retrieve some configuration
-        // The key must be in form /application/environment/configuration and match your AppConfig setup
         String value = appConfigProvider.get("/app/prod/config");
     
     }
