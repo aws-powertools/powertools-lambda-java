@@ -2,7 +2,6 @@ package software.amazon.lambda.powertools.parameters;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
@@ -14,14 +13,15 @@ import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfiguratio
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AppConfigProviderTest {
@@ -42,21 +42,7 @@ public class AppConfigProviderTest {
     public void init() {
         openMocks(this);
         cacheManager = new CacheManager();
-        provider = new AppConfigProvider(cacheManager, client);
-    }
-
-    @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_APPCONFIG_EXTENSION", value = "true")
-    public void getValue_withExtension() throws IOException {
-        AppConfigProvider mockedProvider = Mockito.spy(AppConfigProvider.class);
-
-        HttpURLConnection connection = Mockito.mock(HttpURLConnection.class);
-        Mockito.when(connection.getResponseCode()).thenReturn(200);
-        Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream("{\"key\":\"value\"}".getBytes(StandardCharsets.UTF_8)));
-        Mockito.when(mockedProvider.connectToExtension("app", "env", "key")).thenReturn(connection);
-
-        String result = mockedProvider.getValue("/app/env/key");
-        assertThat(result).isEqualTo("{\"key\":\"value\"}");
+        provider = AppConfigProvider.builder().withCacheManager(cacheManager).withTransformationManager(new TransformationManager()).withClient(client).build();
     }
 
     @Test
@@ -80,16 +66,32 @@ public class AppConfigProviderTest {
     }
 
     @Test
+    public void getWithTransformer() {
+        String key = "/app/env/Key2";
+        String expectedValue = "{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}";
+
+        StartConfigurationSessionResponse session = StartConfigurationSessionResponse.builder().initialConfigurationToken("sessionToken").build();
+        Mockito.when(client.startConfigurationSession(sessionCaptor.capture())).thenReturn(session);
+
+        GetLatestConfigurationResponse response = GetLatestConfigurationResponse.builder().configuration(SdkBytes.fromString(expectedValue, StandardCharsets.UTF_8)).build();
+        Mockito.when(client.getLatestConfiguration(paramCaptor.capture())).thenReturn(response);
+
+        Map<String, Object> map = provider.withTransformation(Transformer.json).get(key, Map.class);
+        assertThat(map).contains(
+                entry("foo", "Foo"),
+                entry("bar", 42),
+                entry("baz", 123456789));
+        assertThat(paramCaptor.getValue().configurationToken()).isEqualTo("sessionToken");
+        assertThat(sessionCaptor.getValue().applicationIdentifier()).isEqualTo("app");
+        assertThat(sessionCaptor.getValue().environmentIdentifier()).isEqualTo("env");
+        assertThat(sessionCaptor.getValue().configurationProfileIdentifier()).isEqualTo("Key2");
+    }
+
+    @Test
     public void invalidKey() {
         String key = "keyWithoutAppEnvConfig";
         assertThatThrownBy(() -> {provider.getValue(key); })
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Your key is incorrect, please specify an 'application', an 'environment' and the 'configuration' separated with '/', eg. '/myapp/prod/myvar'");
-    }
-
-    @Test
-    public void testExtensionUrl() {
-        String extensionUrl = provider.getExtensionUrl("myApp", "prod", "config");
-        assertThat(extensionUrl).isEqualTo("http://localhost:2772/applications/myApp/environments/prod/configurations/config");
     }
 }

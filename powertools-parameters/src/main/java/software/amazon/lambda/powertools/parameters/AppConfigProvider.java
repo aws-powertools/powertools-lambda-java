@@ -9,26 +9,16 @@ import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfiguratio
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
-import software.amazon.awssdk.utils.IoUtils;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 
 public class AppConfigProvider extends BaseProvider {
 
     private AppConfigDataClient client;
-
-    AppConfigProvider() {
-        this(new CacheManager());
-    }
 
     AppConfigProvider(CacheManager cacheManager) {
         this(cacheManager, defaultClient());
@@ -59,11 +49,7 @@ public class AppConfigProvider extends BaseProvider {
         String environment = profile[index + 1];
         String configuration = profile[index + 2];
         
-        if (useAppConfigExtension()) {
-            return getValueWithExtension(application, environment, configuration);
-        } else {
-            return getValueWithClient(application, environment, configuration);
-        }
+        return getValueWithClient(application, environment, configuration);
     }
 
     private String getValueWithClient(String application, String environment, String configuration) {
@@ -76,34 +62,6 @@ public class AppConfigProvider extends BaseProvider {
                 .configurationToken(sessionResponse.initialConfigurationToken())
                 .build());
         return configurationResponse.configuration().asUtf8String();
-    }
-
-    private String getValueWithExtension(String application, String environment, String configuration) {
-        try {
-            HttpURLConnection connection = connectToExtension(application, environment, configuration);
-            if (connection.getResponseCode() == 200) {
-                InputStream responseStream = connection.getInputStream();
-                return IoUtils.toUtf8String(responseStream);
-            }
-            throw new IOException("Error " + connection.getResponseCode() + ": " + connection.getResponseMessage());
-        } catch (MalformedURLException e) {
-            throw new IllegalArgumentException("Your key is incorrect, please specify an 'application', an 'environment' and the 'configuration' separated with '/', eg. '/myapp/prod/myvar'", e);
-        } catch (IOException e) {
-            throw new IllegalStateException("Cannot connect to the AppConfig extension, please add the extension layer to your function (see https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-integration-lambda-extensions-versions.html)", e);
-        }
-    }
-
-    HttpURLConnection connectToExtension(String application, String environment, String configuration) throws IOException {
-        URL url = new URL(getExtensionUrl(application, environment, configuration));
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Accept", "*/*");
-        return connection;
-    }
-
-    String getExtensionUrl(String application, String environment, String configuration) {
-        return String.format("http://localhost:2772/applications/%s/environments/%s/configurations/%s",
-                application, environment, configuration);
     }
 
     /**
@@ -141,13 +99,8 @@ public class AppConfigProvider extends BaseProvider {
         return this;
     }
 
-    public static boolean useAppConfigExtension() {
-        String appConfigExtensionEnv = System.getenv().get("POWERTOOLS_APPCONFIG_EXTENSION");
-        return appConfigExtensionEnv != null && !appConfigExtensionEnv.equalsIgnoreCase("false");
-    }
-
     private static AppConfigDataClient defaultClient() {
-        return useAppConfigExtension() ? null : AppConfigDataClient.builder()
+        return AppConfigDataClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
                 .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                 .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
