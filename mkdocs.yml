@@ -17,6 +17,7 @@ nav:
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
+      - utilities/cors.md
 
 theme:
   name: material

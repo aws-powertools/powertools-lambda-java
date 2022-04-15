@@ -63,6 +63,7 @@ public class CrossOriginHandlerTest {
         assertThat(response.getBody()).isEqualTo("OK");
         Map<String, String> headers = response.getHeaders();
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "http://origin.com");
+        assertThat(headers).containsEntry(VARY, VARY_ORIGIN);
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_HEADERS, DEFAULT_ACCESS_CONTROL_ALLOW_HEADERS);
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ACCESS_CONTROL_ALLOW_METHODS);
         assertThat(headers).containsEntry(ACCESS_CONTROL_MAX_AGE, String.valueOf(DEFAULT_ACCESS_CONTROL_MAX_AGE));
@@ -82,6 +83,7 @@ public class CrossOriginHandlerTest {
         Map<String, String> headers = response.getHeaders();
         assertThat(headers).containsEntry("Content-Type", "application/json");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "http://origin.com");
+        assertThat(headers).containsEntry(VARY, VARY_ORIGIN);
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_HEADERS, DEFAULT_ACCESS_CONTROL_ALLOW_HEADERS);
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_METHODS, DEFAULT_ACCESS_CONTROL_ALLOW_METHODS);
         assertThat(headers).containsEntry(ACCESS_CONTROL_MAX_AGE, String.valueOf(DEFAULT_ACCESS_CONTROL_MAX_AGE));
@@ -134,6 +136,7 @@ public class CrossOriginHandlerTest {
 
        Map<String, String> headers = response.getHeaders();
         assertThat(headers).doesNotContainKey(ACCESS_CONTROL_ALLOW_ORIGIN);
+        assertThat(headers).doesNotContainKey(VARY);
     }
 
     @Test
@@ -181,6 +184,7 @@ public class CrossOriginHandlerTest {
 
         Map<String, String> headers = response.getHeaders();
         assertThat(headers).doesNotContainKey(ACCESS_CONTROL_ALLOW_ORIGIN);
+        assertThat(headers).doesNotContainKey(VARY);
     }
 
     @Test
@@ -200,10 +204,26 @@ public class CrossOriginHandlerTest {
         assertThat(response.getBody()).isEqualTo("OK");
         Map<String, String> headers = response.getHeaders();
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "http://origin.com");
+        assertThat(headers).containsEntry(VARY, VARY_ORIGIN);
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_HEADERS, "Content-Type, X-Amz-Date");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_METHODS, "OPTIONS, POST");
         assertThat(headers).containsEntry(ACCESS_CONTROL_MAX_AGE, "42");
         assertThat(headers).containsEntry(ACCESS_CONTROL_EXPOSE_HEADERS, "Content-Type, X-Amz-Date");
         assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+    }
+
+    @Test
+    @SetEnvironmentVariable.SetEnvironmentVariables(value = {
+            @SetEnvironmentVariable(key = ENV_ACCESS_CONTROL_ALLOW_ORIGIN, value = "http://*")
+    })
+    public void corsWithWildcardOrigin_shouldReturnCorrectOrigin() {
+        CrossOriginHandler handler = new CrossOriginHandler(defaultCors);
+        APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
+        APIGatewayProxyResponseEvent response = handler.process(event, new APIGatewayProxyResponseEvent().withBody("OK"));
+
+        assertThat(response.getBody()).isEqualTo("OK");
+        Map<String, String> headers = response.getHeaders();
+        assertThat(headers).containsEntry(ACCESS_CONTROL_ALLOW_ORIGIN, "http://origin.com");
+        assertThat(headers).containsEntry(VARY, VARY_ORIGIN);
     }
 }

@@ -66,16 +66,19 @@ public class CrossOriginHandler {
             // should not happen, but we don't want to fail because of this
             LOG.error("Error while setting CORS headers. If you think this is an issue in PowerTools, please open an issue on GitHub", e);
         }
-        LOG.debug("====== Response Headers ======");
-        response.getHeaders().forEach((key, value) -> LOG.debug(key + " -> " + value));
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("====== CORS Headers ======");
+            response.getHeaders().forEach((key, value) -> {if (key.startsWith("Access-Control")) { LOG.debug(key + " -> " + value); }} );
+        }
         return response;
     }
 
     private void processOrigin(APIGatewayProxyResponseEvent response, String origin) throws MalformedURLException {
         if (allowOrigins != null) {
             List<String> allowOriginList = Arrays.asList(allowOrigins.split("\\s*,\\s*"));
-            if (allowOriginList.stream().anyMatch(o -> o.equals("*"))) {
+            if (allowOriginList.stream().anyMatch(WILDCARD::equals)) {
                 response.getHeaders().put(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                response.getHeaders().put(VARY, VARY_ORIGIN);
             } else {
                 URL url = new URL(origin);
                 allowOriginList.stream().filter(o -> {
@@ -88,7 +91,10 @@ public class CrossOriginHandler {
                         LOG.warn("Allowed origin '"+o+"' is malformed. It should contain a protocol, a host and eventually a port");
                         return false;
                     }
-                }).findAny().ifPresent(validOrigin -> response.getHeaders().put(ACCESS_CONTROL_ALLOW_ORIGIN, validOrigin));
+                }).findAny().ifPresent(validOrigin -> {
+                    response.getHeaders().put(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+                    response.getHeaders().put(VARY, VARY_ORIGIN);
+                });
             }
         }
     }

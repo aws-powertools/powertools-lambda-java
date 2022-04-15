@@ -21,6 +21,9 @@ public interface Constants {
     String ACCESS_CONTROL_ALLOW_CREDENTIALS = "Access-Control-Allow-Credentials";
     String ACCESS_CONTROL_MAX_AGE = "Access-Control-Max-Age";
 
+    String VARY = "Vary";
+    String VARY_ORIGIN = "Origin";
+
     String ENV_ACCESS_CONTROL_ALLOW_HEADERS = "ACCESS_CONTROL_ALLOW_HEADERS";
     String ENV_ACCESS_CONTROL_EXPOSE_HEADERS = "ACCESS_CONTROL_EXPOSE_HEADERS";
     String ENV_ACCESS_CONTROL_ALLOW_ORIGIN = "ACCESS_CONTROL_ALLOW_ORIGIN";
