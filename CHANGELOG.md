@@ -8,6 +8,19 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.12.1] - 2022-04-21
+
+### Bug Fixes
+
+* **Idempotency**: thread-safety issue of MessageDigest ([#817](https://github.com/awslabs/aws-lambda-powertools-java/pull/817)) 
+* **Idempotency**: disable dynamodb client creation in persistent store when disabling idempotency ([#796](https://github.com/awslabs/aws-lambda-powertools-java/pull/796))
+
+
+## Maintenance
+
+* **deps**: Bump third party dependencies to the latest versions.
+
+
 ## [1.12.0] - 2022-03-01
 
 ### Added
