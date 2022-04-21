@@ -8,6 +8,11 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.12.1] - 2022-04-21
+
+<PLEASE REMEBER TO UPDATE CHANGE LOG>
+
+
 ## [1.12.0] - 2022-03-01
 
 ### Added
