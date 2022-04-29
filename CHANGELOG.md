@@ -8,6 +8,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.12.2] - 2022-04-29
+
+### Bug Fixes
+
+* **SQS Large message processing**: Classpath conflict on `PayloadS3Pointer` when consumer application depends on `payloadoffloading-common`, introduced in [v1.8.0](https://github.com/awslabs/aws-lambda-powertools-java/releases/tag/v1.8.0). ([#851](https://github.com/awslabs/aws-lambda-powertools-java/pull/851))
+
+
 ## [1.12.1] - 2022-04-21
 
 ### Bug Fixes
