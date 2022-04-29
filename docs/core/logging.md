@@ -3,7 +3,6 @@ title: Logging
 description: Core utility
 ---
 
-
 Logging provides an opinionated logger with output structured as JSON.
 
 **Key features**
