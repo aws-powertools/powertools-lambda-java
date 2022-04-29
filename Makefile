@@ -2,6 +2,7 @@ build-docs:
 	@$(MAKE) build-docs-website
 
 build-docs-website:
+	git config --global --add safe.directory "/docs"
 	mkdir -p dist
 	docker build -t squidfunk/mkdocs-material ./docs/
 	docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
