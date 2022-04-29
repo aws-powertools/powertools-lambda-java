@@ -65,7 +65,6 @@ markdown_extensions:
 copyright: Copyright &copy; 2021 Amazon Web Services
 
 plugins:
-  - git-revision-date
   - search
   - macros
 
