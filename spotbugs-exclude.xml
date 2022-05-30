@@ -144,4 +144,52 @@
         <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
         <Method name="setLogLevelBasedOnSamplingRate"/>
     </Match>
+    <Match>
+        <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_THROWABLE"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.tracing.internal.LambdaTracingAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotentAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.validation.internal.ValidationAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect"/>
+                <Method name="around"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
+                <Method name="handle"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
+                <Method name="processIdempotency"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
+                <Method name="getFunctionResponse"/>
+            </And>
+        </Or>
+    </Match>
+    <Match>
+        <Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
+    </Match>
 </FindBugsFilter>
