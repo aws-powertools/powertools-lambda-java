@@ -8,6 +8,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.12.3] - 2022-07-12
+
+### Maintenance
+
+* Fixes to resolve vulnerable transitive dependencies ([919](https://github.com/awslabs/aws-lambda-powertools-java/issues/919))
+
+
 ## [1.12.2] - 2022-04-29
 
 ### Bug Fixes
