@@ -74,7 +74,7 @@
         <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.5.1</jmespath.version>
     </properties>
@@ -244,7 +244,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.6.0</version>
+                <version>4.7.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
