@@ -122,9 +122,7 @@ public class ValidationAspect {
         if (validationNeeded && !validation.outboundSchema().isEmpty()) {
             JsonSchema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
 
-            if (validation.envelope() != null && !validation.envelope().isEmpty()) {
-                validate(result, outboundJsonSchema, validation.envelope());
-            } else if (result instanceof APIGatewayProxyResponseEvent) {
+            if (result instanceof APIGatewayProxyResponseEvent) {
                 APIGatewayProxyResponseEvent response = (APIGatewayProxyResponseEvent) result;
                 validate(response.getBody(), outboundJsonSchema);
             } else if (result instanceof APIGatewayV2HTTPResponse) {
