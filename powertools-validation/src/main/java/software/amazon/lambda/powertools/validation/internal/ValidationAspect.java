@@ -40,7 +40,6 @@ import static software.amazon.lambda.powertools.validation.ValidationUtils.valid
 public class ValidationAspect {
     private static final Logger LOG = LoggerFactory.getLogger(ValidationAspect.class);
 
-
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(validation)")
     public void callAt(Validation validation) {
