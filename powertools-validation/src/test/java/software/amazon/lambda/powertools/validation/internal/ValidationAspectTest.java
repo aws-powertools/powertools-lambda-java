@@ -102,6 +102,15 @@ public class ValidationAspectTest {
     }
 
     @Test
+    public void validate_SQS_CustomEnvelopeTakePrecedence() {
+        PojoSerializer<SQSEvent> pojoSerializer = LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
+        SQSEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/sqs_message.json"));
+
+        SQSWithCustomEnvelopeHandler handler = new SQSWithCustomEnvelopeHandler();
+        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
+    }
+
+    @Test
     public void validate_Kinesis() {
         PojoSerializer<KinesisEvent> pojoSerializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, ClassLoader.getSystemClassLoader());
         KinesisEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/kinesis.json"));
