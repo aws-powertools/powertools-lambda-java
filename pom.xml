@@ -55,11 +55,11 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <log4j.version>2.18.0</log4j.version>
-        <jackson.version>2.13.3</jackson.version>
+        <log4j.version>2.19.0</log4j.version>
+        <jackson.version>2.13.4.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.17.239</aws.sdk.version>
-        <aws.xray.recorder.version>2.11.2</aws.xray.recorder.version>
+        <aws.sdk.version>2.18.4</aws.sdk.version>
+        <aws.xray.recorder.version>2.12.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.1</lambda.core.version>
@@ -71,10 +71,10 @@
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <cobertura-maven-plugin.version>2.7</cobertura-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.4.0</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.1</junit-jupiter.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.5.1</jmespath.version>
     </properties>
@@ -244,13 +244,13 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.6.0</version>
+                <version>4.8.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
-                <version>4.6.1</version>
+                <version>4.8.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -262,7 +262,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.23.0</version>
+                <version>3.23.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -457,7 +457,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.6.0.0</version>
+                        <version>4.7.2.1</version>
                         <executions>
                             <execution>
                                 <id>test</id>
