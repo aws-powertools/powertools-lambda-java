@@ -18,10 +18,11 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import software.amazon.lambda.powertools.validation.Validation;
 
-public class SQSWithCustomEnvelopeHandler implements RequestHandler<SQSEvent, String> {
+public class SQSWithWrongEnvelopeHandler implements RequestHandler<SQSEvent, String> {
 
     @Override
-    @Validation(inboundSchema = "classpath:/schema_v7.json", envelope = "Records[*].powertools_json(body).powertools_json(Message)")
+    // real event contains Records with big R (https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html)
+    @Validation(inboundSchema = "classpath:/schema_v7.json", envelope = "records[*].powertools_json(body).powertools_json(Message)")
     public String handleRequest(SQSEvent input, Context context) {
         return "OK";
     }

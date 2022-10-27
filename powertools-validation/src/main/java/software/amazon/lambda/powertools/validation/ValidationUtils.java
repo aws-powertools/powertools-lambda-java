@@ -13,6 +13,7 @@
  */
 package software.amazon.lambda.powertools.validation;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -21,9 +22,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
+import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import io.burt.jmespath.Expression;
@@ -65,9 +69,15 @@ public class ValidationUtils {
         }
         JsonNode subNode;
         try {
-            JsonNode jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(obj);
+            PojoSerializer pojoSerializer = LambdaEventSerializers.serializerFor(obj.getClass(), ClassLoader.getSystemClassLoader());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pojoSerializer.toJson(obj, out);
+            JsonNode jsonNode = ValidationConfig.get().getObjectMapper().readTree(out.toString("UTF-8"));
             Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile(envelope);
             subNode = expression.search(jsonNode);
+            if (subNode == null || subNode instanceof NullNode) {
+                throw new ValidationException("Not found");
+            }
         } catch (Exception e) {
             throw new ValidationException("Cannot find envelope <"+envelope+"> in the object <"+obj+">", e);
         }
