@@ -13,6 +13,7 @@
  */
 package software.amazon.lambda.powertools.idempotency.internal;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -25,6 +26,8 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.time.Instant;
+import java.util.Optional;
+import java.util.OptionalInt;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
@@ -40,10 +43,12 @@ public class IdempotencyHandler {
     private final ProceedingJoinPoint pjp;
     private final JsonNode data;
     private final BasePersistenceStore persistenceStore;
+    private final Context lambdaContext;
 
-    public IdempotencyHandler(ProceedingJoinPoint pjp, String functionName, JsonNode payload) {
+    public IdempotencyHandler(ProceedingJoinPoint pjp, String functionName, JsonNode payload, Context lambdaContext) {
         this.pjp = pjp;
         this.data = payload;
+        this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
         persistenceStore.configure(Idempotency.getInstance().getConfig(), functionName);
     }
@@ -77,7 +82,7 @@ public class IdempotencyHandler {
         try {
             // We call saveInProgress first as an optimization for the most common case where no idempotent record
             // already exists. If it succeeds, there's no need to call getRecord.
-            persistenceStore.saveInProgress(data, Instant.now());
+            persistenceStore.saveInProgress(data, Instant.now(), getRemainingTimeInMillis());
         } catch (IdempotencyItemAlreadyExistsException iaee) {
             DataRecord record = getIdempotencyRecord();
             return handleForStatus(record);
@@ -87,6 +92,21 @@ public class IdempotencyHandler {
             throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a powertools bug, please open an issue.", e);
         }
         return getFunctionResponse();
+    }
+
+    /**
+     * Tries to determine the remaining time available for the current lambda invocation.
+     * Currently, it only works if the idempotent handler decorator is used or using {@link Idempotency#registerLambdaContext(Context)}
+     *
+     * @return the remaining time in milliseconds or empty if the context was not provided/found
+     */
+    private OptionalInt getRemainingTimeInMillis() {
+        if (lambdaContext != null) {
+            return OptionalInt.of(lambdaContext.getRemainingTimeInMillis());
+        } else {
+            LOG.warn("Couldn't determine the remaining time left. Did you call registerLambdaContext on Idempotency?");
+        }
+        return OptionalInt.empty();
     }
 
     /**
@@ -121,6 +141,10 @@ public class IdempotencyHandler {
         }
 
         if (INPROGRESS.equals(record.getStatus())) {
+            if (record.getInProgressExpiryTimestamp().isPresent()
+                    && record.getInProgressExpiryTimestamp().getAsLong() < Instant.now().toEpochMilli()) {
+                throw new IdempotencyInconsistentStateException("Item should have been expired in-progress because it already time-outed.");
+            }
             throw new IdempotencyAlreadyInProgressException("Execution already in progress with idempotency key: " + record.getIdempotencyKey());
         }
 

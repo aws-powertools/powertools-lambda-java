@@ -13,8 +13,10 @@
  */
 package software.amazon.lambda.powertools.idempotency;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 
+import java.security.MessageDigest;
 import java.time.Duration;
 
 /**
@@ -28,6 +30,7 @@ public class IdempotencyConfig {
     private final String payloadValidationJMESPath;
     private final boolean throwOnNoIdempotencyKey;
     private final String hashFunction;
+    private Context lambdaContext;
 
     private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath, boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems, long expirationInSeconds, String hashFunction) {
         this.localCacheMaxItems = localCacheMaxItems;
@@ -71,10 +74,18 @@ public class IdempotencyConfig {
     /**
      * Create a builder that can be used to configure and create a {@link IdempotencyConfig}.
      *
-     * @return a new instance of {@link IdempotencyConfig.Builder}
+     * @return a new instance of {@link Builder}
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    public void setLambdaContext(Context lambdaContext) {
+        this.lambdaContext = lambdaContext;
+    }
+
+    public Context getLambdaContext() {
+        return lambdaContext;
     }
 
     public static class Builder {
@@ -203,7 +214,7 @@ public class IdempotencyConfig {
         /**
          * Function to use for calculating hashes, by default MD5.
          *
-         * @param hashFunction Can be any algorithm supported by {@link java.security.MessageDigest}, most commons are<ul>
+         * @param hashFunction Can be any algorithm supported by {@link MessageDigest}, most commons are<ul>
          *                     <li>MD5</li>
          *                     <li>SHA-1</li>
          *                     <li>SHA-256</li></ul>

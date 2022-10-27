@@ -58,6 +58,68 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
     }
 
     @Test
+    public void putRecord_shouldCreateRecordInDynamoDB_IfPreviousExpired() {
+        key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
+
+        // GIVEN: Insert a fake item with same id and expired
+        Map<String, AttributeValue> item = new HashMap<>(key);
+        Instant now = Instant.now();
+        long expiry = now.minus(30, ChronoUnit.SECONDS).getEpochSecond();
+        item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
+        item.put("status", AttributeValue.builder().s(DataRecord.Status.COMPLETED.toString()).build());
+        item.put("data", AttributeValue.builder().s("Fake Data").build());
+        client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
+
+        // WHEN: call putRecord
+        long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
+        dynamoDBPersistenceStore.putRecord(
+                new DataRecord("key",
+                        DataRecord.Status.INPROGRESS,
+                        expiry2,
+                        null,
+                        null
+                ), now);
+
+        // THEN: an item is inserted
+        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        assertThat(itemInDb).isNotNull();
+        assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
+        assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry2));
+    }
+
+    @Test
+    public void putRecord_shouldCreateRecordInDynamoDB_IfLambdaWasInProgressAndTimedOut() {
+        key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
+
+        // GIVEN: Insert a fake item with same id and progress expired (Lambda timed out before and we allow a new execution)
+        Map<String, AttributeValue> item = new HashMap<>(key);
+        Instant now = Instant.now();
+        long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
+        long progressExpiry = now.minus(30, ChronoUnit.SECONDS).getEpochSecond();
+        item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
+        item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
+        item.put("data", AttributeValue.builder().s("Fake Data").build());
+        item.put("in_progress_expiration", AttributeValue.builder().n(String.valueOf(progressExpiry)).build());
+        client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
+
+        // WHEN: call putRecord
+        long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
+        dynamoDBPersistenceStore.putRecord(
+                new DataRecord("key",
+                        DataRecord.Status.INPROGRESS,
+                        expiry2,
+                        null,
+                        null
+                ), now);
+
+        // THEN: an item is inserted
+        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        assertThat(itemInDb).isNotNull();
+        assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
+        assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry2));
+    }
+
+    @Test
     public void putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExist() {
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
 
@@ -65,7 +127,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
-        item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
+        item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build()); // not expired
         item.put("status", AttributeValue.builder().s(DataRecord.Status.COMPLETED.toString()).build());
         item.put("data", AttributeValue.builder().s("Fake Data").build());
         client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
@@ -88,6 +150,41 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
         assertThat(itemInDb.get("data").s()).isEqualTo("Fake Data");
     }
+
+    @Test
+    public void putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExistAndProgressNotExpiredAfterLambdaTimedOut() {
+        key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
+
+        // GIVEN: Insert a fake item with same id
+        Map<String, AttributeValue> item = new HashMap<>(key);
+        Instant now = Instant.now();
+        long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond(); // not expired
+        long progressExpiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond(); // not expired
+        item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
+        item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
+        item.put("data", AttributeValue.builder().s("Fake Data").build());
+        item.put("in_progress_expiration", AttributeValue.builder().n(String.valueOf(progressExpiry)).build());
+        client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
+
+        // WHEN: call putRecord
+        long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
+        assertThatThrownBy(() -> dynamoDBPersistenceStore.putRecord(
+                new DataRecord("key",
+                        DataRecord.Status.INPROGRESS,
+                        expiry2,
+                        null,
+                        null
+                ), now)
+        ).isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+
+        // THEN: item was not updated, retrieve the initial one
+        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        assertThat(itemInDb).isNotNull();
+        assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
+        assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
+        assertThat(itemInDb.get("data").s()).isEqualTo("Fake Data");
+    }
+
 
     //</editor-fold>
     // =================================================================

@@ -15,6 +15,7 @@ package software.amazon.lambda.powertools.idempotency.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyKey;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
@@ -25,10 +26,19 @@ import software.amazon.lambda.powertools.idempotency.model.Product;
  */
 public class IdempotencyInternalFunction implements RequestHandler<Product, Basket> {
 
+    private final boolean registerContext;
     private boolean called = false;
+
+    public IdempotencyInternalFunction(boolean registerContext) {
+        this.registerContext = registerContext;
+    }
 
     @Override
     public Basket handleRequest(Product input, Context context) {
+        if (registerContext) {
+            Idempotency.registerLambdaContext(context);
+        }
+        
         return createBasket("fake", input);
     }
 
