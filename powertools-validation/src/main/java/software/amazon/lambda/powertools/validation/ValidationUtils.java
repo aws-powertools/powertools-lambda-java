@@ -76,7 +76,7 @@ public class ValidationUtils {
             Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile(envelope);
             subNode = expression.search(jsonNode);
             if (subNode == null || subNode instanceof NullNode) {
-                throw new ValidationException("Not found");
+                throw new ValidationException("Envelope not found in the object");
             }
         } catch (Exception e) {
             throw new ValidationException("Cannot find envelope <"+envelope+"> in the object <"+obj+">", e);
