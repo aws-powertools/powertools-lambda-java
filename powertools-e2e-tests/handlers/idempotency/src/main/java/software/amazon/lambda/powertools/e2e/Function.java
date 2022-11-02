@@ -10,11 +10,14 @@ import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.TimeZone;
 
 
-public class Function implements RequestHandler<String, String> {
+public class Function implements RequestHandler<Input, String> {
 
     public Function() {
         this(DynamoDbClient
@@ -27,6 +30,7 @@ public class Function implements RequestHandler<String, String> {
     public Function(DynamoDbClient client) {
         Idempotency.config().withConfig(
                         IdempotencyConfig.builder()
+                                .withExpiration(Duration.of(10, ChronoUnit.SECONDS))
                                 .build())
                 .withPersistenceStore(
                         DynamoDBPersistenceStore.builder()
@@ -37,8 +41,8 @@ public class Function implements RequestHandler<String, String> {
     }
 
     @Idempotent
-    public String handleRequest(String input, Context context) {
-        DateTimeFormatter dtf =  DateTimeFormatter.ISO_DATE;
+    public String handleRequest(Input input, Context context) {
+        DateTimeFormatter dtf =  DateTimeFormatter.ISO_DATE_TIME.withZone(TimeZone.getTimeZone("UTC").toZoneId());
         return dtf.format(Instant.now());
     }
 }
