@@ -56,9 +56,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <log4j.version>2.19.0</log4j.version>
-        <jackson.version>2.13.4.1</jackson.version>
+        <jackson.version>2.13.4.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.17.290</aws.sdk.version>
+        <aws.sdk.version>2.18.7</aws.sdk.version>
         <aws.xray.recorder.version>2.12.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -244,13 +244,13 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.7.0</version>
+                <version>4.8.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
-                <version>4.6.1</version>
+                <version>4.8.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -457,7 +457,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.6.0.0</version>
+                        <version>4.7.2.1</version>
                         <executions>
                             <execution>
                                 <id>test</id>
