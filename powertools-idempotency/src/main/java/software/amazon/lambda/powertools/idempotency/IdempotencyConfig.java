@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.idempotency;
 import com.amazonaws.services.lambda.runtime.Context;
 import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 
-import java.security.MessageDigest;
 import java.time.Duration;
 
 /**
@@ -214,7 +213,7 @@ public class IdempotencyConfig {
         /**
          * Function to use for calculating hashes, by default MD5.
          *
-         * @param hashFunction Can be any algorithm supported by {@link MessageDigest}, most commons are<ul>
+         * @param hashFunction Can be any algorithm supported by {@link java.security.MessageDigest}, most commons are<ul>
          *                     <li>MD5</li>
          *                     <li>SHA-1</li>
          *                     <li>SHA-256</li></ul>

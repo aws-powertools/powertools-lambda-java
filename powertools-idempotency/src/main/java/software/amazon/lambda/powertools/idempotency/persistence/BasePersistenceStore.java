@@ -106,7 +106,12 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     public void saveSuccess(JsonNode data, Object result, Instant now) {
         ObjectWriter writer = JsonConfig.get().getObjectMapper().writer();
         try {
-            String responseJson = writer.writeValueAsString(result);
+            String responseJson;
+            if (result instanceof String) {
+                responseJson = (String) result;
+            } else {
+                responseJson = writer.writeValueAsString(result);
+            }
             DataRecord record = new DataRecord(
                     getHashedIdempotencyKey(data),
                     DataRecord.Status.COMPLETED,
