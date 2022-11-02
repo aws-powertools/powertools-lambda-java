@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.idempotency.internal;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
@@ -124,6 +123,36 @@ public class IdempotencyAspectTest {
     }
 
     @Test
+    public void secondCall_notExpired_shouldGetStringFromStore() {
+        // GIVEN
+        Idempotency.config()
+                .withPersistenceStore(store)
+                .withConfig(IdempotencyConfig.builder()
+                        .withEventKeyJMESPath("id")
+                        .build()
+                ).configure();
+
+        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+
+        Product p = new Product(42, "fake product", 12);
+        DataRecord record = new DataRecord(
+                "42",
+                DataRecord.Status.COMPLETED,
+                Instant.now().plus(356, SECONDS).getEpochSecond(),
+                p.getName(),
+                null);
+        doReturn(record).when(store).getRecord(any(), any());
+
+        // WHEN
+        IdempotencyStringFunction function = new IdempotencyStringFunction();
+        String name = function.handleRequest(p, context);
+
+        // THEN
+        assertThat(name).isEqualTo(p.getName());
+        assertThat(function.handlerCalled()).isFalse();
+    }
+
+    @Test
     public void secondCall_inProgress_shouldThrowIdempotencyAlreadyInProgressException() throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
@@ -137,13 +166,14 @@ public class IdempotencyAspectTest {
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
+        OptionalLong timestampInFuture = OptionalLong.of(Instant.now().toEpochMilli() + 1000); // timeout not expired (in 1sec)
         DataRecord record = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null,
-                OptionalLong.of(Instant.now().toEpochMilli() + 1000));
+                timestampInFuture);
         doReturn(record).when(store).getRecord(any(), any());
 
         // THEN
@@ -165,13 +195,14 @@ public class IdempotencyAspectTest {
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
+        OptionalLong timestampInThePast = OptionalLong.of(Instant.now().toEpochMilli() - 100); // timeout expired 100ms ago
         DataRecord record = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null,
-                OptionalLong.of(Instant.now().toEpochMilli() - 100));
+                timestampInThePast);
         doReturn(record).when(store).getRecord(any(), any());
 
         // THEN

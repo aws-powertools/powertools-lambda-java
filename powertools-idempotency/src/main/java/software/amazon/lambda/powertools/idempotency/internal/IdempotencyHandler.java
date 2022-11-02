@@ -26,7 +26,6 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.time.Instant;
-import java.util.Optional;
 import java.util.OptionalInt;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
@@ -151,6 +150,8 @@ public class IdempotencyHandler {
         Class<?> returnType = ((MethodSignature) pjp.getSignature()).getReturnType();
         try {
             LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function", record.getIdempotencyKey());
+            if (returnType.equals(String.class))
+                return record.getResponseData();
             return JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(), returnType);
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException("Unable to get function response as " + returnType.getSimpleName(), e);
