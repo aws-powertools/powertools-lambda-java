@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
-public class MetricsE2ETest {
+public class MetricsE2ET {
     private static final String namespace = "MetricsE2ENamespace_"+UUID.randomUUID();
     private static final String service = "MetricsE2EService_"+UUID.randomUUID();
     private static Infrastructure infrastructure;
@@ -27,7 +27,7 @@ public class MetricsE2ETest {
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     public static void setup() {
         infrastructure = Infrastructure.builder()
-                .testName(MetricsE2ETest.class.getSimpleName())
+                .testName(MetricsE2ET.class.getSimpleName())
                 .pathToFunction("metrics")
                 .environmentVariables(new HashMap<>() {{
                       put("POWERTOOLS_METRICS_NAMESPACE", namespace);

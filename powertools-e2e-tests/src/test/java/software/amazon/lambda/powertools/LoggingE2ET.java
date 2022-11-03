@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 import static software.amazon.lambda.powertools.testutils.logging.InvocationLogs.Level.INFO;
 
-public class LoggingE2ETest {
+public class LoggingE2ET {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -29,11 +29,11 @@ public class LoggingE2ETest {
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     public static void setup() {
         infrastructure = Infrastructure.builder()
-                .testName(LoggingE2ETest.class.getSimpleName())
+                .testName(LoggingE2ET.class.getSimpleName())
                 .pathToFunction("logging")
                 .environmentVariables(new HashMap<>() {{
                       put("POWERTOOLS_LOG_LEVEL", "INFO");
-                      put("POWERTOOLS_SERVICE_NAME", LoggingE2ETest.class.getSimpleName());
+                      put("POWERTOOLS_SERVICE_NAME", LoggingE2ET.class.getSimpleName());
                   }}
                 )
                 .build();

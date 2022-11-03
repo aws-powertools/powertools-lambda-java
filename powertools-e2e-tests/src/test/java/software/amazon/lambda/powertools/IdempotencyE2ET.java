@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
-public class IdempotencyE2ETest {
+public class IdempotencyE2ET {
     private static Infrastructure infrastructure;
     private static String functionName;
 
@@ -22,7 +22,7 @@ public class IdempotencyE2ETest {
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     public static void setup() {
         infrastructure = Infrastructure.builder()
-                .testName(IdempotencyE2ETest.class.getSimpleName())
+                .testName(IdempotencyE2ET.class.getSimpleName())
                 .pathToFunction("idempotency")
                 .idempotencyTable("idempo")
                 .environmentVariables(new HashMap<>() {{

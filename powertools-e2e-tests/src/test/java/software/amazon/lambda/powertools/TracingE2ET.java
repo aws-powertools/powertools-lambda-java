@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
-public class TracingE2ETest {
+public class TracingE2ET {
     private static final String service = "TracingE2EService_"+UUID.randomUUID(); // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
 
     private static Infrastructure infrastructure;
@@ -28,7 +28,7 @@ public class TracingE2ETest {
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     public static void setup() {
         infrastructure = Infrastructure.builder()
-                .testName(TracingE2ETest.class.getSimpleName())
+                .testName(TracingE2ET.class.getSimpleName())
                 .pathToFunction("tracing")
                 .tracing(true)
                 .environmentVariables(new HashMap<>() {{
