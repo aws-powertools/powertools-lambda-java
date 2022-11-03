@@ -23,9 +23,6 @@ import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.core.retry.backoff.EqualJitterBackoffStrategy;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -43,10 +40,6 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.sts.StsClient;
-import software.amazon.awssdk.services.xray.XRayClient;
-import software.amazon.awssdk.services.xray.model.GetTraceSummariesRequest;
-import software.amazon.awssdk.services.xray.model.GetTraceSummariesResponse;
-import software.amazon.awssdk.services.xray.model.TimeRangeType;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
@@ -63,7 +56,7 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Collections.singletonList;
 
 public class Infrastructure {
-    private static Logger LOG = LoggerFactory.getLogger(Infrastructure.class);
+    private static final Logger LOG = LoggerFactory.getLogger(Infrastructure.class);
 
     private final String stackName;
     private final boolean tracing;
@@ -77,7 +70,6 @@ public class Infrastructure {
     private final LambdaClient lambda;
     private final CloudFormationClient cfn;
     private final CloudWatchClient cloudwatch;
-    private final XRayClient xray;
     private final Region region;
     private final String account;
     private final String idempotencyTable;
@@ -116,10 +108,6 @@ public class Infrastructure {
                 .region(region)
                 .build();
         cloudwatch = CloudWatchClient.builder()
-                .httpClient(httpClient)
-                .region(region)
-                .build();
-        xray = XRayClient.builder()
                 .httpClient(httpClient)
                 .region(region)
                 .build();
@@ -234,7 +222,7 @@ public class Infrastructure {
         public Infrastructure build() {
             Objects.requireNonNull(testName, "testName must not be null");
 
-            String uuid = UUID.randomUUID().toString().substring(0, 13);
+            String uuid = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
             stackName = testName + "-" + uuid;
 
             Objects.requireNonNull(pathToFunction, "pathToFunction must not be null");
