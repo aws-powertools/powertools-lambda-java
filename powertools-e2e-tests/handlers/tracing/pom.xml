@@ -2,33 +2,28 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>software.amazon.lambda</groupId>
-    <artifactId>E2ETracingFunction</artifactId>
-    <version>1.12.3</version>
-    <packaging>jar</packaging>
-    <name>A sample Hello World using powertools tracing</name>
+    <parent>
+        <groupId>software.amazon.lambda</groupId>
+        <artifactId>e2e-test-handlers-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
 
-    <properties>
-        <log4j.version>2.19.0</log4j.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lambda.powertools.version>1.12.3</lambda.powertools.version>
-    </properties>
+    <artifactId>e2e-test-handler-tracing</artifactId>
+    <packaging>jar</packaging>
+    <name>A Lambda function using powertools tracing</name>
 
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-tracing</artifactId>
-            <version>${lambda.powertools.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
-            <version>1.2.1</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
-            <version>3.11.0</version>
         </dependency>
 
     </dependencies>
