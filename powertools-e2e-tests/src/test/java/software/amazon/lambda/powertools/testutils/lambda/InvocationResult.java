@@ -1,6 +1,7 @@
-package software.amazon.lambda.powertools.testutils;
+package software.amazon.lambda.powertools.testutils.lambda;
 
 import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+import software.amazon.lambda.powertools.testutils.logging.InvocationLogs;
 
 import java.time.Instant;
 

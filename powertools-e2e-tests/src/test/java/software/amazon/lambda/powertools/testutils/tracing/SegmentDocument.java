@@ -1,18 +1,12 @@
 package software.amazon.lambda.powertools.testutils.tracing;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-@NoArgsConstructor
-@Setter
-@Getter
 public class SegmentDocument {
     private String id;
 
@@ -29,9 +23,66 @@ public class SegmentDocument {
 
     private String origin;
 
-    private Aws aws;
-
     private List<SubSegment> subsegments = new ArrayList<>();
+
+    public SegmentDocument() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getTraceId() {
+        return traceId;
+    }
+
+    public void setTraceId(String traceId) {
+        this.traceId = traceId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public long getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(long startTime) {
+        this.startTime = startTime;
+    }
+
+    public long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(long endTime) {
+        this.endTime = endTime;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
+    }
+
+    public List<SubSegment> getSubsegments() {
+        return subsegments;
+    }
+
+    public void setSubsegments(List<SubSegment> subsegments) {
+        this.subsegments = subsegments;
+    }
 
     public Duration getDuration() {
         return Duration.ofMillis(endTime - startTime);
@@ -41,23 +92,6 @@ public class SegmentDocument {
         return !subsegments.isEmpty();
     }
 
-    @NoArgsConstructor
-    @Setter
-    @Getter
-    public static class Aws{
-        @JsonSetter("account_id")
-        private long accountId;
-
-        @JsonSetter("function_arn")
-        private String functionArn;
-
-        @JsonSetter("resource_names")
-        private String[] resourceNames;
-    }
-
-    @NoArgsConstructor
-    @Setter
-    @Getter
     public static class SubSegment{
         private String id;
 
@@ -77,12 +111,79 @@ public class SegmentDocument {
 
         private String namespace;
 
+        public SubSegment() {
+        }
+
         public boolean hasSubsegments() {
             return !subsegments.isEmpty();
         }
 
         public Duration getDuration() {
             return Duration.ofMillis(endTime - startTime);
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(long startTime) {
+            this.startTime = startTime;
+        }
+
+        public long getEndTime() {
+            return endTime;
+        }
+
+        public void setEndTime(long endTime) {
+            this.endTime = endTime;
+        }
+
+        public List<SubSegment> getSubsegments() {
+            return subsegments;
+        }
+
+        public void setSubsegments(List<SubSegment> subsegments) {
+            this.subsegments = subsegments;
+        }
+
+        public Map<String, Object> getAnnotations() {
+            return annotations;
+        }
+
+        public void setAnnotations(Map<String, Object> annotations) {
+            this.annotations = annotations;
+        }
+
+        public Map<String, Object> getMetadata() {
+            return metadata;
+        }
+
+        public void setMetadata(Map<String, Object> metadata) {
+            this.metadata = metadata;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public void setNamespace(String namespace) {
+            this.namespace = namespace;
         }
     }
 }

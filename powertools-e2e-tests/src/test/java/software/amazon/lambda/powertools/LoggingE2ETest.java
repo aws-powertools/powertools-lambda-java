@@ -8,19 +8,22 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
-import software.amazon.lambda.powertools.testutils.InvocationResult;
+import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static software.amazon.lambda.powertools.testutils.InvocationLogs.Level.INFO;
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
+import static software.amazon.lambda.powertools.testutils.logging.InvocationLogs.Level.INFO;
 
 public class LoggingE2ETest {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+
     private static Infrastructure infrastructure;
+    private static String functionName;
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
@@ -34,7 +37,7 @@ public class LoggingE2ETest {
                   }}
                 )
                 .build();
-        infrastructure.deploy();
+        functionName = infrastructure.deploy();
     }
 
     @AfterAll
@@ -50,8 +53,8 @@ public class LoggingE2ETest {
         String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId +"\"}}";
 
         // WHEN
-        InvocationResult invocationResult1 = infrastructure.invokeFunction(event);
-        InvocationResult invocationResult2 = infrastructure.invokeFunction(event);
+        InvocationResult invocationResult1 = invokeFunction(functionName, event);
+        InvocationResult invocationResult2 = invokeFunction(functionName, event);
 
         // THEN
         String[] functionLogs = invocationResult1.getLogs().getFunctionLogs(INFO);

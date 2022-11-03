@@ -17,17 +17,9 @@
         <maven.compiler.target>11</maven.compiler.target>
         <constructs.version>10.1.138</constructs.version>
         <cdk.version>2.47.0</cdk.version>
-        <lombok.version>1.18.24</lombok.version>
     </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
@@ -144,13 +136,6 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                            <version>${lombok.version}</version>
-                        </path>
-                    </annotationProcessorPaths>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

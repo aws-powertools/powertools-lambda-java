@@ -1,4 +1,4 @@
-package software.amazon.lambda.powertools.testutils;
+package software.amazon.lambda.powertools.testutils.logging;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;

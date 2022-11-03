@@ -6,14 +6,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
-import software.amazon.lambda.powertools.testutils.InvocationResult;
+import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 import java.time.Year;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
+
 public class IdempotencyE2ETest {
     private static Infrastructure infrastructure;
+    private static String functionName;
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
@@ -27,7 +30,7 @@ public class IdempotencyE2ETest {
                     }}
                 )
                 .build();
-        infrastructure.deploy();
+        functionName = infrastructure.deploy();
     }
 
     @AfterAll
@@ -43,15 +46,15 @@ public class IdempotencyE2ETest {
 
         // WHEN
         // First invocation
-        InvocationResult result1 = infrastructure.invokeFunction(event);
+        InvocationResult result1 = invokeFunction(functionName, event);
 
         // Second invocation (should get same result)
-        InvocationResult result2 = infrastructure.invokeFunction(event);
+        InvocationResult result2 = invokeFunction(functionName, event);
 
         Thread.sleep(12000);
 
         // Third invocation (should get different result)
-        InvocationResult result3 = infrastructure.invokeFunction(event);
+        InvocationResult result3 = invokeFunction(functionName, event);
 
         // THEN
         Assertions.assertThat(result1.getResult()).contains(Year.now().toString());

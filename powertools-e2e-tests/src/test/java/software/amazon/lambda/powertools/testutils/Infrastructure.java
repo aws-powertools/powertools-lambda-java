@@ -1,10 +1,5 @@
 package software.amazon.lambda.powertools.testutils;
 
-import com.evanlennick.retry4j.CallExecutor;
-import com.evanlennick.retry4j.CallExecutorBuilder;
-import com.evanlennick.retry4j.Status;
-import com.evanlennick.retry4j.config.RetryConfig;
-import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,19 +17,12 @@ import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
-import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.*;
-import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
-import software.amazon.awssdk.services.cloudwatch.model.*;
-import software.amazon.awssdk.services.lambda.LambdaClient;
-import software.amazon.awssdk.services.lambda.model.InvokeRequest;
-import software.amazon.awssdk.services.lambda.model.InvokeResponse;
-import software.amazon.awssdk.services.lambda.model.LogType;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
@@ -46,13 +34,8 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.time.Clock;
-import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.Callable;
 
-import static java.time.Duration.ofSeconds;
-import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.util.Collections.singletonList;
 
 public class Infrastructure {
@@ -67,9 +50,7 @@ public class Infrastructure {
     private final long timeout;
     private final String pathToFunction;
     private final S3Client s3;
-    private final LambdaClient lambda;
     private final CloudFormationClient cfn;
-    private final CloudWatchClient cloudwatch;
     private final Region region;
     private final String account;
     private final String idempotencyTable;
@@ -103,21 +84,13 @@ public class Infrastructure {
                 .httpClient(httpClient)
                 .region(region)
                 .build();
-        lambda = LambdaClient.builder()
-                .httpClient(httpClient)
-                .region(region)
-                .build();
-        cloudwatch = CloudWatchClient.builder()
-                .httpClient(httpClient)
-                .region(region)
-                .build();
         cfn = CloudFormationClient.builder()
                 .httpClient(httpClient)
                 .region(region)
                 .build();
     }
 
-    public void deploy() {
+    public String deploy() {
         uploadAssets();
         LOG.debug("Deploying '" + stackName + "' on account " + account);
         cfn.createStack(CreateStackRequest.builder()
@@ -133,6 +106,7 @@ public class Infrastructure {
         } else {
             throw new RuntimeException("Failed to create stack");
         }
+        return functionName;
     }
 
     public void destroy() {
@@ -140,73 +114,8 @@ public class Infrastructure {
         cfn.deleteStack(DeleteStackRequest.builder().stackName(stackName).build());
     }
 
-    public InvocationResult invokeFunction(String input) {
-        SdkBytes payload = SdkBytes.fromUtf8String(input);
-
-        InvokeRequest request = InvokeRequest.builder()
-                .functionName(functionName)
-                .payload(payload)
-                .logType(LogType.TAIL)
-                .build();
-
-        Instant start = Instant.now(Clock.systemUTC()).truncatedTo(MINUTES);
-        InvokeResponse response = lambda.invoke(request);
-        Instant end = start.plus(1, MINUTES);
-        return new InvocationResult(response, start, end);
-    }
-
-    public List<Double> getMetrics(Instant start, Instant end, int period, String namespace, String metricName, Map<String, String> dimensions) {
-        List<Dimension> dimensionsList = new ArrayList<>();
-        if (dimensions != null)
-            dimensions.forEach((key, value) -> dimensionsList.add(Dimension.builder().name(key).value(value).build()));
-
-        Callable<List<Double>> callable = () -> {
-            LOG.debug("Get Metrics for namespace {}, start {}, end {}, metric {}, dimensions {}", namespace, start, end, metricName, dimensionsList);
-            GetMetricDataResponse metricData = cloudwatch.getMetricData(GetMetricDataRequest.builder()
-                    .startTime(start)
-                    .endTime(end)
-                    .metricDataQueries(MetricDataQuery.builder()
-                            .id(metricName.toLowerCase())
-                            .metricStat(MetricStat.builder()
-                                    .unit(StandardUnit.COUNT)
-                                    .metric(Metric.builder()
-                                            .namespace(namespace)
-                                            .metricName(metricName)
-                                            .dimensions(dimensionsList)
-                                            .build())
-                                    .period(period)
-                                    .stat("Sum")
-                                    .build())
-                            .returnData(true)
-                            .build())
-                    .build());
-            List<Double> values = metricData.metricDataResults().get(0).values();
-            if (values == null || values.isEmpty()) {
-                throw new Exception("No data found for metric " + metricName);
-            }
-            return values;
-        };
-
-        RetryConfig retryConfig = new RetryConfigBuilder()
-                .withMaxNumberOfTries(10)
-                .retryOnAnyException()
-                .withDelayBetweenTries(ofSeconds(2))
-                .withRandomExponentialBackoff()
-                .build();
-        CallExecutor<List<Double>> callExecutor = new CallExecutorBuilder<List<Double>>()
-                .config(retryConfig)
-                .afterFailedTryListener(s -> {LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());})
-                .build();
-        Status<List<Double>> status = callExecutor.execute(callable);
-        return status.getResult();
-    }
-
     public static Builder builder() {
         return new Builder();
-    }
-
-    public String getFunctionName() {
-        return functionName;
     }
 
     public static class Builder {

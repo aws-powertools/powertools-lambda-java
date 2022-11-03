@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
-import software.amazon.lambda.powertools.testutils.InvocationResult;
+import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSegment;
 import software.amazon.lambda.powertools.testutils.tracing.Trace;
 import software.amazon.lambda.powertools.testutils.tracing.TraceFetcher;
@@ -16,10 +16,13 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 public class TracingE2ETest {
-    private static Infrastructure infrastructure;
     private static final String service = "TracingE2EService_"+UUID.randomUUID(); // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
+
+    private static Infrastructure infrastructure;
+    private static String functionName;
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
@@ -33,7 +36,7 @@ public class TracingE2ETest {
                   }}
                 )
                 .build();
-        infrastructure.deploy();
+        functionName = infrastructure.deploy();
     }
 
     @AfterAll
@@ -47,19 +50,16 @@ public class TracingE2ETest {
         // GIVEN
         String message = "Hello World";
         String event = String.format("{\"message\":\"%s\"}", message);
-        String result = String.format("%s (%s)", message, infrastructure.getFunctionName());
+        String result = String.format("%s (%s)", message, functionName);
 
         // WHEN
-        InvocationResult invocationResult = infrastructure.invokeFunction(event);
+        InvocationResult invocationResult = invokeFunction(functionName, event);
 
         // THEN
         Trace trace = TraceFetcher.builder()
                 .start(invocationResult.getStart())
                 .end(invocationResult.getEnd())
-//                .start(Instant.ofEpochSecond(1667468280))
-//                .end(Instant.ofEpochSecond(1667468340))
-                .functionName(infrastructure.getFunctionName())
-//                .functionName("TracingE2ETest-744e0e5ba909-function")
+                .functionName(functionName)
                 .build()
                 .fetchTrace();
 

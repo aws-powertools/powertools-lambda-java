@@ -8,7 +8,6 @@ import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.SdkHttpClient;
@@ -27,7 +26,6 @@ import java.util.stream.Collectors;
 
 import static java.time.Duration.ofSeconds;
 
-@AllArgsConstructor
 public class TraceFetcher {
 
     private static final ObjectMapper MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -37,6 +35,13 @@ public class TraceFetcher {
     private final Instant end;
     private final String filterExpression;
     private final List<String> excludedSegments;
+
+    public TraceFetcher(Instant start, Instant end, String filterExpression, List<String> excludedSegments) {
+        this.start = start;
+        this.end = end;
+        this.filterExpression = filterExpression;
+        this.excludedSegments = excludedSegments;
+    }
 
     public static Builder builder() {
         return new Builder();
