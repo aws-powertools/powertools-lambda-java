@@ -33,8 +33,10 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
@@ -92,7 +94,7 @@ public class Infrastructure {
 
     public String deploy() {
         uploadAssets();
-        LOG.debug("Deploying '" + stackName + "' on account " + account);
+        LOG.info("Deploying '" + stackName + "' on account " + account);
         cfn.createStack(CreateStackRequest.builder()
                 .stackName(stackName)
                 .templateBody(new Yaml().dump(cfnTemplate))
@@ -102,7 +104,7 @@ public class Infrastructure {
                 .build());
         WaiterResponse<DescribeStacksResponse> waiterResponse = cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
         if (waiterResponse.matched().response().isPresent()) {
-            LOG.debug("Stack " + waiterResponse.matched().response().get().stacks().get(0).stackName() + " successfully deployed");
+            LOG.info("Stack " + waiterResponse.matched().response().get().stacks().get(0).stackName() + " successfully deployed");
         } else {
             throw new RuntimeException("Failed to create stack");
         }
@@ -110,7 +112,7 @@ public class Infrastructure {
     }
 
     public void destroy() {
-        LOG.debug("Deleting '" + stackName + "' on account " + account);
+        LOG.info("Deleting '" + stackName + "' on account " + account);
         cfn.deleteStack(DeleteStackRequest.builder().stackName(stackName).build());
     }
 
@@ -124,9 +126,31 @@ public class Infrastructure {
         public String testName;
         private String stackName;
         private boolean tracing = false;
-        private JavaRuntime runtime = JavaRuntime.JAVA11;
+        private JavaRuntime runtime;
         private Map<String, String> environmentVariables = new HashMap<>();
         private String idemPotencyTable;
+
+        private Builder() {
+            getJavaRuntime();
+        }
+
+        /**
+         * Retrieve the java runtime to use for the lambda function.
+         */
+        private void getJavaRuntime() {
+            String javaVersion = System.getenv("JAVA_VERSION"); // must be set in GitHub actions
+            if (javaVersion == null) {
+                throw new IllegalArgumentException("JAVA_VERSION is not set");
+            }
+            if (javaVersion.startsWith("8")) {
+                runtime = JavaRuntime.JAVA8AL2;
+            } else if (javaVersion.startsWith("11")) {
+                runtime = JavaRuntime.JAVA11;
+            } else {
+                throw new IllegalArgumentException("Unsupported Java version " + javaVersion);
+            }
+            LOG.debug("Java Version set to {}, using runtime {}", javaVersion, runtime.getRuntime());
+        }
 
         public Infrastructure build() {
             Objects.requireNonNull(testName, "testName must not be null");
@@ -150,11 +174,6 @@ public class Infrastructure {
 
         public Builder tracing(boolean tracing) {
             this.tracing = tracing;
-            return this;
-        }
-
-        public Builder runtime(JavaRuntime runtime) {
-            this.runtime = runtime;
             return this;
         }
 
@@ -203,6 +222,7 @@ public class Infrastructure {
 
         functionName = stackName + "-function";
 
+        LOG.debug("Building Lambda function with command "+ packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
         Function function = Function.Builder
                 .create(stack, functionName)
                 .code(Code.fromAsset("handlers/", AssetOptions.builder()
@@ -255,10 +275,10 @@ public class Infrastructure {
             }
             ListObjectsV2Response objects = s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
             if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
-                System.out.println("Asset already exists, skipping");
+                LOG.debug("Asset already exists, skipping");
                 return;
             }
-            System.out.println("Uploading asset " + objectKey + " to " + asset.bucketName);
+            LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
             s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(), Path.of(cfnAssetDirectory, asset.assetPath));
         });
     }
