@@ -222,8 +222,12 @@ You can create metrics using `putMetric`, and manually create dimensions for all
         @Override
         @Metrics(namespace = "ExampleApplication", service = "booking")
         public Object handleRequest(Object input, Context context) {
-            metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
-            metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
+            try {
+                metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
+                metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
+            } catch (InvalidDimensionException | InvalidMetricException | DimensionSetExceededException e) {
+                LOG.error(e);
+            }
             ...
         }
     }
@@ -306,8 +310,12 @@ You can use `putMetadata` for advanced use cases, where you want to metadata as 
         @Override
         @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
-            metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
-            metricsLogger().putMetadata("booking_id", "1234567890");
+            try {
+                metricsLogger().putMetadata("booking_id", "1234567890");
+                metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+            } catch (InvalidMetricException e) {
+                throw new RuntimeException(e);
+            }
             ...
         }
     }
@@ -332,7 +340,11 @@ Dimension, it can be done via `#!java MetricsUtils.defaultDimensions()`.
         MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
         
         static {
-            MetricsUtils.defaultDimensions(DimensionSet.of("CustomDimension", "booking"));
+            try {
+                MetricsUtils.defaultDimensions(DimensionSet.of("CustomDimension", "booking"));
+            } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                throw new RuntimeException(e);
+            }
         }
     
         @Override
@@ -361,8 +373,12 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `withSingle
 
         @Override
         public Object handleRequest(Object input, Context context) {
-             withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
-                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+            withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
+                try {
+                    metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+                } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                    throw new RuntimeException(e);
+                }
             });
         }
     }

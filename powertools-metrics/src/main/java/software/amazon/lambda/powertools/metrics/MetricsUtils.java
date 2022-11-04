@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.metrics;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.REQUEST_ID_PROPERTY;
@@ -25,6 +24,8 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
 import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidNamespaceException;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
@@ -64,23 +65,6 @@ public final class MetricsUtils {
     }
 
     /**
-     * Configure default dimension to be used by logger.
-     * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
-     *
-     * @param dimensionSet Default value of dimension set for logger
-     * @deprecated use {@link #defaultDimensions(DimensionSet...)} instead
-     */
-    @Deprecated
-    public static void defaultDimensionSet(final DimensionSet dimensionSet) {
-        requireNonNull(dimensionSet, "Null dimension set not allowed");
-
-        if (dimensionSet.getDimensionKeys().size() > 0) {
-            defaultDimensions(dimensionSet);
-        }
-    }
-
-
-    /**
      * Add and immediately flush a single metric. It will use the default namespace
      * specified either on {@link Metrics} annotation or via POWERTOOLS_METRICS_NAMESPACE env var.
      * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
@@ -95,11 +79,20 @@ public final class MetricsUtils {
                                         final double value,
                                         final Unit unit,
                                         final Consumer<MetricsLogger> logger) {
-        withMetricsLogger(metricsLogger ->
-        {
+        MetricsLogger metricsLogger = logger();
+
+        try {
+            metricsLogger.setNamespace(defaultNameSpace());
             metricsLogger.putMetric(name, value, unit);
+            captureRequestAndTraceId(metricsLogger);
             logger.accept(metricsLogger);
-        });
+        } catch (InvalidNamespaceException e) {
+            throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+        } catch (InvalidMetricException e) {
+            throw new RuntimeException(e);
+        } finally {
+            metricsLogger.flush();
+        }
     }
 
     /**
@@ -118,12 +111,20 @@ public final class MetricsUtils {
                                         final Unit unit,
                                         final String namespace,
                                         final Consumer<MetricsLogger> logger) {
-        withMetricsLogger(metricsLogger ->
-        {
+        MetricsLogger metricsLogger = logger();
+
+        try {
             metricsLogger.setNamespace(namespace);
             metricsLogger.putMetric(name, value, unit);
+            captureRequestAndTraceId(metricsLogger);
             logger.accept(metricsLogger);
-        });
+        } catch (InvalidNamespaceException e) {
+            throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+        } catch (InvalidMetricException e) {
+            throw new RuntimeException(e);
+        } finally {
+            metricsLogger.flush();
+        }
     }
 
     /**
@@ -141,23 +142,11 @@ public final class MetricsUtils {
             metricsLogger.setNamespace(defaultNameSpace());
             captureRequestAndTraceId(metricsLogger);
             logger.accept(metricsLogger);
+        } catch (InvalidNamespaceException e) {
+            throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
         } finally {
             metricsLogger.flush();
         }
-    }
-
-    /**
-     * Provide and immediately flush a {@link MetricsLogger}. It uses the default namespace
-     * specified either on {@link Metrics} annotation or via POWERTOOLS_METRICS_NAMESPACE env var.
-     * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
-     * capture xray_trace_id as property if tracing is enabled.
-     *
-     * @param logger the MetricsLogger
-     * @deprecated use {@link MetricsUtils#withMetricsLogger} instead
-     */
-    @Deprecated
-    public static void withMetricLogger(final Consumer<MetricsLogger> logger) {
-        withMetricsLogger(logger);
     }
 
     public static DimensionSet[] getDefaultDimensions() {
