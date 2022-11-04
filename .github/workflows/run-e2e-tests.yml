@@ -37,6 +37,7 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
+          cache: maven
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@v1.6.1
         with:

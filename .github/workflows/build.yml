@@ -58,6 +58,7 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
+          cache: maven
       - name: Build with Maven
         run: mvn -Pbuild-without-spotbugs -B package --file pom.xml
   savepr:
