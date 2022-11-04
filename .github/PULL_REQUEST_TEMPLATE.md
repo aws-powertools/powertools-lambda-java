@@ -11,7 +11,7 @@
 * [ ] [Meet tenets criteria](https://awslabs.github.io/aws-lambda-powertools-java/#tenets)
 * [ ] Update tests
 * [ ] Update docs
-* [ ] PR title follows [conventional commit semantics]()
+* [ ] PR title follows [conventional commit semantics](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## Breaking change checklist
 
