@@ -121,6 +121,10 @@
                 <Method name="objectMapper"/>
             </And>
             <And>
+                <Class name="software.amazon.lambda.powertools.metrics.MetricsUtils"/>
+                <Method name="metricsLogger"/>
+            </And>
+            <And>
                 <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
                 <Method name="objectMapper"/>
             </And>

@@ -13,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
@@ -46,7 +48,7 @@ class MetricsLoggerTest {
     }
 
     @Test
-    void singleMetricsCaptureUtilityWithDefaultDimension() {
+    void singleMetricsCaptureUtilityWithDefaultDimension() throws InvalidDimensionException, DimensionSetExceededException {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
              MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
@@ -78,7 +80,13 @@ class MetricsLoggerTest {
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
             MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
-                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+                    metricsLogger -> {
+                        try {
+                            metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
+                        } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
 
             assertThat(out.toString())
                     .satisfies(s -> {
@@ -102,7 +110,13 @@ class MetricsLoggerTest {
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID")).thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
             MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
-                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+                    metricsLogger -> {
+                        try {
+                            metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
+                        } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
 
             assertThat(out.toString())
                     .satisfies(s -> {
@@ -121,13 +135,6 @@ class MetricsLoggerTest {
                                 .contains("Namespace=GlobalName");
                     });
         }
-    }
-
-    @Test
-    void shouldThrowExceptionWhenDefaultDimensionIsNull() {
-        assertThatNullPointerException()
-                .isThrownBy(() -> MetricsUtils.defaultDimensionSet(null))
-                .withMessage("Null dimension set not allowed");
     }
 
     private Map<String, Object> readAsJson(String s) {

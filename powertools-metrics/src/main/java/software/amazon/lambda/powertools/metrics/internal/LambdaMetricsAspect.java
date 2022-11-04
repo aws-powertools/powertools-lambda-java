@@ -7,6 +7,10 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidNamespaceException;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
@@ -83,12 +87,24 @@ public class LambdaMetricsAspect {
                                                    final Metrics metrics) {
         if (metrics.captureColdStart()
                 && isColdStart()) {
-                MetricsLogger metricsLogger = new MetricsLogger();
+            MetricsLogger metricsLogger = new MetricsLogger();
+            try {
                 metricsLogger.setNamespace(namespace(metrics));
+            } catch (InvalidNamespaceException e) {
+                throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+            }
+            try {
                 metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
+            } catch (InvalidMetricException e) {
+                // should not occur
+            }
+            try {
                 metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
-                metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
-                metricsLogger.flush();
+            } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                throw new RuntimeException("A valid service is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_SERVICE_NAME", e);
+            }
+            metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
+            metricsLogger.flush();
         }
 
     }
@@ -136,6 +152,8 @@ public class LambdaMetricsAspect {
             f.set(metricsLogger(), context);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
+        } catch (InvalidDimensionException | DimensionSetExceededException e) {
+            throw new RuntimeException("A valid service is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_SERVICE_NAME", e);
         }
     }
 }
