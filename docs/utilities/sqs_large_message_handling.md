@@ -144,7 +144,7 @@ To disable deletion of payloads setting the following annotation parameter:
 ## Utility
 
 If you want to avoid using annotation and have control over error that can happen during payload enrichment use `SqsUtils.enrichedMessageFromS3()`.
-It provides you access with list of `SQSMessage` object enriched from S3 payload.
+It provides you access with a list of `SQSMessage` object enriched from S3 payload.
 
 Original `SQSEvent` object is never mutated. You can also control if the S3 payload should be deleted after successful
 processing.
