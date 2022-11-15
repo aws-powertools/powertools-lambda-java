@@ -62,7 +62,7 @@
         <aws.xray.recorder.version>2.13.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <lambda.core.version>1.2.1</lambda.core.version>
+        <lambda.core.version>1.2.2</lambda.core.version>
         <lambda.events.version>3.11.0</lambda.events.version>
         <lambda.serial.version>1.0.0</lambda.serial.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
