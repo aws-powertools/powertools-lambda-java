@@ -46,7 +46,8 @@ public class DataStore {
     }
 
     public Object get(String key) {
-        return store.containsKey(key)?store.get(key).value:null;
+        ValueNode node = store.get(key);
+        return node != null ? node.value : null;
     }
 
     public boolean hasExpired(String key, Instant now) {
