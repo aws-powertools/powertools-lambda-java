@@ -239,6 +239,17 @@ public class ValidationUtils {
      * @return the loaded json schema
      */
     public static JsonSchema getJsonSchema(String schema, boolean validateSchema) {
+        JsonSchema jsonSchema = schemas.computeIfAbsent(schema, ValidationUtils::createJsonSchema);
+
+        if (validateSchema) {
+            validateSchema(schema, jsonSchema);
+        }
+
+        return jsonSchema;
+    }
+
+    private static JsonSchema createJsonSchema(String schema) {
+        JsonSchema jsonSchema;
         if (schema.startsWith(CLASSPATH)) {
             String filePath = schema.substring(CLASSPATH.length());
             try (InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath)) {
@@ -254,19 +265,17 @@ public class ValidationUtils {
             jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
         }
 
-        if (validateSchema) {
-            String version = ValidationConfig.get().getSchemaVersion().toString();
-            try {
-                validate(jsonSchema.getSchemaNode(),
-                        getJsonSchema("classpath:/schemas/meta_schema_" + version));
-            } catch (ValidationException ve) {
-                throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
-            }
-        }
-
-        schemas.putIfAbsent(schema, jsonSchema);
-
         return jsonSchema;
+    }
+
+    private static void validateSchema(String schema, JsonSchema jsonSchema) {
+        String version = ValidationConfig.get().getSchemaVersion().toString();
+        try {
+            validate(jsonSchema.getSchemaNode(),
+                    getJsonSchema("classpath:/schemas/meta_schema_" + version));
+        } catch (ValidationException ve) {
+            throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
+        }
     }
 
     /**
