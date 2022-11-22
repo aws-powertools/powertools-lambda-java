@@ -19,12 +19,12 @@ import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstan
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowerLogToolApiGatewayHttpApiCorrelationId implements RequestHandler<APIGatewayV2HTTPEvent, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolApiGatewayHttpApiCorrelationId.class);
+    private final Logger LOG = LoggerFactory.getLogger(PowerLogToolApiGatewayHttpApiCorrelationId.class);
 
     @Override
     @Logging(correlationIdPath = API_GATEWAY_HTTP)

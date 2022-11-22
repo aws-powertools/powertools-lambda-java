@@ -32,8 +32,8 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -59,6 +59,28 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.slf4j.MDC;
+import org.slf4j.event.Level;
+import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.core.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.handlers.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.channels.FileChannel;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.*;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
@@ -86,7 +108,7 @@ class LambdaLoggingAspectTest {
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
         openMocks(this);
-        ThreadContext.clearAll();
+        MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
         setupContext();
         requestHandler = new PowerLogToolEnabled();
@@ -100,15 +122,15 @@ class LambdaLoggingAspectTest {
     void shouldSetLambdaContextWhenEnabled() {
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
-                .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
-                .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
-                .containsEntry(DefaultLambdaFields.FUNCTION_NAME.getName(), "testFunction")
-                .containsEntry(DefaultLambdaFields.FUNCTION_REQUEST_ID.getName(), "RequestId")
-                .containsKey("coldStart")
-                .containsKey("service");
+                .containsEntry(FUNCTION_ARN.getName(), "testArn")
+                .containsEntry(FUNCTION_MEMORY_SIZE.getName(), "10")
+                .containsEntry(FUNCTION_VERSION.getName(), "1")
+                .containsEntry(FUNCTION_NAME.getName(), "testFunction")
+                .containsEntry(FUNCTION_REQUEST_ID.getName(), "RequestId")
+                .containsKey(FUNCTION_COLD_START.getName())
+                .containsKey(SERVICE.getName());
     }
 
     @Test
@@ -118,15 +140,15 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
                 context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry(DefaultLambdaFields.FUNCTION_ARN.getName(), "testArn")
-                .containsEntry(DefaultLambdaFields.FUNCTION_MEMORY_SIZE.getName(), "10")
-                .containsEntry(DefaultLambdaFields.FUNCTION_VERSION.getName(), "1")
-                .containsEntry(DefaultLambdaFields.FUNCTION_NAME.getName(), "testFunction")
-                .containsEntry(DefaultLambdaFields.FUNCTION_REQUEST_ID.getName(), "RequestId")
-                .containsKey("coldStart")
-                .containsKey("service");
+                .containsEntry(FUNCTION_ARN.getName(), "testArn")
+                .containsEntry(FUNCTION_MEMORY_SIZE.getName(), "10")
+                .containsEntry(FUNCTION_VERSION.getName(), "1")
+                .containsEntry(FUNCTION_NAME.getName(), "testFunction")
+                .containsEntry(FUNCTION_REQUEST_ID.getName(), "RequestId")
+                .containsKey(FUNCTION_COLD_START.getName())
+                .containsKey(SERVICE.getName());
     }
 
     @Test
@@ -134,16 +156,16 @@ class LambdaLoggingAspectTest {
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
                 context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry("coldStart", "true");
+                .containsEntry(FUNCTION_COLD_START.getName(), "true");
 
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
                 context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry("coldStart", "false");
+                .containsEntry(FUNCTION_COLD_START.getName(), "false");
     }
 
     @Test
@@ -152,8 +174,7 @@ class LambdaLoggingAspectTest {
 
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(ThreadContext.getImmutableContext())
-                .isEmpty();
+        assertThat(MDC.getCopyOfContextMap()).isNull();
     }
 
     @Test
@@ -162,8 +183,7 @@ class LambdaLoggingAspectTest {
 
         requestStreamHandler.handleRequest(null, null, context);
 
-        assertThat(ThreadContext.getImmutableContext())
-                .isEmpty();
+        assertThat(MDC.getCopyOfContextMap()).isNull();
     }
 
     @Test
@@ -172,8 +192,7 @@ class LambdaLoggingAspectTest {
 
         handler.anotherMethod();
 
-        assertThat(ThreadContext.getImmutableContext())
-                .isEmpty();
+        assertThat(MDC.getCopyOfContextMap()).isNull();
     }
 
     @Test
@@ -240,9 +259,9 @@ class LambdaLoggingAspectTest {
         writeStaticField(LambdaHandlerProcessor.class, "SERVICE_NAME", "testService", true);
         requestHandler.handleRequest(new Object(), context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry("service", "testService");
+                .containsEntry(SERVICE.getName(), "testService");
     }
 
     @Test
@@ -255,9 +274,9 @@ class LambdaLoggingAspectTest {
 
             requestHandler.handleRequest(new Object(), context);
 
-            assertThat(ThreadContext.getImmutableContext())
+            assertThat(MDC.getCopyOfContextMap())
                     .hasSize(EXPECTED_CONTEXT_SIZE + 1)
-                    .containsEntry("xray_trace_id", xRayTraceId);
+                    .containsEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId);
         }
     }
 
@@ -267,7 +286,7 @@ class LambdaLoggingAspectTest {
         RequestHandler<APIGatewayProxyRequestEvent, Object> handler = new PowerLogToolApiGatewayRestApiCorrelationId();
         handler.handleRequest(event, context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getRequestContext().getRequestId());
     }
@@ -278,7 +297,7 @@ class LambdaLoggingAspectTest {
         RequestHandler<APIGatewayV2HTTPEvent, Object> handler = new PowerLogToolApiGatewayHttpApiCorrelationId();
         handler.handleRequest(event, context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getRequestContext().getRequestId());
     }
@@ -289,7 +308,7 @@ class LambdaLoggingAspectTest {
         RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowertoolsLogAlbCorrelationId();
         handler.handleRequest(event, context);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
     }

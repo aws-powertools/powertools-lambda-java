@@ -14,11 +14,11 @@
 
 package software.amazon.lambda.powertools.logging;
 
-import static java.util.Arrays.asList;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.MDC;
+
+import java.util.Arrays;
 import java.util.Map;
-import org.apache.logging.log4j.ThreadContext;
 
 /**
  * A class of helper functions to add additional functionality to Logging.
@@ -39,7 +39,7 @@ public final class LoggingUtils {
      * @param value The value to be logged
      */
     public static void appendKey(String key, String value) {
-        ThreadContext.put(key, value);
+        MDC.put(key, value);
     }
 
 
@@ -50,7 +50,7 @@ public final class LoggingUtils {
      * @param customKeys Map of custom keys values to be appended to logs
      */
     public static void appendKeys(Map<String, String> customKeys) {
-        ThreadContext.putAll(customKeys);
+        customKeys.forEach(MDC::put);
     }
 
     /**
@@ -59,7 +59,7 @@ public final class LoggingUtils {
      * @param customKey The name of the key to be logged
      */
     public static void removeKey(String customKey) {
-        ThreadContext.remove(customKey);
+        MDC.remove(customKey);
     }
 
 
@@ -69,7 +69,7 @@ public final class LoggingUtils {
      * @param keys Map of custom keys values to be appended to logs
      */
     public static void removeKeys(String... keys) {
-        ThreadContext.removeAll(asList(keys));
+        Arrays.stream(keys).forEach(MDC::remove);
     }
 
     /**
@@ -78,7 +78,7 @@ public final class LoggingUtils {
      * @param value The value of the correlation id
      */
     public static void setCorrelationId(String value) {
-        ThreadContext.put("correlation_id", value);
+        MDC.put("correlation_id", value);
     }
 
     /**

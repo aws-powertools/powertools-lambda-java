@@ -54,26 +54,50 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
+
 
 @Aspect
 @DeclarePrecedence("*, software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
-    private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
 
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
 
-    private static Level LEVEL_AT_INITIALISATION;
+    private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
+
+    private static final LoggingManager loggingManager;
 
     static {
-        if (null != LOG_LEVEL) {
-            resetLogLevels(Level.getLevel(LOG_LEVEL));
-        }
+        loggingManager = loadLoggingManager();
 
-        LEVEL_AT_INITIALISATION = LOG.getLevel();
+        LEVEL_AT_INITIALISATION = loggingManager.getLogLevel(LOG);
+
+        if (null != LOG_LEVEL) {
+            resetLogLevels(Level.valueOf(LOG_LEVEL));
+        }
+    }
+
+    private static LoggingManager loadLoggingManager() {
+        ServiceLoader<LoggingManager> loggingManagers = ServiceLoader.load(LoggingManager.class);
+        List<LoggingManager> loggingManagerList = new ArrayList<>();
+        for (LoggingManager loggingManager : loggingManagers) {
+            loggingManagerList.add(loggingManager);
+        }
+        if (loggingManagerList.isEmpty()) {
+            throw new IllegalStateException("No LoggingManager was found on the classpath");
+        } else if (loggingManagerList.size() > 1) {
+            throw new IllegalStateException("Multiple LoggingManagers were found on the classpath: " + loggingManagerList);
+        } else {
+            return loggingManagerList.get(0);
+        }
     }
 
     private static void resetLogLevels(Level logLevel) {
@@ -97,12 +121,12 @@ public final class LambdaLoggingAspect {
         Context extractedContext = extractContext(pjp);
 
         if (null != extractedContext) {
-            appendKeys(DefaultLambdaFields.values(extractedContext));
-            appendKey("coldStart", isColdStart() ? "true" : "false");
-            appendKey("service", serviceName());
+            appendKeys(PowertoolsLoggedFields.setValuesFromLambdaContext(extractedContext));
+            appendKey(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
+            appendKey(SERVICE.getName(), serviceName());
         }
 
-        getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
+        getXrayTraceId().ifPresent(xRayTraceId -> appendKey(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
         if (logging.logEvent()) {
             proceedArgs = logEvent(pjp);
@@ -115,11 +139,15 @@ public final class LambdaLoggingAspect {
         Object proceed = pjp.proceed(proceedArgs);
 
         if (logging.clearState()) {
-            ThreadContext.clearMap();
+            MDC.clear();
         }
 
         coldStartDone();
         return proceed;
+    }
+
+    private static void resetLogLevels(Level logLevel) {
+        loggingManager.resetLogLevel(logLevel);
     }
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
@@ -134,7 +162,7 @@ public final class LambdaLoggingAspect {
                 return;
             }
 
-            appendKey("samplingRate", String.valueOf(samplingRate));
+            appendKey(PowertoolsLoggedFields.SAMPLING_RATE.getName(), String.valueOf(samplingRate));
 
             if (samplingRate == 0) {
                 return;
@@ -147,7 +175,7 @@ public final class LambdaLoggingAspect {
 
                 LOG.debug("Changed log level to DEBUG based on Sampling configuration. " +
                         "Sampling Rate: {}, Sampler Value: {}.", samplingRate, sample);
-            } else if (LEVEL_AT_INITIALISATION != LOG.getLevel()) {
+            } else if (LEVEL_AT_INITIALISATION != loggingManager.getLogLevel(LOG)) {
                 resetLogLevels(LEVEL_AT_INITIALISATION);
             }
         }
@@ -249,8 +277,11 @@ public final class LambdaLoggingAspect {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              InputStreamReader reader = new InputStreamReader(inputStream, UTF_8)) {
             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
-
-            IOUtils.copy(reader, writer);
+            int n;
+            char[] buffer = new char[4096];
+            while (-1 != (n = reader.read(buffer))) {
+                writer.write(buffer, 0, n);
+            }
             writer.flush();
             return out.toByteArray();
         }
@@ -267,6 +298,6 @@ public final class LambdaLoggingAspect {
     }
 
     private Logger logger(final ProceedingJoinPoint pjp) {
-        return LogManager.getLogger(pjp.getSignature().getDeclaringType());
+        return LoggerFactory.getLogger(pjp.getSignature().getDeclaringType());
     }
 }
