@@ -44,6 +44,8 @@
         <module>powertools-common</module>
         <module>powertools-serialization</module>
         <module>powertools-logging</module>
+        <module>powertools-logging-log4j</module>
+        <module>powertools-logging-logback</module>
         <module>powertools-tracing</module>
         <module>powertools-metrics</module>
         <module>powertools-parameters</module>
@@ -72,6 +74,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <log4j.version>2.20.0</log4j.version>
+        <slf4j.version>2.0.4</slf4j.version>
         <jackson.version>2.15.3</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
         <aws.sdk.version>2.21.0</aws.sdk.version>
@@ -92,6 +95,7 @@
         <junit.version>5.10.0</junit.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.5.1</jmespath.version>
+        <elastic.version>1.5.0</elastic.version>
     </properties>
 
     <distributionManagement>
@@ -197,6 +201,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j2-impl</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
@@ -214,6 +223,16 @@
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-jcl</artifactId>
                 <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.elastic.logging</groupId>
+                <artifactId>logback-ecs-encoder</artifactId>
+                <version>${elastic.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
