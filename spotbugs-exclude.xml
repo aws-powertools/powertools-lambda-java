@@ -13,22 +13,6 @@
         <Bug pattern="EI_EXPOSE_REP"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Method name="getLogEvent"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Method name="getAdditionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
-                <Method name="getAdditionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
-                <Method name="getAdditionalFields"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
                 <Method name="getPersistenceStore"/>
             </And>
@@ -38,20 +22,12 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Field name="logEvent"/>
+                <Class name="software.amazon.lambda.powertools.logging.LambdaJsonEncoder"/>
+                <Field name="throwableConverter"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Field name="additionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
-                <Field name="additionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
-                <Field name="additionalFields"/>
+                <Class name="software.amazon.lambda.powertools.logging.LambdaEcsEncoder"/>
+                <Field name="throwableConverter"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.sqs.internal.BatchContext"/>
