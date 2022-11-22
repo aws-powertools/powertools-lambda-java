@@ -1,0 +1,13 @@
+<configuration>
+    <appender name="JsonAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+        </encoder>
+    </appender>
+
+    <logger name="software.amazon.lambda.powertools" level="INFO">
+        <appender-ref ref="JsonAppender" />
+    </logger>
+    <root level="WARN">
+        <appender-ref ref="JsonAppender" />
+    </root>
+</configuration>
