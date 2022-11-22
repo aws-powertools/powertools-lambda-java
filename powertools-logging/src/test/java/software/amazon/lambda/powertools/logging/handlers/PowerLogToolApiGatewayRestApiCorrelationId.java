@@ -16,14 +16,14 @@ package software.amazon.lambda.powertools.logging.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
 import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
 
 public class PowerLogToolApiGatewayRestApiCorrelationId implements RequestHandler<APIGatewayProxyRequestEvent, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolApiGatewayRestApiCorrelationId.class);
+    private final Logger LOG = LoggerFactory.getLogger(PowerLogToolApiGatewayRestApiCorrelationId.class);
 
     @Override
     @Logging(correlationIdPath = API_GATEWAY_REST)

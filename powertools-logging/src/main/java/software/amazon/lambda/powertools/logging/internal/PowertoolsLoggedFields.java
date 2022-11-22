@@ -16,26 +16,37 @@ package software.amazon.lambda.powertools.logging.internal;
 import com.amazonaws.services.lambda.runtime.Context;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-enum DefaultLambdaFields {
-    FUNCTION_NAME("functionName"),
-    FUNCTION_VERSION("functionVersion"),
-    FUNCTION_ARN("functionArn"),
-    FUNCTION_MEMORY_SIZE("functionMemorySize"),
-    FUNCTION_REQUEST_ID("function_request_id");
+public enum PowertoolsLoggedFields {
+    FUNCTION_NAME("function_name"),
+    FUNCTION_VERSION("function_version"),
+    FUNCTION_ARN("function_arn"),
+    FUNCTION_MEMORY_SIZE("function_memory_size"),
+    FUNCTION_REQUEST_ID("function_request_id"),
+    FUNCTION_COLD_START("cold_start"),
+    FUNCTION_TRACE_ID("xray_trace_id"),
+    SAMPLING_RATE("sampling_rate"),
+    SERVICE("service");
 
     private final String name;
 
-    DefaultLambdaFields(String name) {
+    PowertoolsLoggedFields(String name) {
         this.name = name;
+    }
+
+    public static List<String> stringValues() {
+        return Stream.of(values()).map(PowertoolsLoggedFields::getName).collect(Collectors.toList());
     }
 
     public String getName() {
         return name;
     }
 
-    static Map<String, String> values(Context context) {
+    static Map<String, String> setValuesFromLambdaContext(Context context) {
         Map<String, String> hashMap = new HashMap<>();
 
         hashMap.put(FUNCTION_NAME.name, context.getFunctionName());

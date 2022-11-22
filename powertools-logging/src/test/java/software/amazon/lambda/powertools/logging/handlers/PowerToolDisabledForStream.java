@@ -13,11 +13,11 @@
  */
 package software.amazon.lambda.powertools.logging.handlers;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 public class PowerToolDisabledForStream implements RequestStreamHandler {
 

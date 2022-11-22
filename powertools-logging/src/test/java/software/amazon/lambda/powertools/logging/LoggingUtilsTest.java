@@ -13,12 +13,12 @@
  */
 package software.amazon.lambda.powertools.logging;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,62 +27,62 @@ class LoggingUtilsTest {
 
     @BeforeEach
     void setUp() {
-        ThreadContext.clearAll();
+        MDC.clear();
     }
 
     @Test
     void shouldSetCustomKeyOnThreadContext() {
-        LoggingUtils.appendKey("test", "value");
+        LoggingUtils.appendKey("org/slf4j/test", "value");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
-                .containsEntry("test", "value");
+                .containsEntry("org/slf4j/test", "value");
     }
 
     @Test
     void shouldSetCustomKeyAsMapOnThreadContext() {
         Map<String, String> customKeys = new HashMap<>();
-        customKeys.put("test", "value");
+        customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
 
         LoggingUtils.appendKeys(customKeys);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(2)
-                .containsEntry("test", "value")
+                .containsEntry("org/slf4j/test", "value")
                 .containsEntry("test1", "value1");
     }
 
     @Test
     void shouldRemoveCustomKeyOnThreadContext() {
-        LoggingUtils.appendKey("test", "value");
+        LoggingUtils.appendKey("org/slf4j/test", "value");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
-                .containsEntry("test", "value");
+                .containsEntry("org/slf4j/test", "value");
 
-        LoggingUtils.removeKey("test");
+        LoggingUtils.removeKey("org/slf4j/test");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();
     }
 
     @Test
     void shouldRemoveCustomKeysOnThreadContext() {
         Map<String, String> customKeys = new HashMap<>();
-        customKeys.put("test", "value");
+        customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
 
         LoggingUtils.appendKeys(customKeys);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(2)
-                .containsEntry("test", "value")
+                .containsEntry("org/slf4j/test", "value")
                 .containsEntry("test1", "value1");
 
-        LoggingUtils.removeKeys("test", "test1");
+        LoggingUtils.removeKeys("org/slf4j/test", "test1");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();
     }
 }

@@ -13,67 +13,68 @@
  */
 package software.amazon.lambda.powertools.logging.internal;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.util.IOUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
+
+import java.io.*;
+import java.util.*;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.getXrayTraceId;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.*;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.*;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.*;
 
 @Aspect
 @DeclarePrecedence("*, SqsLargeMessageAspect, LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
-    private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
 
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
 
-    private static Level LEVEL_AT_INITIALISATION;
+    private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
+
+    private static final LoggingManager loggingManager;
 
     static {
-        if (null != LOG_LEVEL) {
-            resetLogLevels(Level.getLevel(LOG_LEVEL));
-        }
+        loggingManager = loadLoggingManager();
 
-        LEVEL_AT_INITIALISATION = LOG.getLevel();
+        LEVEL_AT_INITIALISATION = loggingManager.getLogLevel(LOG);
+
+        if (null != LOG_LEVEL) {
+            resetLogLevels(Level.valueOf(LOG_LEVEL));
+        }
+    }
+
+    private static LoggingManager loadLoggingManager() {
+        ServiceLoader<LoggingManager> loggingManagers = ServiceLoader.load(LoggingManager.class);
+        List<LoggingManager> loggingManagerList = new ArrayList<>();
+        for (LoggingManager loggingManager : loggingManagers) {
+            loggingManagerList.add(loggingManager);
+        }
+        if (loggingManagerList.isEmpty()) {
+            throw new IllegalStateException("No LoggingManager was found on the classpath");
+        } else if (loggingManagerList.size() > 1) {
+            throw new IllegalStateException("Multiple LoggingManagers were found on the classpath: " + loggingManagerList);
+        } else {
+            return loggingManagerList.get(0);
+        }
     }
 
     @SuppressWarnings({"EmptyMethod"})
@@ -90,13 +91,13 @@ public final class LambdaLoggingAspect {
 
         Context extractedContext = extractContext(pjp);
 
-        if(null != extractedContext) {
-            appendKeys(DefaultLambdaFields.values(extractedContext));
-            appendKey("coldStart", isColdStart() ? "true" : "false");
-            appendKey("service", serviceName());
+        if (null != extractedContext) {
+            appendKeys(PowertoolsLoggedFields.setValuesFromLambdaContext(extractedContext));
+            appendKey(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
+            appendKey(SERVICE.getName(), serviceName());
         }
 
-        getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
+        getXrayTraceId().ifPresent(xRayTraceId -> appendKey(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
         if (logging.logEvent()) {
             proceedArgs = logEvent(pjp);
@@ -108,8 +109,8 @@ public final class LambdaLoggingAspect {
 
         Object proceed = pjp.proceed(proceedArgs);
 
-        if(logging.clearState()) {
-            ThreadContext.clearMap();
+        if (logging.clearState()) {
+            MDC.clear();
         }
 
         coldStartDone();
@@ -117,9 +118,7 @@ public final class LambdaLoggingAspect {
     }
 
     private static void resetLogLevels(Level logLevel) {
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configurator.setAllLevels(LogManager.getRootLogger().getName(), logLevel);
-        ctx.updateLoggers();
+        loggingManager.resetLogLevel(logLevel);
     }
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
@@ -133,7 +132,7 @@ public final class LambdaLoggingAspect {
                 return;
             }
 
-            appendKey("samplingRate", String.valueOf(samplingRate));
+            appendKey(PowertoolsLoggedFields.SAMPLING_RATE.getName(), String.valueOf(samplingRate));
 
             if (samplingRate == 0) {
                 return;
@@ -146,7 +145,7 @@ public final class LambdaLoggingAspect {
 
                 LOG.debug("Changed log level to DEBUG based on Sampling configuration. " +
                         "Sampling Rate: {}, Sampler Value: {}.", samplingRate, sample);
-            } else if (LEVEL_AT_INITIALISATION != LOG.getLevel()) {
+            } else if (LEVEL_AT_INITIALISATION != loggingManager.getLogLevel(LOG)) {
                 resetLogLevels(LEVEL_AT_INITIALISATION);
             }
         }
@@ -248,8 +247,11 @@ public final class LambdaLoggingAspect {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              InputStreamReader reader = new InputStreamReader(inputStream, UTF_8)) {
             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
-
-            IOUtils.copy(reader, writer);
+            int n;
+            char[] buffer = new char[4096];
+            while (-1 != (n = reader.read(buffer))) {
+                writer.write(buffer, 0, n);
+            }
             writer.flush();
             return out.toByteArray();
         }
@@ -266,6 +268,6 @@ public final class LambdaLoggingAspect {
     }
 
     private Logger logger(final ProceedingJoinPoint pjp) {
-        return LogManager.getLogger(pjp.getSignature().getDeclaringType());
+        return LoggerFactory.getLogger(pjp.getSignature().getDeclaringType());
     }
 }

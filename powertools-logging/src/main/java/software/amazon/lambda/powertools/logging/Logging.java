@@ -42,9 +42,9 @@ import java.lang.annotation.Target;
  * <p>By default {@code Logging} will also create keys for:</p>
  *
  * <ul>
- *     <li>coldStart - True if this is the first invocation of this Lambda execution environment; else False</li>
+ *     <li>cold_start - True if this is the first invocation of this Lambda execution environment; else False</li>
  *     <li>service - The value of the 'POWER_TOOLS_SERVICE_NAME' environment variable or 'service_undefined'</li>
- *     <li>samplingRate - The value of the 'POWERTOOLS_LOGGER_SAMPLE_RATE' environment variable or value of samplingRate field or 0.
+ *     <li>sampling_rate - The value of the 'POWERTOOLS_LOGGER_SAMPLE_RATE' environment variable or value of sampling_rate field or 0.
  *     Valid value is from 0.0 to 1.0. Value outside this range is silently ignored.</li>
  * </ul>
  *

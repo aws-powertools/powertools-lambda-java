@@ -3,15 +3,14 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>powertools-logging</artifactId>
-    <packaging>jar</packaging>
-
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
         <version>1.12.3</version>
     </parent>
+
+    <artifactId>powertools-logging</artifactId>
+    <packaging>jar</packaging>
 
     <name>AWS Lambda Powertools for Java library Logging</name>
     <description>
@@ -54,24 +53,8 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-layout-template-json</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -126,5 +109,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
 </project>
