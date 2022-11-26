@@ -234,3 +234,27 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `withSingle
         }
     }
     ```
+
+## Creating metrics with different configurations
+
+Use `withMetric` if you have one or more metrics that should have different configurations e.g. dimensions or namespace.
+
+=== "App.java"
+
+    ```java hl_lines="7 8 9 10 11 12 13" 
+    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
+
+    public class App implements RequestHandler<Object, Object> {
+
+        @Override
+        public Object handleRequest(Object input, Context context) {
+             withMetric(metric -> {
+                // override default dimensions
+                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+                // add metrics
+                metric.putMetric("CustomMetrics1", 1, Unit.COUNT);
+                metric.putMetric("CustomMetrics2", 5, Unit.COUNT);
+            });
+        }
+    }
+    ```

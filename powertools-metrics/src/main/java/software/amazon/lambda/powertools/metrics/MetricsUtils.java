@@ -121,6 +121,26 @@ public final class MetricsUtils {
         }
     }
 
+    /**
+     * Provide and immediately flush a {@link MetricsLogger}. It will use the default namespace
+     * specified either on {@link Metrics} annotation or via POWERTOOLS_METRICS_NAMESPACE env var.
+     * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
+     * capture xray_trace_id as property if tracing is enabled.
+     *
+     * @param logger the MetricsLogger
+     */
+    public static void withMetric(final Consumer<MetricsLogger> logger) {
+        MetricsLogger metricsLogger = logger();
+
+        try {
+            metricsLogger.setNamespace(defaultNameSpace());
+            captureRequestAndTraceId(metricsLogger);
+            logger.accept(metricsLogger);
+        } finally {
+            metricsLogger.flush();
+        }
+    }
+
     public static DimensionSet[] getDefaultDimensions() {
         return Arrays.copyOf(defaultDimensions, defaultDimensions.length);
     }
