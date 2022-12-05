@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>1.0.73</version>
+            <version>1.0.74</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
