@@ -8,6 +8,23 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.13.0] - 2022-12-14
+
+### Added
+
+* Feature: Idempotency - Handle Lambda timeout scenarios for INPROGRESS records (#933) by @jeromevdl
+
+### Bug Fixes
+
+* Fix: Envelope is not taken into account with built-in types (#960) by @jeromevdl
+* Fix: Code suggestion from CodeGuru (#984) by @kozub
+* Fix: Compilation warning with SqsLargeMessageAspect on gradle (#998) by @jeromevdl
+* Fix: Log message processing exceptions as occur (#1011) by @nem0-97
+
+### Documentation
+
+* Docs: Add missing grammar article (#976) by @fsmiamoto
+
 ## [1.12.3] - 2022-07-12
 
 ### Maintenance
