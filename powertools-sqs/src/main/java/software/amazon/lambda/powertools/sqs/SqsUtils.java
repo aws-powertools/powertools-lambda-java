@@ -497,6 +497,7 @@ public final class SqsUtils {
                 batchContext.addSuccess(message);
             } catch (Exception e) {
                 batchContext.addFailure(message, e);
+                LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
             }
         }
 
