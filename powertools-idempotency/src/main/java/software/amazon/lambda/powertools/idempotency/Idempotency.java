@@ -66,6 +66,16 @@ public class Idempotency {
     }
 
     /**
+     * Can be used in a method which is not the handler to capture the Lambda context,
+     * to calculate the remaining time before the invocation times out.
+     *
+     * @param lambdaContext
+     */
+    public static void registerLambdaContext(Context lambdaContext) {
+        getInstance().getConfig().setLambdaContext(lambdaContext);
+    }
+
+    /**
      * Acts like a builder that can be used to configure {@link Idempotency}
      *
      * @return a new instance of {@link Config}

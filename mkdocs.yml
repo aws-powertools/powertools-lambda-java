@@ -56,6 +56,11 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: '.'
       check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - meta
   - toc:
       permalink: true
@@ -76,7 +81,7 @@ extra_javascript:
 
 extra:
   powertools:
-    version: 1.12.3
+    version: 1.13.0
 
 repo_url: https://github.com/awslabs/aws-lambda-powertools-java
 edit_uri: edit/master/docs

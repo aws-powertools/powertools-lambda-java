@@ -13,8 +13,12 @@
  */
 package software.amazon.lambda.powertools.idempotency.persistence;
 
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+
 import java.time.Instant;
 import java.util.Objects;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 /**
  * Data Class for idempotency records. This is actually the item that will be stored in the persistence layer.
@@ -25,6 +29,7 @@ public class DataRecord {
     private final long expiryTimestamp;
     private final String responseData;
     private final String payloadHash;
+    private final OptionalLong inProgressExpiryTimestamp;
 
     public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData, String payloadHash) {
         this.idempotencyKey = idempotencyKey;
@@ -32,6 +37,16 @@ public class DataRecord {
         this.expiryTimestamp = expiryTimestamp;
         this.responseData = responseData;
         this.payloadHash = payloadHash;
+        this.inProgressExpiryTimestamp = OptionalLong.empty();
+    }
+
+    public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData, String payloadHash, OptionalLong inProgressExpiryTimestamp) {
+        this.idempotencyKey = idempotencyKey;
+        this.status = status.toString();
+        this.expiryTimestamp = expiryTimestamp;
+        this.responseData = responseData;
+        this.payloadHash = payloadHash;
+        this.inProgressExpiryTimestamp = inProgressExpiryTimestamp;
     }
 
     public String getIdempotencyKey() {
@@ -39,7 +54,7 @@ public class DataRecord {
     }
 
     /**
-     * Check if data record is expired (based on expiration configured in the {@link software.amazon.lambda.powertools.idempotency.IdempotencyConfig})
+     * Check if data record is expired (based on expiration configured in the {@link IdempotencyConfig})
      *
      * @return Whether the record is currently expired or not
      */
@@ -58,6 +73,10 @@ public class DataRecord {
 
     public long getExpiryTimestamp() {
         return expiryTimestamp;
+    }
+
+    public OptionalLong getInProgressExpiryTimestamp() {
+        return inProgressExpiryTimestamp;
     }
 
     public String getResponseData() {
@@ -84,6 +103,7 @@ public class DataRecord {
     public int hashCode() {
         return Objects.hash(idempotencyKey, status, expiryTimestamp, responseData, payloadHash);
     }
+
 
     /**
      * Status of the record:

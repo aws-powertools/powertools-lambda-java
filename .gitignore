@@ -82,6 +82,8 @@ Desktop.ini
 ######################
 /bin/
 /deploy/
+/dist/
+/site/
 
 ######################
 # Logs

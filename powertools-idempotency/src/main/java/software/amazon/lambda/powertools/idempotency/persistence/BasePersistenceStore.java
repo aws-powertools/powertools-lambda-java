@@ -36,9 +36,11 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.OptionalLong;
+import java.util.OptionalInt;
 import java.util.stream.Stream;
+import java.util.Spliterators;
+import java.util.Spliterator;
 import java.util.stream.StreamSupport;
 
 /**
@@ -108,7 +110,12 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     public void saveSuccess(JsonNode data, Object result, Instant now) {
         ObjectWriter writer = JsonConfig.get().getObjectMapper().writer();
         try {
-            String responseJson = writer.writeValueAsString(result);
+            String responseJson;
+            if (result instanceof String) {
+                responseJson = (String) result;
+            } else {
+                responseJson = writer.writeValueAsString(result);
+            }
             DataRecord record = new DataRecord(
                     getHashedIdempotencyKey(data),
                     DataRecord.Status.COMPLETED,
@@ -131,11 +138,16 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param data Payload
      * @param now
      */
-    public void saveInProgress(JsonNode data, Instant now) throws IdempotencyItemAlreadyExistsException {
+    public void saveInProgress(JsonNode data, Instant now, OptionalInt remainingTimeInMs) throws IdempotencyItemAlreadyExistsException {
         String idempotencyKey = getHashedIdempotencyKey(data);
 
         if (retrieveFromCache(idempotencyKey, now) != null) {
             throw new IdempotencyItemAlreadyExistsException();
+        }
+
+        OptionalLong inProgressExpirationMsTimestamp = OptionalLong.empty();
+        if (remainingTimeInMs.isPresent()) {
+            inProgressExpirationMsTimestamp = OptionalLong.of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
         }
 
         DataRecord record = new DataRecord(
@@ -143,7 +155,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                 DataRecord.Status.INPROGRESS,
                 getExpiryEpochSecond(now),
                 null,
-                getHashedPayload(data)
+                getHashedPayload(data),
+                inProgressExpirationMsTimestamp
         );
         LOG.debug("saving in progress record for idempotency key: {}", record.getIdempotencyKey());
         putRecord(record, now);
@@ -212,7 +225,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         }
 
         String hash = generateHash(node);
-        return functionName + "#" + hash;
+        hash = functionName + "#" + hash;
+        return hash;
     }
 
     private boolean isMissingIdemPotencyKey(JsonNode data) {
