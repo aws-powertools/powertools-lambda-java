@@ -242,7 +242,7 @@ Use `withMetric` if you have one or more metrics that should have different conf
 === "App.java"
 
     ```java hl_lines="7 8 9 10 11 12 13" 
-    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
+    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withMetric;
 
     public class App implements RequestHandler<Object, Object> {
 
