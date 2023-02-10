@@ -9,9 +9,11 @@ const awsconfig = {
 	"aws_kinesis_firehose_stream_name": "ClickStreamKinesisFirehose-OGX7PQdrynUo",
 };
 
-const RUNTIME = "python"
+const RUNTIME = "java"
+const BASE_ORIGIN = "awslabs.github.io"
 
-const attachListeners = () => {
+function enableSearchOnBlurElement() {
+	if (document.location.hostname != BASE_ORIGIN) return // prevent unnecessary data
 	/* Register handler to log search on blur */
 	document.addEventListener("DOMContentLoaded", function () {
 		recordPageView({
@@ -23,7 +25,6 @@ const attachListeners = () => {
 				// If Search result is ever actionable
 				// we should populate `value`
 				if (this.value) {
-					let path = document.location.pathname;
 					console.info(`Search value: ${this.value}`)
 					recordPageView({
 						searchPattern: this.value
@@ -39,6 +40,10 @@ const attachListeners = () => {
 			prevLocation: document.referrer
 		})
 	};
+}
+
+const attachListeners = () => {
+	enableSearchOnBlurElement()
 }
 
 const init = () => {
