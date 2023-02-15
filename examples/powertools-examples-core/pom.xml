@@ -5,13 +5,7 @@
     <artifactId>powertools-examples-core</artifactId>
     <packaging>jar</packaging>
     <name>A sample Hello World created for SAM CLI using powertools core utilities</name>
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <log4j.version>2.19.0</log4j.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-
+    
     <parent>
         <artifactId>powertools-examples</artifactId>
         <groupId>software.amazon.lambda</groupId>
