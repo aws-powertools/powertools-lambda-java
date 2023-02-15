@@ -237,7 +237,7 @@ CloudWatch EMF uses the same dimensions across all your metrics. Use `withSingle
 
 ## Creating metrics with different configurations
 
-Use `withMetric` if you have one or more metrics that should have different configurations e.g. dimensions or namespace.
+Use `withMetricsLogger` if you have one or more metrics that should have different configurations e.g. dimensions or namespace.
 
 === "App.java"
 
