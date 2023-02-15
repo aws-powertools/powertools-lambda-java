@@ -81,7 +81,7 @@ public final class MetricsUtils {
                                         final double value,
                                         final Unit unit,
                                         final Consumer<MetricsLogger> logger) {
-        withMetric(metricsLogger -> {
+        withMetricLogger(metricsLogger -> {
             metricsLogger.putMetric(name, value, unit);
             logger.accept(metricsLogger);
         });
@@ -103,7 +103,7 @@ public final class MetricsUtils {
                                         final Unit unit,
                                         final String namespace,
                                         final Consumer<MetricsLogger> logger) {
-        withMetric(metricsLogger -> {
+        withMetricLogger(metricsLogger -> {
             metricsLogger.setNamespace(namespace);
             metricsLogger.putMetric(name, value, unit);
             logger.accept(metricsLogger);
@@ -111,14 +111,14 @@ public final class MetricsUtils {
     }
 
     /**
-     * Provide and immediately flush a {@link MetricsLogger}. It will use the default namespace
+     * Provide and immediately flush a {@link MetricsLogger}. It uses the default namespace
      * specified either on {@link Metrics} annotation or via POWERTOOLS_METRICS_NAMESPACE env var.
      * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
      * capture xray_trace_id as property if tracing is enabled.
      *
      * @param logger the MetricsLogger
      */
-    public static void withMetric(final Consumer<MetricsLogger> logger) {
+    public static void withMetricLogger(final Consumer<MetricsLogger> logger) {
         MetricsLogger metricsLogger = logger();
 
         try {

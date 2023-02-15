@@ -242,18 +242,18 @@ Use `withMetric` if you have one or more metrics that should have different conf
 === "App.java"
 
     ```java hl_lines="7 8 9 10 11 12 13" 
-    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withMetric;
+    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withMetricsLogger;
 
     public class App implements RequestHandler<Object, Object> {
 
         @Override
         public Object handleRequest(Object input, Context context) {
-             withMetric(metric -> {
+             withMetricsLogger(logger -> {
                 // override default dimensions
-                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+                logger.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
                 // add metrics
-                metric.putMetric("CustomMetrics1", 1, Unit.COUNT);
-                metric.putMetric("CustomMetrics2", 5, Unit.COUNT);
+                logger.putMetric("CustomMetrics1", 1, Unit.COUNT);
+                logger.putMetric("CustomMetrics2", 5, Unit.COUNT);
             });
         }
     }
