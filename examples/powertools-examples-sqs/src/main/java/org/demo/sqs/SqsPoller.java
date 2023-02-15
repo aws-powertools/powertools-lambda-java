@@ -13,6 +13,7 @@ import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.sqs.SqsBatch;
 import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
 import software.amazon.lambda.powertools.sqs.SqsUtils;
+import java.security.SecureRandom;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 
@@ -22,7 +23,7 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 public class SqsPoller implements RequestHandler<SQSEvent, String> {
 
     Logger log = LogManager.getLogger(SqsPoller.class);
-    Random random = new Random(100);
+    Random random = new SecureRandom();
 
     static {
         // https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/lambda-optimize-starttime.html

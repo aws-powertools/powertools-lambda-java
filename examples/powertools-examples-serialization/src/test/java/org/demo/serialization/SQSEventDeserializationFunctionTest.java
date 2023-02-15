@@ -29,7 +29,7 @@ class SQSEventDeserializationFunctionTest {
         SQSEvent.SQSMessage message1 = messageWithBody("{  \"id\": 1234,  \"name\": \"product\",  \"price\": 42}");
         SQSEvent.SQSMessage message2 = messageWithBody("{  \"id\": 12345,  \"name\": \"product5\",  \"price\": 45}");
         SQSEvent event = new SQSEvent();
-        event.setRecords(new ArrayList<messageWithBody>(){{
+        event.setRecords(new ArrayList<SQSEvent.SQSMessage>(){{
             add(message1);
             add(message2);
         }});
