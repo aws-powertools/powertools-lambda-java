@@ -152,4 +152,13 @@
         <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
         <Method name="setLogLevelBasedOnSamplingRate"/>
     </Match>
+    <Match>
+        <Bug pattern="DMI_THREAD_PASSED_WHERE_RUNNABLE_EXPECTED"/>
+        <Or>
+            <And>
+                <Class name="helloworld.App"/>
+                <Method name="threadOption1"/>
+            </And>
+        </Or>
+    </Match>    
 </FindBugsFilter>

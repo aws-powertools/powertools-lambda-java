@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>software.amazon.lambda</groupId>
+    <artifactId>powertools-examples</artifactId>
+    <packaging>pom</packaging>
+
+    <parent>
+        <artifactId>powertools-parent</artifactId>
+        <groupId>software.amazon.lambda</groupId>
+        <version>1.13.0</version>
+    </parent>
+
+    <name>AWS Lambda Powertools for Java library Examples</name>
+    <description>
+        A suite of examples accompanying for AWS Lambda Powertools. 
+    </description>
+    <url>https://aws.amazon.com/lambda/</url>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
+    </issueManagement>
+    <scm>
+        <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>AWS Lambda Powertools team</name>
+            <organization>Amazon Web Services</organization>
+            <organizationUrl>https://aws.amazon.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <modules>
+        <module>powertools-examples-core</module>
+        <module>powertools-examples-idempotency</module>
+        <module>powertools-examples-parameters</module>
+        <module>powertools-examples-serialization</module>
+        <module>powertools-examples-sqs</module>
+    </modules>
+
+</project>

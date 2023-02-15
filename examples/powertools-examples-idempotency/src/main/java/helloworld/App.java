@@ -85,7 +85,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     // Use it on other methods to handle multiple items (with SQS batch processing for example)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
             return br.lines().collect(Collectors.joining(System.lineSeparator()));
         }
     }
