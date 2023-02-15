@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Idempotency demo
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
+        POWERTOOLS_LOGGER_LOG_EVENT: true
+
+Resources:
+  IdempotencyTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expiration
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+
+  IdempotencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: helloworld.App::handleRequest
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref IdempotencyTable
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: idempotency
+          IDEMPOTENCY_TABLE: !Ref IdempotencyTable
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /helloidem
+            Method: post
+
+Outputs:
+  HelloWorldApi:
+    Description: "API Gateway endpoint URL for Prod stage for Idempotent function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/helloidem/"
+  HelloWorldFunction:
+    Description: "Idempotent Lambda Function ARN"
+    Value: !GetAtt IdempotencyFunction.Arn
+

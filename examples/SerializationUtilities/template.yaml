@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  serialization utils demo
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+
+
+Resources:
+  APIGatewayDeserializationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: org.demo.serialization.APIGatewayRequestDeserializationFunction::handleRequest
+      Events:
+        Product:
+          Type: Api
+          Properties:
+            Path: /product  
+            Method: post
+
+  DemoSqsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: "sqs-event-deserialization-queue"
+
+  SQSEventDeserializationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: org.demo.serialization.SQSEventDeserializationFunction::handleRequest
+      Policies:
+        - Statement:
+          - Sid: SQSSendMessageBatch
+            Effect: Allow
+            Action:
+              - sqs:SendMessageBatch
+              - sqs:SendMessage
+            Resource: !GetAtt DemoSqsQueue.Arn
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt DemoSqsQueue.Arn
+            BatchSize: 2
+            MaximumBatchingWindowInSeconds: 30
+
+
+Outputs:
+  Api:
+    Description: "API Gateway endpoint URL for Prod stage for Serialization function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/product/"
+  Function:
+    Description: "Serialization Lambda Function ARN"
+    Value: !GetAtt APIGatewayDeserializationFunction.Arn
+  DemoSqsQueue:
+    Description: "ARN for SQS queue"
+    Value: !GetAtt DemoSqsQueue.Arn

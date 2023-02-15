@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  validation demo
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+
+
+Resources:
+  ValidationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: org.demo.validation.InboundValidation::handleRequest
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: post
+
+Outputs:
+  Api:
+    Description: "API Gateway endpoint URL for Prod stage for Validation function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  Function:
+    Description: "Validation Lambda Function ARN"
+    Value: !GetAtt ValidationFunction.Arn
