@@ -32,7 +32,7 @@ class SQSEventDeserializationFunctionTest {
         event.setRecords(new ArrayList<messageWithBody>(){{
             add(message1);
             add(message2);
-         }}
+        }});
 
         String response = deserializationFunction.handleRequest(event, context);
 
