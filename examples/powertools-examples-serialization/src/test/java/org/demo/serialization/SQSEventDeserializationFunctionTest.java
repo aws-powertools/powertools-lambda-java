@@ -8,6 +8,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -28,7 +29,10 @@ class SQSEventDeserializationFunctionTest {
         SQSEvent.SQSMessage message1 = messageWithBody("{  \"id\": 1234,  \"name\": \"product\",  \"price\": 42}");
         SQSEvent.SQSMessage message2 = messageWithBody("{  \"id\": 12345,  \"name\": \"product5\",  \"price\": 45}");
         SQSEvent event = new SQSEvent();
-        event.setRecords(List.of(message1, message2));
+        event.setRecords(new ArrayList<messageWithBody>(){{
+            add(message1);
+            add(message2);
+         }}
 
         String response = deserializationFunction.handleRequest(event, context);
 
