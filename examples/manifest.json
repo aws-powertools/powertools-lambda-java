@@ -1,42 +1,42 @@
 {
     "java11": [
       {
-        "directory": "examples/SqsBatchProcessing/Functions",
+        "directory": "examples/powertools-examples-sqs/Functions",
         "displayName": "Demos setup of SQS Batch processing via Powertools",
         "dependencyManager": "maven",
         "appTemplate": "SqsBatchProcessing",
         "javaVersion": "11"
       },
       {
-        "directory": "examples/CoreUtilities/Function",
+        "directory": "examples/powertools-examples-core/Function",
         "displayName": "Demos setup of Core utilities with proxies lambda function using api gateway",
         "dependencyManager": "maven",
         "appTemplate": "CoreUtilities",
         "javaVersion": "11"
       },
       {
-        "directory": "examples/Idempotency/Function",
+        "directory": "examples/powertools-examples-idempotency/Function",
         "displayName": "Demos setup of an idempotent Lambda function using Powertools",
         "dependencyManager": "maven",
         "appTemplate": "Idempotency",
         "javaVersion": "11"
       },
       {
-        "directory": "examples/Validation/Function",
+        "directory": "examples/powertools-examples-validation/Function",
         "displayName": "Demos setup of an validation Lambda function using Powertools",
         "dependencyManager": "maven",
         "appTemplate": "Validation",
         "javaVersion": "11"
       },
       {
-        "directory": "examples/Parameters/Function",
+        "directory": "examples/powertools-examples-parameters/Function",
         "displayName": "Demos setup of an parameters Lambda function using Powertools",
         "dependencyManager": "maven",
         "appTemplate": "Parameters",
         "javaVersion": "11"
       },
       {
-        "directory": "examples/SerializationUtilities/Function",
+        "directory": "examples/powertools-examples-serialization/Function",
         "displayName": "Demos setup of a serialization utilities Lambda functions using Powertools",
         "dependencyManager": "maven",
         "appTemplate": "SerializationUtilities",
