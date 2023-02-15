@@ -7,6 +7,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
@@ -15,9 +16,10 @@ import static software.amazon.lambda.powertools.utilities.EventDeserializer.extr
 public class APIGatewayRequestDeserializationFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
     private final static Logger LOGGER = LogManager.getLogger(APIGatewayRequestDeserializationFunction.class);
-    private static final Map<String, String> HEADERS = Map.of(
-        "Content-Type", "application/json",
-        "X-Custom-Header", "application/json");
+    private static final Map<String, String> HEADERS = new HashMap<String, String>() {{
+        put("Content-Type", "application/json");
+        put("X-Custom-Header", "application/json");
+    }};
 
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
 
