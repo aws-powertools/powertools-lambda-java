@@ -1,28 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>demo</groupId>
-    <artifactId>Functions</artifactId>
-    <version>1.0</version>
+    <artifactId>powertools-examples-validation</artifactId>
     <packaging>jar</packaging>
     <name>Sample app demoing validation utility of Powertools.</name>
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <log4j.version>2.19.0</log4j.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
+
+    <parent>
+        <artifactId>powertools-parent</artifactId>
+        <groupId>software.amazon.lambda</groupId>
+        <version>1.13.0</version>
+    </parent>
+
 
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
-            <version>1.13.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-validation</artifactId>
-            <version>1.13.0</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

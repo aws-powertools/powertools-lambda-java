@@ -37,7 +37,7 @@
         <module>powertools-validation</module>
         <module>powertools-test-suite</module>
         <module>powertools-cloudformation</module>
-        <module>powertools-idempotency</module>
+        <module>powertools-idempotency</module> 
         <module>examples</module>
     </modules>
 
