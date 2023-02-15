@@ -1,0 +1,46 @@
+{
+    "java11": [
+      {
+        "directory": "examples/SqsBatchProcessing/Functions",
+        "displayName": "Demos setup of SQS Batch processing via Powertools",
+        "dependencyManager": "maven",
+        "appTemplate": "SqsBatchProcessing",
+        "javaVersion": "11"
+      },
+      {
+        "directory": "examples/CoreUtilities/Function",
+        "displayName": "Demos setup of Core utilities with proxies lambda function using api gateway",
+        "dependencyManager": "maven",
+        "appTemplate": "CoreUtilities",
+        "javaVersion": "11"
+      },
+      {
+        "directory": "examples/Idempotency/Function",
+        "displayName": "Demos setup of an idempotent Lambda function using Powertools",
+        "dependencyManager": "maven",
+        "appTemplate": "Idempotency",
+        "javaVersion": "11"
+      },
+      {
+        "directory": "examples/Validation/Function",
+        "displayName": "Demos setup of an validation Lambda function using Powertools",
+        "dependencyManager": "maven",
+        "appTemplate": "Validation",
+        "javaVersion": "11"
+      },
+      {
+        "directory": "examples/Parameters/Function",
+        "displayName": "Demos setup of an parameters Lambda function using Powertools",
+        "dependencyManager": "maven",
+        "appTemplate": "Parameters",
+        "javaVersion": "11"
+      },
+      {
+        "directory": "examples/SerializationUtilities/Function",
+        "displayName": "Demos setup of a serialization utilities Lambda functions using Powertools",
+        "dependencyManager": "maven",
+        "appTemplate": "SerializationUtilities",
+        "javaVersion": "11"
+      }
+    ]
+  }
