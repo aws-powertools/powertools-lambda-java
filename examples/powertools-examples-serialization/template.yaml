@@ -15,7 +15,7 @@ Resources:
   APIGatewayDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Function
+      CodeUri: .
       Handler: org.demo.serialization.APIGatewayRequestDeserializationFunction::handleRequest
       Events:
         Product:

@@ -33,7 +33,7 @@ Resources:
   IdempotencyFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Function
+      CodeUri: .
       Handler: helloworld.App::handleRequest
       Policies:
         - DynamoDBCrudPolicy:

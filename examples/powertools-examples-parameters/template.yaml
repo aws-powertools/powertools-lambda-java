@@ -15,7 +15,7 @@ Resources:
   ParametersFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Function
+      CodeUri: .
       Handler: org.demo.parameters.ParametersFunction::handleRequest
       MemorySize: 512
       Tracing: Active
