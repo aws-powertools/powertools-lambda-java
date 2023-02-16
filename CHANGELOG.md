@@ -8,6 +8,22 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.14.0] - 2023-02-17
+
+### Added
+
+* Feature: Introduce `MetricsUtils.withMetricsLogger()` utility method (#1000) by @humanzz
+
+#### Maintenance
+
+* Update logic for recording documentation pages views to use correct runtime name (#1047) by @kozub
+* Deps: Bump third party dependencies to the latest versions.
+
+### Documentation
+
+* Docs: Update PowerTools definition by @heitorlessa
+* Docs: Add information about other supported langauges to README and docs (#1033) by @kozub
+
 ## [1.13.0] - 2022-12-14
 
 ### Added
@@ -27,7 +43,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.12.3] - 2022-07-12
 
-### Maintenance
+#### Maintenance
 
 * Fixes to resolve vulnerable transitive dependencies ([919](https://github.com/awslabs/aws-lambda-powertools-java/issues/919))
 
@@ -47,7 +63,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 * **Idempotency**: disable dynamodb client creation in persistent store when disabling idempotency ([#796](https://github.com/awslabs/aws-lambda-powertools-java/pull/796))
 
 
-## Maintenance
+### Maintenance
 
 * **deps**: Bump third party dependencies to the latest versions.
 
@@ -121,7 +137,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 * **Logging**: `@Logging` annotation now works with `@Tracing` annotation on `RequestStreamHandler` when used in `logEvent` mode. [#567](https://github.com/awslabs/aws-lambda-powertools-java/pull/567)
 
-## Maintenance
+### Maintenance
 
 * **deps**: Bump third party dependencies to the latest versions.
 
@@ -147,7 +163,7 @@ Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/ar
 * **Logging**: Support for extracting Correlation id using `@Logging` annotation via `correlationIdPath` attribute and `setCorrelationId()` method in `LoggingUtils`([#448](https://github.com/awslabs/aws-lambda-powertools-java/pull/448)).
 * **Logging**: New `clearState` attribute on `@Logging` annotation to clear previously added custom keys upon invocation([#453](https://github.com/awslabs/aws-lambda-powertools-java/pull/453)).
 
-## Maintenance
+### Maintenance
 
 * **deps**: Bump third party dependencies to the latest versions.
 
@@ -158,7 +174,7 @@ Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/ar
 * **Tracing**: Support for Boolean and Number type as value in `TracingUtils.putAnnotation()`([#423](https://github.com/awslabs/aws-lambda-powertools-java/pull/432)).
 * **Logging**: API to remove any additional custom key from logger entry using `LoggingUtils.removeKeys()`([#395](https://github.com/awslabs/aws-lambda-powertools-java/pull/395)).
 
-## Maintenance
+### Maintenance
 
 * **deps**: Bump third party dependencies to the latest versions.
 
