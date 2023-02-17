@@ -34,22 +34,22 @@ Resources:
             Path: /hello
             Method: get
 
-  # HelloWorldStreamFunction:
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: HelloWorldStreamFunction
-  #     Handler: helloworld.AppStream::handleRequest
-  #     MemorySize: 512
-  #     Tracing: Active
-  #     Environment:
-  #       Variables:
-  #         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
-  #     Events:
-  #       HelloWorld:
-  #         Type: Api
-  #         Properties:
-  #           Path: /hellostream
-  #           Method: get
+  HelloWorldStreamFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: helloworld.AppStream::handleRequest
+      MemorySize: 512
+      Tracing: Active
+      Environment:
+        Variables:
+          POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hellostream
+            Method: get
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
@@ -58,9 +58,9 @@ Outputs:
   HelloWorldApi:
     Description: "API Gateway endpoint URL for Prod stage for Hello World function"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  # HelloWorldFunction:
-  #   Description: "Hello World Lambda Function ARN"
-  #   Value: !GetAtt HelloWorldFunction.Arn
-  # HelloWorldFunctionIamRole:
-  #   Description: "Implicit IAM Role created for Hello World function"
-  #   Value: !GetAtt HelloWorldFunctionRole.Arn
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
+  HelloWorldFunctionIamRole:
+    Description: "Implicit IAM Role created for Hello World function"
+    Value: !GetAtt HelloWorldFunctionRole.Arn
