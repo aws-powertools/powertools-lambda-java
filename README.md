@@ -80,7 +80,8 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 
 ## Example
 
-See the **[examples](examples)** directory example project showcasing usage of different utilities. 
+See the **[examples](examples)**  directory for example projects showcasing usage of different utilities.
+
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
 ## Credits

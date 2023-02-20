@@ -23,7 +23,6 @@ on:
   push:
     branches:
       - master
-      - import-examples
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
