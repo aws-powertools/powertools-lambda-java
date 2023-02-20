@@ -64,7 +64,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.2</lambda.core.version>
         <lambda.events.version>3.11.0</lambda.events.version>
-        <lambda.serial.version>1.0.0</lambda.serial.version>
+        <lambda.serial.version>1.1.0</lambda.serial.version>
         <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
         <aspectj-maven-plugin.version>1.14.0</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
