@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>1.13.0</version>
+    <version>1.14.0</version>
     <packaging>pom</packaging>
 
     <name>AWS Lambda Powertools for Java library Parent</name>
@@ -56,9 +56,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <log4j.version>2.19.0</log4j.version>
-        <jackson.version>2.14.1</jackson.version>
+        <jackson.version>2.14.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.18.37</aws.sdk.version>
+        <aws.sdk.version>2.20.0</aws.sdk.version>
         <aws.xray.recorder.version>2.13.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -74,7 +74,7 @@
         <maven-javadoc-plugin.version>3.4.1</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <junit-jupiter.version>5.9.1</junit-jupiter.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.5.1</jmespath.version>
     </properties>
@@ -244,13 +244,13 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.9.0</version>
+                <version>4.11.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
-                <version>4.9.0</version>
+                <version>4.11.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
