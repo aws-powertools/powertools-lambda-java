@@ -22,8 +22,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
@@ -44,9 +42,7 @@ public class LambdaMetricsAspect {
                          Metrics metrics) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
-        if (isHandlerMethod(pjp)
-                && (placedOnRequestHandler(pjp)
-                || placedOnStreamHandler(pjp))) {
+        if (isHandlerMethod(pjp)) {
 
             MetricsLogger logger = metricsLogger();
 

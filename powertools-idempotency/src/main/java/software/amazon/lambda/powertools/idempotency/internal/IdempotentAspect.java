@@ -30,7 +30,6 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 
 /**
@@ -58,7 +57,7 @@ public class IdempotentAspect {
             throw new IdempotencyConfigurationException("The annotated method doesn't return anything. Unable to perform idempotency on void return type");
         }
 
-        boolean isHandler = (isHandlerMethod(pjp) && placedOnRequestHandler(pjp));
+        boolean isHandler = placedOnRequestHandler(pjp);
         JsonNode payload = getPayload(pjp, method, isHandler);
         if (payload == null) {
             throw new IdempotencyConfigurationException("Unable to get payload from the method. Ensure there is at least one parameter or that you use @IdempotencyKey");
