@@ -141,7 +141,7 @@ public final class MetricsUtils {
      * @deprecated use {@link MetricsUtils#withMetricsLogger} instead
      */
     public static void withMetricLogger(final Consumer<MetricsLogger> logger) {
-        withMetricLogger(logger);
+        withMetricsLogger(logger);
     }
 
     public static DimensionSet[] getDefaultDimensions() {
