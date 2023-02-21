@@ -140,6 +140,7 @@ public final class MetricsUtils {
      *
      * @deprecated use {@link MetricsUtils#withMetricsLogger} instead
      */
+    @Deprecated
     public static void withMetricLogger(final Consumer<MetricsLogger> logger) {
         withMetricsLogger(logger);
     }
