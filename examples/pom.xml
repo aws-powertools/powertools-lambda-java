@@ -49,4 +49,9 @@
         <module>powertools-examples-validation</module>
     </modules>
 
+    <!-- Don't deploy the examples -->
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
 </project>

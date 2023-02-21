@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powertools-examples-serialization</artifactId>
     <packaging>jar</packaging>
-    <name>Sample app demoing serialization utility of Powertools.</name>
+    <name>AWS Lambda Powertools for Java library Examples - Serialization</name>
 
     <parent>
         <artifactId>powertools-examples</artifactId>

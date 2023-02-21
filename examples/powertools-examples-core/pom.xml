@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powertools-examples-core</artifactId>
     <packaging>jar</packaging>
-    <name>A sample Hello World created for SAM CLI using powertools core utilities</name>
+    <name>AWS Lambda Powertools for Java library Examples - Core</name>
     
     <parent>
         <artifactId>powertools-examples</artifactId>

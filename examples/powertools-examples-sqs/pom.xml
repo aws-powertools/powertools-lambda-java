@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powertools-examples-sqs</artifactId>
     <packaging>jar</packaging>
-    <name>Sample app demoing SQS Batch Processing utility of Powertools.</name>
+    <name>AWS Lambda Powertools for Java library Examples - SQS</name>
 
     <parent>
         <artifactId>powertools-examples</artifactId>
