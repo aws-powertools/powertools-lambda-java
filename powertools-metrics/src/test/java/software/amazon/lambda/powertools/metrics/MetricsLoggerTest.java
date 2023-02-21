@@ -126,12 +126,12 @@ class MetricsLoggerTest {
 
     @Test
     void metricsLoggerCaptureUtilityWithDefaultNameSpace() {
-        testWithNewLogger(MetricsUtils::withMetricsLogger);
+        testLogger(MetricsUtils::withMetricsLogger);
     }
 
     @Test
     void deprecatedMetricLoggerCaptureUtilityWithDefaultNameSpace() {
-        testWithNewLogger(MetricsUtils::withMetricLogger);
+        testLogger(MetricsUtils::withMetricLogger);
     }
 
     @Test
@@ -141,7 +141,7 @@ class MetricsLoggerTest {
                 .withMessage("Null dimension set not allowed");
     }
 
-    private void testWithNewLogger(Consumer<Consumer<MetricsLogger>> methodToTest) {
+    private void testLogger(Consumer<Consumer<MetricsLogger>> methodToTest) {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
              MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
