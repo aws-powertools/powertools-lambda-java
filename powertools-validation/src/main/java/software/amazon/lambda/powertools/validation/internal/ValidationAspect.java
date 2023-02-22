@@ -26,7 +26,6 @@ import software.amazon.lambda.powertools.validation.ValidationConfig;
 
 import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
@@ -55,8 +54,7 @@ public class ValidationAspect {
             ValidationConfig.get().setSchemaVersion(validation.schemaVersion());
         }
 
-        if (isHandlerMethod(pjp)
-                && placedOnRequestHandler(pjp)) {
+        if (placedOnRequestHandler(pjp)) {
             validationNeeded = true;
 
             if (!validation.inboundSchema().isEmpty()) {
