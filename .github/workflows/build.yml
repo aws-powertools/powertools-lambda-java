@@ -16,7 +16,9 @@ on:
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
       - 'powertools-test-suite/**'
+      - 'examples/**'
       - 'pom.xml'
+      - 'examples/pom.xml'
       - '.github/workflows/**'
   push:
     branches:
@@ -33,7 +35,9 @@ on:
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
       - 'powertools-test-suite/**'
+      - 'examples/**'
       - 'pom.xml'
+      - 'examples/pom.xml'
       - '.github/workflows/**'
 jobs:
   build:
