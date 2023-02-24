@@ -6,11 +6,16 @@ on:
       - master
     paths:
       - 'docs/**'
+      - 'mkdocs.yml'
+      - 'Makefile'
+
   push:
     branches:
       - master
     paths:
       - 'docs/**'
+      - 'mkdocs.yml'
+      - 'Makefile'
 
 jobs:
   docs:
