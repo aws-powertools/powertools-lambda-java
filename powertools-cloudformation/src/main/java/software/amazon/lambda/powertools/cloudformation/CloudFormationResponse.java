@@ -53,14 +53,14 @@ class CloudFormationResponse {
         private final boolean noEcho;
 
         ResponseBody(CloudFormationCustomResourceEvent event,
-                     Context context,
                      Response.Status responseStatus,
                      String physicalResourceId,
-                     boolean noEcho) {
+                     boolean noEcho,
+                     String reason) {
             Objects.requireNonNull(event, "CloudFormationCustomResourceEvent cannot be null");
-            Objects.requireNonNull(context, "Context cannot be null");
-            this.physicalResourceId = physicalResourceId != null ? physicalResourceId : context.getLogStreamName();
-            this.reason = "See the details in CloudWatch Log Stream: " + context.getLogStreamName();
+
+            this.physicalResourceId = physicalResourceId;
+            this.reason = reason;
             this.status = responseStatus == null ? Response.Status.SUCCESS.name() : responseStatus.name();
             this.stackId = event.getStackId();
             this.requestId = event.getRequestId();
@@ -146,7 +146,7 @@ class CloudFormationResponse {
      */
     public HttpExecuteResponse send(CloudFormationCustomResourceEvent event,
                                     Context context) throws IOException, CustomResourceResponseException {
-        return send(event, context, null);
+        return send(event, context, Response.success(context.getLogGroupName()));
     }
 
     /**
@@ -201,13 +201,17 @@ class CloudFormationResponse {
                                          Context context,
                                          Response resp) throws CustomResourceResponseException {
         try {
+            // Silent success
+            String reason = "See the details in CloudWatch Log Stream: " + context.getLogStreamName();
             if (resp == null) {
-                ResponseBody body = new ResponseBody(event, context, Response.Status.SUCCESS, null, false);
+                ResponseBody body = new ResponseBody(event, Response.Status.SUCCESS, context.getLogStreamName(), false, reason);
                 ObjectNode node = body.toObjectNode(null);
                 return new StringInputStream(node.toString());
             } else {
+                String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId() : context.getLogStreamName();
+
                 ResponseBody body = new ResponseBody(
-                        event, context, resp.getStatus(), resp.getPhysicalResourceId(), resp.isNoEcho());
+                        event, resp.getStatus(), physicalResourceId, resp.isNoEcho(), reason);
                 ObjectNode node = body.toObjectNode(resp.getJsonNode());
                 return new StringInputStream(node.toString());
             }
