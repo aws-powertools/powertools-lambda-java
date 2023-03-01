@@ -1,6 +1,3 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: MIT-0
-
 package software.amazon.lambda.powertools.cloudformation;
 
 import com.amazonaws.services.lambda.runtime.ClientContext;

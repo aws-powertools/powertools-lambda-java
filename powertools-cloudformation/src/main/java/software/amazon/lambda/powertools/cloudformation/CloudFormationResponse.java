@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.Header;
 import software.amazon.awssdk.http.HttpExecuteRequest;
 import software.amazon.awssdk.http.HttpExecuteResponse;
@@ -32,6 +34,8 @@ import java.util.Objects;
  */
 class CloudFormationResponse {
 
+    private static final Logger LOG = LoggerFactory.getLogger(CloudFormationResponse.class);
+
     /**
      * Internal representation of the payload to be sent to the event target URL. Retains all properties of the payload
      * except for "Data". This is done so that the serialization of the non-"Data" properties and the serialization of
@@ -51,6 +55,20 @@ class CloudFormationResponse {
         private final String requestId;
         private final String logicalResourceId;
         private final boolean noEcho;
+
+        @Override
+        public String toString() {
+            final StringBuffer sb = new StringBuffer("ResponseBody{");
+            sb.append("status='").append(status).append('\'');
+            sb.append(", reason='").append(reason).append('\'');
+            sb.append(", physicalResourceId='").append(physicalResourceId).append('\'');
+            sb.append(", stackId='").append(stackId).append('\'');
+            sb.append(", requestId='").append(requestId).append('\'');
+            sb.append(", logicalResourceId='").append(logicalResourceId).append('\'');
+            sb.append(", noEcho=").append(noEcho);
+            sb.append('}');
+            return sb.toString();
+        }
 
         ResponseBody(CloudFormationCustomResourceEvent event,
                      Response.Status responseStatus,
@@ -201,21 +219,21 @@ class CloudFormationResponse {
                                          Context context,
                                          Response resp) throws CustomResourceResponseException {
         try {
-            // Silent success
             String reason = "See the details in CloudWatch Log Stream: " + context.getLogStreamName();
             if (resp == null) {
                 ResponseBody body = new ResponseBody(event, Response.Status.SUCCESS, context.getLogStreamName(), false, reason);
+                LOG.debug("ResponseBody: {}", body);
                 ObjectNode node = body.toObjectNode(null);
                 return new StringInputStream(node.toString());
             } else {
                 String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId() : context.getLogStreamName();
-
-                ResponseBody body = new ResponseBody(
-                        event, resp.getStatus(), physicalResourceId, resp.isNoEcho(), reason);
+                ResponseBody body = new ResponseBody(event, resp.getStatus(), physicalResourceId, resp.isNoEcho(), reason);
+                LOG.debug("ResponseBody: {}", body);
                 ObjectNode node = body.toObjectNode(resp.getJsonNode());
                 return new StringInputStream(node.toString());
             }
         } catch (RuntimeException e) {
+            LOG.error(e.getMessage());
             throw new CustomResourceResponseException("Unable to generate response body.", e);
         }
     }
