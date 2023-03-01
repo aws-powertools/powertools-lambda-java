@@ -138,6 +138,15 @@ public class Response {
     }
 
     /**
+     * Creates failed Response with a given physicalResourceId.
+     *
+     * @return a failed Response with no value.
+     */
+    public static Response failed(String physicalResourceId) {
+        return new Response(null, Status.FAILED, physicalResourceId, false);
+    }
+
+    /**
      * Creates an empty, failed Response.
      *
      * @return a failed Response with no value.
@@ -149,7 +158,7 @@ public class Response {
     /**
      * Creates an empty, successful Response.
      *
-     * @return a failed Response with no value.
+     * @return a success Response with no value.
      */
     public static Response success() {
         return new Response(null, Status.SUCCESS, null, false);
