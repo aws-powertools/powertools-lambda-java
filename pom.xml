@@ -56,10 +56,10 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <log4j.version>2.19.0</log4j.version>
+        <log4j.version>2.20.0</log4j.version>
         <jackson.version>2.14.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.20.0</aws.sdk.version>
+        <aws.sdk.version>2.20.9</aws.sdk.version>
         <aws.xray.recorder.version>2.13.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -263,7 +263,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.23.1</version>
+                <version>3.24.2</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
