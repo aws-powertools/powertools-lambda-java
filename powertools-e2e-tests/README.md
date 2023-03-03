@@ -1,10 +1,13 @@
 ## End-to-end tests
 This module is internal and meant to be used for end-to-end (E2E) testing of Lambda Powertools for Java. 
 
-__Prerequisites__: an AWS account is needed as well as a local environment able to reach this account 
+__Prerequisites__: 
+- An AWS account is needed as well as a local environment able to reach this account 
 ([credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
+- [Java 11+](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+- [Docker](https://docs.docker.com/engine/install/)
 
-To execute the E2E tests, use the following command: `mvn clean verify -Pe2e`
+To execute the E2E tests, use the following command: `export JAVA_VERSION=11 && mvn clean verify -Pe2e`
 
 ### Under the hood
 This module leverages the following components:

@@ -5,9 +5,12 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.stream.IntStream;
 
+/**
+ * Logs for a specific Lambda invocation
+ */
 public class InvocationLogs {
-    private String[] logs;
-    private String[] functionLogs;
+    private final String[] logs;
+    private final String[] functionLogs;
 
     public InvocationLogs(String base64Logs, String requestId) {
         String rawLogs = new String(Base64.getDecoder().decode(base64Logs), StandardCharsets.UTF_8);

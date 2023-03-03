@@ -20,6 +20,10 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import static java.time.Duration.ofSeconds;
+
+/**
+ * Class in charge of retrieving the actual metrics of a Lambda execution on CloudWatch
+ */
 public class MetricsFetcher {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsFetcher.class);
 
@@ -30,6 +34,17 @@ public class MetricsFetcher {
             .region(region)
             .build();
 
+    /**
+     * Retrieve the metric values from start to end. Different parameters are required (see {@link CloudWatchClient#getMetricData} for more info).
+     * Use a retry mechanism as metrics may not be available instantaneously after a function runs.
+     * @param start
+     * @param end
+     * @param period
+     * @param namespace
+     * @param metricName
+     * @param dimensions
+     * @return
+     */
     public List<Double> fetchMetrics(Instant start, Instant end, int period, String namespace, String metricName, Map<String, String> dimensions) {
         List<Dimension> dimensionsList = new ArrayList<>();
         if (dimensions != null)

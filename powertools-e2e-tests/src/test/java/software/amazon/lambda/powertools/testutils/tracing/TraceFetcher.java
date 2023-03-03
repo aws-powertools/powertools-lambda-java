@@ -26,6 +26,9 @@ import java.util.stream.Collectors;
 
 import static java.time.Duration.ofSeconds;
 
+/**
+ * Class in charge of retrieving the actual traces of a Lambda execution on X-Ray
+ */
 public class TraceFetcher {
 
     private static final ObjectMapper MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
@@ -36,6 +39,12 @@ public class TraceFetcher {
     private final String filterExpression;
     private final List<String> excludedSegments;
 
+    /**
+     * @param start beginning of the time slot to search in
+     * @param end end of the time slot to search in
+     * @param filterExpression eventual filter for the search
+     * @param excludedSegments list of segment to exclude from the search
+     */
     public TraceFetcher(Instant start, Instant end, String filterExpression, List<String> excludedSegments) {
         this.start = start;
         this.end = end;
@@ -47,6 +56,12 @@ public class TraceFetcher {
         return new Builder();
     }
 
+    /**
+     * Retrieve the traces corresponding to a specific function during a specific time slot.
+     * Use a retry mechanism as traces may not be available instantaneously after a function runs.
+     *
+     * @return traces
+     */
     public Trace fetchTrace() {
         Callable<Trace> callable = () -> {
             List<String> traceIds = getTraceIds();
@@ -67,6 +82,11 @@ public class TraceFetcher {
         return status.getResult();
     }
 
+    /**
+     * Retrieve traces from trace ids.
+     * @param traceIds
+     * @return
+     */
     private Trace getTrace(List<String> traceIds) {
         BatchGetTracesResponse tracesResponse = xray.batchGetTraces(BatchGetTracesRequest.builder()
                 .traceIds(traceIds)
@@ -110,6 +130,10 @@ public class TraceFetcher {
         });
     }
 
+    /**
+     * Use the X-Ray SDK to retrieve the trace ids corresponding to a specific function during a specific time slot
+     * @return a list of trace ids
+     */
     private List<String> getTraceIds() {
         GetTraceSummariesResponse traceSummaries = xray.getTraceSummaries(GetTraceSummariesRequest.builder()
                 .startTime(start)

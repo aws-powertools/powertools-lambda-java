@@ -33,13 +33,22 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
 
+/**
+ * This class is in charge of bootstrapping the infrastructure for the tests.
+ * <br/>
+ * Tests are actually run on AWS, so we need to provision Lambda functions, DynamoDB table (for Idempotency),
+ * CloudWatch log groups, ...
+ * <br/>
+ * It uses the Cloud Development Kit (CDK) to define required resources. The CDK stack is then synthesized to retrieve
+ * the CloudFormation templates and the assets (function jars). Assets are uploaded to S3 (with the SDK `PutObjectRequest`)
+ * and the CloudFormation stack is created (with the SDK `createStack`)
+ */
 public class Infrastructure {
     private static final Logger LOG = LoggerFactory.getLogger(Infrastructure.class);
 
@@ -92,6 +101,10 @@ public class Infrastructure {
                 .build();
     }
 
+    /**
+     * Use the CloudFormation SDK to create the stack
+     * @return the name of the function deployed part of the stack
+     */
     public String deploy() {
         uploadAssets();
         LOG.info("Deploying '" + stackName + "' on account " + account);
@@ -111,6 +124,9 @@ public class Infrastructure {
         return functionName;
     }
 
+    /**
+     * Destroy the CloudFormation stack
+     */
     public void destroy() {
         LOG.info("Deleting '" + stackName + "' on account " + account);
         cfn.deleteStack(DeleteStackRequest.builder().stackName(stackName).build());
@@ -193,6 +209,10 @@ public class Infrastructure {
         }
     }
 
+    /**
+     * Build the CDK Stack containing the required resources (Lambda function, LogGroup, DDB Table)
+     * @return the CDK stack
+     */
     private Stack createStackWithLambda() {
         Stack stack = new Stack(app, stackName);
         List<String> packagingInstruction = Arrays.asList(
@@ -261,12 +281,18 @@ public class Infrastructure {
         return stack;
     }
 
+    /**
+     * cdk synth to retrieve the CloudFormation template and assets directory
+     */
     private void synthesize() {
         CloudAssembly synth = app.synth();
         cfnTemplate = synth.getStackByName(stack.getStackName()).getTemplate();
         cfnAssetDirectory = synth.getDirectory();
     }
 
+    /**
+     * Upload assets (mainly lambda function jars) to S3
+     */
     private void uploadAssets() {
         Map<String, Asset> assets = findAssets();
         assets.forEach((objectKey, asset) -> {
@@ -283,6 +309,10 @@ public class Infrastructure {
         });
     }
 
+    /**
+     * Reading the cdk assets.json file to retrieve the list of assets to push to S3
+     * @return a map of assets
+     */
     private Map<String, Asset> findAssets() {
         Map<String, Asset> assets = new HashMap<>();
         try {
