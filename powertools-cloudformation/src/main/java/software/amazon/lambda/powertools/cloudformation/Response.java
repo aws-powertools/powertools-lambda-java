@@ -148,6 +148,7 @@ public class Response {
      *
      * @return a failed Response with no value.
      */
+    @Deprecated
     public static Response failed() {
         return new Response(null, Status.FAILED, null, false);
     }
@@ -179,6 +180,7 @@ public class Response {
      *
      * @return a success Response with no physicalResourceId value.
      */
+    @Deprecated
     public static Response success() {
         return new Response(null, Status.SUCCESS, null, false);
     }

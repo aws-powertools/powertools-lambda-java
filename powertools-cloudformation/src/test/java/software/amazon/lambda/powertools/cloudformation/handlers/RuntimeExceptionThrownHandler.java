@@ -5,11 +5,11 @@ import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResource
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
 import software.amazon.lambda.powertools.cloudformation.Response;
 
-public class UpdateCausesRuntimeException extends AbstractCustomResourceHandler {
+public class RuntimeExceptionThrownHandler extends AbstractCustomResourceHandler {
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-        return null;
+        throw new RuntimeException("failure");
     }
 
     @Override

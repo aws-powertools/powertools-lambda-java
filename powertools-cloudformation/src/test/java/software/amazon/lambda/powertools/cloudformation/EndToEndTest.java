@@ -9,7 +9,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.cloudformation.handlers.NoPhysicalResourceIdSetHandler;
-import software.amazon.lambda.powertools.cloudformation.handlers.UpdateCausesRuntimeException;
+import software.amazon.lambda.powertools.cloudformation.handlers.RuntimeExceptionThrownHandler;
 
 import java.util.UUID;
 
@@ -20,23 +20,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class EndToEndTest {
 
     public static final String PHYSICAL_RESOURCE_ID = UUID.randomUUID().toString();
+    public static final String LOG_STREAM_NAME = "FakeLogStreamName";
 
     @Test
     void physicalResourceIdDoesNotChangeWhenRuntimeExceptionThrownWhenUpdating(WireMockRuntimeInfo wmRuntimeInfo)  {
         stubFor(put("/").willReturn(ok()));
 
-        UpdateCausesRuntimeException handler = new UpdateCausesRuntimeException();
+        RuntimeExceptionThrownHandler handler = new RuntimeExceptionThrownHandler();
         CloudFormationCustomResourceEvent updateEvent = updateEventWithPhysicalResourceId(wmRuntimeInfo.getHttpPort(), PHYSICAL_RESOURCE_ID);
-        Response response = handler.handleRequest(updateEvent, new FakeContext());
+        handler.handleRequest(updateEvent, new FakeContext());
 
-        assertThat(response).isNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'FAILED')]"))
                 .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
         );
     }
 
-    // Existing functionality - could well be incorrect
+    @Test
+    void runtimeExceptionThrownOnCreateSendsLogStreamNameAsPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo)  {
+        stubFor(put("/").willReturn(ok()));
+
+        RuntimeExceptionThrownHandler handler = new RuntimeExceptionThrownHandler();
+        CloudFormationCustomResourceEvent createEvent = baseEvent(wmRuntimeInfo.getHttpPort())
+                .withRequestType("Create")
+                .build();
+        handler.handleRequest(createEvent, new FakeContext());
+
+        verify(putRequestedFor(urlPathMatching("/"))
+                .withRequestBody(matchingJsonPath("[?(@.Status == 'FAILED')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
+        );
+    }
+
     @Test
     void physicalResourceIdSetAsLogStreamOnUpdateWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
@@ -48,7 +63,7 @@ public class EndToEndTest {
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == 'FakeLogStreamName')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
         );
     }
 
@@ -63,12 +78,12 @@ public class EndToEndTest {
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == 'FakeLogStreamName')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
         );
     }
 
     @Test
-    void createNewResourceBecausePhysicalResourceIdNoSetByCustomerOnCreate(WireMockRuntimeInfo wmRuntimeInfo) {
+    void createNewResourceBecausePhysicalResourceIdNotSetByCustomerOnCreate(WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
@@ -80,7 +95,7 @@ public class EndToEndTest {
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == 'FakeLogStreamName')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
         );
     }
 
@@ -125,7 +140,7 @@ public class EndToEndTest {
 
         @Override
         public String getLogStreamName() {
-            return "FakeLogStreamName";
+            return LOG_STREAM_NAME;
         }
 
         @Override
