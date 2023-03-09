@@ -145,9 +145,8 @@ public class Response {
      * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
      * the update as a replacement and sends a delete request to the old resource. For more information,
      * see AWS::CloudFormation::CustomResource.
-     
-     @deprecated this method is not safe. Provide a physicalResourceId.
      *
+     * @deprecated this method is not safe. Provide a physicalResourceId.
      * @return a failed Response with no value.
      */
     @Deprecated
