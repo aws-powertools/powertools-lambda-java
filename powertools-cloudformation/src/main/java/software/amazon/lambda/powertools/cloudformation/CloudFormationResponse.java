@@ -226,7 +226,10 @@ class CloudFormationResponse {
                 ObjectNode node = body.toObjectNode(null);
                 return new StringInputStream(node.toString());
             } else {
-                String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId() : context.getLogStreamName();
+
+                String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId() :
+                        event.getPhysicalResourceId() != null? event.getPhysicalResourceId() : context.getLogStreamName();
+
                 ResponseBody body = new ResponseBody(event, resp.getStatus(), physicalResourceId, resp.isNoEcho(), reason);
                 LOG.debug("ResponseBody: {}", body);
                 ObjectNode node = body.toObjectNode(resp.getJsonNode());

@@ -8,6 +8,8 @@ import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResource
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import software.amazon.lambda.powertools.cloudformation.handlers.NoPhysicalResourceIdSetHandler;
 import software.amazon.lambda.powertools.cloudformation.handlers.RuntimeExceptionThrownHandler;
 
@@ -21,6 +23,20 @@ public class EndToEndTest {
 
     public static final String PHYSICAL_RESOURCE_ID = UUID.randomUUID().toString();
     public static final String LOG_STREAM_NAME = "FakeLogStreamName";
+
+    @Test
+    void physicalResourceIdTakenFromRequestForUpdateOrDeleteWhenUserSpecifiesNull(WireMockRuntimeInfo wmRuntimeInfo) {
+        stubFor(put("/").willReturn(ok()));
+
+        NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
+        CloudFormationCustomResourceEvent updateEvent = updateEventWithPhysicalResourceId(wmRuntimeInfo.getHttpPort(), PHYSICAL_RESOURCE_ID);
+        handler.handleRequest(updateEvent, new FakeContext());
+
+        verify(putRequestedFor(urlPathMatching("/"))
+                .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
+        );
+    }
 
     @Test
     void physicalResourceIdDoesNotChangeWhenRuntimeExceptionThrownWhenUpdating(WireMockRuntimeInfo wmRuntimeInfo)  {
@@ -63,12 +79,12 @@ public class EndToEndTest {
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
         );
     }
 
-    @Test
-    void physicalResourceIdSetAsLogStreamOnDeleteWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
+   @Test
+    void physicalResourceIdSetFromRequestOnDeleteWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
@@ -78,7 +94,7 @@ public class EndToEndTest {
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
         );
     }
 
