@@ -8,8 +8,6 @@ import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResource
 import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import software.amazon.lambda.powertools.cloudformation.handlers.NoPhysicalResourceIdSetHandler;
 import software.amazon.lambda.powertools.cloudformation.handlers.RuntimeExceptionThrownHandler;
 
@@ -19,7 +17,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @WireMockTest
-public class EndToEndTest {
+public class CloudFormationIntegrationTest {
 
     public static final String PHYSICAL_RESOURCE_ID = UUID.randomUUID().toString();
     public static final String LOG_STREAM_NAME = "FakeLogStreamName";
