@@ -66,8 +66,10 @@ public abstract class AbstractCustomResourceHandler
             LOG.error("Unable to generate response. Sending empty failure to {}", responseUrl, rse);
             try {
                 // If the customers code throws an exception, Powertools should respond in a way that doesn't
-                // change the CloudFormation resources. A failure is sent with the existing PhysicalResourceId
+                // change the CloudFormation resources.
+                // In the case of a Update or Delete, a failure is sent with the existing PhysicalResourceId
                 // indicating no change.
+                // In the case of a Create, null will be set and changed to the Lambda LogStreamName before sending.
                 client.send(event, context, Response.failed(event.getPhysicalResourceId()));
             } catch (Exception e) {
                 // unable to generate response AND send the failure

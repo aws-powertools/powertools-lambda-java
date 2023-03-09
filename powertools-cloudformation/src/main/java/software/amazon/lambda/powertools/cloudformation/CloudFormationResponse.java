@@ -56,20 +56,6 @@ class CloudFormationResponse {
         private final String logicalResourceId;
         private final boolean noEcho;
 
-        @Override
-        public String toString() {
-            final StringBuffer sb = new StringBuffer("ResponseBody{");
-            sb.append("status='").append(status).append('\'');
-            sb.append(", reason='").append(reason).append('\'');
-            sb.append(", physicalResourceId='").append(physicalResourceId).append('\'');
-            sb.append(", stackId='").append(stackId).append('\'');
-            sb.append(", requestId='").append(requestId).append('\'');
-            sb.append(", logicalResourceId='").append(logicalResourceId).append('\'');
-            sb.append(", noEcho=").append(noEcho);
-            sb.append('}');
-            return sb.toString();
-        }
-
         ResponseBody(CloudFormationCustomResourceEvent event,
                      Response.Status responseStatus,
                      String physicalResourceId,
@@ -128,6 +114,20 @@ class CloudFormationResponse {
                 node.set(DATA_PROPERTY_NAME, dataNode);
             }
             return node;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuffer sb = new StringBuffer("ResponseBody{");
+            sb.append("status='").append(status).append('\'');
+            sb.append(", reason='").append(reason).append('\'');
+            sb.append(", physicalResourceId='").append(physicalResourceId).append('\'');
+            sb.append(", stackId='").append(stackId).append('\'');
+            sb.append(", requestId='").append(requestId).append('\'');
+            sb.append(", logicalResourceId='").append(logicalResourceId).append('\'');
+            sb.append(", noEcho=").append(noEcho);
+            sb.append('}');
+            return sb.toString();
         }
     }
 
@@ -212,6 +212,8 @@ class CloudFormationResponse {
 
     /**
      * Returns the response body as an input stream, for supplying with the HTTP request to the custom resource.
+     *
+     * If PhysicalResourceId is null at this point it will be replaced with the Lambda LogStreamName.
      *
      * @throws CustomResourceResponseException if unable to generate the response stream
      */
