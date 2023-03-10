@@ -25,18 +25,20 @@ public class CloudFormationIntegrationTest {
     public static final String PHYSICAL_RESOURCE_ID = UUID.randomUUID().toString();
     public static final String LOG_STREAM_NAME = "FakeLogStreamName";
 
-//    public CloudFormationIntegrationTest(WireMockRuntimeInfo wmRuntimeInfo) {
-//
-//        this.wmRuntimeInfo = wmRuntimeInfo;
-//    }
-
-    @Test
-    void physicalResourceIdTakenFromRequestForUpdateOrDeleteWhenUserSpecifiesNull(WireMockRuntimeInfo wmRuntimeInfo) {
+    @ParameterizedTest
+    @ValueSource(strings = {"Update", "Delete"})
+    void physicalResourceIdTakenFromRequestForUpdateOrDeleteWhenUserSpecifiesNull(String requestType, WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
-        CloudFormationCustomResourceEvent updateEvent = updateEventWithPhysicalResourceId(wmRuntimeInfo.getHttpPort(), PHYSICAL_RESOURCE_ID);
-        handler.handleRequest(updateEvent, new FakeContext());
+        int httpPort = wmRuntimeInfo.getHttpPort();
+
+        CloudFormationCustomResourceEvent event = baseEvent(httpPort)
+                .withPhysicalResourceId(PHYSICAL_RESOURCE_ID)
+                .withRequestType(requestType)
+                .build();
+
+        handler.handleRequest(event, new FakeContext());
 
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
@@ -44,13 +46,20 @@ public class CloudFormationIntegrationTest {
         );
     }
 
-    @Test
-    void physicalResourceIdDoesNotChangeWhenRuntimeExceptionThrownWhenUpdating(WireMockRuntimeInfo wmRuntimeInfo)  {
+    @ParameterizedTest
+    @ValueSource(strings = {"Update", "Delete"})
+    void physicalResourceIdDoesNotChangeWhenRuntimeExceptionThrownWhenUpdatingOrDeleting(String requestType, WireMockRuntimeInfo wmRuntimeInfo)  {
         stubFor(put("/").willReturn(ok()));
 
         RuntimeExceptionThrownHandler handler = new RuntimeExceptionThrownHandler();
-        CloudFormationCustomResourceEvent updateEvent = updateEventWithPhysicalResourceId(wmRuntimeInfo.getHttpPort(), PHYSICAL_RESOURCE_ID);
-        handler.handleRequest(updateEvent, new FakeContext());
+        int httpPort = wmRuntimeInfo.getHttpPort();
+
+        CloudFormationCustomResourceEvent event = baseEvent(httpPort)
+                .withPhysicalResourceId(PHYSICAL_RESOURCE_ID)
+                .withRequestType(requestType)
+                .build();
+
+        handler.handleRequest(event, new FakeContext());
 
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'FAILED')]"))

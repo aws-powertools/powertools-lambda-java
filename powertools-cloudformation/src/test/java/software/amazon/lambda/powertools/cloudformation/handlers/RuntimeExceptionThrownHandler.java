@@ -19,6 +19,6 @@ public class RuntimeExceptionThrownHandler extends AbstractCustomResourceHandler
 
     @Override
     protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-        return null;
+        throw new RuntimeException("failure");
     }
 }
