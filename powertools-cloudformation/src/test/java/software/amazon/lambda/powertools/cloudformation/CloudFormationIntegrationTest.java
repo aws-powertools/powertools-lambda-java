@@ -67,7 +67,7 @@ public class CloudFormationIntegrationTest {
     }
 
     @Test
-    void physicalResourceIdSetAsLogStreamOnUpdateWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
+    void physicalResourceIdSetFromRequestOnUpdateWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
