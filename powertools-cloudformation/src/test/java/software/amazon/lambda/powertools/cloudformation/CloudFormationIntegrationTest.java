@@ -83,28 +83,20 @@ public class CloudFormationIntegrationTest {
         );
     }
 
-    @Test
-    void physicalResourceIdSetFromRequestOnUpdateWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
+    @ParameterizedTest
+    @ValueSource(strings = {"Update", "Delete"})
+    void physicalResourceIdSetFromRequestOnUpdateOrDeleteWhenCustomerDoesntProvideAPhysicalResourceId(String requestType, WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
-        CloudFormationCustomResourceEvent updateEvent = updateEventWithPhysicalResourceId(wmRuntimeInfo.getHttpPort(), PHYSICAL_RESOURCE_ID);
-        Response response = handler.handleRequest(updateEvent, new FakeContext());
+        int httpPort = wmRuntimeInfo.getHttpPort();
 
-        assertThat(response).isNotNull();
-        verify(putRequestedFor(urlPathMatching("/"))
-                .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
-        );
-    }
+        CloudFormationCustomResourceEvent event = baseEvent(httpPort)
+                .withPhysicalResourceId(PHYSICAL_RESOURCE_ID)
+                .withRequestType(requestType)
+                .build();
 
-   @Test
-    void physicalResourceIdSetFromRequestOnDeleteWhenCustomerDoesntProvideAPhysicalResourceId(WireMockRuntimeInfo wmRuntimeInfo) {
-        stubFor(put("/").willReturn(ok()));
-
-        NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
-        CloudFormationCustomResourceEvent createEvent = deleteEventWithPhysicalResourceId(wmRuntimeInfo.getHttpPort(), PHYSICAL_RESOURCE_ID);
-        Response response = handler.handleRequest(createEvent, new FakeContext());
+        Response response = handler.handleRequest(event, new FakeContext());
 
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
