@@ -164,7 +164,7 @@ class CloudFormationResponse {
      */
     public HttpExecuteResponse send(CloudFormationCustomResourceEvent event,
                                     Context context) throws IOException, CustomResourceResponseException {
-        return send(event, context, Response.success(context.getLogGroupName()));
+        return send(event, context, null);
     }
 
     /**
@@ -223,7 +223,9 @@ class CloudFormationResponse {
         try {
             String reason = "See the details in CloudWatch Log Stream: " + context.getLogStreamName();
             if (resp == null) {
-                ResponseBody body = new ResponseBody(event, Response.Status.SUCCESS, context.getLogStreamName(), false, reason);
+                String physicalResourceId = event.getPhysicalResourceId() != null? event.getPhysicalResourceId() : context.getLogStreamName();
+
+                ResponseBody body = new ResponseBody(event, Response.Status.SUCCESS, physicalResourceId, false, reason);
                 LOG.debug("ResponseBody: {}", body);
                 ObjectNode node = body.toObjectNode(null);
                 return new StringInputStream(node.toString());
