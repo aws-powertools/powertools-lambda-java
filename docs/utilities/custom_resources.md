@@ -3,17 +3,14 @@ title: Custom Resources
 description: Utility
 ---
 
-[Custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html)
+[CloudFormation Custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources.html)
 provide a way for [AWS Lambda functions](
 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) to execute
-provisioning logic whenever CloudFormation stacks are created, updated, or deleted. The CloudFormation utility enables
-developers to write these Lambda functions in Java.
+provisioning logic whenever CloudFormation stacks are created, updated, or deleted. 
 
-The utility provides a base `AbstractCustomResourceHandler` class which handles [custom resource request events](
-https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html), constructs
-[custom resource responses](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-responses.html), and
-sends them to the custom resources. Subclasses implement the provisioning logic and configure certain properties of
-these response objects.
+Powertools-cloudformation makes it easy to write Lambda functions in Java that are used as CloudFormation custom resources.    
+The utility reads incoming CloudFormation events, calls your custom code depending on the operation (CREATE, UPDATE or DELETE) and sends responses back to CloudFormation.  
+By using this library you do not need to write code to integrate with CloudFormation, and you only focus on writing the custom provisioning logic inside the Lambda function.
 
 ## Install
 
@@ -40,11 +37,14 @@ To install this utility, add the following dependency to your project.
 
 ## Usage
 
-Create a new `AbstractCustomResourceHandler` subclass and implement the `create`, `update`, and `delete` methods with
-provisioning logic in the appropriate methods(s).
+To utilise the feature, extend the `AbstractCustomResourceHandler` class in your Lambda handler class.  
+After you extend the `AbstractCustomResourceHandler`, implement and override the following 3 methods: `create`, `update` and `delete`. The `AbstractCustomResourceHandler` invokes the right method according to the CloudFormation [custom resource request event](
+https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests.html) it receives.  
+Inside the methods, implement your custom provisioning logic, and return a `Response`. The `AbstractCustomResourceHandler` takes your `Response`, builds a
+[custom resource responses](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-responses.html) and sends it to CloudFormation automatically.  
 
-As an example, if a Lambda function only needs to provision something when a stack is created, put the provisioning
-logic exclusively within the `create` method; the other methods can just return `null`.
+Custom resources notify cloudformation either of `SUCCESS` or `FAILED` status. You have 2 utility methods to represent these responses: `Response.success(physicalResourceId)` and `Response.failed(physicalResourceId)`.
+If a `Response` is not returned by your code, `AbstractCustomResourceHandler` defaults the response to `SUCCESS`.
 
 ```java hl_lines="8 9 10 11"
 import com.amazonaws.services.lambda.runtime.Context;
@@ -56,8 +56,13 @@ public class ProvisionOnCreateHandler extends AbstractCustomResourceHandler {
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
-        doProvisioning();
-        return Response.success();
+        String physicalResourceId = "sample-resource-id-" + UUID.randomUUID(); //Create a unique ID for your resource
+        ProvisioningResult provisioningResult = doProvisioning();
+        if(provisioningResult.isSuccessful()){ //check if the provisioning was successful
+            return Response.success(physicalResourceId);
+        }else{
+            return Response.failed(physicalResourceId);
+        }
     }
 
     @Override
@@ -74,8 +79,8 @@ public class ProvisionOnCreateHandler extends AbstractCustomResourceHandler {
 
 ### Signaling Provisioning Failures
 
-If provisioning fails, the stack creation/modification/deletion as a whole can be failed by either throwing a
-`RuntimeException` or by explicitly returning a `Response` with a failed status, e.g. `Response.failure()`.
+If the provisioning inside your Custom Resource fails, you can notify CloudFormation of the failure by returning a `Repsonse.failure(physicalResourceId)`.
+
 
 ### Configuring Response Objects
 
