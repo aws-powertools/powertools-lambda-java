@@ -1,0 +1,54 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  powertools-examples-cloudformation
+
+  Sample SAM Template for powertools-examples-cloudformation
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 128
+
+Parameters:
+  BucketNameParam:
+    Type: String
+    Default: sample-bucket-name-20230307-abc123
+  RetentionDaysParam:
+    Type: Number
+    Default: 10
+
+
+Resources:
+  HelloWorldCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt HelloWorldFunction.Arn
+      BucketName: !Ref BucketNameParam
+      RetentionDays: !Ref RetentionDaysParam
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../
+      Handler: helloworld.App::handleRequest
+      Runtime: java11
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Policies:
+        - Statement:
+            - Sid: bucketaccess1
+              Effect: Allow
+              Action:
+                - s3:*
+              Resource: '*'
+      Environment:
+        Variables:
+          PARAM1: VALUE
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
+
+Outputs:
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn
