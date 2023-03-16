@@ -43,8 +43,11 @@ https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-requests
 Inside the methods, implement your custom provisioning logic, and return a `Response`. The `AbstractCustomResourceHandler` takes your `Response`, builds a
 [custom resource responses](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/crpg-ref-responses.html) and sends it to CloudFormation automatically.  
 
-Custom resources notify cloudformation either of `SUCCESS` or `FAILED` status. You have 2 utility methods to represent these responses: `Response.success(physicalResourceId)` and `Response.failed(physicalResourceId)`.
-If a `Response` is not returned by your code, `AbstractCustomResourceHandler` defaults the response to `SUCCESS`.
+Custom resources notify cloudformation either of `SUCCESS` or `FAILED` status. You have 2 utility methods to represent these responses: `Response.success(physicalResourceId)` and `Response.failed(physicalResourceId)`.  
+The `physicalResourceId` is an identifier that is used during the lifecycle operations of the Custom Resource.  
+You should supply a `physicalResourceId` during the `CREATE` operation, CloudFormation stores the `physicalResourceId` and includes it `UPDATE` and `DELETE` events.
+
+Here an example of how to implement a Custom Resource using the powertools-cloudformation library:
 
 ```java hl_lines="8 9 10 11"
 import com.amazonaws.services.lambda.runtime.Context;
@@ -52,12 +55,12 @@ import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResource
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
 import software.amazon.lambda.powertools.cloudformation.Response;
 
-public class ProvisionOnCreateHandler extends AbstractCustomResourceHandler {
+public class MyCustomResourceHandler extends AbstractCustomResourceHandler {
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
         String physicalResourceId = "sample-resource-id-" + UUID.randomUUID(); //Create a unique ID for your resource
-        ProvisioningResult provisioningResult = doProvisioning();
+        ProvisioningResult provisioningResult = doProvisioning(physicalResourceId);
         if(provisioningResult.isSuccessful()){ //check if the provisioning was successful
             return Response.success(physicalResourceId);
         }else{
@@ -67,35 +70,57 @@ public class ProvisionOnCreateHandler extends AbstractCustomResourceHandler {
 
     @Override
     protected Response update(CloudFormationCustomResourceEvent updateEvent, Context context) {
-        return null;
+        String physicalResourceId = updateEvent.getPhysicalResourceId(); //Get the PhysicalResourceId from CloudFormation
+        UpdateResult updateResult = doUpdates(physicalResourceId);
+        if(updateResult.isSuccessful()){ //check if the update operations were successful
+            return Response.success(physicalResourceId);
+        }else{
+            return Response.failed(physicalResourceId);
+        }
     }
 
     @Override
     protected Response delete(CloudFormationCustomResourceEvent deleteEvent, Context context) {
-        return null;
+        String physicalResourceId = deleteEvent.getPhysicalResourceId(); //Get the PhysicalResourceId from CloudFormation
+        DeleteResult deleteResult = doDeletes(physicalResourceId);
+        if(deleteResult.isSuccessful()){ //check if the delete operations were successful
+            return Response.success(physicalResourceId);
+        }else{
+            return Response.failed(physicalResourceId);
+        }
     }
 }
 ```
 
-### Signaling Provisioning Failures
+### Missing `Response` and exception handling
 
-If the provisioning inside your Custom Resource fails, you can notify CloudFormation of the failure by returning a `Repsonse.failure(physicalResourceId)`.
+If a `Response` is not returned by your code, `AbstractCustomResourceHandler` defaults the response to `SUCCESS`.  
+If your code raises an exception (which is not handled), the `AbstractCustomResourceHandler` defaults the response to `FAILED`.
 
+In both of the scenarios, powertools-java will assign the `physicalResourceId` based on the following logic:
+- if present, use the `physicalResourceId` provided in the `CloudFormationCustomResourceEvent`
+- if it is not present, use the `LogStreamName` from the Lambda context
 
-### Configuring Response Objects
+#### Why does this matter?
 
-When provisioning results in data to be shared with other parts of the stack, include this data within the returned
-`Response` instance.
+It is recommended that you always provide a `physicalResourceId` in your response because `physicalResourceId` has a crucial role in the lifecycle of a CloudFormation custom resource.
+If the `physicalResourceId` changes between calls from Cloudformation, for instance in response to an `Update` event, Cloudformation [treats the resource update as a replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html).
 
-This Lambda function creates a [Chime AppInstance](https://docs.aws.amazon.com/chime/latest/dg/create-app-instance.html)
+### Customising a response
+
+As well as the `Response.success(physicalResourceId)` and `Response.failed(physicalResourceId)`, you can customise the `Response` by using the `Response.builder()`.
+You customise the responses when you need additional attributes to be shared with other parts of the CloudFormation stack.
+
+In the example below, the Lambda function creates a [Chime AppInstance](https://docs.aws.amazon.com/chime/latest/dg/create-app-instance.html)
 and maps the returned ARN to a "ChimeAppInstanceArn" attribute.
 
 ```java hl_lines="11 12 13 14"
 public class ChimeAppInstanceHandler extends AbstractCustomResourceHandler {
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
+        String physicalResourceId = "my-app-name-" + UUID.randomUUID(); //Create a unique ID 
         CreateAppInstanceRequest chimeRequest = CreateAppInstanceRequest.builder()
-                .name("my-app-name")
+                .name(physicalResourceId)
                 .build();
         CreateAppInstanceResponse chimeResponse = ChimeClient.builder()
                 .region("us-east-1")
@@ -104,6 +129,8 @@ public class ChimeAppInstanceHandler extends AbstractCustomResourceHandler {
         Map<String, String> chimeAtts = Map.of("ChimeAppInstanceArn", chimeResponse.appInstanceArn());
         return Response.builder()
                 .value(chimeAtts)
+                .status(Response.Status.SUCCESS)
+                .physicalResourceId(physicalResourceId)
                 .build();
     }
 }
@@ -118,6 +145,7 @@ For the example above the following response payload will be sent.
   "StackId": "arn:aws:cloudformation:us-east-1:123456789000:stack/Custom-stack/59e4d2d0-2fe2-10ec-b00e-124d7c1c5f15",
   "RequestId": "7cae0346-0359-4dff-b80a-a82f247467b6",
   "LogicalResourceId:": "ChimeTriggerResource",
+  "PhysicalResourceId:": "my-app-name-db4a47b9-0cac-45ba-8cc4-a480490c5779",
   "NoEcho": false,
   "Data": {
     "ChimeAppInstanceArn": "arn:aws:chime:us-east-1:123456789000:app-instance/150972c2-5490-49a9-8ba7-e7da4257c16a"
@@ -125,7 +153,7 @@ For the example above the following response payload will be sent.
 }
 ```
 
-Once the custom resource receives this response, it's "ChimeAppInstanceArn" attribute is set and the
+Once the custom resource receives this response, its "ChimeAppInstanceArn" attribute is set and the
 [Fn::GetAtt function](
 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/intrinsic-function-reference-getatt.html) may be used to
 retrieve the attribute value and make it available to other resources in the stack.
