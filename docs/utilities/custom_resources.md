@@ -45,7 +45,7 @@ Inside the methods, implement your custom provisioning logic, and return a `Resp
 
 Custom resources notify cloudformation either of `SUCCESS` or `FAILED` status. You have 2 utility methods to represent these responses: `Response.success(physicalResourceId)` and `Response.failed(physicalResourceId)`.  
 The `physicalResourceId` is an identifier that is used during the lifecycle operations of the Custom Resource.  
-You should supply a `physicalResourceId` during the `CREATE` operation, CloudFormation stores the `physicalResourceId` and includes it `UPDATE` and `DELETE` events.
+You should generate a `physicalResourceId` during the `CREATE` operation, CloudFormation stores the `physicalResourceId` and includes it `UPDATE` and `DELETE` events.
 
 Here an example of how to implement a Custom Resource using the powertools-cloudformation library:
 
@@ -167,7 +167,10 @@ with the Fn::GetAtt function.
 public class SensitiveDataHandler extends AbstractResourceHandler {
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
+        String physicalResourceId = "my-sensitive-resource-" + UUID.randomUUID(); //Create a unique ID 
         return Response.builder()
+                .status(Response.Status.SUCCESS)
+                .physicalResourceId(physicalResourceId)
                 .value(Map.of("SomeSecret", sensitiveValue))
                 .noEcho(true)
                 .build();
@@ -201,8 +204,11 @@ public class CustomSerializationHandler extends AbstractResourceHandler {
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
+        String physicalResourceId = "my-policy-name-" + UUID.randomUUID(); //Create a unique ID 
         Policy policy = new Policy();
         return Response.builder()
+                .status(Response.Status.SUCCESS)
+                .physicalResourceId(physicalResourceId)
                 .value(policy)
                 .objectMapper(policyMapper) // customize serialization
                 .build();
