@@ -49,7 +49,7 @@ You should generate a `physicalResourceId` during the `CREATE` operation, CloudF
 
 Here an example of how to implement a Custom Resource using the powertools-cloudformation library:
 
-```java hl_lines="8 9 10 11"
+```java hl_lines="10-16 21-27 32-38"
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
@@ -101,7 +101,7 @@ In both of the scenarios, powertools-java will assign the `physicalResourceId` b
 - if present, use the `physicalResourceId` provided in the `CloudFormationCustomResourceEvent`
 - if it is not present, use the `LogStreamName` from the Lambda context
 
-#### Why does this matter?
+#### Why do you need a physicalResourceId?
 
 It is recommended that you always provide a `physicalResourceId` in your response because `physicalResourceId` has a crucial role in the lifecycle of a CloudFormation custom resource.
 If the `physicalResourceId` changes between calls from Cloudformation, for instance in response to an `Update` event, Cloudformation [treats the resource update as a replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html).
@@ -114,7 +114,7 @@ You customise the responses when you need additional attributes to be shared wit
 In the example below, the Lambda function creates a [Chime AppInstance](https://docs.aws.amazon.com/chime/latest/dg/create-app-instance.html)
 and maps the returned ARN to a "ChimeAppInstanceArn" attribute.
 
-```java hl_lines="11 12 13 14"
+```java hl_lines="12-17"
 public class ChimeAppInstanceHandler extends AbstractCustomResourceHandler {
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
@@ -163,7 +163,7 @@ retrieve the attribute value and make it available to other resources in the sta
 If any attributes are sensitive, enable the "noEcho" flag to mask the output of the custom resource when it's retrieved
 with the Fn::GetAtt function.
 
-```java hl_lines="6"
+```java hl_lines="9"
 public class SensitiveDataHandler extends AbstractResourceHandler {
     @Override
     protected Response create(CloudFormationCustomResourceEvent createEvent, Context context) {
@@ -184,7 +184,7 @@ Although using a `Map` as the Response's value is the most straightforward way t
 any arbitrary `java.lang.Object` may be used. By default, these objects are serialized with an internal Jackson
 `ObjectMapper`. If the object requires special serialization logic, a custom `ObjectMapper` can be specified.
 
-```java hl_lines="21 22 23 24"
+```java hl_lines="14-16 26"
 public class CustomSerializationHandler extends AbstractResourceHandler {
     /**
      * Type representing the custom response Data. 
