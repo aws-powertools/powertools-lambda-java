@@ -46,7 +46,7 @@ public class DynamoDBProvider extends BaseProvider {
         // exceptional.
         // If we don't have an item at the key, we should return null.
         if (resp.hasItem() && !resp.item().values().isEmpty()) {
-            return resp.item().values().stream().findFirst().get().s();
+            return resp.item().get("val").s();
         }
 
         return null;
