@@ -20,8 +20,8 @@ public class DynamoDBProvider extends BaseProvider {
     public DynamoDBProvider(CacheManager cacheManager, String tableName) {
         this(cacheManager, DynamoDbClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                //.credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                //.region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                 .build(),
                 tableName
         );
@@ -42,8 +42,14 @@ public class DynamoDBProvider extends BaseProvider {
                 .attributesToGet("val")
                 .build());
 
-        // TODO
-        return resp.item().values().stream().findFirst().get().s();
+        // If we have an item at the key, we should be able to get a 'val' out of it. If not it's
+        // exceptional.
+        // If we don't have an item at the key, we should return null.
+        if (resp.hasItem() && !resp.item().values().isEmpty()) {
+            return resp.item().values().stream().findFirst().get().s();
+        }
+
+        return null;
     }
 
     @Override
@@ -52,8 +58,7 @@ public class DynamoDBProvider extends BaseProvider {
         QueryResponse resp = client.query(QueryRequest.builder()
                 .tableName(tableName)
                 .keyConditionExpression("id = :v_id")
-                .expressionAttributeValues(Collections.singletonMap("v_id", AttributeValue.fromS(path)))
-                .attributesToGet("sk", "value")
+                .expressionAttributeValues(Collections.singletonMap(":v_id", AttributeValue.fromS(path)))
                 .build());
 
         return resp
