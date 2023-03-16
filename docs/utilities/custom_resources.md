@@ -215,3 +215,78 @@ public class CustomSerializationHandler extends AbstractResourceHandler {
     }
 }
 ```
+
+## Advanced
+
+### Understanding the CloudFormation custom resource lifecycle
+
+While the library provides an easy-to-use interface, we recommend that you understand the lifecycle of CloudFormation custom resources before using them in production.
+
+#### Creating a custom resource
+When CloudFormation issues a CREATE on a custom resource, there are 2 possible states: `CREATE_COMPLETE` and `CREATE_FAILED`
+```mermaid
+stateDiagram
+    direction LR
+    createState: Create custom resource
+    [*] --> createState
+    createState --> CREATE_COMPLETE 
+    createState --> CREATE_FAILED
+``` 
+
+If the resource is created successfully, the `physicalResourceId` is stored by CloudFormation for future operations.  
+If the resource failed to create, CloudFormation triggers a rollback operation by default (rollback can be disabled, see [stack failure options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stack-failure-options.html))
+
+#### Updating a custom resource
+CloudFormation issues an UPDATE operation on a custom resource only when one or more custom resource properties change.
+During the update, the custom resource may update successfully, or may fail the update.
+```mermaid
+stateDiagram
+    direction LR
+    updateState: Update custom resource
+    [*] --> updateState
+    updateState --> UPDATE_COMPLETE 
+    updateState --> UPDATE_FAILED
+``` 
+
+In both of these scenarios, the custom resource can return the same `physicalResourceId` it received in the CLoudFormation event, or a different `physicalResourceId`.  
+Semantically an `UPDATE_COMPLETE` that returns the same `physicalResourceId` it received, means that the existing resource was updated successfully.  
+Instead, an `UPDATE_COMPLETE` with a different `physicalResourceId` means that a new physical resource was created successfully. 
+```mermaid
+flowchart BT
+    id1(Logical resource)
+    id2(Previous physical Resource)
+    id3(New physical Resource)
+    id2 --> id1 
+    id3 --> id1 
+``` 
+Therefore, after the custom resource update completed or failed, there may be other cleanup operations by Cloudformation during the rollback, as described in the diagram below:
+```mermaid
+stateDiagram
+    state if_state <<choice>>
+    updateState: Update custom resource
+    deletePrev: DELETE resource with previous physicalResourceId
+    updatePrev: Rollback - UPDATE resource with previous properties
+    noOp: No further operations
+    [*] --> updateState
+    updateState --> UPDATE_COMPLETE
+    UPDATE_COMPLETE --> if_state
+    if_state --> noOp : Same physicalResourceId
+    if_state --> deletePrev : Different physicalResourceId
+    updateState --> UPDATE_FAILED
+    UPDATE_FAILED --> updatePrev
+``` 
+
+#### Deleting a custom resource
+
+CloudFormation issues a DELETE on a custom resource when:  
+- the CloudFormation stack is being deleted  
+- a new `physicalResourceId` was received during an update (see previous section)  
+
+```mermaid
+stateDiagram
+    direction LR
+    deleteState: Delete custom resource
+    [*] --> deleteState
+    deleteState --> DELETE_COMPLETE 
+    deleteState --> DELETE_FAILED
+``` 
