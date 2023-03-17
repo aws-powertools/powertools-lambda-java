@@ -50,7 +50,7 @@ jobs:
     name: Java ${{ matrix.java }}
     env:
       OS: ${{ matrix.os }}
-      JAVA: ${{ matrix.java-version }}
+      JAVA: ${{ matrix.java }}
       AWS_REGION: eu-west-1
     steps:
       - uses: actions/checkout@v3
@@ -61,6 +61,13 @@ jobs:
           java-version: ${{ matrix.java }}
       - name: Build with Maven
         run: mvn -Pbuild-without-spotbugs -B package --file pom.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # 3.1.1
+        if: ${{ matrix.java == 11.0.x }} # publish results once
+        with:
+          files: ./target/jacoco.exec
+          env_vars: JAVA
+          name: aws-lambda-powertools-java-codecov
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
@@ -72,7 +79,7 @@ jobs:
           echo ${{ github.event.number }}
           echo ${{ github.event.number }} > ./pr/NR
       - uses: actions/upload-artifact@v2
-        name: Updload artifact
+        name: Upload artifact
         with:
           name: pr
           path: pr/
