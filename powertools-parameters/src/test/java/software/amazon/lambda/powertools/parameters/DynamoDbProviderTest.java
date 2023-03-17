@@ -18,7 +18,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.MockitoAnnotations.openMocks;
 
-public class DynamoDBProviderTest {
+public class DynamoDbProviderTest {
 
     @Mock
     DynamoDbClient client;
@@ -30,14 +30,14 @@ public class DynamoDBProviderTest {
     ArgumentCaptor<QueryRequest> queryRequestCaptor;
 
 
-    private DynamoDBProvider provider;
+    private DynamoDbProvider provider;
     private final String tableName = "ddb-test-table";
 
     @BeforeEach
     public void init() {
         openMocks(this);
         CacheManager cacheManager = new CacheManager();
-        provider = new DynamoDBProvider(cacheManager, client, tableName);
+        provider = new DynamoDbProvider(cacheManager, client, tableName);
     }
 
 

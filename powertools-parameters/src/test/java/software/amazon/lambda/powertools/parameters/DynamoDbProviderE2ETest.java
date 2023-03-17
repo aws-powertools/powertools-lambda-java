@@ -22,13 +22,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * E2E tests running in the cloud CI.
  */
 @Disabled
-public class DynamoDBProviderE2ETest {
+public class DynamoDbProviderE2ETest {
 
     final String ParamsTestTable = "ddb-params-test";
     final String MultiparamsTestTable = "ddb-multiparams-test";
     private final DynamoDbClient ddbClient;
 
-    public DynamoDBProviderE2ETest() {
+    public DynamoDbProviderE2ETest() {
         // Create a DDB client to inject test data into our test tables
         ddbClient = DynamoDbClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
@@ -50,7 +50,7 @@ public class DynamoDBProviderE2ETest {
                 .build());
 
         // Act
-        DynamoDBProvider provider = makeProvider(ParamsTestTable);
+        DynamoDbProvider provider = makeProvider(ParamsTestTable);
         String value = provider.getValue("test_param");
 
         // Assert
@@ -80,7 +80,7 @@ public class DynamoDBProviderE2ETest {
                 .build());
 
         // Act
-        DynamoDBProvider provider = makeProvider(MultiparamsTestTable);
+        DynamoDbProvider provider = makeProvider(MultiparamsTestTable);
         Map<String, String> values = provider.getMultipleValues("test_param");
 
         // Assert
@@ -89,8 +89,8 @@ public class DynamoDBProviderE2ETest {
         assertThat(values.get("test_param_part_2")).isEqualTo("the_value_is_still_hello!");
     }
 
-    private DynamoDBProvider makeProvider(String tableName) {
-        return new DynamoDBProvider(new CacheManager(), DynamoDbClient.builder()
+    private DynamoDbProvider makeProvider(String tableName) {
+        return new DynamoDbProvider(new CacheManager(), DynamoDbClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder()).build(),
                 tableName);
     }
