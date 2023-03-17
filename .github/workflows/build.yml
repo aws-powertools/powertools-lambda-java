@@ -64,6 +64,8 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # 3.1.1
         if: ${{ matrix.java == '11.0.x' }} # publish results once
+        with:
+          directory: ./target
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
