@@ -65,7 +65,7 @@ jobs:
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # 3.1.1
         if: ${{ matrix.java == '11.0.x' }} # publish results once
         with:
-          files: ./target/jacoco.exec
+          files: ${GITHUB_WORKSPACE}/target/jacoco.exec
           env_vars: JAVA
           name: aws-lambda-powertools-java-codecov
   savepr:
