@@ -175,7 +175,7 @@ a `DynamoDbProvider` providing a client if you need to configure it yourself.
 
 === "DynamoDbProvider"
 
-    ```java hl_lines="9"
+    ```java hl_lines="6 9"
     import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
     import software.amazon.lambda.powertools.parameters.ParamManager;
 
@@ -188,6 +188,27 @@ a `DynamoDbProvider` providing a client if you need to configure it yourself.
     } 
     ```
 
+=== "DynamoDbProvider with an explicit region"
+
+    ```java hl_lines="7-10 13 16"
+    import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+    import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+
+    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get a DynamoDB Client with an explicit region
+        DynamoDbClient ddbClient = DynamoDbClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .region(Region.EU_CENTRAL_2)
+                .build();
+
+        // Get an instance of the DynamoDbProvider
+        DynamoDbProvider provider = ParamManager.getDynamoDbProvider(ddbClient, "test-table");
+    
+        // Retrieve a single parameter
+        String value = ddbProvider.get("my-key"); 
+    } 
+    ```
 
 
 
