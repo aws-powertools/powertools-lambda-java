@@ -190,10 +190,12 @@ a `DynamoDbProvider` providing a client if you need to configure it yourself.
 
 === "DynamoDbProvider with an explicit region"
 
-    ```java hl_lines="7-10 13 16"
+    ```java hl_lines="9 10 11 12 15 18"
     import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
     import software.amazon.lambda.powertools.parameters.ParamManager;
     import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+    import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+    import software.amazon.awssdk.regions.Region;
 
     public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         // Get a DynamoDB Client with an explicit region

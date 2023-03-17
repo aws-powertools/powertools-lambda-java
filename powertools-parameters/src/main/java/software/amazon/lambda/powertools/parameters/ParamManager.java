@@ -70,7 +70,7 @@ public final class ParamManager {
      * Get a {@link DynamoDbProvider} with default {@link DynamoDbClient} <br/>
      * If you need to customize the region, or other part of the client, use {@link ParamManager#getDynamoDbProvider(DynamoDbClient, String)}
      */
-    public static DynamoDbProvider getDynamodbProvider(String tableName) {
+    public static DynamoDbProvider getDynamoDbProvider(String tableName) {
         // Because we need a DDB table name to configure our client, we can't use
         // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
         // set transformation manager and cache manager.
@@ -109,7 +109,7 @@ public final class ParamManager {
 
     /**
      * Get a {@link DynamoDbProvider} with your custom {@link DynamoDbClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getDynamodbProvider(String)} )} if you don't need this customization.
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getDynamoDbProvider(String)} )} if you don't need this customization.
      * @return a {@link DynamoDbProvider}
      */
     public static DynamoDbProvider getDynamoDbProvider(DynamoDbClient client, String table) {
