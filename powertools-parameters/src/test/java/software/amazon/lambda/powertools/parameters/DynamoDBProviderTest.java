@@ -13,6 +13,7 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -95,7 +96,7 @@ public class DynamoDBProviderTest {
     }
 
 
-        @Test
+    @Test
     public void getValues() {
 
         // Arrange
@@ -128,4 +129,39 @@ public class DynamoDBProviderTest {
         assertThat(queryRequestCaptor.getValue().keyConditionExpression()).isEqualTo("id = :v_id");
         assertThat(queryRequestCaptor.getValue().expressionAttributeValues().get(":v_id").s()).isEqualTo(key);
     }
+
+    @Test
+    public void getValuesWithoutResultsReturnsNull() {
+        // Arrange
+        Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(
+                QueryResponse.builder().items().build());
+
+        // Act
+        Map<String, String> values = provider.getMultipleValues(UUID.randomUUID().toString());
+
+        // Assert
+        assertThat(values.size()).isEqualTo(0);
+    }
+
+    @Test
+    public void getValuesWithMalformedRowThrows() {
+        // Arrange
+        String key = "Key1";
+        HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
+        item1.put("id", AttributeValue.fromS(key));
+        item1.put("sk", AttributeValue.fromS("some-subkey"));
+        item1.put("notVal", AttributeValue.fromS("somevalue"));
+        QueryResponse response = QueryResponse.builder()
+                .items(item1)
+                .build();
+        Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
+
+        // Assert
+        Assertions.assertThrows(NullPointerException.class, () -> {
+            // Act
+            Map<String, String> values = provider.getMultipleValues(key);
+        });
+    }
+
+
 }

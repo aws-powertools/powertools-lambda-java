@@ -26,13 +26,15 @@ public class DynamoDBProviderE2ETest {
 
     final String ParamsTestTable = "ddb-params-test";
     final String MultiparamsTestTable = "ddb-multiparams-test";
-    private DynamoDbClient ddbClient;
+    private final DynamoDbClient ddbClient;
 
     public DynamoDBProviderE2ETest() {
         // Create a DDB client to inject test data into our test tables
         ddbClient = DynamoDbClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder())
                 .build();
+
+
     }
 
     @Test
@@ -48,10 +50,10 @@ public class DynamoDBProviderE2ETest {
                 .build());
 
         // Act
-        DynamoDBProvider provider = new DynamoDBProvider(new CacheManager(), ParamsTestTable);
+        DynamoDBProvider provider = makeProvider(ParamsTestTable);
+        String value = provider.getValue("test_param");
 
         // Assert
-        String value = provider.getValue("test_param");
         assertThat(value).isEqualTo("the_value_is_hello!");
     }
 
@@ -78,7 +80,7 @@ public class DynamoDBProviderE2ETest {
                 .build());
 
         // Act
-        DynamoDBProvider provider = new DynamoDBProvider(new CacheManager(), MultiparamsTestTable);
+        DynamoDBProvider provider = makeProvider(MultiparamsTestTable);
         Map<String, String> values = provider.getMultipleValues("test_param");
 
         // Assert
@@ -86,4 +88,11 @@ public class DynamoDBProviderE2ETest {
         assertThat(values.get("test_param_part_1")).isEqualTo("the_value_is_hello!");
         assertThat(values.get("test_param_part_2")).isEqualTo("the_value_is_still_hello!");
     }
+
+    private DynamoDBProvider makeProvider(String tableName) {
+        return new DynamoDBProvider(new CacheManager(), DynamoDbClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder()).build(),
+                tableName);
+    }
+
 }
