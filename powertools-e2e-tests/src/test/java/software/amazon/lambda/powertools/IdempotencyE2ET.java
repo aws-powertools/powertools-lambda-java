@@ -9,7 +9,7 @@ import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 import java.time.Year;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
@@ -25,10 +25,7 @@ public class IdempotencyE2ET {
                 .testName(IdempotencyE2ET.class.getSimpleName())
                 .pathToFunction("idempotency")
                 .idempotencyTable("idempo")
-                .environmentVariables(new HashMap<>() {{
-                        put("IDEMPOTENCY_TABLE", "idempo");
-                    }}
-                )
+                .environmentVariables(Collections.singletonMap("IDEMPOTENCY_TABLE", "idempo"))
                 .build();
         functionName = infrastructure.deploy();
     }

@@ -19,6 +19,7 @@ import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSe
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -163,7 +164,7 @@ public class TraceFetcher {
         private Instant start;
         private Instant end;
         private String filterExpression;
-        private List<String> excludedSegments = List.of("Initialization", "Invocation", "Overhead");
+        private List<String> excludedSegments = Arrays.asList("Initialization", "Invocation", "Overhead");
 
         public TraceFetcher build() {
             if (filterExpression == null)

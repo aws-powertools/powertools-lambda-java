@@ -33,7 +33,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -305,7 +305,7 @@ public class Infrastructure {
                 return;
             }
             LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
-            s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(), Path.of(cfnAssetDirectory, asset.assetPath));
+            s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(), Paths.get(cfnAssetDirectory, asset.assetPath));
         });
     }
 

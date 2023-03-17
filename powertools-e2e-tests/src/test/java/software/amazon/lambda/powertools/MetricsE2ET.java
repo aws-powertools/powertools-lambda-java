@@ -9,10 +9,11 @@ import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 import software.amazon.lambda.powertools.testutils.metrics.MetricsFetcher;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
@@ -29,11 +30,12 @@ public class MetricsE2ET {
         infrastructure = Infrastructure.builder()
                 .testName(MetricsE2ET.class.getSimpleName())
                 .pathToFunction("metrics")
-                .environmentVariables(new HashMap<>() {{
-                      put("POWERTOOLS_METRICS_NAMESPACE", namespace);
-                      put("POWERTOOLS_SERVICE_NAME", service);
-                  }}
-                )
+                .environmentVariables(
+                        Stream.of(new String[][]{
+                                        {"POWERTOOLS_METRICS_NAMESPACE", namespace},
+                                        {"POWERTOOLS_SERVICE_NAME", service}
+                                })
+                                .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
         functionName = infrastructure.deploy();
     }
@@ -54,7 +56,10 @@ public class MetricsE2ET {
 
         // THEN
         MetricsFetcher metricsFetcher = new MetricsFetcher();
-        List<Double> coldStart = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace, "ColdStart", new HashMap<>() {{ put("FunctionName", functionName); put("Service", service); }});
+        List<Double> coldStart = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace, "ColdStart", Stream.of(new String[][]{
+                {"FunctionName", functionName},
+                {"Service", service}}
+        ).collect(Collectors.toMap(data -> data[0], data -> data[1])));
         assertThat(coldStart.get(0)).isEqualTo(1);
         List<Double> orderMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace, "orders", Collections.singletonMap("Environment", "test"));
         assertThat(orderMetrics.get(0)).isEqualTo(1);

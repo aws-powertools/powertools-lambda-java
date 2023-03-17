@@ -10,9 +10,10 @@ import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
-import java.util.HashMap;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
@@ -31,11 +32,12 @@ public class LoggingE2ET {
         infrastructure = Infrastructure.builder()
                 .testName(LoggingE2ET.class.getSimpleName())
                 .pathToFunction("logging")
-                .environmentVariables(new HashMap<>() {{
-                      put("POWERTOOLS_LOG_LEVEL", "INFO");
-                      put("POWERTOOLS_SERVICE_NAME", LoggingE2ET.class.getSimpleName());
-                  }}
-                )
+                .environmentVariables(
+                        Stream.of(new String[][]{
+                                        {"POWERTOOLS_LOG_LEVEL", "INFO"},
+                                        {"POWERTOOLS_SERVICE_NAME", LoggingE2ET.class.getSimpleName()}
+                                })
+                                .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
         functionName = infrastructure.deploy();
     }

@@ -10,7 +10,7 @@ import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSe
 import software.amazon.lambda.powertools.testutils.tracing.Trace;
 import software.amazon.lambda.powertools.testutils.tracing.TraceFetcher;
 
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -19,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 public class TracingE2ET {
-    private static final String service = "TracingE2EService_"+UUID.randomUUID(); // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
+    private static final String service = "TracingE2EService_" + UUID.randomUUID(); // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
 
     private static Infrastructure infrastructure;
     private static String functionName;
@@ -31,10 +31,7 @@ public class TracingE2ET {
                 .testName(TracingE2ET.class.getSimpleName())
                 .pathToFunction("tracing")
                 .tracing(true)
-                .environmentVariables(new HashMap<>() {{
-                      put("POWERTOOLS_SERVICE_NAME", service);
-                  }}
-                )
+                .environmentVariables(Collections.singletonMap("POWERTOOLS_SERVICE_NAME", service))
                 .build();
         functionName = infrastructure.deploy();
     }
