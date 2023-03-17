@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
 
 /**
  * Implements a {@link ParamProvider} on top of DynamoDB. The schema of the table
- * is described in the Python powertools documentation.
+ * is described in the Powertools documentation.
  *
- * @see <a href="https://awslabs.github.io/aws-lambda-powertools-python/latest/utilities/parameters/#dynamodbprovider">Python DynamoDB provider</a>
+ * @see <a href="https://awslabs.github.io/aws-lambda-powertools-java/utilities/parameters">Parameters provider documentation</a>
  *
  */
 public class DynamoDbProvider extends BaseProvider {
