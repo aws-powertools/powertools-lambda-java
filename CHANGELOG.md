@@ -8,6 +8,27 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.15.0] - 2023-03-20
+
+### Added
+* Feature: Add DynamoDB provider to parameters module (#1091) by @scottgerring
+* Feature: Improve powertools-cloudformation API (#1082) by @msailes
+* Update how a Lambda request handler method is identified (#1058) by @humanzz
+
+### Maintenance
+* Deps: Bump third party dependencies to the latest versions.
+* Examples: Import examples from aws-samples/aws-lambda-powertools-examples (#1051) by @scottgerring
+* Deprecate withMetricLogger in favor of withMetricsLogger (#1060) by @humanzz
+* Update issue templates (#1062) by @machafer
+* Send code coverage report (jacoco) to codecov (#1094) by @jeromevdl
+
+### Documentation
+
+* Improve `powertools-cloudformation` docs (#1090) by @mriccia
+* Add link to Lambda powertools workshop (#1095) by @scottgerring
+* Fix mdocs and git revision plugin integration (#1066) by @machafer
+
+
 ## [1.14.0] - 2023-02-17
 
 ### Added
