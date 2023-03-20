@@ -45,7 +45,7 @@ Inside the methods, implement your custom provisioning logic, and return a `Resp
 
 Custom resources notify cloudformation either of `SUCCESS` or `FAILED` status. You have 2 utility methods to represent these responses: `Response.success(physicalResourceId)` and `Response.failed(physicalResourceId)`.  
 The `physicalResourceId` is an identifier that is used during the lifecycle operations of the Custom Resource.  
-You should generate a `physicalResourceId` during the `CREATE` operation, CloudFormation stores the `physicalResourceId` and includes it `UPDATE` and `DELETE` events.
+You should generate a `physicalResourceId` during the `CREATE` operation, CloudFormation stores the `physicalResourceId` and includes it in `UPDATE` and `DELETE` events.
 
 Here an example of how to implement a Custom Resource using the powertools-cloudformation library:
 
