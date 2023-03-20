@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -90,7 +91,7 @@ public class DynamoDbProviderTest {
                 .item(responseData)
                 .build());
         // Act
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
             String value = provider.getValue(key);
         });
     }
@@ -157,7 +158,7 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
             // Act
             Map<String, String> values = provider.getMultipleValues(key);
         });

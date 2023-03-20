@@ -7,6 +7,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 import java.util.Collections;
@@ -60,6 +61,9 @@ public class DynamoDbProvider extends BaseProvider {
         // exceptional.
         // If we don't have an item at the key, we should return null.
         if (resp.hasItem() && !resp.item().values().isEmpty()) {
+            if (!resp.item().containsKey("value")) {
+                throw new DynamoDbProviderSchemaException("Missing 'value': " + resp.item().toString());
+            }
             return resp.item().get("value").s();
         }
 
@@ -84,6 +88,14 @@ public class DynamoDbProvider extends BaseProvider {
         return resp
                     .items()
                     .stream()
+                    .peek((i) -> {
+                        if (!i.containsKey("sk")) {
+                            throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
+                        }
+                        if (!i.containsKey("value")) {
+                            throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
+                        }
+                    })
                     .collect(
                             Collectors.toMap(
                                     (i) -> i.get("sk").s(),
