@@ -249,7 +249,7 @@ stateDiagram
 ``` 
 
 In both of these scenarios, the custom resource can return the same `physicalResourceId` it received in the CloudFormation event, or a different `physicalResourceId`.  
-Semantically an `UPDATE_COMPLETE` that returns the same `physicalResourceId` it received, means that the existing resource was updated successfully.  
+Semantically an `UPDATE_COMPLETE` that returns the same `physicalResourceId` it received indicates that the existing resource was updated successfully.  
 Instead, an `UPDATE_COMPLETE` with a different `physicalResourceId` means that a new physical resource was created successfully. 
 ```mermaid
 flowchart BT
