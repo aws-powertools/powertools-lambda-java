@@ -97,7 +97,7 @@ public class MyCustomResourceHandler extends AbstractCustomResourceHandler {
 If a `Response` is not returned by your code, `AbstractCustomResourceHandler` defaults the response to `SUCCESS`.  
 If your code raises an exception (which is not handled), the `AbstractCustomResourceHandler` defaults the response to `FAILED`.
 
-In both of the scenarios, powertools-java will assign the `physicalResourceId` based on the following logic:
+In both of the scenarios, powertools-java will return the `physicalResourceId` to CloudFormation based on the following logic:
 - if present, use the `physicalResourceId` provided in the `CloudFormationCustomResourceEvent`
 - if it is not present, use the `LogStreamName` from the Lambda context
 
