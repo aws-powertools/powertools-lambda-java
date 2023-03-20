@@ -76,7 +76,7 @@ in order to get data from other regions or use specific credentials.
     }
     ```
 
-=== "SSMProvider with an explicit region"
+=== "SSMProvider with a custom client"
 
     ```java hl_lines="5 7"
     import software.amazon.lambda.powertools.parameters.SSMProvider;
@@ -151,7 +151,7 @@ in order to get data from other regions or use specific credentials.
     }
     ```
 
-=== "SecretsProvider with an explicit region"
+=== "SecretsProvider with a custom client"
 
     ```java hl_lines="5 7"
     import software.amazon.lambda.powertools.parameters.SecretsProvider;
@@ -188,7 +188,7 @@ a `DynamoDbProvider` providing a client if you need to configure it yourself.
     } 
     ```
 
-=== "DynamoDbProvider with an explicit region"
+=== "DynamoDbProvider with a custom client"
 
     ```java hl_lines="9 10 11 12 15 18"
     import software.amazon.lambda.powertools.parameters.DynamoDbProvider;

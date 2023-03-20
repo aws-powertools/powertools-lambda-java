@@ -19,7 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * of our unit test suite in the cloud.
  *
  * The test is kept here for 1/ local development and 2/ in preparation for future
- * E2E tests running in the cloud CI.
+ * E2E tests running in the cloud CI. Once the E2E test structure is merged we
+ * will move this across.
  */
 @Disabled
 public class DynamoDbProviderE2ETest {
@@ -43,7 +44,7 @@ public class DynamoDbProviderE2ETest {
         // Arrange
         HashMap<String, AttributeValue> testItem = new HashMap<String, AttributeValue>();
         testItem.put("id", AttributeValue.fromS("test_param"));
-        testItem.put("val", AttributeValue.fromS("the_value_is_hello!"));
+        testItem.put("value", AttributeValue.fromS("the_value_is_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
                         .tableName(ParamsTestTable)
                         .item(testItem)
@@ -64,7 +65,7 @@ public class DynamoDbProviderE2ETest {
         HashMap<String, AttributeValue> testItem = new HashMap<String, AttributeValue>();
         testItem.put("id", AttributeValue.fromS("test_param"));
         testItem.put("sk", AttributeValue.fromS("test_param_part_1"));
-        testItem.put("val", AttributeValue.fromS("the_value_is_hello!"));
+        testItem.put("value", AttributeValue.fromS("the_value_is_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
                 .tableName(MultiparamsTestTable)
                 .item(testItem)
@@ -73,7 +74,7 @@ public class DynamoDbProviderE2ETest {
         HashMap<String, AttributeValue> testItem2 = new HashMap<String, AttributeValue>();
         testItem2.put("id", AttributeValue.fromS("test_param"));
         testItem2.put("sk", AttributeValue.fromS("test_param_part_2"));
-        testItem2.put("val", AttributeValue.fromS("the_value_is_still_hello!"));
+        testItem2.put("value", AttributeValue.fromS("the_value_is_still_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
                 .tableName(MultiparamsTestTable)
                 .item(testItem2)

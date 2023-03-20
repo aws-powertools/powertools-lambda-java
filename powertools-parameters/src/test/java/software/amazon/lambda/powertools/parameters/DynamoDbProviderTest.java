@@ -49,7 +49,7 @@ public class DynamoDbProviderTest {
         String expectedValue = "Value1";
         HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
         responseData.put("id", AttributeValue.fromS(key));
-        responseData.put("val", AttributeValue.fromS(expectedValue));
+        responseData.put("value", AttributeValue.fromS(expectedValue));
         GetItemResponse response = GetItemResponse.builder()
                 .item(responseData)
                 .build();
@@ -85,7 +85,7 @@ public class DynamoDbProviderTest {
         String key = "Key1";
         HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
         responseData.put("id", AttributeValue.fromS(key));
-        responseData.put("not-val", AttributeValue.fromS("something"));
+        responseData.put("not-value", AttributeValue.fromS("something"));
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
                 .item(responseData)
                 .build());
@@ -108,11 +108,11 @@ public class DynamoDbProviderTest {
         HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
         item1.put("id", AttributeValue.fromS(key));
         item1.put("sk", AttributeValue.fromS(subkey1));
-        item1.put("val", AttributeValue.fromS(val1));
+        item1.put("value", AttributeValue.fromS(val1));
         HashMap<String, AttributeValue> item2 = new HashMap<String, AttributeValue>();
         item2.put("id", AttributeValue.fromS(key));
         item2.put("sk", AttributeValue.fromS(subkey2));
-        item2.put("val", AttributeValue.fromS(val2));
+        item2.put("value", AttributeValue.fromS(val2));
         QueryResponse response = QueryResponse.builder()
                 .items(item1, item2)
                 .build();
@@ -150,7 +150,7 @@ public class DynamoDbProviderTest {
         HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
         item1.put("id", AttributeValue.fromS(key));
         item1.put("sk", AttributeValue.fromS("some-subkey"));
-        item1.put("notVal", AttributeValue.fromS("somevalue"));
+        item1.put("not-value", AttributeValue.fromS("somevalue"));
         QueryResponse response = QueryResponse.builder()
                 .items(item1)
                 .build();

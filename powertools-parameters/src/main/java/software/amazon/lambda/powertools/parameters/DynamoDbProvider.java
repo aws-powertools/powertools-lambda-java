@@ -53,14 +53,14 @@ public class DynamoDbProvider extends BaseProvider {
         GetItemResponse resp = client.getItem(GetItemRequest.builder()
                 .tableName(tableName)
                 .key(Collections.singletonMap("id", AttributeValue.fromS(key)))
-                .attributesToGet("val")
+                .attributesToGet("value")
                 .build());
 
         // If we have an item at the key, we should be able to get a 'val' out of it. If not it's
         // exceptional.
         // If we don't have an item at the key, we should return null.
         if (resp.hasItem() && !resp.item().values().isEmpty()) {
-            return resp.item().get("val").s();
+            return resp.item().get("value").s();
         }
 
         return null;
@@ -87,7 +87,7 @@ public class DynamoDbProvider extends BaseProvider {
                     .collect(
                             Collectors.toMap(
                                     (i) -> i.get("sk").s(),
-                                    (i) -> i.get("val").s()));
+                                    (i) -> i.get("value").s()));
 
 
     }
