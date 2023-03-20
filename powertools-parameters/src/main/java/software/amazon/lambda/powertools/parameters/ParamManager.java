@@ -15,6 +15,7 @@ package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -36,8 +37,8 @@ public final class ParamManager {
 
     /**
      * Get a concrete implementation of {@link BaseProvider}.<br/>
-     * You can specify {@link SecretsProvider} or {@link SSMProvider} or create your custom provider
-     * by extending {@link BaseProvider} if you need to integrate with a different parameter store.
+     * You can specify {@link SecretsProvider}, {@link SSMProvider}, {@link DynamoDbProvider},  or create your
+     * custom provider by extending {@link BaseProvider} if you need to integrate with a different parameter store.
      * @return a {@link SecretsProvider}
      */
     public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
@@ -66,6 +67,21 @@ public final class ParamManager {
     }
 
     /**
+     * Get a {@link DynamoDbProvider} with default {@link DynamoDbClient} <br/>
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getDynamoDbProvider(DynamoDbClient, String)}
+     */
+    public static DynamoDbProvider getDynamoDbProvider(String tableName) {
+        // Because we need a DDB table name to configure our client, we can't use
+        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
+        // set transformation manager and cache manager.
+        return DynamoDbProvider.builder()
+                .withCacheManager(cacheManager)
+                .withTable(tableName)
+                .withTransformationManager(transformationManager)
+                .build();
+    }
+
+    /**
      * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
      * @return a {@link SecretsProvider}
@@ -86,6 +102,20 @@ public final class ParamManager {
     public static SSMProvider getSsmProvider(SsmClient client) {
         return (SSMProvider) providers.computeIfAbsent(SSMProvider.class, (k) -> SSMProvider.builder()
                 .withClient(client)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .build());
+    }
+
+    /**
+     * Get a {@link DynamoDbProvider} with your custom {@link DynamoDbClient}.<br/>
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getDynamoDbProvider(String)} )} if you don't need this customization.
+     * @return a {@link DynamoDbProvider}
+     */
+    public static DynamoDbProvider getDynamoDbProvider(DynamoDbClient client, String table) {
+        return (DynamoDbProvider) providers.computeIfAbsent(DynamoDbProvider.class, (k) -> DynamoDbProvider.builder()
+                .withClient(client)
+                .withTable(table)
                 .withCacheManager(cacheManager)
                 .withTransformationManager(transformationManager)
                 .build());
