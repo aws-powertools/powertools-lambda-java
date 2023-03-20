@@ -12,7 +12,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Added
 * Feature: Add DynamoDB provider to parameters module (#1091) by @scottgerring
-* Feature: Improve powertools-cloudformation API (#1082) by @msailes
+* Feature: Update to powertools-cloudformation to deprecate `Response.success()` and `Response.failed()` methods. New helper methods are added to make it easier to follow best practices `Response.success(String physicalResourceId)` and `Response.failed(String physicalResourceId)`. For a detailed explanation please read the [powertools-cloudformation documentation page](https://awslabs.github.io/aws-lambda-powertools-java/utilities/custom_resources/). (#1082) by @msailes
 * Update how a Lambda request handler method is identified (#1058) by @humanzz
 
 ### Maintenance
