@@ -6,11 +6,10 @@
     <name>AWS Lambda Powertools for Java library Examples - Validation</name>
 
     <parent>
-        <artifactId>powertools-parent</artifactId>
+        <artifactId>powertools-examples</artifactId>
         <groupId>software.amazon.lambda</groupId>
         <version>1.14.0</version>
     </parent>
-
 
     <dependencies>
         <dependency>

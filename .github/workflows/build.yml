@@ -49,8 +49,7 @@ jobs:
         java: [8, 8.0.192, 11.0.x, 11.0.3, 12, 13, 15, 16, 17 ]
     name: Java ${{ matrix.java }}
     env:
-      OS: ${{ matrix.os }}
-      JAVA: ${{ matrix.java-version }}
+      JAVA: ${{ matrix.java }}
       AWS_REGION: eu-west-1
     steps:
       - uses: actions/checkout@v3
@@ -59,8 +58,14 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.java }}
+          cache: 'maven'
       - name: Build with Maven
         run: mvn -Pbuild-without-spotbugs -B package --file pom.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # 3.1.1
+        if: ${{ matrix.java == '11.0.x' }} # publish results once
+        with:
+          files: ./powertools-cloudformation/target/site/jacoco/jacoco.xml,./powertools-core/target/site/jacoco/jacoco.xml,./powertools-idempotency/target/site/jacoco/jacoco.xml,./powertools-logging/target/site/jacoco/jacoco.xml,./powertools-metrics/target/site/jacoco/jacoco.xml,./powertools-parameters/target/site/jacoco/jacoco.xml,./powertools-serialization/target/site/jacoco/jacoco.xml,./powertools-sqs/target/site/jacoco/jacoco.xml,./powertools-tracing/target/site/jacoco/jacoco.xml,./powertools-validation/target/site/jacoco/jacoco.xml
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
@@ -72,7 +77,7 @@ jobs:
           echo ${{ github.event.number }}
           echo ${{ github.event.number }} > ./pr/NR
       - uses: actions/upload-artifact@v2
-        name: Updload artifact
+        name: Upload artifact
         with:
           name: pr
           path: pr/
