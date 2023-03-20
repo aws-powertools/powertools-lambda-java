@@ -12,7 +12,6 @@
             <AppenderRef ref="Lambda"/>
         </Root>
         <Logger name="JsonLogger" level="INFO" additivity="false"/>
-<!--        <Logger name="com.amazon" level="DEBUG"/>-->
         <Logger name="software.amazon.lambda.powertools" level="DEBUG"/>
     </Loggers>
 </Configuration>

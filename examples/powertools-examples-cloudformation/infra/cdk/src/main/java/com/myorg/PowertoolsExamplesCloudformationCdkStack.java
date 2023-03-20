@@ -63,7 +63,11 @@ public class PowertoolsExamplesCloudformationCdkStack extends Stack {
                 .build());
         helloWorldFunction.addToRolePolicy(new PolicyStatement(PolicyStatementProps.builder()
                 .effect(Effect.ALLOW)
-                .actions(List.of("s3:*"))
+                .actions(List.of("s3:GetLifecycleConfiguration",
+                        "s3:PutLifecycleConfiguration",
+                        "s3:CreateBucket",
+                        "s3:ListBucket",
+                        "s3:DeleteBucket"))
                 .resources(List.of("*"))
                 .build()));
 

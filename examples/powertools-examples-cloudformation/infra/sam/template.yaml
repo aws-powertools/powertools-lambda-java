@@ -8,7 +8,6 @@ Description: >
 Globals:
   Function:
     Timeout: 20
-    MemorySize: 128
 
 Parameters:
   BucketNameParam:
@@ -17,7 +16,6 @@ Parameters:
   RetentionDaysParam:
     Type: Number
     Default: 10
-
 
 Resources:
   HelloWorldCustomResource:
@@ -41,11 +39,14 @@ Resources:
             - Sid: bucketaccess1
               Effect: Allow
               Action:
-                - s3:*
+                - s3:GetLifecycleConfiguration
+                - s3:PutLifecycleConfiguration
+                - s3:CreateBucket
+                - s3:ListBucket
+                - s3:DeleteBucket
               Resource: '*'
       Environment:
         Variables:
-          PARAM1: VALUE
           JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
 
 Outputs:

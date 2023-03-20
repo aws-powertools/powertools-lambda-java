@@ -11,4 +11,3 @@ target
 .cdk.staging
 cdk.out
 
-/cdk.json
