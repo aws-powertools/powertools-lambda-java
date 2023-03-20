@@ -49,7 +49,6 @@ jobs:
         java: [8, 8.0.192, 11.0.x, 11.0.3, 12, 13, 15, 16, 17 ]
     name: Java ${{ matrix.java }}
     env:
-      OS: ${{ matrix.os }}
       JAVA: ${{ matrix.java }}
       AWS_REGION: eu-west-1
     steps:
