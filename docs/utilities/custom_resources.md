@@ -280,7 +280,7 @@ stateDiagram
 
 CloudFormation issues a DELETE on a custom resource when:  
 - the CloudFormation stack is being deleted  
-- a new `physicalResourceId` was received during an update (see previous section)  
+- a new `physicalResourceId` was received during an update, and CloudFormation proceeds to rollback(DELETE) the custom resource with the previous `physicalResourceId`.
 
 ```mermaid
 stateDiagram
