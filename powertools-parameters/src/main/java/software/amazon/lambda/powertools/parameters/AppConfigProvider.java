@@ -5,38 +5,51 @@ import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.appconfig.AppConfigClient;
+import software.amazon.awssdk.services.appconfig.model.GetEnvironmentRequest;
+import software.amazon.awssdk.services.appconfig.model.GetEnvironmentResponse;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class AppConfigProvider extends BaseProvider{
 
     private final AppConfigClient client;
+    private final String environment;
+    private final String application;
 
-    public AppConfigProvider(CacheManager cacheManager) {
+    public AppConfigProvider(CacheManager cacheManager, String environment, String application) {
         this(cacheManager, AppConfigClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
                         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                        .build()
-        );
-
+                        .build(),
+                environment, application);
     }
 
-    AppConfigProvider(CacheManager cacheManager, AppConfigClient client) {
+    AppConfigProvider(CacheManager cacheManager, AppConfigClient client, String environment, String application) {
         super(cacheManager);
         this.client = client;
+        this.environment = environment;
+        this.application = application;
     }
 
 
     @Override
     protected String getValue(String key) {
-        throw new RuntimeException("Not implemented");
+        GetEnvironmentResponse env = client.getEnvironment(GetEnvironmentRequest.builder()
+                        .environmentId(environment)
+                        .applicationId(application)
+                .build());
+
+        Optional<String> val = env.getValueForField(key, String.class);
+        return val.orElse(null);
     }
 
     @Override
     protected Map<String, String> getMultipleValues(String path) {
+        // Retrieving multiple values is not supported with the AppConfig provider.
         throw new RuntimeException("Not implemented");
     }
 
@@ -53,6 +66,8 @@ public class AppConfigProvider extends BaseProvider{
         private AppConfigClient client;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
+        private String environment;
+        private String application;
 
         /**
          * Create a {@link AppConfigProvider} instance.
@@ -63,11 +78,18 @@ public class AppConfigProvider extends BaseProvider{
             if (cacheManager == null) {
                 throw new IllegalStateException("No CacheManager provided; please provide one");
             }
+            if (environment == null) {
+                throw new IllegalStateException("No environment provided; please provide one");
+            }
+            if (application == null) {
+                throw new IllegalStateException("No application provided; please provide one");
+            }
+
             AppConfigProvider provider;
             if (client != null) {
-                provider = new AppConfigProvider(cacheManager, client);
+                provider = new AppConfigProvider(cacheManager, client, environment, application);
             } else {
-                provider = new AppConfigProvider(cacheManager);
+                provider = new AppConfigProvider(cacheManager, environment, application);
             }
             if (transformationManager != null) {
                 provider.setTransformationManager(transformationManager);
@@ -84,6 +106,28 @@ public class AppConfigProvider extends BaseProvider{
          */
         public AppConfigProvider.Builder withClient(AppConfigClient client) {
             this.client = client;
+            return this;
+        }
+
+        /**
+         * <b>Mandatory</b>. Provide an environment to the {@link AppConfigProvider}
+         *
+         * @param environment the AppConfig environment
+         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
+         */
+        public AppConfigProvider.Builder withEnvironment(String environment) {
+            this.environment = environment;
+            return this;
+        }
+
+        /**
+         * <b>Mandatory</b>. Provide a CacheManager to the {@link AppConfigProvider}
+         *
+         * @param application the application to pull configuration from
+         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
+         */
+        public AppConfigProvider.Builder withApplication(String application) {
+            this.application = application;
             return this;
         }
 

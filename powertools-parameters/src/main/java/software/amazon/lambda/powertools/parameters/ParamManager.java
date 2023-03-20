@@ -84,11 +84,19 @@ public final class ParamManager {
 
     /**
      * Get a {@link AppConfigProvider} with default {@link AppConfigClient}.<br/>
-     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(appConfigClient)} instead.
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigClient, String, String)} instead.
      * @return a {@link AppConfigProvider}
      */
-    public static AppConfigProvider getAppConfigProvider() {
-        return getProvider(AppConfigProvider.class);
+    public static AppConfigProvider getAppConfigProvider(String environment, String application) {
+        // Because we need a DDB table name to configure our client, we can't use
+        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
+        // set transformation manager and cache manager.
+        return AppConfigProvider.builder()
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .withEnvironment(environment)
+                .withApplication(application)
+                .build();
     }
 
 
@@ -131,17 +139,19 @@ public final class ParamManager {
                 .withTransformationManager(transformationManager)
                 .build());
     }
-
+    
     /**
      * Get a {@link AppConfigProvider} with your custom {@link AppConfigClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider()} if you don't need this customization.
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider(String, String)} if you don't need this customization.
      * @return a {@link AppConfigProvider}
      */
-    public static AppConfigProvider getSsmProvider(AppConfigClient client) {
+    public static AppConfigProvider getAppConfigProvider(AppConfigClient client, String environment, String application) {
         return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
                 .withClient(client)
                 .withCacheManager(cacheManager)
                 .withTransformationManager(transformationManager)
+                .withEnvironment(environment)
+                .withApplication(application)
                 .build());
     }
 
