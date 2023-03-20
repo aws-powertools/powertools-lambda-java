@@ -98,8 +98,8 @@ If a `Response` is not returned by your code, `AbstractCustomResourceHandler` de
 If your code raises an exception (which is not handled), the `AbstractCustomResourceHandler` defaults the response to `FAILED`.
 
 In both of the scenarios, powertools-java will return the `physicalResourceId` to CloudFormation based on the following logic:
-- if present, use the `physicalResourceId` provided in the `CloudFormationCustomResourceEvent`
-- if it is not present, use the `LogStreamName` from the Lambda context
+- For CREATE operations, the `LogStreamName` from the Lambda context is used. 
+- For UPDATE and DELETE operations, the `physicalResourceId` provided in the `CloudFormationCustomResourceEvent` is used. 
 
 #### Why do you need a physicalResourceId?
 
