@@ -7,7 +7,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>1.14.0</version>
+        <version>1.15.0</version>
     </parent>
 
     <artifactId>powertools-parameters</artifactId>
@@ -72,6 +72,10 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

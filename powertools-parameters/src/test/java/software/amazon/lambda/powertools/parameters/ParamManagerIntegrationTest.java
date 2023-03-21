@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
@@ -40,6 +41,9 @@ public class ParamManagerIntegrationTest {
 
     @Mock
     SsmClient ssmClient;
+
+    @Mock
+    DynamoDbClient ddbClient;
 
     @Captor
     ArgumentCaptor<GetParameterRequest> ssmParamCaptor;
@@ -115,5 +119,17 @@ public class ParamManagerIntegrationTest {
 
         assertThat(secretsProvider.get("keys")).isEqualTo(expectedValue); // second time is from cache
         verify(secretsManagerClient, times(1)).getSecretValue(any(GetSecretValueRequest.class));
+    }
+
+    @Test
+    public void getDynamoDbProvider() {
+
+        // Act
+        DynamoDbProvider provider = ParamManager.getDynamoDbProvider(ddbClient, "test-table");
+
+        // Assert
+        assertThat(provider).isNotNull();
+
+
     }
 }

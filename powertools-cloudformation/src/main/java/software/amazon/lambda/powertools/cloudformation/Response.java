@@ -138,21 +138,69 @@ public class Response {
     }
 
     /**
-     * Creates an empty, failed Response.
+     * Creates a failed Response with no physicalResourceId set. Powertools will set the physicalResourceId to the
+     * Lambda LogStreamName
      *
+     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
+     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
+     * the update as a replacement and sends a delete request to the old resource. For more information,
+     * see AWS::CloudFormation::CustomResource.
+     *
+     * @deprecated this method is not safe. Provide a physicalResourceId.
      * @return a failed Response with no value.
      */
+    @Deprecated
     public static Response failed() {
         return new Response(null, Status.FAILED, null, false);
     }
 
     /**
-     * Creates an empty, successful Response.
+     * Creates a failed Response with a given physicalResourceId.
      *
-     * @return a failed Response with no value.
+     * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
+     *                           same resource.
+     *                           The value returned for a PhysicalResourceId can change custom resource update
+     *                           operations. If the value returned is the same, it is considered a normal update. If the
+     *                           value returned is different, AWS CloudFormation recognizes the update as a replacement
+     *                           and sends a delete request to the old resource. For more information,
+     *                           see AWS::CloudFormation::CustomResource.
+     * @return a failed Response with physicalResourceId
      */
+    public static Response failed(String physicalResourceId) {
+        return new Response(null, Status.FAILED, physicalResourceId, false);
+    }
+
+    /**
+     * Creates a successful Response with no physicalResourceId set. Powertools will set the physicalResourceId to the
+     * Lambda LogStreamName
+     *
+     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
+     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
+     * the update as a replacement and sends a delete request to the old resource. For more information,
+     * see AWS::CloudFormation::CustomResource.
+     *
+     * @deprecated this method is not safe. Provide a physicalResourceId.
+     * @return a success Response with no physicalResourceId value.
+     */
+    @Deprecated
     public static Response success() {
         return new Response(null, Status.SUCCESS, null, false);
+    }
+
+    /**
+     * Creates a successful Response with a given physicalResourceId.
+     *
+     * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
+     *                           same resource.
+     *                           The value returned for a PhysicalResourceId can change custom resource update
+     *                           operations. If the value returned is the same, it is considered a normal update. If the
+     *                           value returned is different, AWS CloudFormation recognizes the update as a replacement
+     *                           and sends a delete request to the old resource. For more information,
+     *                           see AWS::CloudFormation::CustomResource.
+     * @return a success Response with physicalResourceId
+     */
+    public static Response success(String physicalResourceId) {
+        return new Response(null, Status.SUCCESS, physicalResourceId, false);
     }
 
     private final JsonNode jsonNode;

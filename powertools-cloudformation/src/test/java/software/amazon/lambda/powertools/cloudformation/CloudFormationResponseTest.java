@@ -104,20 +104,6 @@ public class CloudFormationResponseTest {
     }
 
     @Test
-    void defaultPhysicalResponseIdIsLogStreamName() {
-        CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        when(event.getPhysicalResourceId()).thenReturn("This-Is-Ignored");
-
-        String logStreamName = "My-Log-Stream-Name";
-        Context context = mock(Context.class);
-        when(context.getLogStreamName()).thenReturn(logStreamName);
-
-        ResponseBody body = new ResponseBody(
-                event, context, Response.Status.SUCCESS, null, false);
-        assertThat(body.getPhysicalResourceId()).isEqualTo(logStreamName);
-    }
-
-    @Test
     void customPhysicalResponseId() {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         when(event.getPhysicalResourceId()).thenReturn("This-Is-Ignored");
@@ -127,7 +113,7 @@ public class CloudFormationResponseTest {
 
         String customPhysicalResourceId = "Custom-Physical-Resource-ID";
         ResponseBody body = new ResponseBody(
-                event, context, Response.Status.SUCCESS, customPhysicalResourceId, false);
+                event, Response.Status.SUCCESS, customPhysicalResourceId, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getPhysicalResourceId()).isEqualTo(customPhysicalResourceId);
     }
 
@@ -136,7 +122,7 @@ public class CloudFormationResponseTest {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         Context context = mock(Context.class);
 
-        ResponseBody responseBody = new ResponseBody(event, context, Response.Status.FAILED, null, true);
+        ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         String actualJson = responseBody.toObjectNode(null).toString();
 
         String expectedJson = "{" +
@@ -160,7 +146,7 @@ public class CloudFormationResponseTest {
         dataNode.put("foo", "bar");
         dataNode.put("baz", 10);
 
-        ResponseBody responseBody = new ResponseBody(event, context, Response.Status.FAILED, null, true);
+        ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         String actualJson = responseBody.toObjectNode(dataNode).toString();
 
         String expectedJson = "{" +
@@ -182,7 +168,7 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
 
         ResponseBody body = new ResponseBody(
-                event, context, null, null, false);
+                event, null, null, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getStatus()).isEqualTo("SUCCESS");
     }
 
@@ -192,7 +178,7 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
 
         ResponseBody body = new ResponseBody(
-                event, context, Response.Status.FAILED, null, false);
+                event, Response.Status.FAILED, null, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getStatus()).isEqualTo("FAILED");
     }
 
@@ -205,7 +191,7 @@ public class CloudFormationResponseTest {
         when(context.getLogStreamName()).thenReturn(logStreamName);
 
         ResponseBody body = new ResponseBody(
-                event, context, Response.Status.SUCCESS, null, false);
+                event, Response.Status.SUCCESS, null, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getReason()).contains(logStreamName);
     }
 

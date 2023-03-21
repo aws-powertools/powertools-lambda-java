@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>1.14.0</version>
+    <version>1.15.0</version>
     <packaging>pom</packaging>
 
     <name>AWS Lambda Powertools for Java library Parent</name>
@@ -60,18 +60,17 @@
         <log4j.version>2.20.0</log4j.version>
         <jackson.version>2.14.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.20.9</aws.sdk.version>
+        <aws.sdk.version>2.20.27</aws.sdk.version>
         <aws.xray.recorder.version>2.13.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.2</lambda.core.version>
-        <lambda.events.version>3.11.0</lambda.events.version>
-        <lambda.serial.version>1.0.0</lambda.serial.version>
-        <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
+        <lambda.events.version>3.11.1</lambda.events.version>
+        <lambda.serial.version>1.1.2</lambda.serial.version>
+        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <aspectj-maven-plugin.version>1.14.0</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
-        <cobertura-maven-plugin.version>2.7</cobertura-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
@@ -284,6 +283,18 @@
                 <version>1.1.1</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <version>1.2.6</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock-jre8</artifactId>
+                <version>2.35.0</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -309,11 +320,6 @@
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco-maven-plugin.version}</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
-                    <artifactId>cobertura-maven-plugin</artifactId>
-                    <version>${cobertura-maven-plugin.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
@@ -399,17 +405,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                    <check />
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
                 <extensions>true</extensions>
@@ -459,7 +454,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.7.3.0</version>
+                        <version>4.7.3.2</version>
                         <executions>
                             <execution>
                                 <id>test</id>

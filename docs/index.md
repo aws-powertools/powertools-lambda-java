@@ -12,7 +12,8 @@ Powertools is a suite of utilities for AWS Lambda Functions that makes tracing w
 
 
 !!! tip "Looking for a quick run through of the core utilities?"
-    Check out [this detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/) with a practical example.
+    Check out [this detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/) with a practical example. To dive deeper, 
+    the [AWS Lambda Powertools for Java workshop](https://catalog.us-east-1.prod.workshops.aws/workshops/a7011c82-e4af-4a52-80fa-fcd61f1dacd9/en-US/introduction) is a great next step.
 
 ## Tenets
 

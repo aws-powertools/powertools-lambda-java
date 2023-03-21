@@ -1,6 +1,7 @@
 # AWS Lambda Powertools for Java
 
-![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/awslabs/aws-lambda-powertools-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent)
+![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/awslabs/aws-lambda-powertools-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent) [![codecov.io](https://codecov.io/github/awslabs/aws-lambda-powertools-java/branch/master/graphs/badge.svg)](https://app.codecov.io/gh/awslabs/aws-lambda-powertools-java)
+
 
 Powertools is a developer toolkit to implement Serverless best practices and increase developer velocity.
 
@@ -19,17 +20,17 @@ Powertools is available in Maven Central. You can use your favourite dependency 
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.14.0</version>
+        <version>1.15.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.14.0</version>
+        <version>1.15.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.14.0</version>
+        <version>1.15.0</version>
     </dependency>
     ...
 </dependencies>
