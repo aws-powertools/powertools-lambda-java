@@ -14,17 +14,13 @@ import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
 import software.amazon.lambda.powertools.cloudformation.Response;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Handler for requests to Lambda function.
  */
 
 public class App extends AbstractCustomResourceHandler {
-    public static final String EXPIRE_OBJECTS_ID = "expire-all-objects-after-x-days";
     private final static Logger log = LogManager.getLogger(App.class);
     private final S3Client s3Client;
 
@@ -37,16 +33,12 @@ public class App extends AbstractCustomResourceHandler {
     protected Response create(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
         Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"), "BucketName cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("RetentionDays"), "RetentionDays cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
         String bucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName");
         log.info("Bucket Name {}", bucketName);
-        int retentionDays = Integer.parseInt(String.valueOf(cloudFormationCustomResourceEvent.getResourceProperties().get("RetentionDays")));
-        log.info("Retention Period (Days) {}", retentionDays);
-
         try {
-            createBucketWithRetention(bucketName, retentionDays);
+            createBucket(bucketName);
             return Response.success(bucketName);
         } catch (AwsServiceException | SdkClientException e) {
             log.error(e);
@@ -58,32 +50,25 @@ public class App extends AbstractCustomResourceHandler {
     protected Response update(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
         Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"), "BucketName cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("RetentionDays"), "RetentionDays cannot be null.");
+
         log.info(cloudFormationCustomResourceEvent);
         String physicalResourceId = cloudFormationCustomResourceEvent.getPhysicalResourceId();
         log.info("Physical Resource ID {}", physicalResourceId);
-        int retentionDays = Integer.parseInt(String.valueOf(cloudFormationCustomResourceEvent.getResourceProperties().get("RetentionDays")));
-        log.info("Retention Period (Days) {}", retentionDays);
+
         String newBucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName");
 
         if (!physicalResourceId.equals(newBucketName)) {
-            // Custom Resource is configured with a different bucket name
+            // The bucket name has changed - create a new bucket
             try {
-                createBucketWithRetention(newBucketName, retentionDays);
+                createBucket(newBucketName);
                 return Response.success(newBucketName);
             } catch (AwsServiceException | SdkClientException e) {
                 log.error(e);
                 return Response.failed(newBucketName);
             }
         } else {
-            // Bucket name has not changed - check for changes in Lifecycle configuration
-            try {
-                updateLifecycleRules(physicalResourceId, retentionDays);
-                return Response.success(physicalResourceId);
-            } catch (AwsServiceException | SdkClientException e) {
-                log.error(e);
-                return Response.failed(physicalResourceId);
-            }
+            // Bucket name has not changed - No changes
+            return Response.success(physicalResourceId);
         }
     }
 
@@ -125,42 +110,12 @@ public class App extends AbstractCustomResourceHandler {
         return false;
     }
 
-    private void updateLifecycleRules(String physicalResourceId, int retentionDays) {
-        GetBucketLifecycleConfigurationResponse bucketLifecycleConfiguration = s3Client.getBucketLifecycleConfiguration(GetBucketLifecycleConfigurationRequest.builder().bucket(physicalResourceId).build());
-        log.info(bucketLifecycleConfiguration);
-
-        List<LifecycleRule> oldRules = new ArrayList<>(bucketLifecycleConfiguration.rules());
-        Optional<LifecycleRule> oldExpireLifecycleRule = oldRules.stream().filter(lifecycleRule -> lifecycleRule.id().equals(EXPIRE_OBJECTS_ID)).findFirst();
-        // Check if the existing configuration is equals to the new configuration
-        if (oldExpireLifecycleRule.isPresent()) {
-            if (oldExpireLifecycleRule.get().expiration().days() == retentionDays) {
-                log.info("Retention period is already set to {}. No further actions", retentionDays);
-                return;
-            } else {
-                oldRules.remove(oldExpireLifecycleRule.get());
-            }
-        }
-
-        LifecycleRule updatedLifecycleRule = LifecycleRule.builder().id(EXPIRE_OBJECTS_ID).filter(LifecycleRuleFilter.builder().prefix("").build()).status("Enabled").expiration(LifecycleExpiration.builder().days(retentionDays).build()).build();
-
-        List<LifecycleRule> newRules = new ArrayList<>();
-        newRules.add(updatedLifecycleRule);
-        newRules.addAll(oldRules);
-
-        log.info("Updating Lifecycle configuration");
-        s3Client.putBucketLifecycleConfiguration(PutBucketLifecycleConfigurationRequest.builder().bucket(physicalResourceId).lifecycleConfiguration(BucketLifecycleConfiguration.builder().rules(newRules).build()).build());
-    }
-
-
-    private void createBucketWithRetention(String bucketName, int retentionDays) {
+    private void createBucket(String bucketName) {
         S3Waiter waiter = s3Client.waiter();
         CreateBucketRequest createBucketRequest = CreateBucketRequest.builder().bucket(bucketName).build();
         s3Client.createBucket(createBucketRequest);
         WaiterResponse<HeadBucketResponse> waiterResponse = waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(bucketName).build());
         waiterResponse.matched().response().ifPresent(log::info);
         log.info("Bucket Created {}", bucketName);
-
-        LifecycleRule lifecycleRule = LifecycleRule.builder().id(EXPIRE_OBJECTS_ID).filter(LifecycleRuleFilter.builder().prefix("").build()).status("Enabled").expiration(LifecycleExpiration.builder().days(retentionDays).build()).build();
-        s3Client.putBucketLifecycleConfiguration(PutBucketLifecycleConfigurationRequest.builder().bucket(bucketName).lifecycleConfiguration(BucketLifecycleConfiguration.builder().rules(lifecycleRule).build()).build());
     }
 }
