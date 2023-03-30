@@ -18,6 +18,7 @@ import java.util.Map;
 import static java.util.Collections.singletonList;
 import static java.util.Map.entry;
 import static software.amazon.awscdk.BundlingOutput.ARCHIVED;
+import static software.amazon.awscdk.BundlingOutput.NOT_ARCHIVED;
 
 public class PowertoolsExamplesCloudformationCdkStack extends Stack {
 
@@ -35,7 +36,8 @@ public class PowertoolsExamplesCloudformationCdkStack extends Stack {
                 "/bin/sh",
                 "-c",
                 "mvn clean install" +
-                        "&& cp target/powertools-examples-cloudformation-*.jar  /asset-output/"
+                        "&& mkdir /asset-output/lib" +
+                        "&& cp target/powertools-examples-cloudformation-*.jar  /asset-output/lib"
         );
         BundlingOptions bundlingOptions = BundlingOptions.builder()
                 .command(functionPackagingInstructions)
@@ -48,7 +50,7 @@ public class PowertoolsExamplesCloudformationCdkStack extends Stack {
                                 .build()
                 ))
                 .user("root")
-                .outputType(ARCHIVED)
+                .outputType(NOT_ARCHIVED)
                 .build();
 
 
