@@ -12,6 +12,10 @@ on:
     paths:
       - 'docs/**'
 
+permissions:
+      id-token: write
+      contents: read
+
 jobs:
   docs:
     runs-on: ubuntu-latest
