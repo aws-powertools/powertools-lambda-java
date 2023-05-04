@@ -36,7 +36,8 @@ public class JsonConfig {
         return ConfigHolder.instance;
     }
 
-    private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(ObjectMapper::new);
+    private static final ThreadLocal<ObjectMapper> om = ThreadLocal
+        .withInitial(() -> new ObjectMapper().findAndRegisterModules());
 
     private final FunctionRegistry defaultFunctions = FunctionRegistry.defaultRegistry();
     private final FunctionRegistry customFunctions = defaultFunctions.extend(
