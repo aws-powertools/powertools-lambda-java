@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.ON_DEMAND;
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
@@ -95,7 +96,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
                 // fall back to the default provider chain if the mode is anything other than on-demand.
                 String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals("on-demand")) {
+                if (initializationType  != null && initializationType.equals(ON_DEMAND)) {
                     ddbBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
 

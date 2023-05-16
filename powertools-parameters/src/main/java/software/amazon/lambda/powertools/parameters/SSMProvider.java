@@ -27,6 +27,7 @@ import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
@@ -251,7 +252,7 @@ public class SSMProvider extends BaseProvider {
                 // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
                 // fall back to the default provider chain if the mode is anything other than on-demand.
                 String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals("on-demand")) {
+                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
                     ssmClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
 

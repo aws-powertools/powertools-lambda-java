@@ -17,4 +17,5 @@ public class LambdaConstants {
     public static final String LAMBDA_FUNCTION_NAME_ENV = "AWS_LAMBDA_FUNCTION_NAME";
     public static final String AWS_REGION_ENV = "AWS_REGION";
     public static final String AWS_LAMBDA_INITIALIZATION_TYPE = "AWS_LAMBDA_INITIALIZATION_TYPE";
+    public static final String ON_DEMAND = "on-demand";
 }
