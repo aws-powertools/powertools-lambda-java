@@ -20,7 +20,6 @@ import io.burt.jmespath.Expression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
@@ -42,6 +41,8 @@ import java.util.stream.Stream;
 import java.util.Spliterators;
 import java.util.Spliterator;
 import java.util.stream.StreamSupport;
+
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 
 /**
  * Persistence layer that will store the idempotency result.
@@ -71,7 +72,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param functionName The name of the function being decorated
      */
     public void configure(IdempotencyConfig config, String functionName) {
-        String funcEnv = System.getenv(Constants.LAMBDA_FUNCTION_NAME_ENV);
+        String funcEnv = System.getenv(LAMBDA_FUNCTION_NAME_ENV);
         this.functionName = funcEnv != null ? funcEnv : "testFunction";
         if (!StringUtils.isEmpty(functionName)) {
             this.functionName += "." + functionName;
