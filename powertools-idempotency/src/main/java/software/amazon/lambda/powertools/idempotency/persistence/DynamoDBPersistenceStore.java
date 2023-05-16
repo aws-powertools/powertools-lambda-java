@@ -245,10 +245,6 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 item.get(this.inProgressExpiryAttr) != null ? OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n())) : OptionalLong.empty());
     }
 
-    public DynamoDbClient getDynamoDbClient() {
-        return dynamoDbClient;
-    }
-
     public static Builder builder() {
         return new Builder();
     }
