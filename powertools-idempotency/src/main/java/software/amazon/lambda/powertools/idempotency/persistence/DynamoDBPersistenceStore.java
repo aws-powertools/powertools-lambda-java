@@ -86,7 +86,6 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
                 DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
-                        .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                         .httpClient(UrlConnectionHttpClient.builder().build())
                         .region(Region.of(System.getenv(AWS_REGION_ENV)));
                 this.dynamoDbClient = ddbBuilder.build();
@@ -236,6 +235,10 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 data != null ? data.s() : null,
                 validation != null ? validation.s() : null,
                 item.get(this.inProgressExpiryAttr) != null ? OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n())) : OptionalLong.empty());
+    }
+
+    public DynamoDbClient getDynamoDbClient() {
+        return dynamoDbClient;
     }
 
     public static Builder builder() {
