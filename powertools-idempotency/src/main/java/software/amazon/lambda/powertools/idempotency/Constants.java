@@ -17,4 +17,5 @@ public class Constants {
     public static final String LAMBDA_FUNCTION_NAME_ENV = "AWS_LAMBDA_FUNCTION_NAME";
     public static final String AWS_REGION_ENV = "AWS_REGION";
     public static final String IDEMPOTENCY_DISABLED_ENV = "POWERTOOLS_IDEMPOTENCY_DISABLED";
+    public static final String AWS_LAMBDA_INITIALIZATION_TYPE = "AWS_LAMBDA_INITIALIZATION_TYPE";
 }
