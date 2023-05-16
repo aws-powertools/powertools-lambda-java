@@ -92,7 +92,8 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
                 // when using snap-start mode, the env var creds provider isn't used and causes a fatal error
                 // fall back to the default provider chain if the mode is anything other than on-demand.
-                if (System.getenv().get(Constants.AWS_LAMBDA_INITIALIZATION_TYPE) == "on-demand") {
+                String initializationType = System.getenv().get(Constants.AWS_LAMBDA_INITIALIZATION_TYPE);
+                if (initializationType  != null && initializationType.equals("on-demand")) {
                     ddbBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
 
