@@ -20,7 +20,7 @@ To install this utility, add the following dependency to your project.
     <dependencies>
     ...
     <dependency>
-        <groupId>com.amazonaws</groupId>
+        <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-validation</artifactId>
         <version>{{ powertools.version }}</version>
     </dependency>
