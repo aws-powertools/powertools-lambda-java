@@ -1,5 +1,5 @@
 ## aws-lambda-powertools-examples
 
-This directory holds example projects demoing different components of the Lambda Powertools for Java.
+This directory holds example projects demoing different components of the Powertools for AWS Lambda (Java).
 
 

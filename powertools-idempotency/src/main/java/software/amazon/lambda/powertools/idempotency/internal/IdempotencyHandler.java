@@ -88,7 +88,7 @@ public class IdempotencyHandler {
         } catch (IdempotencyKeyException ike) {
             throw ike;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
         }
         return getFunctionResponse();
     }
@@ -123,7 +123,7 @@ public class IdempotencyHandler {
         } catch (IdempotencyValidationException | IdempotencyKeyException vke) {
             throw vke;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
         }
     }
 
@@ -170,7 +170,7 @@ public class IdempotencyHandler {
             } catch (IdempotencyKeyException ke) {
                 throw ke;
             } catch (Exception e) {
-                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
             }
             throw handlerException;
         }
@@ -178,7 +178,7 @@ public class IdempotencyHandler {
         try {
             persistenceStore.saveSuccess(data, response, Instant.now());
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
         }
         return response;
     }

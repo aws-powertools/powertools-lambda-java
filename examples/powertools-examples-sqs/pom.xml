@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powertools-examples-sqs</artifactId>
     <packaging>jar</packaging>
-    <name>AWS Lambda Powertools for Java library Examples - SQS</name>
+    <name>Powertools for AWS Lambda (Java) library Examples - SQS</name>
 
     <parent>
         <artifactId>powertools-examples</artifactId>

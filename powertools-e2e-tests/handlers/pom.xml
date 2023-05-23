@@ -7,7 +7,7 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>Handlers for End-to-End tests</name>
-    <description>Fake handlers that use Lambda Powertools for Java.</description>
+    <description>Fake handlers that use Powertools for AWS Lambda (Java).</description>
 
     <properties>
         <lambda.powertools.version>1.14.0</lambda.powertools.version>

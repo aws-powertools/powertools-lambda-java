@@ -390,7 +390,7 @@ The client was successful in receiving the result after the retry. Since the Lam
 
 This is automatically done when you annotate your Lambda handler with [@Idempotent annotation](#idempotent-annotation).
 
-To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools calculates and includes the remaining invocation available time as part of the idempotency record.
+To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda (Java) calculates and includes the remaining invocation available time as part of the idempotency record.
 
 !!! example
     If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the invocation again as if it was in the `EXPIRED` state.
@@ -846,8 +846,8 @@ public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent in
 }
 ```
 
-!!! tip "Tip: JMESPath Powertools functions are also available"
-    Built-in functions like `powertools_json`, `powertools_base64`, `powertools_base64_gzip` are also available to use in this utility. See [JMESPath Powertools functions](serialization.md)
+!!! tip "Tip: JMESPath Powertools for AWS Lambda (Java) functions are also available"
+    Built-in functions like `powertools_json`, `powertools_base64`, `powertools_base64_gzip` are also available to use in this utility. See [JMESPath Powertools for AWS Lambda (Java) functions](serialization.md)
 
 
 ## Testing your code

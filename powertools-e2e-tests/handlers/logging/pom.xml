@@ -10,7 +10,7 @@
 
     <artifactId>e2e-test-handler-logging</artifactId>
     <packaging>jar</packaging>
-    <name>A Lambda function using powertools logging</name>
+    <name>A Lambda function using Powertools for AWS Lambda (Java) logging</name>
 
     <dependencies>
         <dependency>

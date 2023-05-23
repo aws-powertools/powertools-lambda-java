@@ -65,7 +65,7 @@ public abstract class AbstractCustomResourceHandler
         } catch (CustomResourceResponseException rse) {
             LOG.error("Unable to generate response. Sending empty failure to {}", responseUrl, rse);
             try {
-                // If the customers code throws an exception, Powertools should respond in a way that doesn't
+                // If the customers code throws an exception, Powertools for AWS Lambda (Java) should respond in a way that doesn't
                 // change the CloudFormation resources.
                 // In the case of a Update or Delete, a failure is sent with the existing PhysicalResourceId
                 // indicating no change.

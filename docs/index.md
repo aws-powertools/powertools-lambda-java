@@ -1,19 +1,19 @@
 ---
 title: Homepage
-description: AWS Lambda Powertools for Java
+description: Powertools for AWS Lambda (Java)
 ---
 
 ![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/awslabs/aws-lambda-powertools-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent)
 
-Powertools is a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+Powertools for AWS Lambda (Java) is a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
 
 ???+ tip
-    Powertools is also available for [Python](https://awslabs.github.io/aws-lambda-powertools-python/){target="_blank"}, [TypeScript](https://awslabs.github.io/aws-lambda-powertools-typescript/){target="_blank"}, and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/){target="_blank"}
+    Powertools for AWS Lambda  is also available for [Python](https://awslabs.github.io/aws-lambda-powertools-python/){target="_blank"}, [TypeScript](https://awslabs.github.io/aws-lambda-powertools-typescript/){target="_blank"}, and [.NET](https://awslabs.github.io/aws-lambda-powertools-dotnet/){target="_blank"}
 
 
 !!! tip "Looking for a quick run through of the core utilities?"
     Check out [this detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/) with a practical example. To dive deeper, 
-    the [AWS Lambda Powertools for Java workshop](https://catalog.us-east-1.prod.workshops.aws/workshops/a7011c82-e4af-4a52-80fa-fcd61f1dacd9/en-US/introduction) is a great next step.
+    the [Powertools for AWS Lambda (Java) workshop](https://catalog.us-east-1.prod.workshops.aws/workshops/a7011c82-e4af-4a52-80fa-fcd61f1dacd9/en-US/introduction) is a great next step.
 
 ## Tenets
 
@@ -28,14 +28,14 @@ This project separates core utilities that will be available in other runtimes v
 
 ## Install
 
-Powertools dependencies are available in Maven Central. You can use your favourite dependency management tool to install it
+Powertools for AWS Lambda (Java) dependencies are available in Maven Central. You can use your favourite dependency management tool to install it
 
 * [Maven](https://maven.apache.org/)
 * [Gradle](https://gradle.org)
 
 **Quick hello world examples using SAM CLI**
 
-You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including AWS Lambda Powertools for Java.
+You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including Powertools for AWS Lambda (Java).
 
 ```bash
   sam init --location gh:aws-samples/cookiecutter-aws-sam-powertools-java

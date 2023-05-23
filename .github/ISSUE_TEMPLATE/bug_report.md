@@ -34,7 +34,7 @@ assignees: ''
 
 ## Environment
 
-* **Powertools version used**:
+* **Powertools for AWS Lambda (Java) version used**:
 * **Packaging format (Layers, Maven/Gradle)**:
 * **AWS Lambda function runtime:**
 * **Debugging logs**
