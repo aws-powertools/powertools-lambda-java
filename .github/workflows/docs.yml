@@ -6,9 +6,15 @@ on:
       - published
   workflow_dispatch: {}
 
+permissions:
+  id-token: write
+  contents: write
+  pages: write
+
 jobs:
   docs:
     runs-on: ubuntu-latest
+    environment: Docs
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
@@ -28,3 +34,13 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@e1e17a757e536f70e52b5a12b2e8d1d1c60e04ef
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+      - name: Deploy Docs
+        run: |
+          aws s3 sync \
+            dist \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/
