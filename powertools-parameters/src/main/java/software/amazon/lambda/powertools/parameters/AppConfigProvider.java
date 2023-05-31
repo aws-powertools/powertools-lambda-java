@@ -16,8 +16,10 @@ import java.util.Optional;
 public class AppConfigProvider extends BaseProvider{
 
     private final AppConfigClient client;
-    private final String environment;
+
     private final String application;
+
+    private final GetEnvironmentResponse environment;
 
     public AppConfigProvider(CacheManager cacheManager, String environment, String application) {
         this(cacheManager, AppConfigClient.builder()
@@ -31,19 +33,18 @@ public class AppConfigProvider extends BaseProvider{
     AppConfigProvider(CacheManager cacheManager, AppConfigClient client, String environment, String application) {
         super(cacheManager);
         this.client = client;
-        this.environment = environment;
         this.application = application;
+
+        this.environment = client.getEnvironment(GetEnvironmentRequest.builder()
+                .environmentId(environment)
+                .applicationId(application)
+                .build());
     }
 
 
     @Override
     protected String getValue(String key) {
-        GetEnvironmentResponse env = client.getEnvironment(GetEnvironmentRequest.builder()
-                        .environmentId(environment)
-                        .applicationId(application)
-                .build());
-
-        Optional<String> val = env.getValueForField(key, String.class);
+        Optional<String> val = environment.getValueForField(key, String.class);
         return val.orElse(null);
     }
 
