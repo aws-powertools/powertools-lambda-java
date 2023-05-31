@@ -144,16 +144,6 @@ public class AppConfigProvider extends BaseProvider{
         }
 
         /**
-         * <b>Mandatory</b>. Provide a DynamoDB table to the {@link AppConfigProvider}
-         *
-         * @param table the table that parameters will be retrieved from.
-         * @return the builder to chain calls (eg. <pre>builder.withTable().build()</pre>)
-         */
-        public AppConfigProvider.Builder withTable(String table) {
-            return this;
-        }
-
-        /**
          * Provide a transformationManager to the {@link AppConfigProvider}
          *
          * @param transformationManager the manager that will handle transformation of parameters

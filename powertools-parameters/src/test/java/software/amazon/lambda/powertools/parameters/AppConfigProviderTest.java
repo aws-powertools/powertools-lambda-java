@@ -76,8 +76,4 @@ public class AppConfigProviderTest {
         assertThat(getValueForFieldCaptor.getValue()).isEqualTo(key);
     }
 
-    @Test
-    public void getValueWithMalformedKeyThrows() {
-
-    }
 }
