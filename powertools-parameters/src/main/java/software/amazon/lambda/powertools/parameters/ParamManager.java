@@ -137,7 +137,7 @@ public final class ParamManager {
             return provider;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
-                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
+                    "https://github.com/aws-powertools/lambda-java/issues", e);
         }
     }
 

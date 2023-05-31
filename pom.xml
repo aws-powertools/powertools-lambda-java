@@ -16,7 +16,7 @@
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
+        <url>https://github.com/aws-powertools/lambda-java/issues</url>
     </issueManagement>
     <licenses>
         <license>
@@ -43,7 +43,7 @@
     </modules>
 
     <scm>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
+        <url>https://github.com/aws-powertools/lambda-java.git</url>
     </scm>
 
     <developers>
