@@ -8,7 +8,7 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>e2e-test-handler-logging</artifactId>
+    <artifactId>e2e-test-handler-parameters</artifactId>
     <packaging>jar</packaging>
     <name>A Lambda function using powertools logging</name>
 
@@ -16,6 +16,10 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-parameters</artifactId>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

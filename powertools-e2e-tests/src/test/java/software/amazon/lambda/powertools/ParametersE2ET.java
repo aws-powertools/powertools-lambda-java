@@ -4,12 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import software.amazon.lambda.powertools.testutils.AppConfig;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
+import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ParametersE2ET {
@@ -19,9 +23,6 @@ public class ParametersE2ET {
 
     private Infrastructure infrastructure;
     private String functionName;
-
-    private String appConfigAppName = "powertools-e2e-test-app";
-    private String appConfigEnvironment = "e2etest";
     private final AppConfig appConfig;
 
     public ParametersE2ET() {
@@ -48,14 +49,28 @@ public class ParametersE2ET {
     }
 
 //    @AfterAll
-//    public static void tearDown() {
+//    public void tearDown() {
 //        if (infrastructure != null)
 //            infrastructure.destroy();
 //    }
 
     @Test
     public void test_getAppConfigValue() {
+        for (Map.Entry<String, String >configKey:  appConfig.getConfigurationValues().entrySet()) {
 
+            // Arrange
+            String event1 = "{" +
+                    "\"app\":  \"" + appConfig.getApplication() + "\", " +
+                    "\"environment\": \"" + appConfig.getEnvironment() + "\", " +
+                    "\"key\": \"" + configKey.getKey() + "\"" +
+                    "}";
+
+            // Act
+            InvocationResult invocationResult = invokeFunction(functionName, event1);
+
+            // Assert
+            assertThat(invocationResult.getResult()).isEqualTo("\"" + configKey.getValue() + "\"");
+        }
     }
 
 }

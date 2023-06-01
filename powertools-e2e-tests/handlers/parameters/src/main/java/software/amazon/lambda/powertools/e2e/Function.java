@@ -5,7 +5,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.AppConfigProvider;
 
 public class Function implements RequestHandler<Input, String> {
 
@@ -14,9 +15,13 @@ public class Function implements RequestHandler<Input, String> {
     @Logging
     public String handleRequest(Input input, Context context) {
 
-        LoggingUtils.appendKeys(input.getKeys());
-        LOG.info(input.getMessage());
+        AppConfigProvider provider = AppConfigProvider.builder()
+                .withCacheManager(new CacheManager())
+                .withApplication(input.getApp())
+                .withEnvironment(input.getEnvironment())
+                .build();
 
-        return "OK";
+        return provider.get(input.getKey());
+
     }
 }

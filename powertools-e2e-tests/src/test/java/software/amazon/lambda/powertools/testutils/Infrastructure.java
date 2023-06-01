@@ -13,8 +13,11 @@ import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.groundstation.CfnConfig;
+import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.lambda.Permission;
 import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
@@ -312,6 +315,14 @@ public class Infrastructure {
                     .growthFactor(100)
                     .replicateTo("NONE")
                     .build();
+
+            // Get the lambda permission to use AppConfig
+            function.addToRolePolicy(PolicyStatement.Builder
+                    .create()
+                    .actions(singletonList("appconfig:*"))
+                    .resources(singletonList("*"))
+                    .build()
+            );
 
             CfnDeployment previousDeployment = null;
             for (Map.Entry<String,String> entry : appConfig.getConfigurationValues().entrySet()) {

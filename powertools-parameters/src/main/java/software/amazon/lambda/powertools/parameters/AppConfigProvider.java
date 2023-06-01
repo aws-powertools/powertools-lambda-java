@@ -108,7 +108,7 @@ public class AppConfigProvider extends BaseProvider{
         return new AppConfigProvider.Builder();
     }
 
-    static class Builder {
+    public static class Builder {
         private AppConfigDataClient client;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;

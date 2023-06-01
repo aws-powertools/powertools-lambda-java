@@ -3,25 +3,37 @@ package software.amazon.lambda.powertools.e2e;
 import java.util.Map;
 
 public class Input {
-    private String message;
-    private Map<String, String> keys;
+
+    private String app;
+    private String environment;
+    private String key;
 
     public Input() {
+
     }
 
-    public String getMessage() {
-        return message;
+    public void setApp(String app) {
+        this.app = app;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setEnvironment(String environment) {
+        this.environment = environment;
     }
 
-    public Map<String, String> getKeys() {
-        return keys;
+    public void setKey(String key) {
+        this.key = key;
     }
 
-    public void setKeys(Map<String, String> keys) {
-        this.keys = keys;
+    public String getApp() {
+        return app;
     }
+
+    public String getEnvironment() {
+        return environment;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
 }
