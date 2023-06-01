@@ -43,9 +43,9 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
     <plugins>
         ...
         <plugin>
-             <groupId>org.codehaus.mojo</groupId>
+             <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.14.0</version>
+             <version>1.13.1</version>
              <configuration>
                  <source>1.8</source>
                  <target>1.8</target>

@@ -441,9 +441,9 @@ If you want to use the ```@Param``` annotation in your project add configuration
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      ...
                      <aspectLibraries>

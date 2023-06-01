@@ -71,9 +71,9 @@ For more information about the project and available options refer to this [repo
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
