@@ -13,7 +13,7 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
-import software.amazon.awssdk.services.appconfig.AppConfigClient;
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -83,8 +83,8 @@ public final class ParamManager {
     }
 
     /**
-     * Get a {@link AppConfigProvider} with default {@link AppConfigClient}.<br/>
-     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigClient, String, String)} instead.
+     * Get a {@link AppConfigProvider} with default {@link AppConfigDataClient}.<br/>
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigDataClient, String, String)} instead.
      * @return a {@link AppConfigProvider}
      */
     public static AppConfigProvider getAppConfigProvider(String environment, String application) {
@@ -141,11 +141,11 @@ public final class ParamManager {
     }
     
     /**
-     * Get a {@link AppConfigProvider} with your custom {@link AppConfigClient}.<br/>
+     * Get a {@link AppConfigProvider} with your custom {@link AppConfigDataClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider(String, String)} if you don't need this customization.
      * @return a {@link AppConfigProvider}
      */
-    public static AppConfigProvider getAppConfigProvider(AppConfigClient client, String environment, String application) {
+    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client, String environment, String application) {
         return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
                 .withClient(client)
                 .withCacheManager(cacheManager)

@@ -4,25 +4,46 @@ import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsPro
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.appconfig.AppConfigClient;
-import software.amazon.awssdk.services.appconfig.model.GetEnvironmentRequest;
-import software.amazon.awssdk.services.appconfig.model.GetEnvironmentResponse;
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
+import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class AppConfigProvider extends BaseProvider{
 
-    private final AppConfigClient client;
+    private static class EstablishedSession {
+        private final String nextSessionToken;
+        private final String lastConfigurationValue;
+
+        private EstablishedSession(String nextSessionToken, String value) {
+            this.nextSessionToken = nextSessionToken;
+            this.lastConfigurationValue = value;
+        }
+
+        public String getNextSessionToken() {
+            return nextSessionToken;
+        }
+
+        public String getLastConfigurationValue() {
+            return lastConfigurationValue;
+        }
+    }
+
+    private final AppConfigDataClient client;
 
     private final String application;
 
-    private final GetEnvironmentResponse environment;
+    private final String environment;
+
+    private final HashMap<String, EstablishedSession> establishedSessions = new HashMap<>();
 
     public AppConfigProvider(CacheManager cacheManager, String environment, String application) {
-        this(cacheManager, AppConfigClient.builder()
+        this(cacheManager, AppConfigDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
                         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
@@ -30,22 +51,46 @@ public class AppConfigProvider extends BaseProvider{
                 environment, application);
     }
 
-    AppConfigProvider(CacheManager cacheManager, AppConfigClient client, String environment, String application) {
+    AppConfigProvider(CacheManager cacheManager, AppConfigDataClient client, String environment, String application) {
         super(cacheManager);
         this.client = client;
         this.application = application;
-
-        this.environment = client.getEnvironment(GetEnvironmentRequest.builder()
-                .environmentId(environment)
-                .applicationId(application)
-                .build());
+        this.environment = environment;
     }
 
 
     @Override
     protected String getValue(String key) {
-        Optional<String> val = environment.getValueForField(key, String.class);
-        return val.orElse(null);
+        // Start a configuration session if we don't already have one to get the initial token
+        EstablishedSession establishedSession = establishedSessions.getOrDefault(key, null);
+        String sessionToken = establishedSession != null?
+                establishedSession.nextSessionToken :
+                client.startConfigurationSession(StartConfigurationSessionRequest.builder()
+                            .applicationIdentifier(this.application)
+                            .environmentIdentifier(this.environment)
+                            .configurationProfileIdentifier(key)
+                            .build())
+                    .initialConfigurationToken();
+
+        // Get the configuration
+        GetLatestConfigurationResponse response = client.getLatestConfiguration(GetLatestConfigurationRequest.builder()
+                        .configurationToken(sessionToken)
+                .build());
+
+        // Get the next token
+        String nextSessionToken = response.nextPollConfigurationToken();
+
+        // Get the value
+        String value = response.configuration() != null?
+                response.configuration().asUtf8String() : // if we have a new value, use it
+                    establishedSession != null?
+                            establishedSession.lastConfigurationValue : // if we don't but we have a previous value, use that
+                            null; // otherwise we've got no value
+
+        // Update the cache so we can get the next value later
+        establishedSessions.put(key, new EstablishedSession(nextSessionToken, value));
+
+        return value;
     }
 
     @Override
@@ -64,7 +109,7 @@ public class AppConfigProvider extends BaseProvider{
     }
 
     static class Builder {
-        private AppConfigClient client;
+        private AppConfigDataClient client;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
         private String environment;
@@ -99,13 +144,13 @@ public class AppConfigProvider extends BaseProvider{
         }
 
         /**
-         * Set custom {@link AppConfigProvider} to pass to the {@link AppConfigClient}. <br/>
+         * Set custom {@link AppConfigProvider} to pass to the {@link AppConfigDataClient}. <br/>
          * Use it if you want to customize the region or any other part of the client.
          *
          * @param client Custom client
          * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
          */
-        public AppConfigProvider.Builder withClient(AppConfigClient client) {
+        public AppConfigProvider.Builder withClient(AppConfigDataClient client) {
             this.client = client;
             return this;
         }

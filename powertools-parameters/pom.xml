@@ -79,7 +79,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>appconfig</artifactId>
+            <artifactId>appconfigdata</artifactId>
         </dependency>
 
         <dependency>
