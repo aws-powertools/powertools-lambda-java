@@ -162,6 +162,8 @@ public class Infrastructure {
                 runtime = JavaRuntime.JAVA8AL2;
             } else if (javaVersion.startsWith("11")) {
                 runtime = JavaRuntime.JAVA11;
+            } else if (javaVersion.startsWith("17")) {
+                runtime = JavaRuntime.JAVA17;
             } else {
                 throw new IllegalArgumentException("Unsupported Java version " + javaVersion);
             }
