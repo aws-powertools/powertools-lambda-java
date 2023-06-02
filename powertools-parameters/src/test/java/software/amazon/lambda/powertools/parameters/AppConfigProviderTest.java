@@ -55,25 +55,32 @@ public class AppConfigProviderTest {
     }
 
 
-
+    /**
+     * Tests repeated calls to the AppConfigProvider for the same key behave correctly. This is more complicated than
+     * it seems, as the service itself will return no-data if the value of a property remains unchanged since the
+     * start of a session. This means the provider must cache the result and return it again if it gets no data, but
+     * subsequent calls should once again return the new data.
+     */
     @Test
     public void getValueRetrievesValue() {
         // Arrange
         StartConfigurationSessionResponse firstSession = StartConfigurationSessionResponse.builder()
                 .initialConfigurationToken("token1")
                 .build();
+        // first response returns 'value1'
         GetLatestConfigurationResponse firstResponse = GetLatestConfigurationResponse.builder()
                         .nextPollConfigurationToken("token2")
                         .configuration(SdkBytes.fromUtf8String("value1"))
                         .build();
+        // Second response returns 'value2'
         GetLatestConfigurationResponse secondResponse = GetLatestConfigurationResponse.builder()
                         .nextPollConfigurationToken("token3")
                                 .configuration(SdkBytes.fromUtf8String("value2"))
                                 .build();
+        // Third response returns nothing, which means the provider should yield the previous value again
         GetLatestConfigurationResponse thirdResponse = GetLatestConfigurationResponse.builder()
                         .nextPollConfigurationToken("token4")
                                 .build();
-
         Mockito.when(client.startConfigurationSession(startSessionRequestCaptor.capture()))
                 .thenReturn(firstSession);
         Mockito.when(client.getLatestConfiguration(getLatestConfigurationRequestCaptor.capture()))
@@ -93,25 +100,49 @@ public class AppConfigProviderTest {
         assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
         assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(firstSession.initialConfigurationToken());
         assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(firstResponse.nextPollConfigurationToken());
-
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(secondResponse.nextPollConfigurationToken());
     }
 
-
+    /**
+     * If we mix requests for different keys together through the same provider, retrieval should
+     * work as expected. This means two separate configuration sessions should be established with AppConfig.
+     */
     @Test
-    public void stubIntegrationTest() {
-        AppConfigDataClient appConfigClient = AppConfigDataClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+    public void multipleKeysRetrievalWorks() {
+        // Arrange
+        String param1Key = "key1";
+        StartConfigurationSessionResponse param1Session = StartConfigurationSessionResponse.builder()
+                .initialConfigurationToken("token1a")
                 .build();
-
-        AppConfigProvider provider = AppConfigProvider.builder()
-                .withCacheManager(new CacheManager())
-                .withClient(appConfigClient)
-                .withApplication("scottsapp")
-                .withEnvironment("dev")
+        GetLatestConfigurationResponse param1Response = GetLatestConfigurationResponse.builder()
+                .nextPollConfigurationToken("token1b")
+                .configuration(SdkBytes.fromUtf8String("value1"))
                 .build();
+        String param2Key = "key2";
+        StartConfigurationSessionResponse param2Session = StartConfigurationSessionResponse.builder()
+                .initialConfigurationToken("token2a")
+                .build();
+        GetLatestConfigurationResponse param2Response = GetLatestConfigurationResponse.builder()
+                .nextPollConfigurationToken("token2b")
+                .configuration(SdkBytes.fromUtf8String("value1"))
+                .build();
+        Mockito.when(client.startConfigurationSession(startSessionRequestCaptor.capture()))
+                .thenReturn(param1Session, param2Session);
+        Mockito.when(client.getLatestConfiguration(getLatestConfigurationRequestCaptor.capture()))
+                .thenReturn(param1Response, param2Response);
 
-        String value = provider.get("myfield");
-        assertThat(value).isEqualTo("myvalue");
+        // Act
+        String firstKeyValue = provider.getValue(param1Key);
+        String secondKeyValue = provider.getValue(param2Key);
+
+        // Assert
+        assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
+        assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
+        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(param1Key);
+        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(param2Key);
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(param1Session.initialConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(param2Session.initialConfigurationToken());
+
     }
 
 }

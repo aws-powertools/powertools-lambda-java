@@ -14,6 +14,20 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
+ * a mechanism to retrieve and update configuration of applications over time.
+ * AppConfig requires the user to create an application, environment, and configuration profile.
+ * The configuration profile's value can then retrieved, by key name, through this provider.
+ *
+ * Because AppConfig is designed to handle rollouts of configuration over time, we must first
+ * establish a session for each key we wish to retrieve, and then poll the session for the latest
+ * value when the user re-requests it. This means we must hold a keyed set of session tokens
+ * and values.
+ *
+ * @see <a href="https://awslabs.github.io/aws-lambda-powertools-java/utilities/parameters">Parameters provider documentation</a>
+ * @see <a href="https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-working.html">AppConfig documentation</a>
+ */
 public class AppConfigProvider extends BaseProvider{
 
     private static class EstablishedSession {
@@ -61,7 +75,9 @@ public class AppConfigProvider extends BaseProvider{
 
     @Override
     protected String getValue(String key) {
-        // Start a configuration session if we don't already have one to get the initial token
+        // Start a configuration session if we don't already have one for the key requested
+        // so that we can the initial token. If we already have a session, we can take
+        // the next request token from there.
         EstablishedSession establishedSession = establishedSessions.getOrDefault(key, null);
         String sessionToken = establishedSession != null?
                 establishedSession.nextSessionToken :
@@ -72,15 +88,17 @@ public class AppConfigProvider extends BaseProvider{
                             .build())
                     .initialConfigurationToken();
 
-        // Get the configuration
+        // Get the configuration using the token
         GetLatestConfigurationResponse response = client.getLatestConfiguration(GetLatestConfigurationRequest.builder()
                         .configurationToken(sessionToken)
                 .build());
 
-        // Get the next token
+        // Get the next session token we'll use next time we are asked for this key
         String nextSessionToken = response.nextPollConfigurationToken();
 
-        // Get the value
+        // Get the value of the key. Note that AppConfig will return null if the value
+        // has not changed since we last asked for it in this session - in this case
+        // we return the value we stashed at last request.
         String value = response.configuration() != null?
                 response.configuration().asUtf8String() : // if we have a new value, use it
                     establishedSession != null?
