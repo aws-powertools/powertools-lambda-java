@@ -212,6 +212,49 @@ a `DynamoDbProvider` providing a client if you need to configure it yourself.
     } 
     ```
 
+## AppConfig
+To get parameters stored in AppConfig, use `getAppConfigProvider`, providing the application and environment
+name to retrieve configuration from. As with the other providers, an overloaded methods allows you to retrieve
+an `AppConfigProvider` providing a client if you need to configure it yourself.
+
+=== "AppConfigProvider"
+
+    ```java hl_lines="6 9"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWitAppConfigParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an instance of the AppConfigProvider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider("my-environment", "my-app");
+    
+        // Retrieve a single parameter
+        String value = appConfigProvider.get("my-key"); 
+    } 
+    ```
+
+=== "AppConfigProvider with a custom client"
+
+    ```java hl_lines="9 10 11 12 15 18"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+    import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
+    import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+    import software.amazon.awssdk.regions.Region;
+
+    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an AppConfig Client with an explicit region
+        AppConfigDataClient appConfigDataClient = AppConfigDataClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .region(Region.EU_CENTRAL_2)
+                .build();
+
+        // Get an instance of the DynamoDbProvider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider(appConfigDataClient, "my-environment", "my-app");
+    
+        // Retrieve a single parameter
+        String value = appConfigProvider.get("my-key"); 
+    } 
+    ```
 
 
 ## Advanced configuration
