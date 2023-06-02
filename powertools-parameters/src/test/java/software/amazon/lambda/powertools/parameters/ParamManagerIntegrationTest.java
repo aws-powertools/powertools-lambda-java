@@ -135,7 +135,7 @@ public class ParamManagerIntegrationTest {
     }
 
     @Test
-    public void getAppConfigProvier() {
+    public void getAppConfigProvider() {
 
         // Act
         AppConfigProvider provider = ParamManager.getAppConfigProvider(appConfigDataClient, "test-env", "test-app");
