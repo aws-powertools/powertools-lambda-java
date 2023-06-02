@@ -48,11 +48,11 @@ public class ParametersE2ET {
         functionName = infrastructure.deploy();
     }
 
-//    @AfterAll
-//    public void tearDown() {
-//        if (infrastructure != null)
-//            infrastructure.destroy();
-//    }
+    @AfterAll
+    public void tearDown() {
+        if (infrastructure != null)
+            infrastructure.destroy();
+    }
 
     @Test
     public void test_getAppConfigValue() {

@@ -38,14 +38,6 @@ public class AppConfigProvider extends BaseProvider{
             this.nextSessionToken = nextSessionToken;
             this.lastConfigurationValue = value;
         }
-
-        public String getNextSessionToken() {
-            return nextSessionToken;
-        }
-
-        public String getLastConfigurationValue() {
-            return lastConfigurationValue;
-        }
     }
 
     private final AppConfigDataClient client;

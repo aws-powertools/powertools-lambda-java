@@ -14,8 +14,11 @@ import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfiguratio
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.Duration;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.eq;
@@ -25,9 +28,6 @@ public class AppConfigProviderTest {
 
     @Mock
     AppConfigDataClient client;
-
-//    @Mock
-//    GetEnvironmentResponse environment;
 
     private AppConfigProvider provider;
 
@@ -49,9 +49,13 @@ public class AppConfigProviderTest {
     @BeforeEach
     public void init() {
         openMocks(this);
-
-        CacheManager cacheManager = new CacheManager();
-        provider = new AppConfigProvider(cacheManager, client, environmentName, applicationName);
+        provider = AppConfigProvider.builder()
+                .withClient(client)
+                .withApplication(applicationName)
+                .withEnvironment(environmentName)
+                .withCacheManager(new CacheManager())
+                .withTransformationManager(new TransformationManager())
+                .build();
     }
 
 
