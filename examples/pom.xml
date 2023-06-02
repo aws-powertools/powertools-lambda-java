@@ -13,9 +13,9 @@
         <version>1.15.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools for Java library Examples</name>
+    <name>Powertools for AWS Lambda (Java) library Examples</name>
     <description>
-        A suite of examples accompanying for AWS Lambda Powertools. 
+        A suite of examples accompanying for Powertools for AWS Lambda (Java).
     </description>
 
     <modules>

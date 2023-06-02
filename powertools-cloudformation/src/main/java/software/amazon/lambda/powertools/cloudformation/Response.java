@@ -138,7 +138,7 @@ public class Response {
     }
 
     /**
-     * Creates a failed Response with no physicalResourceId set. Powertools will set the physicalResourceId to the
+     * Creates a failed Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
      * Lambda LogStreamName
      *
      * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
@@ -171,7 +171,7 @@ public class Response {
     }
 
     /**
-     * Creates a successful Response with no physicalResourceId set. Powertools will set the physicalResourceId to the
+     * Creates a successful Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
      * Lambda LogStreamName
      *
      * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned

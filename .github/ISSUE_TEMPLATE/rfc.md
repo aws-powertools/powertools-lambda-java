@@ -29,7 +29,7 @@ assignees: ''
 
 > This is the bulk of the RFC.
 
-> Explain the design in enough detail for somebody familiar with Powertools to understand it, and for somebody familiar with the implementation to implement it.
+> Explain the design in enough detail for somebody familiar with Powertools for AWS Lambda (Java) to understand it, and for somebody familiar with the implementation to implement it.
 
 > This should get into specifics and corner-cases, and include examples of how the feature is used. Any new terminology should be defined here.
 

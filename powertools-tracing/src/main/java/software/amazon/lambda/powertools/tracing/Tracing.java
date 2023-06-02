@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 
 /**
  * {@code Tracing} is used to signal that the annotated method should
- * be extended with the Powertools tracing functionality.
+ * be extended with the Powertools for AWS Lambda (Java) tracing functionality.
  *
  * <p>{@code Tracing} provides functionality to reduce the overhead
  * of performing common tracing tasks.</p>

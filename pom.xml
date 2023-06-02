@@ -9,7 +9,7 @@
     <version>1.15.0</version>
     <packaging>pom</packaging>
 
-    <name>AWS Lambda Powertools for Java library Parent</name>
+    <name>Powertools for AWS Lambda (Java) library Parent</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
@@ -48,7 +48,7 @@
 
     <developers>
         <developer>
-            <name>AWS Lambda Powertools team</name>
+            <name>Powertools for AWS Lambda (Java) team</name>
             <organization>Amazon Web Services</organization>
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>

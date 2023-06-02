@@ -1,5 +1,5 @@
-site_name: AWS Lambda Powertools for Java
-site_description: AWS Lambda Powertools for Java
+site_name: Powertools for AWS Lambda (Java)
+site_description: Powertools for AWS Lambda (Java)
 site_author: Amazon Web Services
 nav:
   - Homepage: index.md

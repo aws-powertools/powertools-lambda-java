@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powertools-examples-parameters</artifactId>
     <packaging>jar</packaging>
-    <name>AWS Lambda Powertools for Java library Examples - Parameters</name>
+    <name>Powertools for AWS Lambda (Java) library Examples - Parameters</name>
 
     <parent>
         <artifactId>powertools-examples</artifactId>

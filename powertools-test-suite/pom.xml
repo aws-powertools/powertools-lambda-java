@@ -13,9 +13,9 @@
         <version>1.15.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools for Java library Test Suite</name>
+    <name>Powertools for AWS Lambda (Java) library Test Suite</name>
     <description>
-        A suite of tests for interactions between the various Powertools modules.
+        A suite of tests for interactions between the various Powertools for AWS Lambda (Java) modules.
     </description>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
@@ -27,7 +27,7 @@
     </scm>
     <developers>
         <developer>
-            <name>AWS Lambda Powertools team</name>
+            <name>Powertools for AWS Lambda team</name>
             <organization>Amazon Web Services</organization>
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>

@@ -1,9 +1,9 @@
-# AWS Lambda Powertools for Java
+# Powertools for AWS Lambda (Java)
 
 ![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/awslabs/aws-lambda-powertools-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent) [![codecov.io](https://codecov.io/github/awslabs/aws-lambda-powertools-java/branch/master/graphs/badge.svg)](https://app.codecov.io/gh/awslabs/aws-lambda-powertools-java)
 
 
-Powertools is a developer toolkit to implement Serverless best practices and increase developer velocity.
+Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity.
 
 > Also available in [Python](https://github.com/awslabs/aws-lambda-powertools-python), [TypeScript](https://github.com/awslabs/aws-lambda-powertools-typescript), and [.NET](https://github.com/awslabs/aws-lambda-powertools-dotnet).
 
@@ -11,7 +11,7 @@ Powertools is a developer toolkit to implement Serverless best practices and inc
 
 ### Installation
 
-Powertools is available in Maven Central. You can use your favourite dependency management tool to install it
+Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
 
 * [maven](https://maven.apache.org/):
 ```xml
