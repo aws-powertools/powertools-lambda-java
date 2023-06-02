@@ -83,6 +83,7 @@ To install this utility, add the following dependency to your project.
     dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+        implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```
 
