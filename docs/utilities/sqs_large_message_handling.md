@@ -91,7 +91,8 @@ To install this utility, add the following dependency to your project.
     dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
-        implementation 'org.aspectj:aspectjrt:1.9.19'
+//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
+//      implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```
 
