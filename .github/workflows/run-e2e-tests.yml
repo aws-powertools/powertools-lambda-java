@@ -44,4 +44,4 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
       - name: Run e2e test with Maven
-        run: mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
+        run: export JAVA_VERSION=${{ matrix.java }} && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
