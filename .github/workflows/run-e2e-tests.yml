@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
   push:
-    branches: [master, e2e-tests-github]
+    branches: [master]
     paths: # add other modules when there are under e2e tests
       - 'powertools-e2e-tests/**'
       - 'powertools-core/**'
