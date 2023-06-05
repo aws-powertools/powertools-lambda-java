@@ -20,9 +20,9 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 2
+      max-parallel: 3
       matrix:
-        java: [ 8, 11 ]
+        java: [ 8, 11, 17 ]
     name: End-to-end tests java${{ matrix.java }}
     env:
       JAVA_VERSION: ${{ matrix.java }}
