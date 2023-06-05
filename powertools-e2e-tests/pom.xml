@@ -17,8 +17,8 @@
         <!-- we can use Java 11 for integration tests, not forced to stick to Java 8 -->
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <constructs.version>10.2.25</constructs.version>
-        <cdk.version>2.47.0</cdk.version>
+        <constructs.version>10.2.30</constructs.version>
+        <cdk.version>2.79.1</cdk.version>
 
         <!-- Don't deploy the e2e tests -->
         <maven.deploy.skip>true</maven.deploy.skip>
