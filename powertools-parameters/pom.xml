@@ -42,6 +42,10 @@
 
     <dependencies>
         <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>ssm</artifactId>
             <exclusions>
