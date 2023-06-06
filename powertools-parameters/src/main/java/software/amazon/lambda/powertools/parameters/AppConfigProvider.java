@@ -177,7 +177,7 @@ public class AppConfigProvider extends BaseProvider{
         }
 
         /**
-         * <b>Mandatory</b>. Provide a CacheManager to the {@link AppConfigProvider}
+         * <b>Mandatory</b>. Provide an application to the {@link AppConfigProvider}
          *
          * @param application the application to pull configuration from
          * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
