@@ -65,6 +65,12 @@ public class AppConfigProvider extends BaseProvider{
     }
 
 
+    /**
+     * Retrieve the parameter value from the AppConfig parameter store.<br />
+     *
+     * @param key key of the parameter. This ties back to AppConfig's 'profile' concept
+     * @return the value of the parameter identified by the key
+     */
     @Override
     protected String getValue(String key) {
         // Start a configuration session if we don't already have one for the key requested
