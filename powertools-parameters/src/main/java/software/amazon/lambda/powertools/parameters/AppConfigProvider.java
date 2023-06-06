@@ -24,7 +24,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
  * a mechanism to retrieve and update configuration of applications over time.
  * AppConfig requires the user to create an application, environment, and configuration profile.
- * The configuration profile's value can then retrieved, by key name, through this provider.
+ * The configuration profile's value can then be retrieved, by key name, through this provider.
  *
  * Because AppConfig is designed to handle rollouts of configuration over time, we must first
  * establish a session for each key we wish to retrieve, and then poll the session for the latest
