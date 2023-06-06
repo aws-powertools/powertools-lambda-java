@@ -6,6 +6,8 @@ import java.util.Map;
 /**
  * Defines configuration used to setup an AppConfig
  * deployment when the infrastructure is rolled out.
+ *
+ * All fields are non-nullable.
  */
 public class AppConfig {
     private String application;
