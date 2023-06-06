@@ -214,7 +214,7 @@ a `DynamoDbProvider` providing a client if you need to configure it yourself.
 
 ## AppConfig
 To get parameters stored in AppConfig, use `getAppConfigProvider`, providing the application and environment
-name to retrieve configuration from. As with the other providers, an overloaded methods allows you to retrieve
+name to retrieve configuration from. As with the other providers, an overloaded method allows you to retrieve
 an `AppConfigProvider` providing a client if you need to configure it yourself.
 
 === "AppConfigProvider"
