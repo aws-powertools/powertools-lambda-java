@@ -103,7 +103,7 @@ In both of the scenarios, powertools-java will return the `physicalResourceId` t
 
 #### Why do you need a physicalResourceId?
 
-It is recommended that you always explicitly provide a `physicalResourceId` in your response rather than letting powertools generate if for you because `physicalResourceId` has a crucial role in the lifecycle of a CloudFormation custom resource.
+It is recommended that you always explicitly provide a `physicalResourceId` in your response rather than letting Powertools for AWS Lambda (Java) generate if for you because `physicalResourceId` has a crucial role in the lifecycle of a CloudFormation custom resource.
 If the `physicalResourceId` changes between calls from Cloudformation, for instance in response to an `Update` event, Cloudformation [treats the resource update as a replacement](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-cfn-customresource.html).
 
 ### Customising a response

@@ -34,7 +34,10 @@ import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static software.amazon.lambda.powertools.idempotency.Constants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.ON_DEMAND;
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
@@ -86,9 +89,17 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
                 DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
-                        .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
                         .httpClient(UrlConnectionHttpClient.builder().build())
                         .region(Region.of(System.getenv(AWS_REGION_ENV)));
+
+                // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
+                // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
+                // fall back to the default provider chain if the mode is anything other than on-demand.
+                String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
+                if (initializationType  != null && initializationType.equals(ON_DEMAND)) {
+                    ddbBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
+                }
+
                 this.dynamoDbClient = ddbBuilder.build();
             } else {
                 // we do not want to create a DynamoDbClient if idempotency is disabled
@@ -249,7 +260,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
      * You can also set a custom {@link DynamoDbClient} for further tuning.
      */
     public static class Builder {
-        private static final String funcEnv = System.getenv(Constants.LAMBDA_FUNCTION_NAME_ENV);
+        private static final String funcEnv = System.getenv(LAMBDA_FUNCTION_NAME_ENV);
 
         private String tableName;
         private String keyAttr = "id";

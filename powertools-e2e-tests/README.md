@@ -1,5 +1,5 @@
 ## End-to-end tests
-This module is internal and meant to be used for end-to-end (E2E) testing of Lambda Powertools for Java. 
+This module is internal and meant to be used for end-to-end (E2E) testing of Powertools for AWS Lambda (Java). 
 
 __Prerequisites__: 
 - An AWS account is needed as well as a local environment able to reach this account 

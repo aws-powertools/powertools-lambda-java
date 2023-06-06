@@ -34,6 +34,8 @@ To install this utility, add the following dependency to your project.
      dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
+//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
+//      implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```
 
@@ -484,9 +486,9 @@ If you want to use the ```@Param``` annotation in your project add configuration
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      ...
                      <aspectLibraries>
@@ -525,5 +527,6 @@ If you want to use the ```@Param``` annotation in your project add configuration
     dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
+        implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```

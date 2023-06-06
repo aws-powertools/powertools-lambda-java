@@ -7,7 +7,7 @@
     <version>1.0.0</version>
     <packaging>pom</packaging>
     <name>Handlers for End-to-End tests</name>
-    <description>Fake handlers that use Lambda Powertools for Java.</description>
+    <description>Fake handlers that use Powertools for AWS Lambda (Java).</description>
 
     <properties>
         <lambda.powertools.version>1.15.0</lambda.powertools.version>
@@ -18,7 +18,7 @@
         <lambda.java.core>1.2.2</lambda.java.core>
         <lambda.java.events>3.11.0</lambda.java.events>
         <maven.shade.version>3.2.4</maven.shade.version>
-        <aspectj.version>1.14.0</aspectj.version>
+        <aspectj.version>1.13.1</aspectj.version>
         <maven.compiler.version>3.10.1</maven.compiler.version>
     </properties>
 
@@ -105,9 +105,9 @@
                     </dependencies>
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>dev.aspectj</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
-                    <version>${aspectj.version}</version>
+                    <version>1.13.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
