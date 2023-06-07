@@ -12,6 +12,7 @@ on:
       - 'powertools-logging/**'
       - 'powertools-tracing/**'
       - 'powertools-idempotency/**'
+      - 'powertools-parameters/**'
       - 'powertools-metrics/**'
       - 'pom.xml'
       - '.github/workflows/**'
