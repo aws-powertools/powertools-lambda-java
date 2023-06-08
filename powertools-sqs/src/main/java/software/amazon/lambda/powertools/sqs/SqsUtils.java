@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
@@ -504,11 +505,13 @@ public final class SqsUtils {
 
             try {
                 if (messageGroupId != null && failedMessageGroupIds.contains(messageGroupId)) {
-                    // TODO - do we need to record that we're skipping this? If we add it to the failure
-                    // list it's a bit weird as it's not a failure ....
-                    // batchContext.addFailure(message, null);
                     LOG.info("Skipping message {} as another message in messageGroup {} failed in this batch",
                             message.getMessageId(), messageGroupId);
+
+                    // We need to add a failure for this message, so that we report back to Lambda that this
+                    // message should be retried
+                    // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
+                    batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException(messageGroupId));
                 } else {
                     handlerReturn.add(handler.process(message));
                     batchContext.addSuccess(message);
