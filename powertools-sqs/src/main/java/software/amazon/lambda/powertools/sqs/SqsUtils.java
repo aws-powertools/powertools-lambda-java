@@ -43,6 +43,9 @@ public final class SqsUtils {
     private static SqsClient client;
     private static S3Client s3Client;
 
+    // The attribute on an SQS-FIFO message used to record the message group ID
+    private static final String MessageGroupIdKey = "MessageGroupId";
+
     private SqsUtils() {
     }
 
@@ -491,12 +494,28 @@ public final class SqsUtils {
 
         BatchContext batchContext = new BatchContext(client);
 
+        List<String> failedMessageGroupIds = new ArrayList<>(); // Track which message groups have failed
         for (SQSMessage message : event.getRecords()) {
+
+            // If we are trying to process a message that has a messageGroupId, we are on a FIFO queue,
+            // and should not process it if a previous message in the same group in this batch has failed.
+            String messageGroupId = message.getAttributes() != null?
+                    message.getAttributes().get(MessageGroupIdKey) : null;
+
             try {
-                handlerReturn.add(handler.process(message));
-                batchContext.addSuccess(message);
+                if (messageGroupId != null && failedMessageGroupIds.contains(messageGroupId)) {
+                    batchContext.addFailure(message, null); // TODO - is this sensible
+                } else {
+                    handlerReturn.add(handler.process(message));
+                    batchContext.addSuccess(message);
+                }
             } catch (Exception e) {
                 batchContext.addFailure(message, e);
+
+                // Record that this messageGroupId has a failure
+                if (messageGroupId != null) {
+                    failedMessageGroupIds.add(messageGroupId);
+                }
                 LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
             }
         }
