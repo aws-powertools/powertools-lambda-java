@@ -503,11 +503,11 @@ public final class SqsUtils {
                     message.getAttributes().get(MessageGroupIdKey) : null;
 
             try {
-                if (messageGroupId == null && failedMessageGroupIds.contains(messageGroupId)) {
+                if (messageGroupId != null && failedMessageGroupIds.contains(messageGroupId)) {
                     // TODO - do we need to record that we're skipping this? If we add it to the failure
                     // list it's a bit weird as it's not a failure ....
                     // batchContext.addFailure(message, null);
-                    LOG.info("Skipping messge {} as another message in messageGroup {} failed in this batch",
+                    LOG.info("Skipping message {} as another message in messageGroup {} failed in this batch",
                             message.getMessageId(), messageGroupId);
                 } else {
                     handlerReturn.add(handler.process(message));
