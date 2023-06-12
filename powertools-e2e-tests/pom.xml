@@ -18,7 +18,7 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <constructs.version>10.2.47</constructs.version>
-        <cdk.version>2.79.1</cdk.version>
+        <cdk.version>2.83.1</cdk.version>
 
         <!-- Don't deploy the e2e tests -->
         <maven.deploy.skip>true</maven.deploy.skip>
