@@ -1,5 +1,5 @@
 ## Idempotency 
-Refer to the [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/idempotency/) for details on how to use this module in your Lambda function.
+Refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/idempotency/) for details on how to use this module in your Lambda function.
 
 ### Contributing
 This module provides a persistence layer with a built-in store using DynamoDB. 

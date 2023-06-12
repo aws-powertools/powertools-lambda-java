@@ -12,7 +12,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Added
 * Feature: Add DynamoDB provider to parameters module (#1091) by @scottgerring
-* Feature: Update to powertools-cloudformation to deprecate `Response.success()` and `Response.failed()` methods. New helper methods are added to make it easier to follow best practices `Response.success(String physicalResourceId)` and `Response.failed(String physicalResourceId)`. For a detailed explanation please read the [powertools-cloudformation documentation page](https://awslabs.github.io/aws-lambda-powertools-java/utilities/custom_resources/). (#1082) by @msailes
+* Feature: Update to powertools-cloudformation to deprecate `Response.success()` and `Response.failed()` methods. New helper methods are added to make it easier to follow best practices `Response.success(String physicalResourceId)` and `Response.failed(String physicalResourceId)`. For a detailed explanation please read the [powertools-cloudformation documentation page](https://docs.powertools.aws.dev/lambda-java/utilities/custom_resources/). (#1082) by @msailes
 * Update how a Lambda request handler method is identified (#1058) by @humanzz
 
 ### Maintenance
@@ -114,7 +114,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 ### Documentation
 
 
-* **SQS Batch processing**: Improve [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/batch/#iam-permissions) on IAM premissions required by function when using utility with an encrypted SQS queue with customer managed KMS keys.
+* **SQS Batch processing**: Improve [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/batch/#iam-permissions) on IAM premissions required by function when using utility with an encrypted SQS queue with customer managed KMS keys.
 
 
 ## [1.10.2] - 2022-01-07
@@ -127,7 +127,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.10.0] - 2021-12-27
 
-* **Logging**: Modern log4j configuration to customise structured logging. Refer [docs](https://awslabs.github.io/aws-lambda-powertools-java/core/logging/#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) to start using new config. [#670](https://github.com/aws-powertools/lambda-java/pull/670)
+* **Logging**: Modern log4j configuration to customise structured logging. Refer [docs](https://docs.powertools.aws.dev/lambda-java/core/logging/#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) to start using new config. [#670](https://github.com/aws-powertools/lambda-java/pull/670)
 * **SQS Batch**: Support batch size greater than 10. [#667](https://github.com/aws-powertools/lambda-java/pull/667)
 
 ## [1.9.0] - 2021-12-21
