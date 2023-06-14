@@ -5,6 +5,12 @@ on:
     workflows: ["Build"]
     types: [completed]
 
+permissions:
+  pull-requests: write
+  issues: write
+  repository-projects: write
+  contents: write
+
 jobs:
   merge-me:
     name: Merge me!
@@ -51,10 +57,13 @@ jobs:
             })
 
           github-token: ${{ secrets.AUTOMERGE }}
-      - name: Merge me!
-        uses: peter-evans/create-or-update-comment@v2 # use dependabot comments to automatically merge
+      - name: Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v1.1.1
         with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            dependabot squash and merge
-          reactions: rocket
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+      - name: Enable auto-merge for Dependabot PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
