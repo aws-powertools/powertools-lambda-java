@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>DynamoDBLocal</artifactId>
-            <version>1.21.0</version>
+            <version>1.22.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -76,9 +76,9 @@
     <build>
       <plugins>
         <plugin>
-             <groupId>org.codehaus.mojo</groupId>
+             <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.14.0</version>
+             <version>1.13.1</version>
              <configuration>
                  <source>${maven.compiler.source}</source>
                  <target>${maven.compiler.target}</target>

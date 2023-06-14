@@ -43,9 +43,9 @@ times with the same parameters**. This makes idempotent operations safe to retry
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
