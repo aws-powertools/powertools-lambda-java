@@ -146,7 +146,7 @@ public class AppConfigProvider extends BaseProvider{
 
             // Create a AppConfigDataClient if we haven't been given one
             if (client == null) {
-                AppConfigDataClientBuilder ssmClientBuilder = AppConfigDataClient.builder()
+                AppConfigDataClientBuilder appConfigDataClientBuilder = AppConfigDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
 
@@ -155,8 +155,10 @@ public class AppConfigProvider extends BaseProvider{
                 // fall back to the default provider chain if the mode is anything other than on-demand.
                 String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
                 if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                    ssmClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
+                    appConfigDataClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
+
+                client = appConfigDataClientBuilder.build();
             }
 
             AppConfigProvider provider = new AppConfigProvider(cacheManager, client, environment, application);
