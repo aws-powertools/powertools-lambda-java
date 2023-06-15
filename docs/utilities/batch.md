@@ -4,6 +4,9 @@ description: Utility
 ---
 
 The SQS batch processing utility provides a way to handle partial failures when processing batches of messages from SQS.
+The utility handles batch processing for both 
+[standard](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html) and 
+[FIFO](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html) SQS queues. 
 
 **Key Features**
 
@@ -110,8 +113,11 @@ Both have nearly the same behaviour when it comes to processing messages from th
 * **Entire batch has been successfully processed**, where your Lambda handler returned successfully, we will let SQS delete the batch to optimize your cost
 * **Entire Batch has been partially processed successfully**, where exceptions were raised within your `SqsMessageHandler` interface implementation, we will:
     - **1)** Delete successfully processed messages from the queue by directly calling `sqs:DeleteMessageBatch`
-    - **2)** if, non retryable exceptions occur, messages resulting in configured exceptions during processing will be immediately moved to the dead letter queue associated to the source SQS queue or deleted from the source SQS queue if `deleteNonRetryableMessageFromQueue` is set to `true`.
-    - **3)** Raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
+    - **2)** If a message with a [message group ID](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html) fails, 
+             the processing of the batch will be stopped and the remainder of the messages will be returned to SQS. 
+             This behaviour [is required to handle SQS FIFO queues](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting).   
+    - **3)** if non retryable exceptions occur, messages resulting in configured exceptions during processing will be immediately moved to the dead letter queue associated to the source SQS queue or deleted from the source SQS queue if `deleteNonRetryableMessageFromQueue` is set to `true`.
+    - **4)** Raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
 
 The only difference is that **SqsUtils Utility API** will give you access to return from the processed messages if you need. Exception `SQSBatchProcessingException` thrown from the
 utility will have access to both successful and failed messaged along with failure exceptions.
