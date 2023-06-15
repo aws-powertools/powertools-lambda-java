@@ -21,10 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.exceptions.*;
 import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
@@ -34,12 +31,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.OptionalInt;
+import java.util.*;
 import java.util.stream.Stream;
-import java.util.Spliterators;
-import java.util.Spliterator;
 import java.util.stream.StreamSupport;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
@@ -130,6 +123,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         } catch (JsonProcessingException e) {
             // TODO : throw ?
             throw new RuntimeException("Error while serializing the response", e);
+        } catch (NullIdempotencyKeyException e) {
+            // missing idempotency key => non-idempotent transaction, we do not store the data, simply return
+            return;
         }
     }
 
@@ -140,7 +136,13 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param now
      */
     public void saveInProgress(JsonNode data, Instant now, OptionalInt remainingTimeInMs) throws IdempotencyItemAlreadyExistsException {
-        String idempotencyKey = getHashedIdempotencyKey(data);
+        String idempotencyKey;
+        try {
+            idempotencyKey = getHashedIdempotencyKey(data);
+        } catch (NullIdempotencyKeyException e) {
+            // missing idempotency key => non-idempotent transaction, we do not store the data, simply return
+            return;
+        }
 
         if (retrieveFromCache(idempotencyKey, now) != null) {
             throw new IdempotencyItemAlreadyExistsException();
@@ -170,7 +172,13 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param throwable The throwable thrown by the function
      */
     public void deleteRecord(JsonNode data, Throwable throwable) {
-        String idemPotencyKey = getHashedIdempotencyKey(data);
+        String idemPotencyKey;
+        try {
+            idemPotencyKey = getHashedIdempotencyKey(data);
+        } catch (NullIdempotencyKeyException e) {
+            // missing idempotency key => non-idempotent transaction, we do not delete the data, simply return
+            return;
+        }
 
         LOG.debug("Function raised an exception {}. " +
                         "Clearing in progress record in persistence store for idempotency key: {}",
@@ -190,7 +198,13 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @throws IdempotencyItemNotFoundException Exception thrown if no record exists in persistence store with the idempotency key
      */
     public DataRecord getRecord(JsonNode data, Instant now) throws IdempotencyValidationException, IdempotencyItemNotFoundException {
-        String idemPotencyKey = getHashedIdempotencyKey(data);
+        String idemPotencyKey;
+        try {
+            idemPotencyKey = getHashedIdempotencyKey(data);
+        } catch (NullIdempotencyKeyException e) {
+            // missing idempotency key => non-idempotent transaction, we do not get the data, simply return nothing
+            return null;
+        }
 
         DataRecord cachedRecord = retrieveFromCache(idemPotencyKey, now);
         if (cachedRecord != null) {
@@ -211,7 +225,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param data incoming data
      * @return Hashed representation of the data extracted by the jmespath expression
      */
-    private String getHashedIdempotencyKey(JsonNode data) {
+    private String getHashedIdempotencyKey(JsonNode data) throws NullIdempotencyKeyException {
         JsonNode node = data;
 
         if (eventKeyJMESPath != null) {
@@ -221,8 +235,10 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         if (isMissingIdemPotencyKey(node)) {
             if (throwOnNoIdempotencyKey) {
                 throw new IdempotencyKeyException("No data found to create a hashed idempotency key");
+            } else {
+                LOG.warn("No data found to create a hashed idempotency key. JMESPath: {}", eventKeyJMESPath);
+                throw new NullIdempotencyKeyException("No data found to create a hashed idempotency key");
             }
-            LOG.warn("No data found to create a hashed idempotency key. JMESPath: {}", eventKeyJMESPath);
         }
 
         String hash = generateHash(node);
