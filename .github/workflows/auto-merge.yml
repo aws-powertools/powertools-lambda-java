@@ -5,6 +5,12 @@ on:
     workflows: ["Build"]
     types: [completed]
 
+permissions:
+  pull-requests: write
+  issues: write
+  repository-projects: write
+  contents: write
+
 jobs:
   merge-me:
     name: Merge me!
@@ -49,12 +55,12 @@ jobs:
               pull_number: issue_number,
               event: 'APPROVE'
             })
+            
+            github.pulls.merge({
+              owner: context.payload.repository.owner.login,
+              repo: context.payload.repository.name,
+              pull_number: issue_number,
+              merge_method: 'squash'
+            })
 
           github-token: ${{ secrets.AUTOMERGE }}
-      - name: Merge me!
-        uses: peter-evans/create-or-update-comment@v2 # use dependabot comments to automatically merge
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            dependabot squash and merge
-          reactions: rocket
