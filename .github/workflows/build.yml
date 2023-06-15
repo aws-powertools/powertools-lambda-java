@@ -89,18 +89,22 @@ jobs:
             report+="| ${artifact_name} | ${artifact_version} | ${artifact_size} |\n"
           done
           echo "ARTIFACT_REPORT=$report" >> "$GITHUB_OUTPUT"
-      - name: Comment artifacts size report
+      - name: Find potential existing report
         if: ${{ matrix.java == '11.0.x' }} # do it once
-        uses: actions/github-script@v6
+        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # 2.4.0
+        id: find-comment
         with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "${{ steps.artifacts-size-report.outputs.ARTIFACT_REPORT }}"
-            })
-
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Artifacts Size Report
+      - name: Artifacts size report in comment
+        if: ${{ matrix.java == '11.0.x' }} # do it once
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # 3.0.2
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: "${{ steps.artifacts-size-report.outputs.ARTIFACT_REPORT }}"
+          edit-mode: replace
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
