@@ -1,13 +1,11 @@
 package software.amazon.lambda.powertools.sqs.exception;
 
+/**
+ * Thrown to indicate that a
+ */
 public class SkippedMessageDueToFailedBatchException extends Exception {
-    private final String messageGroupId;
 
-    public SkippedMessageDueToFailedBatchException(String messageGroupId) {
-        this.messageGroupId = messageGroupId;
+    public SkippedMessageDueToFailedBatchException() {
     }
 
-    public String getMessageGroupId() {
-        return messageGroupId;
-    }
 }

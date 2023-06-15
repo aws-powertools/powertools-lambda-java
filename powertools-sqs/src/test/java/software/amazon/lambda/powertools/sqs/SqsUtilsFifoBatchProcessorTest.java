@@ -3,8 +3,12 @@ package software.amazon.lambda.powertools.sqs;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
+import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchResponse;
 
 import java.io.IOException;
 import java.util.List;
@@ -24,6 +28,9 @@ public class SqsUtilsFifoBatchProcessorTest {
     @Mock
     private SqsClient sqsClient;
 
+    @Mock
+    private ArgumentCaptor<DeleteMessageBatchRequest> deleteMessageCaptor;
+
     public SqsUtilsFifoBatchProcessorTest() throws IOException {
         openMocks(this);
         overrideSqsClient(sqsClient);
@@ -32,15 +39,46 @@ public class SqsUtilsFifoBatchProcessorTest {
 
     @Test
     public void processWholeBatch() {
+        // Act
         AtomicInteger processedCount = new AtomicInteger();
         List<Object> results = batchProcessor(sqsBatchEvent, false, (message) -> {
             processedCount.getAndIncrement();
             return true;
         });
 
+        // Assert
         assertThat(processedCount.get()).isEqualTo(3);
         assertThat(results.size()).isEqualTo(3);
     }
+
+//    @Test
+//    public void singleFailureAtEndOfBatch() {
+//
+//        // Arrange
+//        Mockito.when(sqsClient.deleteMessageBatch(deleteMessageCaptor.capture())).thenReturn(DeleteMessageBatchResponse
+//                .builder().build());
+//
+//        // Act
+//        AtomicInteger processedCount = new AtomicInteger();
+//        List<Object> results = batchProcessor(sqsBatchEvent, false, (message) -> {
+//            int value = processedCount.getAndIncrement();
+//            if (value == 2) {
+//                throw new RuntimeException("Whoops");
+//            }
+//            return true;
+//        });
+//
+//        // Assert
+//        // - two messages processed
+//        assertThat(processedCount.get()).isEqualTo(2);
+//        assertThat(results.size()).isEqualTo(2);
+//
+//        // - one message explicitly deleted
+//        assertThat(deleteMessageCaptor.getValue().entries().size()).isEqualTo(1);
+//        assertThat(deleteMessageCaptor.getValue().entries().get(0).id())
+//                .isEqualTo(sqsBatchEvent.getRecords().get(sqsBatchEvent.getRecords().size() -1).getMessageId());
+//
+//    }
 
     @Test
     public void messageFailureStopsGroupProcessing() {
@@ -55,7 +93,7 @@ public class SqsUtilsFifoBatchProcessorTest {
                     return groupId;
                 }))
             .satisfies(e -> {
-                assertThat(e.successMessageReturnValues().size()).isEqualTo(1);
+                assertThat(e.successMessageReturnValues().size()).isEqualTo(0);
                 assertThat(e.successMessageReturnValues().contains(groupToFail)).isFalse();
             });
     }

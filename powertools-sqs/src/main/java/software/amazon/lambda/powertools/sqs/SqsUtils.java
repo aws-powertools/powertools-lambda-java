@@ -493,37 +493,41 @@ public final class SqsUtils {
             client = SqsClient.create();
         }
 
+        // If we are working on a FIFO queue, when any message fails we should stop processing and return the
+        // rest of the batch as failed too. We use this variable to track when that has happened.
+        // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
+        boolean failWholeBatch = false;
+
         BatchContext batchContext = new BatchContext(client);
 
-        List<String> failedMessageGroupIds = new ArrayList<>(); // Track which message groups have failed
         for (SQSMessage message : event.getRecords()) {
-
-            // If we are trying to process a message that has a messageGroupId, we are on a FIFO queue,
-            // and should not process it if a previous message in the same group in this batch has failed.
-            String messageGroupId = message.getAttributes() != null?
-                    message.getAttributes().get(MessageGroupIdKey) : null;
-
-            try {
-                if (messageGroupId != null && failedMessageGroupIds.contains(messageGroupId)) {
-                    LOG.info("Skipping message {} as another message in messageGroup {} failed in this batch",
-                            message.getMessageId(), messageGroupId);
-
-                    // We need to add a failure for this message, so that we report back to Lambda that this
-                    // message should be retried
-                    // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
-                    batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException(messageGroupId));
-                } else {
+            // If the batch has already failed, we mark each message past the failure point as failed
+            if (failWholeBatch) {
+                LOG.info("Skipping message {} as another message with a message group failed in this batch",
+                        message.getMessageId());
+                batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
+            } else {
+                // If the batch hasn't failed, try process the message
+                try {
                     handlerReturn.add(handler.process(message));
                     batchContext.addSuccess(message);
-                }
-            } catch (Exception e) {
-                batchContext.addFailure(message, e);
+                } catch(Exception e){
 
-                // Record that this messageGroupId has a failure
-                if (messageGroupId != null) {
-                    failedMessageGroupIds.add(messageGroupId);
+                    // Record the failure
+                    batchContext.addFailure(message, e);
+
+                    // If we are trying to process a message that has a messageGroupId, we are on a FIFO queue. A failure
+                    // now stops us from processing the rest of the batch.
+                    String messageGroupId = message.getAttributes() != null ?
+                            message.getAttributes().get(MessageGroupIdKey) : null;
+
+                    if (messageGroupId != null) {
+                        failWholeBatch = true;
+                        LOG.info("A message in a message batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
+                                , messageGroupId, message.getMessageId());
+                    }
+                    LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
                 }
-                LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
             }
         }
 
