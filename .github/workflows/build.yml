@@ -73,6 +73,34 @@ jobs:
         if: ${{ matrix.java == '11' }} # publish results once
         with:
           files: ./powertools-cloudformation/target/site/jacoco/jacoco.xml,./powertools-core/target/site/jacoco/jacoco.xml,./powertools-idempotency/target/site/jacoco/jacoco.xml,./powertools-logging/target/site/jacoco/jacoco.xml,./powertools-metrics/target/site/jacoco/jacoco.xml,./powertools-parameters/target/site/jacoco/jacoco.xml,./powertools-serialization/target/site/jacoco/jacoco.xml,./powertools-sqs/target/site/jacoco/jacoco.xml,./powertools-tracing/target/site/jacoco/jacoco.xml,./powertools-validation/target/site/jacoco/jacoco.xml
+      - name: Get artifacts size & build report
+        id: artifacts-size-report
+        if: ${{ matrix.java == '11.0.x' }} # do it once
+        run: |
+          report='## Artifacts Size Report\n\n'
+          report+='| Module | Version | Size |\n'
+          report+='| --- | --- | --- |\n'
+          artifact_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          grep 'outputs.*.jar' target/powertools-parent-*.buildinfo | grep -v 'sources.jar' | while IFS= read -r artifact; do
+            artifact_name=$(echo "$artifact" | cut -d '=' -f2)
+            artifact_name=${artifact_name%-$artifact_version.jar}
+            artifact_size=$(grep "${artifact%%.filename*}.length" target/powertools-parent-*.buildinfo | cut -d '=' -f2)
+            echo "$artifact_name = $artifact_size"
+            report+="| $artifact_name | $artifact_version | $artifact_size |\n"
+          done
+          echo "ARTIFACT_REPORT=$report" >> "$GITHUB_OUTPUT"
+      - name: Comment artifacts size report
+        if: ${{ matrix.java == '11.0.x' }} # do it once
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: ${{ steps.artifacts-size-report.outputs.ARTIFACT_REPORT }}
+            })
+
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
