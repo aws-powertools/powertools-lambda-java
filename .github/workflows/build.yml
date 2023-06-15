@@ -78,15 +78,15 @@ jobs:
         if: ${{ matrix.java == '11.0.x' }} # do it once
         run: |
           report='## Artifacts Size Report\n\n'
-          report+='| Module | Size |\n'
-          report+='| --- | --- |\n'
+          report+='| Module | Version | Size |\n'
+          report+='| --- | --- | --- |\n'
           artifact_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           grep 'outputs.*.jar' target/powertools-parent-*.buildinfo | grep -v 'sources.jar' | while IFS= read -r artifact; do
             artifact_name=$(echo "$artifact" | cut -d '=' -f2)
             artifact_name=${artifact_name%-$artifact_version.jar}
             artifact_size=$(grep "${artifact%%.filename*}.length" target/powertools-parent-*.buildinfo | cut -d '=' -f2)
             echo "$artifact_name = $artifact_size"
-            report+="| ${artifact_name} | ${artifact_size} |\n"
+            report+="\| ${artifact_name} \| ${artifact_version} \| ${artifact_size} \|\n"
           done
           echo "ARTIFACT_REPORT=$report" >> "$GITHUB_OUTPUT"
       - name: Comment artifacts size report
