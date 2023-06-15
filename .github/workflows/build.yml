@@ -86,7 +86,7 @@ jobs:
             artifact_name=${artifact_name%-$artifact_version.jar}
             artifact_size=$(grep "${artifact%%.filename*}.length" target/powertools-parent-*.buildinfo | cut -d '=' -f2)
             echo "$artifact_name = $artifact_size"
-            report+="| $artifact_name | $artifact_version | $artifact_size |\n"
+            report+="| ${artifact_name} | ${artifact_version} | ${artifact_size} |\n"
           done
           echo "ARTIFACT_REPORT=$report" >> "$GITHUB_OUTPUT"
       - name: Comment artifacts size report
