@@ -708,9 +708,11 @@ By using **`withPayloadValidationJMESPath("amount")`**, we prevent this potentia
 
 ### Making idempotency key required
 
-If you want to enforce that an idempotency key is required, you can set **`ThrowOnNoIdempotencyKey`** to `True`.
+If you want to enforce that an idempotency key is required, you can set **`ThrowOnNoIdempotencyKey`** to `true`.
 
 This means that we will throw **`IdempotencyKeyException`** if the evaluation of **`EventKeyJMESPath`** is `null`.
+
+When set to `false` (the default), if the idempotency key is null, then the data is not persisted in the store.
 
 === "App.java"
 
