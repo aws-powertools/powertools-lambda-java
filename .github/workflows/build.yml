@@ -77,14 +77,15 @@ jobs:
         id: artifacts-size-report
         if: ${{ matrix.java == '11.0.x' }} # do it once
         run: |
-          echo '## Artifacts Size Report' > report.md
-          echo '| Module | Version | Size |' >> report.md
+          echo '## :floppy_disk: Artifacts Size Report' > report.md
+          echo '| Module | Version | Size (KB) |' >> report.md
           echo '| --- | --- | --- |' >> report.md
           artifact_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           for artifact in $(cat target/powertools-parent-*.buildinfo | grep 'outputs.*.jar' | grep -v 'sources.jar'); do
             artifact_name=$(echo "$artifact" | cut -d '=' -f2)
             artifact_name=${artifact_name%-$artifact_version.jar}
             artifact_size=$(grep "${artifact%%.filename*}.length" target/powertools-parent-*.buildinfo | cut -d '=' -f2)
+            artifact_size=$((artifact_size/1000))
             echo "| ${artifact_name} | ${artifact_version} | ${artifact_size} |" >> report.md
           done
       - name: Find potential existing report
