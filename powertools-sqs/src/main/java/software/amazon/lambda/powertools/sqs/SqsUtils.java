@@ -519,7 +519,7 @@ public final class SqsUtils {
         } catch (Exception e) {
             LOG.error("Failed creating handler instance", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
-                    "https://github.com/aws-powertools/lambda-java/issues", e);
+                    "https://github.com/aws-powertools/powertools-lambda-java/issues", e);
         }
     }
 

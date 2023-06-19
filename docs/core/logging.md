@@ -466,7 +466,7 @@ via `samplingRate` attribute on annotation.
 
 ## Upgrade to JsonTemplateLayout from deprecated LambdaJsonLayout configuration in log4j2.xml
 
-Prior to version [1.10.0](https://github.com/aws-powertools/lambda-java/releases/tag/v1.10.0), only supported way of configuring `log4j2.xml` was via  `<LambdaJsonLayout/>`. This plugin is 
+Prior to version [1.10.0](https://github.com/aws-powertools/powertools-lambda-java/releases/tag/v1.10.0), only supported way of configuring `log4j2.xml` was via  `<LambdaJsonLayout/>`. This plugin is 
 deprecated now and will be removed in future version. Switching to `JsonTemplateLayout` is straight forward. 
 
 Below examples shows deprecated and new configuration of `log4j2.xml`.

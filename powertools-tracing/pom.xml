@@ -20,11 +20,11 @@
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/aws-powertools/lambda-java/issues</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
 
     <scm>
-        <url>https://github.com/aws-powertools/lambda-java.git</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
     </scm>
     <developers>
         <developer>

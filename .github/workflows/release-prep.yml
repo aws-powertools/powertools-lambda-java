@@ -75,6 +75,6 @@ jobs:
           delete-branch: true
           title: chore:Prep release ${{ github.event.inputs.targetRelease }}
           body: |
-            This is automated release prep. Remember to update [CHANGELOG.md](https://github.com/aws-powertools/lambda-java/blob/prep-release-${{ github.event.inputs.targetRelease }}/CHANGELOG.md) to capture changes in this release. Please review changes carefully before merging.
+            This is automated release prep. Remember to update [CHANGELOG.md](https://github.com/aws-powertools/powertools-lambda-java/blob/prep-release-${{ github.event.inputs.targetRelease }}/CHANGELOG.md) to capture changes in this release. Please review changes carefully before merging.
             
             * [ ] Updated CHANGELOG.md
