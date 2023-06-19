@@ -827,7 +827,7 @@ Data would then be stored in DynamoDB like this:
 This utility provides an abstract base class, so that you can implement your choice of persistent storage layer.
 
 You can extend the `BasePersistenceStore` class and implement the abstract methods `getRecord`, `putRecord`,
-`updateRecord` and `deleteRecord`. You can have a look at [`DynamoDBPersistenceStore`](https://github.com/awslabs/aws-lambda-powertools-java/blob/master/powertools-idempotency/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/DynamoDBPersistenceStore.java) as an implementation reference.
+`updateRecord` and `deleteRecord`. You can have a look at [`DynamoDBPersistenceStore`](https://github.com/aws-powertools/powertools-lambda-java/blob/master/powertools-idempotency/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/DynamoDBPersistenceStore.java) as an implementation reference.
 
 !!! danger
     Pay attention to the documentation for each method - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.

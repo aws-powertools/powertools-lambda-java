@@ -10,8 +10,8 @@
     </parent>
 
     <artifactId>powertools-e2e-tests</artifactId>
-    <name>AWS Lambda Powertools for Java library End-to-end tests</name>
-    <description>AWS Lambda Powertools for Java End-To-End Tests</description>
+    <name>Powertools for AWS Lambda (Java)library End-to-end tests</name>
+    <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
 
     <properties>
         <!-- we can use Java 11 for integration tests, not forced to stick to Java 8 -->
