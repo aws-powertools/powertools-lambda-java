@@ -1,6 +1,6 @@
 # Parameters
 
-This project contains an example of Lambda function using the parameters module of Lambda Powertools for Java. For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/parameters/).
+This project contains an example of Lambda function using the parameters module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/parameters/).
 
 ## Deploy the sample application
 

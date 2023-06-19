@@ -143,15 +143,15 @@ public class BasePersistenceStoreTest {
     }
 
     @Test
-    public void saveInProgress_jmespath_NotFound_shouldNotThrowException() {
+    public void saveInProgress_jmespath_NotFound_shouldNotPersist() {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         persistenceStore.configure(IdempotencyConfig.builder()
                 .withEventKeyJMESPath("unavailable")
                 .build(), "");
         Instant now = Instant.now();
         persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
-        assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
-        assertThat(status).isEqualTo(1);
+        assertThat(dr).isNull();
+        assertThat(status).isEqualTo(-1);
     }
 
     @Test

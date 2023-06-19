@@ -9,7 +9,7 @@
     <version>1.15.0</version>
     <packaging>pom</packaging>
 
-    <name>AWS Lambda Powertools for Java library Parent</name>
+    <name>Powertools for AWS Lambda (Java) library Parent</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
@@ -48,7 +48,7 @@
 
     <developers>
         <developer>
-            <name>AWS Lambda Powertools team</name>
+            <name>Powertools for AWS Lambda (Java) team</name>
             <organization>Amazon Web Services</organization>
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>
@@ -60,22 +60,22 @@
         <log4j.version>2.20.0</log4j.version>
         <jackson.version>2.14.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.20.29</aws.sdk.version>
-        <aws.xray.recorder.version>2.13.0</aws.xray.recorder.version>
+        <aws.sdk.version>2.20.86</aws.sdk.version>
+        <aws.xray.recorder.version>2.14.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.2</lambda.core.version>
         <lambda.events.version>3.11.1</lambda.events.version>
         <lambda.serial.version>1.1.2</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
-        <aspectj-maven-plugin.version>1.14.0</aspectj-maven-plugin.version>
+        <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.8</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
-        <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
-        <maven-gpg-plugin.version>3.0.1</maven-gpg-plugin.version>
-        <junit-jupiter.version>5.9.2</junit-jupiter.version>
+        <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
+        <junit-jupiter.version>5.9.3</junit-jupiter.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.5.1</jmespath.version>
     </properties>
@@ -286,7 +286,7 @@
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
-                <version>1.4.6</version>
+                <version>1.4.7</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -307,7 +307,7 @@
                     <version>${maven-compiler-plugin.version}</version>
                 </plugin>
                 <plugin>
-                    <groupId>org.codehaus.mojo</groupId>
+                    <groupId>dev.aspectj</groupId>
                     <artifactId>aspectj-maven-plugin</artifactId>
                     <version>${aspectj-maven-plugin.version}</version>
                 </plugin>
@@ -354,7 +354,7 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
+                <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>${aspectj-maven-plugin.version}</version>
                 <configuration>
@@ -454,7 +454,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.7.3.2</version>
+                        <version>4.7.3.4</version>
                         <executions>
                             <execution>
                                 <id>test</id>

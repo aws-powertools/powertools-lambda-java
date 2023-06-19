@@ -6,7 +6,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>1.14.0</version>
+        <version>1.15.0</version>
     </parent>
 
     <artifactId>powertools-e2e-tests</artifactId>
@@ -17,8 +17,8 @@
         <!-- we can use Java 11 for integration tests, not forced to stick to Java 8 -->
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
-        <constructs.version>10.2.25</constructs.version>
-        <cdk.version>2.47.0</cdk.version>
+        <constructs.version>10.2.47</constructs.version>
+        <cdk.version>2.84.0</cdk.version>
 
         <!-- Don't deploy the e2e tests -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.6</version>
+            <version>1.4.7</version>
         </dependency>
 
         <dependency>
@@ -138,7 +138,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -156,7 +156,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.1.2</version>
                         <executions>
                             <execution>
                                 <goals>

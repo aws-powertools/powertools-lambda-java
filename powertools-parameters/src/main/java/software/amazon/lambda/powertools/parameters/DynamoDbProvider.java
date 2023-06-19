@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 /**
  * Implements a {@link ParamProvider} on top of DynamoDB. The schema of the table
- * is described in the Powertools documentation.
+ * is described in the Powertools for AWS Lambda (Java) documentation.
  *
  * @see <a href="https://docs.powertools.aws.dev/lambda-java/utilities/parameters">Parameters provider documentation</a>
  *

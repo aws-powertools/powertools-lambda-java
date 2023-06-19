@@ -25,7 +25,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 ### Documentation
 
 * Improve `powertools-cloudformation` docs (#1090) by @mriccia
-* Add link to Lambda powertools workshop (#1095) by @scottgerring
+* Add link to Powertools for AWS Lambda (Java) workshop (#1095) by @scottgerring
 * Fix mdocs and git revision plugin integration (#1066) by @machafer
 
 
@@ -42,7 +42,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Documentation
 
-* Docs: Update PowerTools definition by @heitorlessa
+* Docs: Update Powertools for AWS Lambda (Java) definition by @heitorlessa
 * Docs: Add information about other supported langauges to README and docs (#1033) by @kozub
 
 ## [1.13.0] - 2022-12-14
@@ -101,8 +101,8 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 ## [1.11.0] - 2022-02-16
 
 ### Added
- * Powertools Idempotency module: New module to get your Lambda function [Idempotent](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/) (#717)
- * Powertools Serialization module: New module to handle JSON (de)serialization (Jackson ObjectMapper, JMESPath functions)
+ * Powertools for AWS Lambda (Java) Idempotency module: New module to get your Lambda function [Idempotent](https://aws.amazon.com/builders-library/making-retries-safe-with-idempotent-APIs/) (#717)
+ * Powertools for AWS Lambda (Java) Serialization module: New module to handle JSON (de)serialization (Jackson ObjectMapper, JMESPath functions)
 
 
 ## [1.10.3] - 2022-02-01
@@ -151,8 +151,8 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Added
 
-* **Powertools Cloudformation module (NEW)**: New module simplifying [AWS Lambda-backed custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) written in Java. [#560](https://github.com/aws-powertools/powertools-lambda-java/pull/560)
-* **SQS Large message processing**: Ability to override the default `S3Client` use to fetch payload from S3. [#602](https://github.com/aws-powertools/powertools-lambda-java/pull/602)
+* **Powertools for AWS Lambda (Java) Cloudformation module (NEW)**: New module simplifying [AWS Lambda-backed custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) written in Java. [#560](https://github.com/awslabs/aws-lambda-powertools-java/pull/560)
+* **SQS Large message processing**: Ability to override the default `S3Client` use to fetch payload from S3. [#602](https://github.com/awslabs/aws-lambda-powertools-java/pull/602)
 
 ### Regression
 
@@ -168,14 +168,14 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.7.2] - 2021-08-03
 
-* **Powertools All Modules**: Upgrade to the latest(1.14.0) aspectj-maven-plugin which also supports Java 9 and newer versions. 
-Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/artifact/com.nickwongdev/aspectj-maven-plugin/1.12.6) as a workaround. [#489](https://github.com/aws-powertools/powertools-lambda-java/pull/489)
-* **Logging**: Performance optimisation to improve cold start. [#484](https://github.com/aws-powertools/powertools-lambda-java/pull/484)
-* **SQS Batch processing/Large message**: Module now lazy loads default SQS client. [#484](https://github.com/aws-powertools/powertools-lambda-java/pull/484)
+* **Powertools for AWS Lambda (Java) All Modules**: Upgrade to the latest(1.14.0) aspectj-maven-plugin which also supports Java 9 and newer versions. 
+Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/artifact/com.nickwongdev/aspectj-maven-plugin/1.12.6) as a workaround. [#489](https://github.com/awslabs/aws-lambda-powertools-java/pull/489)
+* **Logging**: Performance optimisation to improve cold start. [#484](https://github.com/awslabs/aws-lambda-powertools-java/pull/484)
+* **SQS Batch processing/Large message**: Module now lazy loads default SQS client. [#484](https://github.com/awslabs/aws-lambda-powertools-java/pull/484)
 
 ## [1.7.1] - 2021-07-06
 
-* **Powertools All Modules**: Fix static code analysis violations done via [spotbugs](https://github.com/spotbugs/spotbugs) ([#458](https://github.com/aws-powertools/powertools-lambda-java/pull/458)).
+* **Powertools for AWS Lambda (Java) All Modules**: Fix static code analysis violations done via [spotbugs](https://github.com/spotbugs/spotbugs) ([#458](https://github.com/awslabs/aws-lambda-powertools-java/pull/458)).
 
 ## [1.7.0] - 2021-07-05
 

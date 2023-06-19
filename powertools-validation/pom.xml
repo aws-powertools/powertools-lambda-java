@@ -13,7 +13,7 @@
         <version>1.15.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools for Java validation library</name>
+    <name>Powertools for AWS Lambda (Java) validation library</name>
     <description>
         Json schema validation for Lambda events and responses
     </description>
@@ -28,7 +28,7 @@
     </scm>
     <developers>
         <developer>
-            <name>AWS Lambda Powertools team</name>
+            <name>Powertools for AWS Lambda team</name>
             <organization>Amazon Web Services</organization>
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>1.0.78</version>
+            <version>1.0.84</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

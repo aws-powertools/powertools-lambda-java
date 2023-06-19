@@ -13,7 +13,7 @@
         <version>1.15.0</version>
     </parent>
 
-    <name>AWS Lambda Powertools for Java library Core</name>
+    <name>Powertools for AWS Lambda (Java) library Core</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
@@ -28,7 +28,7 @@
     </scm>
     <developers>
         <developer>
-            <name>AWS Lambda Powertools team</name>
+            <name>Powertools for AWS Lambda team</name>
             <organization>Amazon Web Services</organization>
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>

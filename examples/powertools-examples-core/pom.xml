@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>powertools-examples-core</artifactId>
     <packaging>jar</packaging>
-    <name>AWS Lambda Powertools for Java library Examples - Core</name>
+    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
     
     <parent>
         <artifactId>powertools-examples</artifactId>
@@ -59,9 +59,9 @@
     <build>
       <plugins>
         <plugin>
-             <groupId>org.codehaus.mojo</groupId>
+             <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.14.0</version>
+             <version>1.13.1</version>
              <configuration>
                  <source>${maven.compiler.source}</source>
                  <target>${maven.compiler.target}</target>
@@ -92,7 +92,7 @@
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.4.1</version>
+            <version>3.5.0</version>
             <executions>
                 <execution>
                     <phase>package</phase>

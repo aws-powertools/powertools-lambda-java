@@ -13,7 +13,7 @@ Logging provides an opinionated logger with output structured as JSON.
 
 ## Initialization
 
-Powertools extends the functionality of Log4J. Below is an example `#!xml log4j2.xml` file, with the `JsonTemplateLayout` using `#!json LambdaJsonLayout.json` configured. 
+Powertools for AWS Lambda (Java) extends the functionality of Log4J. Below is an example `#!xml log4j2.xml` file, with the `JsonTemplateLayout` using `#!json LambdaJsonLayout.json` configured. 
 
 !!! info "LambdaJsonLayout is now deprecated"
 
