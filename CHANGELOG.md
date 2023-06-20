@@ -208,7 +208,7 @@ Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/ar
 ## [1.4.0] - 2021-03-11
 * **Metrics**: Ability to set default dimension for metrics via `MetricsUtils.defaultDimensionSet()`.
   
-  **Note**: If your monitoring depends on [default dimensions](https://github.com/awslabs/aws-embedded-metrics-java/blob/master/src/main/java/software/amazon/cloudwatchlogs/emf/logger/MetricsLogger.java#L173) captured before via [aws-embedded-metrics-java](https://github.com/awslabs/aws-embedded-metrics-java), 
+  **Note**: If your monitoring depends on [default dimensions](https://github.com/awslabs/aws-embedded-metrics-java/blob/main/src/main/java/software/amazon/cloudwatchlogs/emf/logger/MetricsLogger.java#L173) captured before via [aws-embedded-metrics-java](https://github.com/awslabs/aws-embedded-metrics-java), 
   those either need to be updated or has to be explicitly captured via `MetricsUtils.defaultDimensionSet()`.
   
 

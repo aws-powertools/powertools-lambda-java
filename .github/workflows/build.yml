@@ -3,7 +3,7 @@ name: Build
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
@@ -23,7 +23,7 @@ on:
       - '.github/workflows/**'
   push:
     branches:
-      - master
+      - main
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
