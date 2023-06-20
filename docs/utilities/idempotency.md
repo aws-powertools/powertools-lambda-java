@@ -708,9 +708,11 @@ By using **`withPayloadValidationJMESPath("amount")`**, we prevent this potentia
 
 ### Making idempotency key required
 
-If you want to enforce that an idempotency key is required, you can set **`ThrowOnNoIdempotencyKey`** to `True`.
+If you want to enforce that an idempotency key is required, you can set **`ThrowOnNoIdempotencyKey`** to `true`.
 
 This means that we will throw **`IdempotencyKeyException`** if the evaluation of **`EventKeyJMESPath`** is `null`.
+
+When set to `false` (the default), if the idempotency key is null, then the data is not persisted in the store.
 
 === "App.java"
 
@@ -825,7 +827,7 @@ Data would then be stored in DynamoDB like this:
 This utility provides an abstract base class, so that you can implement your choice of persistent storage layer.
 
 You can extend the `BasePersistenceStore` class and implement the abstract methods `getRecord`, `putRecord`,
-`updateRecord` and `deleteRecord`. You can have a look at [`DynamoDBPersistenceStore`](https://github.com/awslabs/aws-lambda-powertools-java/blob/master/powertools-idempotency/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/DynamoDBPersistenceStore.java) as an implementation reference.
+`updateRecord` and `deleteRecord`. You can have a look at [`DynamoDBPersistenceStore`](https://github.com/aws-powertools/powertools-lambda-java/blob/master/powertools-idempotency/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/DynamoDBPersistenceStore.java) as an implementation reference.
 
 !!! danger
     Pay attention to the documentation for each method - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
