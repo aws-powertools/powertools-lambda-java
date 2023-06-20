@@ -60,7 +60,7 @@
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <!-- JUnit 5 requires Surefire version 3.1.0 or higher -->
-              <version>3.1.0</version>
+              <version>3.1.2</version>
           </plugin>
         <plugin>
              <groupId>dev.aspectj</groupId>
