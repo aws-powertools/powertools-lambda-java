@@ -16,7 +16,7 @@
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
     <licenses>
         <license>
@@ -43,7 +43,7 @@
     </modules>
 
     <scm>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
     </scm>
 
     <developers>
@@ -58,18 +58,18 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <log4j.version>2.20.0</log4j.version>
-        <jackson.version>2.14.2</jackson.version>
+        <jackson.version>2.15.2</jackson.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aws.sdk.version>2.20.85</aws.sdk.version>
+        <aws.sdk.version>2.20.88</aws.sdk.version>
         <aws.xray.recorder.version>2.14.0</aws.xray.recorder.version>
-        <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
+        <payloadoffloading-common.version>2.1.3</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.2</lambda.core.version>
-        <lambda.events.version>3.11.1</lambda.events.version>
+        <lambda.events.version>3.11.2</lambda.events.version>
         <lambda.serial.version>1.1.2</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
-        <maven-surefire-plugin.version>3.1.0</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.8</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
@@ -164,6 +164,16 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
