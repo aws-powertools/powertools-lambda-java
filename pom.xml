@@ -65,7 +65,7 @@
         <payloadoffloading-common.version>2.1.2</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.2</lambda.core.version>
-        <lambda.events.version>3.11.1</lambda.events.version>
+        <lambda.events.version>3.11.2</lambda.events.version>
         <lambda.serial.version>1.1.2</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
