@@ -10,6 +10,7 @@ import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 import java.time.Year;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
@@ -21,11 +22,12 @@ public class IdempotencyE2ET {
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     public static void setup() {
+        String random = UUID.randomUUID().toString().substring(0, 6);
         infrastructure = Infrastructure.builder()
                 .testName(IdempotencyE2ET.class.getSimpleName())
                 .pathToFunction("idempotency")
-                .idempotencyTable("idempo")
-                .environmentVariables(Collections.singletonMap("IDEMPOTENCY_TABLE", "idempo"))
+                .idempotencyTable("idempo" + random)
+                .environmentVariables(Collections.singletonMap("IDEMPOTENCY_TABLE", "idempo" + random))
                 .build();
         functionName = infrastructure.deploy();
     }
