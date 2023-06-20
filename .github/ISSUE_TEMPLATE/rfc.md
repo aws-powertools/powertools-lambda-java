@@ -12,7 +12,7 @@ assignees: ''
 * RFC PR: (leave this empty)
 * Related issue(s), if known:
 * Area: (i.e. Tracer, Metrics, Logger, etc.)
-* Meet [tenets](https://awslabs.github.io/aws-lambda-powertools-java/#tenets): (Yes/no)
+* Meet [tenets](https://docs.powertools.aws.dev/lambda-java/#tenets): (Yes/no)
 
 ## Summary
 [summary]: #summary
