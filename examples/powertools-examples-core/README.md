@@ -1,6 +1,6 @@
 # CoreUtilities
 
-This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes [Powertools for AWS Lambda (Java) for operational best practices](https://github.com/awslabs/aws-lambda-powertools-java), and the following files and folders.
+This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes [Powertools for AWS Lambda (Java) for operational best practices](https://github.com/aws-powertools/powertools-lambda-java), and the following files and folders.
 
 - HelloWorldFunction/src/main - Code for the application's Lambda function.
 - events - Invocation events that you can use to invoke the function.
@@ -119,20 +119,20 @@ aws cloudformation delete-stack --stack-name <Name-of-your-deployed-stack>
 
 **Tracing**
 
-[Tracing utility](https://awslabs.github.io/aws-lambda-powertools-java/core/tracing/) provides functionality to reduce the overhead of performing common tracing tasks. It traces the execution of this sample code including the response and exceptions as tracing metadata - You can visualize them in AWS X-Ray.
+[Tracing utility](https://docs.powertools.aws.dev/lambda-java/core/tracing/) provides functionality to reduce the overhead of performing common tracing tasks. It traces the execution of this sample code including the response and exceptions as tracing metadata - You can visualize them in AWS X-Ray.
 
 **Logger**
 
-[Logging utility](https://awslabs.github.io/aws-lambda-powertools-java/core/logging/) creates an opinionated application Logger with structured logging as the output, dynamically samples a percentage (samplingRate) of your logs in DEBUG mode for concurrent invocations, log incoming events as your function is invoked, and injects key information from Lambda context object into your Logger - You can visualize them in Amazon CloudWatch Logs.
+[Logging utility](https://docs.powertools.aws.dev/lambda-java/core/logging/) creates an opinionated application Logger with structured logging as the output, dynamically samples a percentage (samplingRate) of your logs in DEBUG mode for concurrent invocations, log incoming events as your function is invoked, and injects key information from Lambda context object into your Logger - You can visualize them in Amazon CloudWatch Logs.
 
 **Metrics**
 
-[Metrics utility](https://awslabs.github.io/aws-lambda-powertools-java/core/metrics/) captures cold start metric of your Lambda invocation, and could add additional metrics to help you understand your application KPIs - You can visualize them in Amazon CloudWatch.
+[Metrics utility](https://docs.powertools.aws.dev/lambda-java/core/metrics/) captures cold start metric of your Lambda invocation, and could add additional metrics to help you understand your application KPIs - You can visualize them in Amazon CloudWatch.
 
 ## Resources
 
 See the [AWS SAM developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html) for an introduction to SAM specification, the SAM CLI, and serverless application concepts.
 
-Check the [Powertools for AWS Lambda (Java)](https://awslabs.github.io/aws-lambda-powertools-java/) for more information on how to use and configure such tools
+Check the [Powertools for AWS Lambda (Java)](https://docs.powertools.aws.dev/lambda-java/) for more information on how to use and configure such tools
 
 Next, you can use AWS Serverless Application Repository to deploy ready to use Apps that go beyond hello world samples and learn how authors developed their applications: [AWS Serverless Application Repository main page](https://aws.amazon.com/serverless/serverlessrepo/)
