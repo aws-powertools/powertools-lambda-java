@@ -84,7 +84,9 @@ public class IdempotencyHandler {
             persistenceStore.saveInProgress(data, Instant.now(), getRemainingTimeInMillis());
         } catch (IdempotencyItemAlreadyExistsException iaee) {
             DataRecord record = getIdempotencyRecord();
-            return handleForStatus(record);
+            if (record != null) {
+                return handleForStatus(record);
+            }
         } catch (IdempotencyKeyException ike) {
             throw ike;
         } catch (Exception e) {
@@ -111,7 +113,7 @@ public class IdempotencyHandler {
     /**
      * Retrieve the idempotency record from the persistence layer.
      *
-     * @return the record if available
+     * @return the record if available, potentially null
      */
     private DataRecord getIdempotencyRecord() {
         try {
