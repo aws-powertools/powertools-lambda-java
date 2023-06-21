@@ -7,12 +7,17 @@ import org.yaml.snakeyaml.Yaml;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.*;
 import software.amazon.awscdk.cxapi.CloudAssembly;
+import software.amazon.awscdk.services.appconfig.*;
 import software.amazon.awscdk.services.dynamodb.Attribute;
 import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.Table;
+import software.amazon.awscdk.services.groundstation.CfnConfig;
+import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.lambda.Permission;
 import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
@@ -65,6 +70,9 @@ public class Infrastructure {
     private final Region region;
     private final String account;
     private final String idempotencyTable;
+    private final AppConfig appConfig;
+
+
     private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
@@ -78,6 +86,7 @@ public class Infrastructure {
         this.timeout = builder.timeoutInSeconds;
         this.pathToFunction = builder.pathToFunction;
         this.idempotencyTable = builder.idemPotencyTable;
+        this.appConfig = builder.appConfig;
 
         this.app = new App();
         this.stack = createStackWithLambda();
@@ -140,6 +149,7 @@ public class Infrastructure {
         public long timeoutInSeconds = 30;
         public String pathToFunction;
         public String testName;
+        public AppConfig appConfig;
         private String stackName;
         private boolean tracing = false;
         private JavaRuntime runtime;
@@ -197,6 +207,11 @@ public class Infrastructure {
 
         public Builder idempotencyTable(String tableName) {
             this.idemPotencyTable = tableName;
+            return this;
+        }
+
+        public Builder appConfig(AppConfig app) {
+            this.appConfig = app;
             return this;
         }
 
@@ -277,9 +292,73 @@ public class Infrastructure {
                     .tableName(idempotencyTable)
                     .timeToLiveAttribute("expiration")
                     .build();
+
             table.grantReadWriteData(function);
         }
 
+        if (appConfig != null) {
+        CfnApplication app = CfnApplication.Builder
+                .create(stack, "AppConfigApp")
+                .name(appConfig.getApplication())
+                .build();
+
+            CfnEnvironment environment = CfnEnvironment.Builder
+                    .create(stack, "AppConfigEnvironment")
+                    .applicationId(app.getRef())
+                    .name(appConfig.getEnvironment())
+                    .build();
+
+            // Create a fast deployment strategy so we don't have to wait ages
+            CfnDeploymentStrategy fastDeployment = CfnDeploymentStrategy.Builder
+                    .create(stack, "AppConfigDeployment")
+                    .name("FastDeploymentStrategy")
+                    .deploymentDurationInMinutes(0)
+                    .finalBakeTimeInMinutes(0)
+                    .growthFactor(100)
+                    .replicateTo("NONE")
+                    .build();
+
+            // Get the lambda permission to use AppConfig
+            function.addToRolePolicy(PolicyStatement.Builder
+                    .create()
+                    .actions(singletonList("appconfig:*"))
+                    .resources(singletonList("*"))
+                    .build()
+            );
+
+            CfnDeployment previousDeployment = null;
+            for (Map.Entry<String,String> entry : appConfig.getConfigurationValues().entrySet()) {
+                CfnConfigurationProfile configProfile = CfnConfigurationProfile.Builder
+                        .create(stack, "AppConfigProfileFor" + entry.getKey())
+                        .applicationId(app.getRef())
+                        .locationUri("hosted")
+                        .name(entry.getKey())
+                        .build();
+
+                CfnHostedConfigurationVersion configVersion = CfnHostedConfigurationVersion.Builder
+                        .create(stack, "AppConfigHostedVersionFor" + entry.getKey())
+                        .applicationId(app.getRef())
+                        .contentType("text/plain")
+                        .configurationProfileId(configProfile.getRef())
+                        .content(entry.getValue())
+                        .build();
+
+                CfnDeployment deployment = CfnDeployment.Builder
+                        .create(stack, "AppConfigDepoymentFor" + entry.getKey())
+                        .applicationId(app.getRef())
+                        .environmentId(environment.getRef())
+                        .deploymentStrategyId(fastDeployment.getRef())
+                        .configurationProfileId(configProfile.getRef())
+                        .configurationVersion(configVersion.getRef())
+                        .build();
+
+                // We need to chain the deployments to keep CFN happy
+                if (previousDeployment != null) {
+                    deployment.addDependsOn(previousDeployment);
+                }
+                previousDeployment = deployment;
+            }
+        }
         return stack;
     }
 
