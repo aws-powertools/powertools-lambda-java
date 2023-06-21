@@ -36,10 +36,6 @@ public class AppConfigProviderTest {
 
     @Captor
     ArgumentCaptor<GetLatestConfigurationRequest> getLatestConfigurationRequestCaptor;
-
-    @Captor
-    ArgumentCaptor<String> getValueForFieldCaptor;
-
     private final String environmentName = "test";
 
     private final String applicationName = "fakeApp";
