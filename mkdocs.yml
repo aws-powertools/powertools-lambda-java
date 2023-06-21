@@ -85,5 +85,5 @@ extra:
   powertools:
     version: 1.15.0
 
-repo_url: https://github.com/awslabs/aws-lambda-powertools-java
-edit_uri: edit/master/docs
+repo_url: https://github.com/aws-powertools/powertools-lambda-java
+edit_uri: edit/main/docs

@@ -20,10 +20,10 @@
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
     <scm>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
     </scm>
     <developers>
         <developer>
@@ -182,29 +182,6 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>jdk16</id>
-            <activation>
-                <jdk>[16,)</jdk>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.1.0</version>
-                        <configuration>
-                            <argLine>
-                                --add-opens java.base/java.util=ALL-UNNAMED
-                                --add-opens java.base/java.lang=ALL-UNNAMED
-                            </argLine>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <repositories>
         <repository>
             <id>dynamodb-local-oregon</id>

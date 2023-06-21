@@ -12,7 +12,7 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Added
 * Feature: Add DynamoDB provider to parameters module (#1091) by @scottgerring
-* Feature: Update to powertools-cloudformation to deprecate `Response.success()` and `Response.failed()` methods. New helper methods are added to make it easier to follow best practices `Response.success(String physicalResourceId)` and `Response.failed(String physicalResourceId)`. For a detailed explanation please read the [powertools-cloudformation documentation page](https://awslabs.github.io/aws-lambda-powertools-java/utilities/custom_resources/). (#1082) by @msailes
+* Feature: Update to powertools-cloudformation to deprecate `Response.success()` and `Response.failed()` methods. New helper methods are added to make it easier to follow best practices `Response.success(String physicalResourceId)` and `Response.failed(String physicalResourceId)`. For a detailed explanation please read the [powertools-cloudformation documentation page](https://docs.powertools.aws.dev/lambda-java/utilities/custom_resources/). (#1082) by @msailes
 * Update how a Lambda request handler method is identified (#1058) by @humanzz
 
 ### Maintenance
@@ -66,22 +66,22 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 #### Maintenance
 
-* Fixes to resolve vulnerable transitive dependencies ([919](https://github.com/awslabs/aws-lambda-powertools-java/issues/919))
+* Fixes to resolve vulnerable transitive dependencies ([919](https://github.com/aws-powertools/powertools-lambda-java/issues/919))
 
 
 ## [1.12.2] - 2022-04-29
 
 ### Bug Fixes
 
-* **SQS Large message processing**: Classpath conflict on `PayloadS3Pointer` when consumer application depends on `payloadoffloading-common`, introduced in [v1.8.0](https://github.com/awslabs/aws-lambda-powertools-java/releases/tag/v1.8.0). ([#851](https://github.com/awslabs/aws-lambda-powertools-java/pull/851))
+* **SQS Large message processing**: Classpath conflict on `PayloadS3Pointer` when consumer application depends on `payloadoffloading-common`, introduced in [v1.8.0](https://github.com/aws-powertools/powertools-lambda-java/releases/tag/v1.8.0). ([#851](https://github.com/aws-powertools/powertools-lambda-java/pull/851))
 
 
 ## [1.12.1] - 2022-04-21
 
 ### Bug Fixes
 
-* **Idempotency**: thread-safety issue of MessageDigest ([#817](https://github.com/awslabs/aws-lambda-powertools-java/pull/817)) 
-* **Idempotency**: disable dynamodb client creation in persistent store when disabling idempotency ([#796](https://github.com/awslabs/aws-lambda-powertools-java/pull/796))
+* **Idempotency**: thread-safety issue of MessageDigest ([#817](https://github.com/aws-powertools/powertools-lambda-java/pull/817)) 
+* **Idempotency**: disable dynamodb client creation in persistent store when disabling idempotency ([#796](https://github.com/aws-powertools/powertools-lambda-java/pull/796))
 
 
 ### Maintenance
@@ -92,10 +92,10 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 ## [1.12.0] - 2022-03-01
 
 ### Added
- * **Easy Event Deserialization**: Extraction and deserialization of the main content of events (body, messages, ...) [#757](https://github.com/awslabs/aws-lambda-powertools-java/pull/757)
+ * **Easy Event Deserialization**: Extraction and deserialization of the main content of events (body, messages, ...) [#757](https://github.com/aws-powertools/powertools-lambda-java/pull/757)
 
 ### Bug Fixes
- * Different behavior while using SSMProvider with or without trailing slash in parameter names [#758](https://github.com/awslabs/aws-lambda-powertools-java/issues/758)
+ * Different behavior while using SSMProvider with or without trailing slash in parameter names [#758](https://github.com/aws-powertools/powertools-lambda-java/issues/758)
 
 
 ## [1.11.0] - 2022-02-16
@@ -109,17 +109,17 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Bug Fixes
 
-* **SQS Batch processing**: Prevent message to be marked as success if failed sending to DLQ for non retryable exceptions. [#731](https://github.com/awslabs/aws-lambda-powertools-java/pull/731)
+* **SQS Batch processing**: Prevent message to be marked as success if failed sending to DLQ for non retryable exceptions. [#731](https://github.com/aws-powertools/powertools-lambda-java/pull/731)
 
 ### Documentation
 
 
-* **SQS Batch processing**: Improve [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/batch/#iam-permissions) on IAM premissions required by function when using utility with an encrypted SQS queue with customer managed KMS keys.
+* **SQS Batch processing**: Improve [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/batch/#iam-permissions) on IAM premissions required by function when using utility with an encrypted SQS queue with customer managed KMS keys.
 
 
 ## [1.10.2] - 2022-01-07
 
-* **Tracing**: Ability to override object mapper used for serializing method response as trace metadata when enabled. This provides users ability to customize how and what you want to capture as metadata from method response object. [#698](https://github.com/awslabs/aws-lambda-powertools-java/pull/698)
+* **Tracing**: Ability to override object mapper used for serializing method response as trace metadata when enabled. This provides users ability to customize how and what you want to capture as metadata from method response object. [#698](https://github.com/aws-powertools/powertools-lambda-java/pull/698)
 
 ## [1.10.1] - 2022-01-06
 
@@ -127,13 +127,13 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.10.0] - 2021-12-27
 
-* **Logging**: Modern log4j configuration to customise structured logging. Refer [docs](https://awslabs.github.io/aws-lambda-powertools-java/core/logging/#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) to start using new config. [#670](https://github.com/awslabs/aws-lambda-powertools-java/pull/670)
-* **SQS Batch**: Support batch size greater than 10. [#667](https://github.com/awslabs/aws-lambda-powertools-java/pull/667)
+* **Logging**: Modern log4j configuration to customise structured logging. Refer [docs](https://docs.powertools.aws.dev/lambda-java/core/logging/#upgrade-to-jsontemplatelayout-from-deprecated-lambdajsonlayout-configuration-in-log4j2xml) to start using new config. [#670](https://github.com/aws-powertools/powertools-lambda-java/pull/670)
+* **SQS Batch**: Support batch size greater than 10. [#667](https://github.com/aws-powertools/powertools-lambda-java/pull/667)
 
 ## [1.9.0] - 2021-12-21
 
 * **Logging**: Upgrade Log4j to version 2.17.0 for [CVE-2021-45105](https://nvd.nist.gov/vuln/detail/CVE-2021-45105)
-* **Tracing**: add `Service` annotation. [#654](https://github.com/awslabs/aws-lambda-powertools-java/issues/654)
+* **Tracing**: add `Service` annotation. [#654](https://github.com/aws-powertools/powertools-lambda-java/issues/654)
 
 ## [1.8.2] - 2021-12-15
 
@@ -151,12 +151,12 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ### Added
 
-* **Powertools for AWS Lambda (Java) Cloudformation module (NEW)**: New module simplifying [AWS Lambda-backed custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) written in Java. [#560](https://github.com/awslabs/aws-lambda-powertools-java/pull/560)
-* **SQS Large message processing**: Ability to override the default `S3Client` use to fetch payload from S3. [#602](https://github.com/awslabs/aws-lambda-powertools-java/pull/602)
+* **Powertools for AWS Lambda (Java) Cloudformation module (NEW)**: New module simplifying [AWS Lambda-backed custom resources](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/template-custom-resources-lambda.html) written in Java. [#560](https://github.com/aws-powertools/powertools-lambda-java/pull/560)
+* **SQS Large message processing**: Ability to override the default `S3Client` use to fetch payload from S3. [#602](https://github.com/aws-powertools/powertools-lambda-java/pull/602)
 
 ### Regression
 
-* **Logging**: `@Logging` annotation now works with `@Tracing` annotation on `RequestStreamHandler` when used in `logEvent` mode. [#567](https://github.com/awslabs/aws-lambda-powertools-java/pull/567)
+* **Logging**: `@Logging` annotation now works with `@Tracing` annotation on `RequestStreamHandler` when used in `logEvent` mode. [#567](https://github.com/aws-powertools/powertools-lambda-java/pull/567)
 
 ### Maintenance
 
@@ -164,25 +164,25 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.7.3] - 2021-09-14
 
-* **SQS Batch processing**: Ability to move non retryable message to configured dead letter queue(DLQ). [#500](https://github.com/awslabs/aws-lambda-powertools-java/pull/500)
+* **SQS Batch processing**: Ability to move non retryable message to configured dead letter queue(DLQ). [#500](https://github.com/aws-powertools/powertools-lambda-java/pull/500)
 
 ## [1.7.2] - 2021-08-03
 
 * **Powertools for AWS Lambda (Java) All Modules**: Upgrade to the latest(1.14.0) aspectj-maven-plugin which also supports Java 9 and newer versions. 
-Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/artifact/com.nickwongdev/aspectj-maven-plugin/1.12.6) as a workaround. [#489](https://github.com/awslabs/aws-lambda-powertools-java/pull/489)
-* **Logging**: Performance optimisation to improve cold start. [#484](https://github.com/awslabs/aws-lambda-powertools-java/pull/484)
-* **SQS Batch processing/Large message**: Module now lazy loads default SQS client. [#484](https://github.com/awslabs/aws-lambda-powertools-java/pull/484)
+Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/artifact/com.nickwongdev/aspectj-maven-plugin/1.12.6) as a workaround. [#489](https://github.com/aws-powertools/powertools-lambda-java/pull/489)
+* **Logging**: Performance optimisation to improve cold start. [#484](https://github.com/aws-powertools/powertools-lambda-java/pull/484)
+* **SQS Batch processing/Large message**: Module now lazy loads default SQS client. [#484](https://github.com/aws-powertools/powertools-lambda-java/pull/484)
 
 ## [1.7.1] - 2021-07-06
 
-* **Powertools for AWS Lambda (Java) All Modules**: Fix static code analysis violations done via [spotbugs](https://github.com/spotbugs/spotbugs) ([#458](https://github.com/awslabs/aws-lambda-powertools-java/pull/458)).
+* **Powertools for AWS Lambda (Java) All Modules**: Fix static code analysis violations done via [spotbugs](https://github.com/spotbugs/spotbugs) ([#458](https://github.com/aws-powertools/powertools-lambda-java/pull/458)).
 
 ## [1.7.0] - 2021-07-05
 
 ### Added
 
-* **Logging**: Support for extracting Correlation id using `@Logging` annotation via `correlationIdPath` attribute and `setCorrelationId()` method in `LoggingUtils`([#448](https://github.com/awslabs/aws-lambda-powertools-java/pull/448)).
-* **Logging**: New `clearState` attribute on `@Logging` annotation to clear previously added custom keys upon invocation([#453](https://github.com/awslabs/aws-lambda-powertools-java/pull/453)).
+* **Logging**: Support for extracting Correlation id using `@Logging` annotation via `correlationIdPath` attribute and `setCorrelationId()` method in `LoggingUtils`([#448](https://github.com/aws-powertools/powertools-lambda-java/pull/448)).
+* **Logging**: New `clearState` attribute on `@Logging` annotation to clear previously added custom keys upon invocation([#453](https://github.com/aws-powertools/powertools-lambda-java/pull/453)).
 
 ### Maintenance
 
@@ -192,8 +192,8 @@ Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/ar
 
 ### Added
 
-* **Tracing**: Support for Boolean and Number type as value in `TracingUtils.putAnnotation()`([#423](https://github.com/awslabs/aws-lambda-powertools-java/pull/432)).
-* **Logging**: API to remove any additional custom key from logger entry using `LoggingUtils.removeKeys()`([#395](https://github.com/awslabs/aws-lambda-powertools-java/pull/395)).
+* **Tracing**: Support for Boolean and Number type as value in `TracingUtils.putAnnotation()`([#423](https://github.com/aws-powertools/powertools-lambda-java/pull/432)).
+* **Logging**: API to remove any additional custom key from logger entry using `LoggingUtils.removeKeys()`([#395](https://github.com/aws-powertools/powertools-lambda-java/pull/395)).
 
 ### Maintenance
 
@@ -202,13 +202,13 @@ Users no longer need to depend on [com.nickwongdev](https://mvnrepository.com/ar
 ## [1.5.0] - 2021-03-30
 
 * **Metrics**: Ability to set multiple dimensions as default dimensions via `MetricsUtils.defaultDimensions()`. 
-  Introduced in [v1.4.0](https://github.com/awslabs/aws-lambda-powertools-java/releases/tag/v1.4.0) 
+  Introduced in [v1.4.0](https://github.com/aws-powertools/powertools-lambda-java/releases/tag/v1.4.0) 
   `MetricsUtils.defaultDimensionSet()` is deprecated now for better user experience.
 
 ## [1.4.0] - 2021-03-11
 * **Metrics**: Ability to set default dimension for metrics via `MetricsUtils.defaultDimensionSet()`.
   
-  **Note**: If your monitoring depends on [default dimensions](https://github.com/awslabs/aws-embedded-metrics-java/blob/master/src/main/java/software/amazon/cloudwatchlogs/emf/logger/MetricsLogger.java#L173) captured before via [aws-embedded-metrics-java](https://github.com/awslabs/aws-embedded-metrics-java), 
+  **Note**: If your monitoring depends on [default dimensions](https://github.com/awslabs/aws-embedded-metrics-java/blob/main/src/main/java/software/amazon/cloudwatchlogs/emf/logger/MetricsLogger.java#L173) captured before via [aws-embedded-metrics-java](https://github.com/awslabs/aws-embedded-metrics-java), 
   those either need to be updated or has to be explicitly captured via `MetricsUtils.defaultDimensionSet()`.
   
 
