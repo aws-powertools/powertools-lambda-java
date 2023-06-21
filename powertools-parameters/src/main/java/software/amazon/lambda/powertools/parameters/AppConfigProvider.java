@@ -109,7 +109,7 @@ public class AppConfigProvider extends BaseProvider{
     @Override
     protected Map<String, String> getMultipleValues(String path) {
         // Retrieving multiple values is not supported with the AppConfig provider.
-        throw new RuntimeException("Not implemented");
+        throw new RuntimeException("Retrieving multiple parameter values is not supported with the AWS App Config Provider");
     }
 
     /**

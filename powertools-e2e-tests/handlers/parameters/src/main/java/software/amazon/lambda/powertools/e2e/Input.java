@@ -7,11 +7,6 @@ public class Input {
     private String app;
     private String environment;
     private String key;
-
-    public Input() {
-
-    }
-
     public void setApp(String app) {
         this.app = app;
     }

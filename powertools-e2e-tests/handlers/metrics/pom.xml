@@ -10,7 +10,7 @@
 
     <artifactId>e2e-test-handler-metrics</artifactId>
     <packaging>jar</packaging>
-    <name>A Lambda function using powertools metrics</name>
+    <name>A Lambda function using Powertools for AWS Lambda (Java) Parameters</name>
 
     <dependencies>
         <dependency>
