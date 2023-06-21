@@ -1,6 +1,5 @@
 package software.amazon.lambda.powertools;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import software.amazon.lambda.powertools.testutils.AppConfig;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
@@ -17,10 +16,6 @@ import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.i
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ParametersE2ET {
-
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
     private Infrastructure infrastructure;
     private String functionName;
     private final AppConfig appConfig;
