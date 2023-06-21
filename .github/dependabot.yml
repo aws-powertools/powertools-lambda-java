@@ -9,5 +9,5 @@ updates:
       - "dependencies"
     ignore:
       # Ignore Mockito 5.X.X as it does not support Java 8
-      - dependency-name: mockito-*
+      - dependency-name: "org.mockito:mockito-*"
         update-types: ["version-update:semver-major"]
