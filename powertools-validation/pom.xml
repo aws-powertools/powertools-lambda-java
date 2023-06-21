@@ -20,11 +20,11 @@
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
 
     <scm>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
     </scm>
     <developers>
         <developer>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
-            <version>1.0.78</version>
+            <version>1.0.84</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

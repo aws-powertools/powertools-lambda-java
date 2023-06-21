@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>DynamoDBLocal</artifactId>
-            <version>1.21.0</version>
+            <version>1.22.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -142,7 +142,7 @@
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.4.1</version>
+            <version>3.5.0</version>
             <executions>
                 <execution>
                     <phase>package</phase>

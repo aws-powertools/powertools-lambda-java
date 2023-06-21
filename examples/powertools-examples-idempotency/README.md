@@ -1,6 +1,6 @@
 # Idempotency
 
-This project contains an example of Lambda function using the idempotency module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/idempotency/).
+This project contains an example of Lambda function using the idempotency module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/idempotency/).
 
 ## Deploy the sample application
 

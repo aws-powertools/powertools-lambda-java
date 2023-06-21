@@ -10,15 +10,15 @@
     </parent>
 
     <artifactId>powertools-e2e-tests</artifactId>
-    <name>AWS Lambda Powertools for Java library End-to-end tests</name>
-    <description>AWS Lambda Powertools for Java End-To-End Tests</description>
+    <name>Powertools for AWS Lambda (Java)library End-to-end tests</name>
+    <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
 
     <properties>
         <!-- we can use Java 11 for integration tests, not forced to stick to Java 8 -->
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <constructs.version>10.2.47</constructs.version>
-        <cdk.version>2.79.1</cdk.version>
+        <cdk.version>2.84.0</cdk.version>
 
         <!-- Don't deploy the e2e tests -->
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -156,7 +156,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.1.0</version>
+                        <version>3.1.2</version>
                         <executions>
                             <execution>
                                 <goals>
