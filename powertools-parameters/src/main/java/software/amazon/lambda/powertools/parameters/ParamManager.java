@@ -13,6 +13,7 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -82,6 +83,24 @@ public final class ParamManager {
     }
 
     /**
+     * Get a {@link AppConfigProvider} with default {@link AppConfigDataClient}.<br/>
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigDataClient, String, String)} instead.
+     * @return a {@link AppConfigProvider}
+     */
+    public static AppConfigProvider getAppConfigProvider(String environment, String application) {
+        // Because we need a DDB table name to configure our client, we can't use
+        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
+        // set transformation manager and cache manager.
+        return AppConfigProvider.builder()
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .withEnvironment(environment)
+                .withApplication(application)
+                .build();
+    }
+
+
+    /**
      * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
      * @return a {@link SecretsProvider}
@@ -120,6 +139,22 @@ public final class ParamManager {
                 .withTransformationManager(transformationManager)
                 .build());
     }
+    
+    /**
+     * Get a {@link AppConfigProvider} with your custom {@link AppConfigDataClient}.<br/>
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider(String, String)} if you don't need this customization.
+     * @return a {@link AppConfigProvider}
+     */
+    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client, String environment, String application) {
+        return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
+                .withClient(client)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .withEnvironment(environment)
+                .withApplication(application)
+                .build());
+    }
+
 
     public static CacheManager getCacheManager() {
         return cacheManager;

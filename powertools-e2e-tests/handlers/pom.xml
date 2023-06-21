@@ -27,6 +27,7 @@
         <module>tracing</module>
         <module>metrics</module>
         <module>idempotency</module>
+        <module>parameters</module>
     </modules>
 
     <dependencyManagement>
@@ -49,6 +50,11 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-idempotency</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-parameters</artifactId>
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
