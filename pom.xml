@@ -40,6 +40,7 @@
         <module>powertools-idempotency</module>
         <module>powertools-e2e-tests</module>
         <module>examples</module>
+        <module>powertools-batch</module>
     </modules>
 
     <scm>
