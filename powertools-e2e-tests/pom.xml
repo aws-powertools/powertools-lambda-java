@@ -14,9 +14,8 @@
     <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
 
     <properties>
-        <!-- we can use Java 11 for integration tests, not forced to stick to Java 8 -->
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <constructs.version>10.2.55</constructs.version>
         <cdk.version>2.84.0</cdk.version>
 
