@@ -8,6 +8,7 @@ import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,10 +27,11 @@ public class ParametersE2ET {
     private final AppConfig appConfig;
 
     public ParametersE2ET() {
+        String appName = UUID.randomUUID().toString();
         Map<String,String> params = new HashMap<>();
         params.put("key1", "value1");
         params.put("key2", "value2");
-        appConfig = new AppConfig("e2eApp", "e2etest", params);
+        appConfig = new AppConfig(appName, "e2etest", params);
     }
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
