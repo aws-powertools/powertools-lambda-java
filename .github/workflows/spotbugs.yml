@@ -3,7 +3,7 @@ name: SpotBugs
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
@@ -22,7 +22,7 @@ jobs:
   codecheck:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup java JDK 1.8
         uses: actions/setup-java@v2
         with:

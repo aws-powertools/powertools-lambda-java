@@ -13,8 +13,10 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -36,8 +38,8 @@ public final class ParamManager {
 
     /**
      * Get a concrete implementation of {@link BaseProvider}.<br/>
-     * You can specify {@link SecretsProvider} or {@link SSMProvider} or create your custom provider
-     * by extending {@link BaseProvider} if you need to integrate with a different parameter store.
+     * You can specify {@link SecretsProvider}, {@link SSMProvider}, {@link DynamoDbProvider},  or create your
+     * custom provider by extending {@link BaseProvider} if you need to integrate with a different parameter store.
      * @return a {@link SecretsProvider}
      */
     public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
@@ -66,6 +68,39 @@ public final class ParamManager {
     }
 
     /**
+     * Get a {@link DynamoDbProvider} with default {@link DynamoDbClient} <br/>
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getDynamoDbProvider(DynamoDbClient, String)}
+     */
+    public static DynamoDbProvider getDynamoDbProvider(String tableName) {
+        // Because we need a DDB table name to configure our client, we can't use
+        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
+        // set transformation manager and cache manager.
+        return DynamoDbProvider.builder()
+                .withCacheManager(cacheManager)
+                .withTable(tableName)
+                .withTransformationManager(transformationManager)
+                .build();
+    }
+
+    /**
+     * Get a {@link AppConfigProvider} with default {@link AppConfigDataClient}.<br/>
+     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigDataClient, String, String)} instead.
+     * @return a {@link AppConfigProvider}
+     */
+    public static AppConfigProvider getAppConfigProvider(String environment, String application) {
+        // Because we need a DDB table name to configure our client, we can't use
+        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
+        // set transformation manager and cache manager.
+        return AppConfigProvider.builder()
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .withEnvironment(environment)
+                .withApplication(application)
+                .build();
+    }
+
+
+    /**
      * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
      * @return a {@link SecretsProvider}
@@ -91,6 +126,36 @@ public final class ParamManager {
                 .build());
     }
 
+    /**
+     * Get a {@link DynamoDbProvider} with your custom {@link DynamoDbClient}.<br/>
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getDynamoDbProvider(String)} )} if you don't need this customization.
+     * @return a {@link DynamoDbProvider}
+     */
+    public static DynamoDbProvider getDynamoDbProvider(DynamoDbClient client, String table) {
+        return (DynamoDbProvider) providers.computeIfAbsent(DynamoDbProvider.class, (k) -> DynamoDbProvider.builder()
+                .withClient(client)
+                .withTable(table)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .build());
+    }
+    
+    /**
+     * Get a {@link AppConfigProvider} with your custom {@link AppConfigDataClient}.<br/>
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider(String, String)} if you don't need this customization.
+     * @return a {@link AppConfigProvider}
+     */
+    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client, String environment, String application) {
+        return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
+                .withClient(client)
+                .withCacheManager(cacheManager)
+                .withTransformationManager(transformationManager)
+                .withEnvironment(environment)
+                .withApplication(application)
+                .build());
+    }
+
+
     public static CacheManager getCacheManager() {
         return cacheManager;
     }
@@ -107,7 +172,7 @@ public final class ParamManager {
             return provider;
         } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
-                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
+                    "https://github.com/aws-powertools/powertools-lambda-java/issues", e);
         }
     }
 

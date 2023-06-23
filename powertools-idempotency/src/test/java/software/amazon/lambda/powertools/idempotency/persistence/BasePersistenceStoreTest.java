@@ -32,6 +32,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.OptionalInt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -83,12 +84,30 @@ public class BasePersistenceStoreTest {
         persistenceStore.configure(IdempotencyConfig.builder().build(), null);
 
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
-        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#47261bd5b456f400f8d191cfb3a7482f");
+        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#7b40f56c086de5aa91dc467456329ed2");
         assertThat(dr.getPayloadHash()).isEqualTo("");
+        assertThat(dr.getInProgressExpiryTimestamp()).isEmpty();
+        assertThat(status).isEqualTo(1);
+    }
+
+    @Test
+    public void saveInProgress_withRemainingTime() {
+        APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
+        persistenceStore.configure(IdempotencyConfig.builder().build(), null);
+
+        int lambdaTimeoutMs = 30000;
+        Instant now = Instant.now();
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.of(lambdaTimeoutMs));
+        assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
+        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
+        assertThat(dr.getResponseData()).isNull();
+        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#7b40f56c086de5aa91dc467456329ed2");
+        assertThat(dr.getPayloadHash()).isEqualTo("");
+        assertThat(dr.getInProgressExpiryTimestamp().orElse(-1)).isEqualTo(now.plus(lambdaTimeoutMs, ChronoUnit.MILLIS).toEpochMilli());
         assertThat(status).isEqualTo(1);
     }
 
@@ -100,7 +119,7 @@ public class BasePersistenceStoreTest {
                 .build(), "myfunc");
 
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
@@ -117,22 +136,22 @@ public class BasePersistenceStoreTest {
                 .withThrowOnNoIdempotencyKey(true) // should throw
                 .build(), "");
         Instant now = Instant.now();
-        assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now))
+        assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty()))
                 .isInstanceOf(IdempotencyKeyException.class)
                 .hasMessageContaining("No data found to create a hashed idempotency key");
         assertThat(status).isEqualTo(-1);
     }
 
     @Test
-    public void saveInProgress_jmespath_NotFound_shouldNotThrowException() {
+    public void saveInProgress_jmespath_NotFound_shouldNotPersist() {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         persistenceStore.configure(IdempotencyConfig.builder()
                 .withEventKeyJMESPath("unavailable")
                 .build(), "");
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
-        assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
-        assertThat(status).isEqualTo(1);
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
+        assertThat(dr).isNull();
+        assertThat(status).isEqualTo(-1);
     }
 
     @Test
@@ -151,7 +170,7 @@ public class BasePersistenceStoreTest {
                         now.plus(3600, ChronoUnit.SECONDS).getEpochSecond(),
                         null, null)
         );
-        assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now))
+        assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty()))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
         assertThat(status).isEqualTo(-1);
     }
@@ -173,7 +192,7 @@ public class BasePersistenceStoreTest {
                         now.minus(3, ChronoUnit.SECONDS).getEpochSecond(),
                         null, null)
         );
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now);
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(cache).isEmpty();
         assertThat(status).isEqualTo(1);
@@ -197,7 +216,7 @@ public class BasePersistenceStoreTest {
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
         assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
-        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#47261bd5b456f400f8d191cfb3a7482f");
+        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#7b40f56c086de5aa91dc467456329ed2");
         assertThat(dr.getPayloadHash()).isEqualTo("");
         assertThat(status).isEqualTo(2);
         assertThat(cache).isEmpty();
@@ -216,11 +235,11 @@ public class BasePersistenceStoreTest {
 
         assertThat(status).isEqualTo(2);
         assertThat(cache).hasSize(1);
-        DataRecord record = cache.get("testFunction#47261bd5b456f400f8d191cfb3a7482f");
+        DataRecord record = cache.get("testFunction#7b40f56c086de5aa91dc467456329ed2");
         assertThat(record.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
         assertThat(record.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(record.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
-        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction#47261bd5b456f400f8d191cfb3a7482f");
+        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction#7b40f56c086de5aa91dc467456329ed2");
         assertThat(record.getPayloadHash()).isEqualTo("");
     }
 
@@ -238,7 +257,7 @@ public class BasePersistenceStoreTest {
 
         Instant now = Instant.now();
         DataRecord record = persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), now);
-        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f");
+        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2");
         assertThat(record.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(record.getResponseData()).isEqualTo("Response");
         assertThat(status).isEqualTo(0);
@@ -253,15 +272,15 @@ public class BasePersistenceStoreTest {
 
         Instant now = Instant.now();
         DataRecord dr = new DataRecord(
-                "testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f",
+                "testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2",
                 DataRecord.Status.COMPLETED,
                 now.plus(3600, ChronoUnit.SECONDS).getEpochSecond(),
                 "result of the function",
                 null);
-        cache.put("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f", dr);
+        cache.put("testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2", dr);
 
         DataRecord record = persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), now);
-        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f");
+        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2");
         assertThat(record.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
         assertThat(record.getResponseData()).isEqualTo("result of the function");
         assertThat(status).isEqualTo(-1); // getRecord must not be called (retrieve from cache)
@@ -276,15 +295,15 @@ public class BasePersistenceStoreTest {
 
         Instant now = Instant.now();
         DataRecord dr = new DataRecord(
-                "testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f",
+                "testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2",
                 DataRecord.Status.COMPLETED,
                 now.minus(3, ChronoUnit.SECONDS).getEpochSecond(),
                 "result of the function",
                 null);
-        cache.put("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f", dr);
+        cache.put("testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2", dr);
 
         DataRecord record = persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), now);
-        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction.myfunc#47261bd5b456f400f8d191cfb3a7482f");
+        assertThat(record.getIdempotencyKey()).isEqualTo("testFunction.myfunc#7b40f56c086de5aa91dc467456329ed2");
         assertThat(record.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(record.getResponseData()).isEqualTo("Response");
         assertThat(status).isEqualTo(0);
@@ -328,8 +347,8 @@ public class BasePersistenceStoreTest {
         persistenceStore.configure(IdempotencyConfig.builder()
                 .withUseLocalCache(true).build(), null, cache);
 
-        cache.put("testFunction#47261bd5b456f400f8d191cfb3a7482f",
-                new DataRecord("testFunction#47261bd5b456f400f8d191cfb3a7482f", DataRecord.Status.COMPLETED, 123, null, null));
+        cache.put("testFunction#7b40f56c086de5aa91dc467456329ed2",
+                new DataRecord("testFunction#7b40f56c086de5aa91dc467456329ed2", DataRecord.Status.COMPLETED, 123, null, null));
         persistenceStore.deleteRecord(JsonConfig.get().getObjectMapper().valueToTree(event), new ArithmeticException());
         assertThat(status).isEqualTo(3);
         assertThat(cache).isEmpty();
@@ -360,6 +379,22 @@ public class BasePersistenceStoreTest {
         persistenceStore.configure(IdempotencyConfig.builder().build(), null);
         String expectedHash = "bb84c94278119c8838649706df4db42b"; // MD5(256.42)
         String generatedHash = persistenceStore.generateHash(new DoubleNode(256.42));
+        assertThat(generatedHash).isEqualTo(expectedHash);
+    }
+
+    @Test
+    public void generateHashString_withSha256Algorithm_shouldGenerateSha256ofString() {
+        persistenceStore.configure(IdempotencyConfig.builder().withHashFunction("SHA-256").build(), null);
+        String expectedHash = "e6139efa88ef3337e901e826e6f327337f414860fb499d9f26eefcff21d719af"; // SHA-256(Lambda rocks)
+        String generatedHash = persistenceStore.generateHash(new TextNode("Lambda rocks"));
+        assertThat(generatedHash).isEqualTo(expectedHash);
+    }
+
+    @Test
+    public void generateHashString_unknownAlgorithm_shouldGenerateMd5ofString() {
+        persistenceStore.configure(IdempotencyConfig.builder().withHashFunction("HASH").build(), null);
+        String expectedHash = "70c24d88041893f7fbab4105b76fd9e1"; // MD5(Lambda rocks)
+        String generatedHash = persistenceStore.generateHash(new TextNode("Lambda rocks"));
         assertThat(generatedHash).isEqualTo(expectedHash);
     }
 }

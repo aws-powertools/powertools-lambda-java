@@ -49,9 +49,9 @@ To install this utility, add the following dependency to your project.
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
@@ -91,6 +91,8 @@ To install this utility, add the following dependency to your project.
     dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
+//      implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```
 
@@ -144,7 +146,7 @@ To disable deletion of payloads setting the following annotation parameter:
 ## Utility
 
 If you want to avoid using annotation and have control over error that can happen during payload enrichment use `SqsUtils.enrichedMessageFromS3()`.
-It provides you access with list of `SQSMessage` object enriched from S3 payload.
+It provides you access with a list of `SQSMessage` object enriched from S3 payload.
 
 Original `SQSEvent` object is never mutated. You can also control if the S3 payload should be deleted after successful
 processing.

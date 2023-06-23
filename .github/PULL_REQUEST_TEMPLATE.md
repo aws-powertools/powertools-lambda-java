@@ -8,10 +8,10 @@
 
 <!--- Leave unchecked if your change doesn't seem to apply --> 
 
-* [ ] [Meet tenets criteria](https://awslabs.github.io/aws-lambda-powertools-java/#tenets)
+* [ ] [Meet tenets criteria](https://docs.powertools.aws.dev/lambda-java/#tenets)
 * [ ] Update tests
 * [ ] Update docs
-* [ ] PR title follows [conventional commit semantics]()
+* [ ] PR title follows [conventional commit semantics](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ## Breaking change checklist
 

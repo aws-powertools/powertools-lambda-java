@@ -19,12 +19,13 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.validation.Validation;
 import software.amazon.lambda.powertools.validation.ValidationConfig;
 
 import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
@@ -36,6 +37,8 @@ import static software.amazon.lambda.powertools.validation.ValidationUtils.valid
  */
 @Aspect
 public class ValidationAspect {
+    private static final Logger LOG = LoggerFactory.getLogger(ValidationAspect.class);
+
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(validation)")
     public void callAt(Validation validation) {
@@ -51,15 +54,16 @@ public class ValidationAspect {
             ValidationConfig.get().setSchemaVersion(validation.schemaVersion());
         }
 
-        if (isHandlerMethod(pjp)
-                && placedOnRequestHandler(pjp)) {
+        if (placedOnRequestHandler(pjp)) {
             validationNeeded = true;
 
             if (!validation.inboundSchema().isEmpty()) {
                 JsonSchema inboundJsonSchema = getJsonSchema(validation.inboundSchema(), true);
 
                 Object obj = pjp.getArgs()[0];
-                if (obj instanceof APIGatewayProxyRequestEvent) {
+                if (validation.envelope() != null && !validation.envelope().isEmpty()) {
+                    validate(obj, inboundJsonSchema, validation.envelope());
+                } else if (obj instanceof APIGatewayProxyRequestEvent) {
                     APIGatewayProxyRequestEvent event = (APIGatewayProxyRequestEvent) obj;
                     validate(event.getBody(), inboundJsonSchema);
                 } else if (obj instanceof APIGatewayV2HTTPEvent) {
@@ -105,7 +109,7 @@ public class ValidationAspect {
                     KinesisAnalyticsStreamsInputPreprocessingEvent event = (KinesisAnalyticsStreamsInputPreprocessingEvent) obj;
                     event.getRecords().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else {
-                    validate(obj, inboundJsonSchema, validation.envelope());
+                    LOG.warn("Unhandled event type {}, please use the 'envelope' parameter to specify what to validate", obj.getClass().getName());
                 }
             }
         }
@@ -131,7 +135,7 @@ public class ValidationAspect {
                 KinesisAnalyticsInputPreprocessingResponse response = (KinesisAnalyticsInputPreprocessingResponse) result;
                 response.getRecords().forEach(record -> validate(decode(record.getData()), outboundJsonSchema));
             } else {
-                validate(result, outboundJsonSchema, validation.envelope());
+                LOG.warn("Unhandled response type {}, please use the 'envelope' parameter to specify what to validate", result.getClass().getName());
             }
         }
 

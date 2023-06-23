@@ -20,7 +20,6 @@ import io.burt.jmespath.Expression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
@@ -36,10 +35,15 @@ import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 
 /**
  * Persistence layer that will store the idempotency result.
@@ -60,7 +64,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     protected boolean payloadValidationEnabled = false;
     private Expression<JsonNode> validationKeyJMESPath;
     private boolean throwOnNoIdempotencyKey = false;
-    private MessageDigest hashAlgorithm;
+    private String hashFunctionName;
 
     /**
      * Initialize the base persistence layer from the configuration settings
@@ -69,7 +73,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param functionName The name of the function being decorated
      */
     public void configure(IdempotencyConfig config, String functionName) {
-        String funcEnv = System.getenv(Constants.LAMBDA_FUNCTION_NAME_ENV);
+        String funcEnv = System.getenv(LAMBDA_FUNCTION_NAME_ENV);
         this.functionName = funcEnv != null ? funcEnv : "testFunction";
         if (!StringUtils.isEmpty(functionName)) {
             this.functionName += "." + functionName;
@@ -95,17 +99,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             cache = new LRUCache<>(config.getLocalCacheMaxItems());
         }
         expirationInSeconds = config.getExpirationInSeconds();
-
-        try {
-            hashAlgorithm = MessageDigest.getInstance(config.getHashFunction());
-        } catch (NoSuchAlgorithmException e) {
-            LOG.warn("Error instantiating {} hash function, trying with MD5", config.getHashFunction());
-            try {
-                hashAlgorithm = MessageDigest.getInstance("MD5");
-            } catch (NoSuchAlgorithmException ex) {
-                throw new RuntimeException("Unable to instantiate MD5 digest", ex);
-            }
-        }
+        hashFunctionName = config.getHashFunction();
         configured = true;
     }
 
@@ -118,9 +112,19 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     public void saveSuccess(JsonNode data, Object result, Instant now) {
         ObjectWriter writer = JsonConfig.get().getObjectMapper().writer();
         try {
-            String responseJson = writer.writeValueAsString(result);
+            String responseJson;
+            if (result instanceof String) {
+                responseJson = (String) result;
+            } else {
+                responseJson = writer.writeValueAsString(result);
+            }
+            Optional<String> hashedIdempotencyKey = getHashedIdempotencyKey(data);
+            if (!hashedIdempotencyKey.isPresent()) {
+                // missing idempotency key => non-idempotent transaction, we do not store the data, simply return
+                return;
+            }
             DataRecord record = new DataRecord(
-                    getHashedIdempotencyKey(data),
+                    hashedIdempotencyKey.get(),
                     DataRecord.Status.COMPLETED,
                     getExpiryEpochSecond(now),
                     responseJson,
@@ -141,11 +145,21 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param data Payload
      * @param now
      */
-    public void saveInProgress(JsonNode data, Instant now) throws IdempotencyItemAlreadyExistsException {
-        String idempotencyKey = getHashedIdempotencyKey(data);
+    public void saveInProgress(JsonNode data, Instant now, OptionalInt remainingTimeInMs) throws IdempotencyItemAlreadyExistsException {
+        Optional<String> hashedIdempotencyKey = getHashedIdempotencyKey(data);
+        if (!hashedIdempotencyKey.isPresent()) {
+            // missing idempotency key => non-idempotent transaction, we do not store the data, simply return
+            return;
+        }
 
+        String idempotencyKey = hashedIdempotencyKey.get();
         if (retrieveFromCache(idempotencyKey, now) != null) {
             throw new IdempotencyItemAlreadyExistsException();
+        }
+
+        OptionalLong inProgressExpirationMsTimestamp = OptionalLong.empty();
+        if (remainingTimeInMs.isPresent()) {
+            inProgressExpirationMsTimestamp = OptionalLong.of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
         }
 
         DataRecord record = new DataRecord(
@@ -153,7 +167,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                 DataRecord.Status.INPROGRESS,
                 getExpiryEpochSecond(now),
                 null,
-                getHashedPayload(data)
+                getHashedPayload(data),
+                inProgressExpirationMsTimestamp
         );
         LOG.debug("saving in progress record for idempotency key: {}", record.getIdempotencyKey());
         putRecord(record, now);
@@ -166,8 +181,13 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param throwable The throwable thrown by the function
      */
     public void deleteRecord(JsonNode data, Throwable throwable) {
-        String idemPotencyKey = getHashedIdempotencyKey(data);
+        Optional<String> hashedIdempotencyKey = getHashedIdempotencyKey(data);
+        if (!hashedIdempotencyKey.isPresent()) {
+            // missing idempotency key => non-idempotent transaction, we do not delete the data, simply return
+            return;
+        }
 
+        String idemPotencyKey = hashedIdempotencyKey.get();
         LOG.debug("Function raised an exception {}. " +
                         "Clearing in progress record in persistence store for idempotency key: {}",
                 throwable.getClass(),
@@ -186,8 +206,13 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @throws IdempotencyItemNotFoundException Exception thrown if no record exists in persistence store with the idempotency key
      */
     public DataRecord getRecord(JsonNode data, Instant now) throws IdempotencyValidationException, IdempotencyItemNotFoundException {
-        String idemPotencyKey = getHashedIdempotencyKey(data);
+        Optional<String> hashedIdempotencyKey = getHashedIdempotencyKey(data);
+        if (!hashedIdempotencyKey.isPresent()) {
+            // missing idempotency key => non-idempotent transaction, we do not get the data, simply return nothing
+            return null;
+        }
 
+        String idemPotencyKey = hashedIdempotencyKey.get();
         DataRecord cachedRecord = retrieveFromCache(idemPotencyKey, now);
         if (cachedRecord != null) {
             LOG.debug("Idempotency record found in cache with idempotency key: {}", idemPotencyKey);
@@ -207,7 +232,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param data incoming data
      * @return Hashed representation of the data extracted by the jmespath expression
      */
-    private String getHashedIdempotencyKey(JsonNode data) {
+    private Optional<String> getHashedIdempotencyKey(JsonNode data) {
         JsonNode node = data;
 
         if (eventKeyJMESPath != null) {
@@ -217,12 +242,15 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         if (isMissingIdemPotencyKey(node)) {
             if (throwOnNoIdempotencyKey) {
                 throw new IdempotencyKeyException("No data found to create a hashed idempotency key");
+            } else {
+                LOG.warn("No data found to create a hashed idempotency key. JMESPath: {}", eventKeyJMESPath);
+                return Optional.empty();
             }
-            LOG.warn("No data found to create a hashed idempotency key. JMESPath: {}", eventKeyJMESPath);
         }
 
         String hash = generateHash(node);
-        return functionName + "#" + hash;
+        hash = functionName + "#" + hash;
+        return Optional.of(hash);
     }
 
     private boolean isMissingIdemPotencyKey(JsonNode data) {
@@ -275,8 +303,25 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         } else if (data.isBoolean()) {
             node = data.asBoolean();
         } else node = data; // anything else
+
+        MessageDigest hashAlgorithm = getHashAlgorithm();
         byte[] digest = hashAlgorithm.digest(node.toString().getBytes(StandardCharsets.UTF_8));
         return String.format("%032x", new BigInteger(1, digest));
+    }
+
+    private MessageDigest getHashAlgorithm() {
+        MessageDigest hashAlgorithm;
+        try {
+            hashAlgorithm = MessageDigest.getInstance(hashFunctionName);
+        } catch (NoSuchAlgorithmException e) {
+            LOG.warn("Error instantiating {} hash function, trying with MD5", hashFunctionName);
+            try {
+                hashAlgorithm = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException ex) {
+                throw new RuntimeException("Unable to instantiate MD5 digest", ex);
+            }
+        }
+        return hashAlgorithm;
     }
 
     /**

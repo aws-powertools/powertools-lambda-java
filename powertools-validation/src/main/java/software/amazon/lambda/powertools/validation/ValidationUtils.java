@@ -13,6 +13,7 @@
  */
 package software.amazon.lambda.powertools.validation;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
@@ -21,9 +22,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
+import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import io.burt.jmespath.Expression;
@@ -65,9 +69,15 @@ public class ValidationUtils {
         }
         JsonNode subNode;
         try {
-            JsonNode jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(obj);
+            PojoSerializer pojoSerializer = LambdaEventSerializers.serializerFor(obj.getClass(), ClassLoader.getSystemClassLoader());
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            pojoSerializer.toJson(obj, out);
+            JsonNode jsonNode = ValidationConfig.get().getObjectMapper().readTree(out.toString("UTF-8"));
             Expression<JsonNode> expression = ValidationConfig.get().getJmesPath().compile(envelope);
             subNode = expression.search(jsonNode);
+            if (subNode == null || subNode instanceof NullNode) {
+                throw new ValidationException("Envelope not found in the object");
+            }
         } catch (Exception e) {
             throw new ValidationException("Cannot find envelope <"+envelope+"> in the object <"+obj+">", e);
         }
@@ -229,12 +239,17 @@ public class ValidationUtils {
      * @return the loaded json schema
      */
     public static JsonSchema getJsonSchema(String schema, boolean validateSchema) {
-        JsonSchema jsonSchema = schemas.get(schema);
+        JsonSchema jsonSchema = schemas.computeIfAbsent(schema, ValidationUtils::createJsonSchema);
 
-        if (jsonSchema != null) {
-            return jsonSchema;
+        if (validateSchema) {
+            validateSchema(schema, jsonSchema);
         }
 
+        return jsonSchema;
+    }
+
+    private static JsonSchema createJsonSchema(String schema) {
+        JsonSchema jsonSchema;
         if (schema.startsWith(CLASSPATH)) {
             String filePath = schema.substring(CLASSPATH.length());
             try (InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath)) {
@@ -250,19 +265,17 @@ public class ValidationUtils {
             jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
         }
 
-        if (validateSchema) {
-            String version = ValidationConfig.get().getSchemaVersion().toString();
-            try {
-                validate(jsonSchema.getSchemaNode(),
-                        getJsonSchema("classpath:/schemas/meta_schema_" + version));
-            } catch (ValidationException ve) {
-                throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
-            }
-        }
-
-        schemas.put(schema, jsonSchema);
-
         return jsonSchema;
+    }
+
+    private static void validateSchema(String schema, JsonSchema jsonSchema) {
+        String version = ValidationConfig.get().getSchemaVersion().toString();
+        try {
+            validate(jsonSchema.getSchemaNode(),
+                    getJsonSchema("classpath:/schemas/meta_schema_" + version));
+        } catch (ValidationException ve) {
+            throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
+        }
     }
 
     /**

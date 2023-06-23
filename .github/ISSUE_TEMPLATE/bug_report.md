@@ -34,12 +34,12 @@ assignees: ''
 
 ## Environment
 
-* **Powertools version used**:
+* **Powertools for AWS Lambda (Java) version used**:
 * **Packaging format (Layers, Maven/Gradle)**:
 * **AWS Lambda function runtime:**
 * **Debugging logs**
 
-> [How to enable debug mode](https://awslabs.github.io/aws-lambda-powertools-java/#debug-mode)**
+> [How to enable debug mode](https://docs.powertools.aws.dev/lambda-java/#debug-mode)**
 
 ```text
 # paste logs here

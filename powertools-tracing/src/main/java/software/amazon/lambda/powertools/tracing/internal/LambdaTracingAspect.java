@@ -26,8 +26,6 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isSamLocal;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.objectMapper;
 
@@ -48,7 +46,7 @@ public final class LambdaTracingAspect {
                 () -> "## " + pjp.getSignature().getName()));
         segment.setNamespace(namespace(tracing));
 
-        if (placedOnHandlerMethod(pjp)) {
+        if (isHandlerMethod(pjp)) {
             segment.putAnnotation("ColdStart", isColdStart());
             segment.putAnnotation("Service", namespace(tracing));
         }
@@ -62,7 +60,7 @@ public final class LambdaTracingAspect {
                 segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", null != objectMapper() ? objectMapper().writeValueAsString(methodReturn): methodReturn);
             }
 
-            if (placedOnHandlerMethod(pjp)) {
+            if (isHandlerMethod(pjp)) {
                 coldStartDone();
             }
 
@@ -114,11 +112,6 @@ public final class LambdaTracingAspect {
 
     private String namespace(Tracing powerToolsTracing) {
         return powerToolsTracing.namespace().isEmpty() ? serviceName() : powerToolsTracing.namespace();
-    }
-
-    private boolean placedOnHandlerMethod(ProceedingJoinPoint pjp) {
-        return isHandlerMethod(pjp)
-                && (placedOnRequestHandler(pjp) || placedOnStreamHandler(pjp));
     }
 
     private boolean environmentVariable(String key) {

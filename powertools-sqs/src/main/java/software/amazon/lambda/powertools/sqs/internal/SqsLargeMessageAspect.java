@@ -3,6 +3,7 @@ package software.amazon.lambda.powertools.sqs.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -68,7 +69,7 @@ public class SqsLargeMessageAspect {
         for (SQSMessage sqsMessage : records) {
             if (isBodyLargeMessagePointer(sqsMessage.getBody())) {
 
-                PayloadS3Pointer s3Pointer = PayloadS3Pointer.fromJson(sqsMessage.getBody())
+                PayloadS3Pointer s3Pointer = Optional.ofNullable(PayloadS3Pointer.fromJson(sqsMessage.getBody()))
                         .orElseThrow(() -> new FailedProcessingLargePayloadException(format("Failed processing SQS body to extract S3 details. [ %s ].", sqsMessage.getBody())));
 
                 ResponseInputStream<GetObjectResponse> s3Object = callS3Gracefully(s3Pointer, pointer -> {

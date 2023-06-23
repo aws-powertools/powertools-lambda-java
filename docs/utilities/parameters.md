@@ -5,8 +5,9 @@ description: Utility
 
 
 The parameters utility provides a way to retrieve parameter values from
-[AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html) or
-[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). It also provides a base class to create your parameter provider implementation.
+[AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html), 
+[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Amazon DynamoDB](https://aws.amazon.com/dynamodb/). 
+It also provides a base class to create your parameter provider implementation.
 
 **Key features**
 
@@ -33,6 +34,8 @@ To install this utility, add the following dependency to your project.
      dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
+//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
+//      implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```
 
@@ -40,11 +43,12 @@ To install this utility, add the following dependency to your project.
 
 This utility requires additional permissions to work as expected. See the table below:
 
-Provider | Function/Method | IAM Permission
-------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------
-SSM Parameter Store | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`  | `ssm:GetParameter`
-SSM Parameter Store | `SSMProvider.getMultiple(String)` | `ssm:GetParametersByPath`
-Secrets Manager | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)` | `secretsmanager:GetSecretValue`
+Provider | Function/Method                                                      | IAM Permission
+------------------------------------------------- |----------------------------------------------------------------------| ---------------------------------------------------------------------------------
+SSM Parameter Store | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`           | `ssm:GetParameter`
+SSM Parameter Store | `SSMProvider.getMultiple(String)`                                    | `ssm:GetParametersByPath`
+Secrets Manager | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)`   | `secretsmanager:GetSecretValue`
+DynamoDB | `DynamoDBProvider.get(String)` `DynamoDBProvider.getMultiple(string)` | `dynamodb:GetItem` `dynamoDB:Query`
 
 ## SSM Parameter Store
 
@@ -74,7 +78,7 @@ in order to get data from other regions or use specific credentials.
     }
     ```
 
-=== "SSMProvider with an explicit region"
+=== "SSMProvider with a custom client"
 
     ```java hl_lines="5 7"
     import software.amazon.lambda.powertools.parameters.SSMProvider;
@@ -149,7 +153,7 @@ in order to get data from other regions or use specific credentials.
     }
     ```
 
-=== "SecretsProvider with an explicit region"
+=== "SecretsProvider with a custom client"
 
     ```java hl_lines="5 7"
     import software.amazon.lambda.powertools.parameters.SecretsProvider;
@@ -165,6 +169,95 @@ in order to get data from other regions or use specific credentials.
     
     }
     ```
+
+## DynamoDB 
+To get secrets stored in DynamoDB, use `getDynamoDbProvider`, providing the name of the table that
+contains the secrets. As with the other providers, an overloaded methods allows you to retrieve 
+a `DynamoDbProvider` providing a client if you need to configure it yourself. 
+
+=== "DynamoDbProvider"
+
+    ```java hl_lines="6 9"
+    import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an instance of the DynamoDbProvider
+        DynamoDbProvider ddbProvider = ParamManager.getDynamoDbProvider("my-parameters-table");
+    
+        // Retrieve a single parameter
+        String value = ddbProvider.get("my-key"); 
+    } 
+    ```
+
+=== "DynamoDbProvider with a custom client"
+
+    ```java hl_lines="9 10 11 12 15 18"
+    import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+    import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+    import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+    import software.amazon.awssdk.regions.Region;
+
+    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get a DynamoDB Client with an explicit region
+        DynamoDbClient ddbClient = DynamoDbClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .region(Region.EU_CENTRAL_2)
+                .build();
+
+        // Get an instance of the DynamoDbProvider
+        DynamoDbProvider provider = ParamManager.getDynamoDbProvider(ddbClient, "test-table");
+    
+        // Retrieve a single parameter
+        String value = ddbProvider.get("my-key"); 
+    } 
+    ```
+
+## AppConfig
+To get parameters stored in AppConfig, use `getAppConfigProvider`, providing the application and environment
+name to retrieve configuration from. As with the other providers, an overloaded method allows you to retrieve
+an `AppConfigProvider` providing a client if you need to configure it yourself.
+
+=== "AppConfigProvider"
+
+    ```java hl_lines="6 9"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWitAppConfigParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an instance of the AppConfigProvider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider("my-environment", "my-app");
+    
+        // Retrieve a single parameter
+        String value = appConfigProvider.get("my-key"); 
+    } 
+    ```
+
+=== "AppConfigProvider with a custom client"
+
+    ```java hl_lines="9 10 11 12 15 18"
+    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+    import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
+    import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+    import software.amazon.awssdk.regions.Region;
+
+    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an AppConfig Client with an explicit region
+        AppConfigDataClient appConfigDataClient = AppConfigDataClient.builder()
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .region(Region.EU_CENTRAL_2)
+                .build();
+
+        // Get an instance of the DynamoDbProvider
+        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider(appConfigDataClient, "my-environment", "my-app");
+    
+        // Retrieve a single parameter
+        String value = appConfigProvider.get("my-key"); 
+    } 
+    ```
+
 
 ## Advanced configuration
 
@@ -393,9 +486,9 @@ If you want to use the ```@Param``` annotation in your project add configuration
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      ...
                      <aspectLibraries>
@@ -434,5 +527,6 @@ If you want to use the ```@Param``` annotation in your project add configuration
     dependencies {
         ...
         aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
+        implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```

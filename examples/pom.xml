@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>powertools-examples</artifactId>
+    <packaging>pom</packaging>
+
+    <parent>
+        <artifactId>powertools-parent</artifactId>
+        <groupId>software.amazon.lambda</groupId>
+        <version>1.15.0</version>
+    </parent>
+
+    <name>Powertools for AWS Lambda (Java) library Examples</name>
+    <description>
+        A suite of examples accompanying for Powertools for AWS Lambda (Java).
+    </description>
+
+    <modules>
+        <module>powertools-examples-core</module>
+        <module>powertools-examples-idempotency</module>
+        <module>powertools-examples-parameters</module>
+        <module>powertools-examples-serialization</module>
+        <module>powertools-examples-sqs</module>
+        <module>powertools-examples-validation</module>
+    </modules>
+
+    <!-- Don't deploy the examples -->
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin> <!-- skip coverage for examples -->
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

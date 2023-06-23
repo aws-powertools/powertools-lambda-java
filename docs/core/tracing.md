@@ -37,12 +37,12 @@ Before your use this utility, your AWS Lambda function [must have permissions](h
                     POWERTOOLS_SERVICE_NAME: example
     ```
 
-The Powertools service name is used as the X-Ray namespace. This can be set using the environment variable
+The Powertools for AWS Lambda (Java) service name is used as the X-Ray namespace. This can be set using the environment variable
 `POWERTOOLS_SERVICE_NAME`
 
 ### Lambda handler
 
-To enable Powertools tracing to your function add the `@Tracing` annotation to your `handleRequest` method or on
+To enable Powertools for AWS Lambda (Java) tracing to your function add the `@Tracing` annotation to your `handleRequest` method or on
 any method will capture the method as a separate subsegment automatically. You can optionally choose to customize 
 segment name that appears in traces.
 
