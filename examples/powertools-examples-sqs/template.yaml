@@ -11,7 +11,7 @@ Globals:
     Tracing: Active
     Environment:
       Variables:
-        # Powertools for AWS Lambda (Java) env vars: https://awslabs.github.io/aws-lambda-powertools-python/#environment-variables
+        # Powertools for AWS Lambda (Java) env vars: https://docs.powertools.aws.dev/lambda/java/#environment-variables
         POWERTOOLS_LOG_LEVEL: INFO
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
