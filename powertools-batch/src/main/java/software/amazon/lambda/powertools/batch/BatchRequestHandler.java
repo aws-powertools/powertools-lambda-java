@@ -52,6 +52,7 @@ public abstract class BatchRequestHandler<T, U, V> implements RequestHandler<T, 
         // For each message, map it to either 1/ a successful result, or 2/ an exception
         List<MessageProcessingResult<U>> results = messages.stream().map(m -> {
             try {
+                enhanceMessage(m);
                 processItem(m, context);
                 return new MessageProcessingResult<>(m, null);
             } catch (Exception e) {
@@ -87,4 +88,13 @@ public abstract class BatchRequestHandler<T, U, V> implements RequestHandler<T, 
      * @param context
      */
     public abstract void processItem(U message, Context context);
+
+    /**
+     * This could be overriden by event-specific children to implement things like large
+     * message processing.
+     * @param message
+     */
+    protected void enhanceMessage(U message) {
+
+    }
 }
