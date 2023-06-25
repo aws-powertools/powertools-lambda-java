@@ -5,8 +5,12 @@
     <version>1.15.0</version>
     <artifactId>powertools-examples-serialization</artifactId>
     <packaging>jar</packaging>
-    
     <name>Powertools for AWS Lambda (Java) library Examples - Serialization</name>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
     <dependencies>
         <dependency>
