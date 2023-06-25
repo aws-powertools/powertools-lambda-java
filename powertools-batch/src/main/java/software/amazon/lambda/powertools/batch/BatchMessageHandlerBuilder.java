@@ -7,9 +7,12 @@ import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 
+
 /**
- * Let's make this builder-style so that we can extend the interface
- * if we need to with extra fields without breaking clients
+ * A builder-style interface we can use within an existing Lambda RequestHandler to
+ * deal with our batch responses.
+ *
+ * @see software.amazon.lambda.powertools.batch.examples.ExampleMessageHandlerBuilder
  */
 public class BatchMessageHandlerBuilder {
 
