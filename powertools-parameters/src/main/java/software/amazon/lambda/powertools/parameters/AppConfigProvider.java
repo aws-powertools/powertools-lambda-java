@@ -31,7 +31,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  * value when the user re-requests it. This means we must hold a keyed set of session tokens
  * and values.
  *
- * @see <a href="https://awslabs.github.io/aws-lambda-powertools-java/utilities/parameters">Parameters provider documentation</a>
+ * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/parameters/">Parameters provider documentation</a>
  * @see <a href="https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-working.html">AppConfig documentation</a>
  */
 public class AppConfigProvider extends BaseProvider{
