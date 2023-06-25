@@ -16,11 +16,15 @@ import java.util.stream.Collectors;
  * IRL, this would be implemented leaning on the {@link BatchMessageHandlerBuilder}, here
  * I have provided implementation inline for illustrative purposes.
  *
+ * <b>Note - this is package private. We don't let users extend this, which gives us
+ * much more flexibility to add extra functionality later by minimising our API surface
+ * area. </b>
+ *
  * @param <T> The batch event type
  * @param <U> The individual message type for each message within teh batch
  * @param <V> The batch result type
  */
-public abstract class BatchRequestHandler<T, U, V> implements RequestHandler<T, V> {
+abstract class BatchRequestHandler<T, U, V> implements RequestHandler<T, V> {
 
     /**
      * Used to wrap the result of processing a single message. We wrap the message itself,
