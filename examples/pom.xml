@@ -15,7 +15,12 @@
     </description>
 
     <modules>
+        <module>powertools-examples-core</module>
+        <module>powertools-examples-idempotency</module>
         <module>powertools-examples-parameters</module>
+        <module>powertools-examples-serialization</module>
+        <module>powertools-examples-sqs</module>
+        <module>powertools-examples-validation</module>
     </modules>
 
     <!-- Don't deploy the examples -->

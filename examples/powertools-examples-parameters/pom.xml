@@ -89,6 +89,9 @@
       </plugins>
     </build>
     <profiles>
+        <!-- Use a profile to enforce AspectJ version 1.9.7 if we are Java 1.8, otherwise we'll get class
+             version mismatch issues. All subsequent Java releases build with the default AspectJ configuration
+              on the project. -->
         <profile>
             <id>jdk8</id>
             <activation>
