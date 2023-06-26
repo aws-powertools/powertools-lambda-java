@@ -166,7 +166,8 @@
                                     <aspectLibrary>
                                         <groupId>software.amazon.lambda</groupId>
                                         <artifactId>powertools-metrics</artifactId>
-                                    </aspectLibrary>                                </aspectLibraries>
+                                    </aspectLibrary>
+                                </aspectLibraries>
                             </configuration>
                             <executions>
                                 <execution>
