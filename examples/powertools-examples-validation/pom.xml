@@ -117,6 +117,12 @@
                                 <complianceLevel>${maven.compiler.target}</complianceLevel>
                                 <Xlint>ignore</Xlint>
                                 <encoding>UTF-8</encoding>
+                                <aspectLibraries>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-validation</artifactId>
+                                    </aspectLibrary>
+                                </aspectLibraries>
                             </configuration>
                             <executions>
                                 <execution>
