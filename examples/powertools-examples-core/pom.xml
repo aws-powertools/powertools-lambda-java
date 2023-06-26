@@ -158,12 +158,22 @@
                                 <source>${maven.compiler.source}</source>
                                 <target>${maven.compiler.target}</target>
                                 <complianceLevel>${maven.compiler.target}</complianceLevel>
-                                <Xlint>ignore</Xlint>
-                                <encoding>UTF-8</encoding>
+                                <aspectLibraries>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-tracing</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-logging</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-metrics</artifactId>
+                                    </aspectLibrary>                                </aspectLibraries>
                             </configuration>
                             <executions>
                                 <execution>
-                                    <phase>process-sources</phase>
                                     <goals>
                                         <goal>compile</goal>
                                         <goal>test-compile</goal>
