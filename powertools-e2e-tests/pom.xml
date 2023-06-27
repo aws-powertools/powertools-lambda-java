@@ -16,7 +16,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <constructs.version>10.2.56</constructs.version>
+        <constructs.version>10.2.60</constructs.version>
         <cdk.version>2.85.0</cdk.version>
 
         <!-- Don't deploy the e2e tests -->

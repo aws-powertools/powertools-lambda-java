@@ -10,7 +10,7 @@ const awsconfig = {
 };
 
 const RUNTIME = "java"
-const BASE_ORIGIN = "awslabs.github.io"
+const BASE_ORIGIN = "docs.powertools.aws.dev"
 
 function enableSearchOnBlurElement() {
 	if (document.location.hostname != BASE_ORIGIN) return // prevent unnecessary data

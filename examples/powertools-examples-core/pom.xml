@@ -1,15 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
+    <groupId>software.amazon.lambda.examples</groupId>
+    <version>1.15.0</version>
     <artifactId>powertools-examples-core</artifactId>
     <packaging>jar</packaging>
-    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
     
-    <parent>
-        <artifactId>powertools-examples</artifactId>
-        <groupId>software.amazon.lambda</groupId>
-        <version>1.15.0</version>
-    </parent>
+    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
+
+    <properties>
+        <log4j.version>2.20.0</log4j.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -118,4 +122,79 @@
         </plugin>
       </plugins>
     </build>
+    <profiles>
+        <!-- Use a profile to enforce AspectJ version 1.9.7 if we are Java 1.8 otherwise we'll get class
+             version mismatch issues. All subsequent Java releases build with the default AspectJ configuration
+              on the project.
+
+              Note:
+              - if you are running Java > 1.8, you can remove this profile altogether
+              - If you are running on Java 1.8, you should apply the aspectJ version here to the project, and remove
+                the profile.
+              -->
+        <profile>
+            <id>jdk8</id>
+            <activation>
+                <jdk>(,11)</jdk> <!-- 8 -->
+            </activation>
+            <properties>
+                <aspectj.version>1.9.7</aspectj.version>
+            </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>dev.aspectj</groupId>
+                            <artifactId>aspectj-maven-plugin</artifactId>
+                            <version>${aspectj.plugin.version}</version>
+                            <configuration>
+                                <source>${maven.compiler.source}</source>
+                                <target>${maven.compiler.target}</target>
+                                <complianceLevel>${maven.compiler.target}</complianceLevel>
+                                <aspectLibraries>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-tracing</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-logging</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-metrics</artifactId>
+                                    </aspectLibrary>
+                                </aspectLibraries>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>compile</goal>
+                                        <goal>test-compile</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <!-- Enforce aspectJ 1.9.7 -->
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.aspectj</groupId>
+                                    <artifactId>aspectjtools</artifactId>
+                                    <version>${aspectj.version}</version>
+                                </dependency>
+                            </dependencies>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
+        </profile>
+    </profiles>
 </project>
