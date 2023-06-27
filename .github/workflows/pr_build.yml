@@ -73,36 +73,6 @@ jobs:
         if: ${{ matrix.java == '11' }} # publish results once
         with:
           files: ./powertools-cloudformation/target/site/jacoco/jacoco.xml,./powertools-core/target/site/jacoco/jacoco.xml,./powertools-idempotency/target/site/jacoco/jacoco.xml,./powertools-logging/target/site/jacoco/jacoco.xml,./powertools-metrics/target/site/jacoco/jacoco.xml,./powertools-parameters/target/site/jacoco/jacoco.xml,./powertools-serialization/target/site/jacoco/jacoco.xml,./powertools-sqs/target/site/jacoco/jacoco.xml,./powertools-tracing/target/site/jacoco/jacoco.xml,./powertools-validation/target/site/jacoco/jacoco.xml
-      - name: Get artifacts size & build report
-        id: artifacts-size-report
-        if: ${{ matrix.java == '11.0.x' }} # do it once
-        run: |
-          echo '## :floppy_disk: Artifacts Size Report' > report.md
-          echo '| Module | Version | Size (KB) |' >> report.md
-          echo '| --- | --- | --- |' >> report.md
-          artifact_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          for artifact in $(cat target/powertools-parent-*.buildinfo | grep 'outputs.*.jar' | grep -v 'sources.jar'); do
-            artifact_name=$(echo "$artifact" | cut -d '=' -f2)
-            artifact_name=${artifact_name%-$artifact_version.jar}
-            artifact_size=$(grep "${artifact%%.filename*}.length" target/powertools-parent-*.buildinfo | cut -d '=' -f2)
-            printf "| %s | %s | %.2f |\n" "$artifact_name" "$artifact_version" "$(bc <<< "scale=2; $artifact_size/1000")" >> report.md
-          done
-      - name: Find potential existing report
-        if: ${{ matrix.java == '11.0.x' }} # do it once
-        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # 2.4.0
-        id: find-comment
-        with:
-          issue-number: ${{ github.event.pull_request.number }}
-          comment-author: 'github-actions[bot]'
-          body-includes: Artifacts Size Report
-      - name: Write artifacts size report in comment
-        if: ${{ matrix.java == '11.0.x' }} # do it once
-        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # 3.0.2
-        with:
-          comment-id: ${{ steps.find-comment.outputs.comment-id }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body-path: 'report.md'
-          edit-mode: replace
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
