@@ -83,7 +83,7 @@ extra_javascript:
 
 extra:
   powertools:
-    version: 1.15.0
+    version: 1.16.0
 
 repo_url: https://github.com/aws-powertools/powertools-lambda-java
 edit_uri: edit/main/docs
