@@ -13,7 +13,7 @@ public class DynamoDBBatchHandler implements RequestHandler<DynamodbEvent, Strea
     }
 
     @Override
-    public void processItem(DynamodbEvent.DynamodbStreamRecord record, Context context) {
+    public void processRecord(DynamodbEvent.DynamodbStreamRecord record, Context context) {
 
     }
 }

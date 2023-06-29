@@ -6,17 +6,19 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import software.amazon.lambda.powertools.utilities.EventDeserializer;
 import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
+import java.util.ArrayList;
+
 public interface SQSBatchProcessor<ITEM> extends BatchProcessor<SQSEvent, ITEM, SQSBatchResponse> {
 
     @Override
     default SQSBatchResponse processBatch(SQSEvent event, Context context) {
         Class<ITEM> bodyClass = (Class<ITEM>) ((ParameterizedTypeImpl) getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0];
 
-        SQSBatchResponse response = new SQSBatchResponse();
+        SQSBatchResponse response = SQSBatchResponse.builder().withBatchItemFailures(new ArrayList<>()).build();
         for (SQSEvent.SQSMessage message : event.getRecords()) {
             try {
-                if (bodyClass.equals(SQSEvent.SQSMessage.class)) {
-                    processItem(message, context);
+                if (bodyClass.getCanonicalName().equals(SQSEvent.SQSMessage.class.getCanonicalName())) {
+                    processMessage(message, context);
                 } else {
                     processItem(EventDeserializer.extractDataFrom(message).as(bodyClass), context);
                 }
@@ -27,7 +29,7 @@ public interface SQSBatchProcessor<ITEM> extends BatchProcessor<SQSEvent, ITEM, 
         return response;
     }
 
-    default void processItem(SQSEvent.SQSMessage message, Context context) {
+    default void processMessage(SQSEvent.SQSMessage message, Context context) {
         System.out.println("Processing message " + message.getMessageId());
     }
 

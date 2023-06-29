@@ -24,6 +24,11 @@
             <artifactId>powertools-serialization</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>compile</scope>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
