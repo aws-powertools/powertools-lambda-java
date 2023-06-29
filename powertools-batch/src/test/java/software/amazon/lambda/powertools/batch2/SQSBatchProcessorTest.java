@@ -1,8 +1,10 @@
 package software.amazon.lambda.powertools.batch2;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch2.examples.model.Product;
@@ -16,8 +18,16 @@ public class SQSBatchProcessorTest {
         }
     }
 
+    @ParameterizedTest
+    @Event(value = "sqs_event.json", type = SQSEvent.class)
+    public void testCustom(SQSEvent event) {
+        SQSBProduct sqsbproduct = new SQSBProduct();
+        SQSBatchResponse sqsBatchResponse = sqsbproduct.processBatch(event, context);
+        Assertions.assertThat(sqsBatchResponse.getBatchItemFailures()).isEmpty();
+    }
+
     static class SQSBP implements SQSBatchProcessor<SQSEvent.SQSMessage> {
-        public void processItem(SQSEvent.SQSMessage message, Context context) {
+        public void processMessage(SQSEvent.SQSMessage message, Context context) {
             System.out.println(message.toString());
         }
     }
@@ -26,13 +36,7 @@ public class SQSBatchProcessorTest {
     @Event(value = "sqs_event.json", type = SQSEvent.class)
     public void testBasic(SQSEvent event) {
         SQSBP sqsbp = new SQSBP();
-        sqsbp.processBatch(event, context);
-    }
-
-    @ParameterizedTest
-    @Event(value = "sqs_event.json", type = SQSEvent.class)
-    public void testCustom(SQSEvent event) {
-        SQSBProduct sqsbproduct = new SQSBProduct();
-        sqsbproduct.processBatch(event, context);
+        SQSBatchResponse sqsBatchResponse = sqsbp.processBatch(event, context);
+        Assertions.assertThat(sqsBatchResponse.getBatchItemFailures()).isEmpty();
     }
 }
