@@ -10,7 +10,19 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.16.0] - 2023-06-29
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
+
+### Added
+* Feature: Add AppConfig provider to parameters module (#1104) by @scottgerring
+
+### Maintenance
+* Fix: missing idempotency key should not persist any data (#1201) by @jeromevdl
+* Fix:Removing env var credentials provider as default. (#1161) by @msailes
+* Chore: Swap implementation of `aspectj-maven-plugin` to support Java 17 (#1172) by @mriccia
+* Test: end-to-end tests for core modules and idempotency (#970) by @jeromevdl
+* Chore: cleanup spotbugs maven profiles (#1236) by @jeromevdl
+* Chore: removing logback from all components (#1227) by @jeromevdl
+* Chore: Roll SLF4J log4j bindings to v2 (#1190) by @scottgerring
+* Deps: Bump third party dependencies to the latest versions.
 
 
 ## [1.15.0] - 2023-03-20
