@@ -25,6 +25,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-idempotency</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <scope>compile</scope>
