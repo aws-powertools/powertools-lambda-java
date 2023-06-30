@@ -5,6 +5,12 @@ on:
     workflows: ["Build"]
     types: [completed]
 
+permissions:
+  pull-requests: write
+  issues: write
+  repository-projects: write
+  contents: write
+
 jobs:
   merge-me:
     name: Merge me!
@@ -36,7 +42,7 @@ jobs:
             var fs = require('fs');
             fs.writeFileSync('${{github.workspace}}/pr.zip', Buffer.from(download.data));
       - run: unzip pr.zip
-      - name: Merge me!
+      - name: Create review
         uses: actions/github-script@v3
         with:
           script: |
@@ -49,10 +55,12 @@ jobs:
               pull_number: issue_number,
               event: 'APPROVE'
             })
+            
             github.pulls.merge({
               owner: context.payload.repository.owner.login,
               repo: context.payload.repository.name,
               pull_number: issue_number,
               merge_method: 'squash'
             })
+
           github-token: ${{ secrets.AUTOMERGE }}

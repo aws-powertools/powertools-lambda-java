@@ -250,7 +250,7 @@ It can also handle a collection of elements like the records of an SQS event:
 ## JMESPath functions
 
 !!! Tip
-    [JMESPath](https://jmespath.org/){target="_blank"} is a query language for JSON used by AWS CLI and AWS Lambda Powertools for Java to get a specific part of a json.
+    [JMESPath](https://jmespath.org/){target="_blank"} is a query language for JSON used by AWS CLI and Powertools for AWS Lambda (Java) to get a specific part of a json.
 
 ### Key features
 
@@ -261,11 +261,11 @@ It can also handle a collection of elements like the records of an SQS event:
 
 You might have events that contain encoded JSON payloads as string, base64, or even in compressed format. It is a common use case to decode and extract them partially or fully as part of your Lambda function invocation.
 
-You will generally use this in combination with other Lambda Powertools modules ([validation](validation.md) and [idempotency](idempotency.md)) where you might need to extract a portion of your data before using them.
+You will generally use this in combination with other Powertools for AWS Lambda (Java) modules ([validation](validation.md) and [idempotency](idempotency.md)) where you might need to extract a portion of your data before using them.
 
 ### Built-in functions
 
-Powertools provides the following JMESPath Functions to easily deserialize common encoded JSON payloads in Lambda functions:
+Powertools for AWS Lambda (Java) provides the following JMESPath Functions to easily deserialize common encoded JSON payloads in Lambda functions:
 
 #### powertools_json function
 

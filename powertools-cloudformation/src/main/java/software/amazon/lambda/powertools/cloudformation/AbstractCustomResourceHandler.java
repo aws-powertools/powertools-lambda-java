@@ -65,7 +65,12 @@ public abstract class AbstractCustomResourceHandler
         } catch (CustomResourceResponseException rse) {
             LOG.error("Unable to generate response. Sending empty failure to {}", responseUrl, rse);
             try {
-                client.send(event, context, Response.failed());
+                // If the customers code throws an exception, Powertools for AWS Lambda (Java) should respond in a way that doesn't
+                // change the CloudFormation resources.
+                // In the case of a Update or Delete, a failure is sent with the existing PhysicalResourceId
+                // indicating no change.
+                // In the case of a Create, null will be set and changed to the Lambda LogStreamName before sending.
+                client.send(event, context, Response.failed(event.getPhysicalResourceId()));
             } catch (Exception e) {
                 // unable to generate response AND send the failure
                 LOG.error("Unable to send failure response to {}.", responseUrl, e);

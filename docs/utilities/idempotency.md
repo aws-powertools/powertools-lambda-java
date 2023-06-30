@@ -43,9 +43,9 @@ times with the same parameters**. This makes idempotent operations safe to retry
         <plugins>
             ...
             <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
+                 <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
+                 <version>1.13.1</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
@@ -355,19 +355,141 @@ Imagine the function executes successfully, but the client never receives the re
 
 This sequence diagram shows an example flow of what happens in the payment scenario:
 
-![Idempotent sequence](../media/idempotent_sequence.png)
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Persistence Layer
+    alt initial request
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set (id=event.search(payload))
+        activate Persistence Layer
+        Note right of Persistence Layer: Locked to prevent concurrent<br/>invocations with <br/> the same payload.
+        Lambda-->>Lambda: Call handler (event)
+        Lambda->>Persistence Layer: Update record with result
+        deactivate Persistence Layer
+        Persistence Layer-->>Persistence Layer: Update record with result
+        Lambda-->>Client: Response sent to client
+    else retried request
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set (id=event.search(payload))
+        Persistence Layer-->>Lambda: Already exists in persistence layer. Return result
+        Lambda-->>Client: Response sent to client
+    end
+```
+<i>Idempotent sequence</i>
+</center>
 
 The client was successful in receiving the result after the retry. Since the Lambda handler was only executed once, our customer hasn't been charged twice.
 
 !!! note
     Bear in mind that the entire Lambda handler is treated as a single idempotent operation. If your Lambda handler can cause multiple side effects, consider splitting it into separate functions.
 
+#### Lambda timeouts
+
+This is automatically done when you annotate your Lambda handler with [@Idempotent annotation](#idempotent-annotation).
+
+To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda (Java) calculates and includes the remaining invocation available time as part of the idempotency record.
+
+!!! example
+    If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the invocation again as if it was in the `EXPIRED` state.
+    This means that if an invocation expired during execution, it will be quickly executed again on the next retry.
+
+!!! important
+    If you are using the [@Idempotent annotation on another method](#idempotent-annotation-on-another-method) to guard isolated parts of your code, you must use `registerLambdaContext` method available in the `Idempotency` object to benefit from this protection.
+
+    Here is an example on how you register the Lambda context in your handler:
+    
+    ```java hl_lines="13-19" title="Registering the Lambda context"
+    public class PaymentHandler implements RequestHandler<SQSEvent, List<String>> {
+    
+        public PaymentHandler() {
+            Idempotency.config()
+                    .withPersistenceStore(
+                            DynamoDBPersistenceStore.builder()
+                                    .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                                    .build())
+                    .configure();
+        }
+        
+        @Override
+        public List<String> handleRequest(SQSEvent sqsEvent, Context context) {
+            Idempotency.registerLambdaContext(context);
+            return sqsEvent.getRecords().stream().map(record -> process(record.getMessageId(), record.getBody())).collect(Collectors.toList());
+        }
+    
+        @Idempotent
+        private String process(String messageId, @IdempotencyKey String messageBody) {
+            logger.info("Processing messageId: {}", messageId);
+            PaymentRequest request = extractDataFrom(messageBody).as(PaymentRequest.class);
+            return paymentService.process(request);
+        }
+    
+    }
+    ```
+
+#### Lambda timeout sequence diagram
+
+This sequence diagram shows an example flow of what happens if a Lambda function times out:
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Persistence Layer
+    alt initial request
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set (id=event.search(payload))
+        activate Persistence Layer
+        Note right of Persistence Layer: Locked to prevent concurrent<br/>invocations with <br/> the same payload.
+        Note over Lambda: Time out
+        Lambda--xLambda: Call handler (event)
+        Lambda-->>Client: Return error response
+        deactivate Persistence Layer
+    else concurrent request before timeout
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set (id=event.search(payload))
+        Persistence Layer-->>Lambda: Request already INPROGRESS
+        Lambda--xClient: Return IdempotencyAlreadyInProgressError
+    else retry after Lambda timeout
+        Client->>Lambda: Invoke (event)
+        Lambda->>Persistence Layer: Get or set (id=event.search(payload))
+        activate Persistence Layer
+        Note right of Persistence Layer: Locked to prevent concurrent<br/>invocations with <br/> the same payload.
+        Lambda-->>Lambda: Call handler (event)
+        Lambda->>Persistence Layer: Update record with result
+        deactivate Persistence Layer
+        Persistence Layer-->>Persistence Layer: Update record with result
+        Lambda-->>Client: Response sent to client
+    end
+```
+<i>Idempotent sequence for Lambda timeouts</i>
+</center>
+
 ### Handling exceptions
 
 If you are using the `@Idempotent` annotation on your Lambda handler or any other method, any unhandled exceptions that are thrown during the code execution will cause **the record in the persistence layer to be deleted**.
 This means that new invocations will execute your code again despite having the same payload. If you don't want the record to be deleted, you need to catch exceptions within the idempotent function and return a successful response.
 
-![Idempotent sequence exception](../media/idempotent_sequence_exception.png)
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Persistence Layer
+    Client->>Lambda: Invoke (event)
+    Lambda->>Persistence Layer: Get or set (id=event.search(payload))
+    activate Persistence Layer
+    Note right of Persistence Layer: Locked during this time. Prevents multiple<br/>Lambda invocations with the same<br/>payload running concurrently.
+    Lambda--xLambda: Call handler (event).<br/>Raises exception
+    Lambda->>Persistence Layer: Delete record (id=event.search(payload))
+    deactivate Persistence Layer
+    Lambda-->>Client: Return error response
+```
+<i>Idempotent sequence exception</i>
+</center>
 
 If an Exception is raised _outside_ the scope of a decorated method and after your method has been called, the persistent record will not be affected. In this case, idempotency will be maintained for your decorated function. Example:
 
@@ -586,9 +708,11 @@ By using **`withPayloadValidationJMESPath("amount")`**, we prevent this potentia
 
 ### Making idempotency key required
 
-If you want to enforce that an idempotency key is required, you can set **`ThrowOnNoIdempotencyKey`** to `True`.
+If you want to enforce that an idempotency key is required, you can set **`ThrowOnNoIdempotencyKey`** to `true`.
 
 This means that we will throw **`IdempotencyKeyException`** if the evaluation of **`EventKeyJMESPath`** is `null`.
+
+When set to `false` (the default), if the idempotency key is null, then the data is not persisted in the store.
 
 === "App.java"
 
@@ -703,7 +827,7 @@ Data would then be stored in DynamoDB like this:
 This utility provides an abstract base class, so that you can implement your choice of persistent storage layer.
 
 You can extend the `BasePersistenceStore` class and implement the abstract methods `getRecord`, `putRecord`,
-`updateRecord` and `deleteRecord`. You can have a look at [`DynamoDBPersistenceStore`](https://github.com/awslabs/aws-lambda-powertools-java/blob/master/powertools-idempotency/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/DynamoDBPersistenceStore.java) as an implementation reference.
+`updateRecord` and `deleteRecord`. You can have a look at [`DynamoDBPersistenceStore`](https://github.com/aws-powertools/powertools-lambda-java/blob/master/powertools-idempotency/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/DynamoDBPersistenceStore.java) as an implementation reference.
 
 !!! danger
     Pay attention to the documentation for each method - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
@@ -724,8 +848,8 @@ public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent in
 }
 ```
 
-!!! tip "Tip: JMESPath Powertools functions are also available"
-    Built-in functions like `powertools_json`, `powertools_base64`, `powertools_base64_gzip` are also available to use in this utility. See [JMESPath Powertools functions](serialization.md)
+!!! tip "Tip: JMESPath Powertools for AWS Lambda (Java) functions are also available"
+    Built-in functions like `powertools_json`, `powertools_base64`, `powertools_base64_gzip` are also available to use in this utility. See [JMESPath Powertools for AWS Lambda (Java) functions](serialization.md)
 
 
 ## Testing your code

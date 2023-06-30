@@ -3,7 +3,7 @@ name: Build
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
@@ -16,11 +16,14 @@ on:
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
       - 'powertools-test-suite/**'
+      - 'powertools-e2e-tests/**'
+      - 'examples/**'
       - 'pom.xml'
+      - 'examples/pom.xml'
       - '.github/workflows/**'
   push:
     branches:
-      - master
+      - main
     paths:
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
@@ -33,30 +36,37 @@ on:
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
       - 'powertools-test-suite/**'
+      - 'powertools-e2e-tests/**'
+      - 'examples/**'
       - 'pom.xml'
+      - 'examples/pom.xml'
       - '.github/workflows/**'
 jobs:
-  build:
+  build-corretto:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
+      max-parallel: 5
       matrix:
-        # test against latest update of each major Java version, as well as specific updates of LTS versions:
-        java: [8, 8.0.192, 11.0.x, 11.0.3, 12, 13, 15, 16, 17 ]
+        java: [8, 11, 15, 16, 17, 18, 19, 20 ]
     name: Java ${{ matrix.java }}
     env:
-      OS: ${{ matrix.os }}
-      JAVA: ${{ matrix.java-version }}
+      JAVA: ${{ matrix.java }}
       AWS_REGION: eu-west-1
     steps:
       - uses: actions/checkout@v3
       - name: Setup java
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
+          distribution: 'corretto'
           java-version: ${{ matrix.java }}
+          cache: 'maven'
       - name: Build with Maven
-        run: mvn -Pbuild-without-spotbugs -B package --file pom.xml
+        run: mvn -B install --file pom.xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # 3.1.1
+        if: ${{ matrix.java == '11' }} # publish results once
+        with:
+          files: ./powertools-cloudformation/target/site/jacoco/jacoco.xml,./powertools-core/target/site/jacoco/jacoco.xml,./powertools-idempotency/target/site/jacoco/jacoco.xml,./powertools-logging/target/site/jacoco/jacoco.xml,./powertools-metrics/target/site/jacoco/jacoco.xml,./powertools-parameters/target/site/jacoco/jacoco.xml,./powertools-serialization/target/site/jacoco/jacoco.xml,./powertools-sqs/target/site/jacoco/jacoco.xml,./powertools-tracing/target/site/jacoco/jacoco.xml,./powertools-validation/target/site/jacoco/jacoco.xml
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
@@ -68,7 +78,7 @@ jobs:
           echo ${{ github.event.number }}
           echo ${{ github.event.number }} > ./pr/NR
       - uses: actions/upload-artifact@v2
-        name: Updload artifact
+        name: Upload artifact
         with:
           name: pr
           path: pr/

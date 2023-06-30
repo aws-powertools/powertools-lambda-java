@@ -13,6 +13,7 @@
  */
 package software.amazon.lambda.powertools.idempotency.internal;
 
+import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
@@ -25,6 +26,7 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.time.Instant;
+import java.util.OptionalInt;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
@@ -40,10 +42,12 @@ public class IdempotencyHandler {
     private final ProceedingJoinPoint pjp;
     private final JsonNode data;
     private final BasePersistenceStore persistenceStore;
+    private final Context lambdaContext;
 
-    public IdempotencyHandler(ProceedingJoinPoint pjp, String functionName, JsonNode payload) {
+    public IdempotencyHandler(ProceedingJoinPoint pjp, String functionName, JsonNode payload, Context lambdaContext) {
         this.pjp = pjp;
         this.data = payload;
+        this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
         persistenceStore.configure(Idempotency.getInstance().getConfig(), functionName);
     }
@@ -77,22 +81,39 @@ public class IdempotencyHandler {
         try {
             // We call saveInProgress first as an optimization for the most common case where no idempotent record
             // already exists. If it succeeds, there's no need to call getRecord.
-            persistenceStore.saveInProgress(data, Instant.now());
+            persistenceStore.saveInProgress(data, Instant.now(), getRemainingTimeInMillis());
         } catch (IdempotencyItemAlreadyExistsException iaee) {
             DataRecord record = getIdempotencyRecord();
-            return handleForStatus(record);
+            if (record != null) {
+                return handleForStatus(record);
+            }
         } catch (IdempotencyKeyException ike) {
             throw ike;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
         }
         return getFunctionResponse();
     }
 
     /**
+     * Tries to determine the remaining time available for the current lambda invocation.
+     * Currently, it only works if the idempotent handler decorator is used or using {@link Idempotency#registerLambdaContext(Context)}
+     *
+     * @return the remaining time in milliseconds or empty if the context was not provided/found
+     */
+    private OptionalInt getRemainingTimeInMillis() {
+        if (lambdaContext != null) {
+            return OptionalInt.of(lambdaContext.getRemainingTimeInMillis());
+        } else {
+            LOG.warn("Couldn't determine the remaining time left. Did you call registerLambdaContext on Idempotency?");
+        }
+        return OptionalInt.empty();
+    }
+
+    /**
      * Retrieve the idempotency record from the persistence layer.
      *
-     * @return the record if available
+     * @return the record if available, potentially null
      */
     private DataRecord getIdempotencyRecord() {
         try {
@@ -104,7 +125,7 @@ public class IdempotencyHandler {
         } catch (IdempotencyValidationException | IdempotencyKeyException vke) {
             throw vke;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
         }
     }
 
@@ -121,12 +142,18 @@ public class IdempotencyHandler {
         }
 
         if (INPROGRESS.equals(record.getStatus())) {
+            if (record.getInProgressExpiryTimestamp().isPresent()
+                    && record.getInProgressExpiryTimestamp().getAsLong() < Instant.now().toEpochMilli()) {
+                throw new IdempotencyInconsistentStateException("Item should have been expired in-progress because it already time-outed.");
+            }
             throw new IdempotencyAlreadyInProgressException("Execution already in progress with idempotency key: " + record.getIdempotencyKey());
         }
 
         Class<?> returnType = ((MethodSignature) pjp.getSignature()).getReturnType();
         try {
             LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function", record.getIdempotencyKey());
+            if (returnType.equals(String.class))
+                return record.getResponseData();
             return JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(), returnType);
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException("Unable to get function response as " + returnType.getSimpleName(), e);
@@ -145,7 +172,7 @@ public class IdempotencyHandler {
             } catch (IdempotencyKeyException ke) {
                 throw ke;
             } catch (Exception e) {
-                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
             }
             throw handlerException;
         }
@@ -153,7 +180,7 @@ public class IdempotencyHandler {
         try {
             persistenceStore.saveSuccess(data, response, Instant.now());
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store. If you believe this is a powertools bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
         }
         return response;
     }

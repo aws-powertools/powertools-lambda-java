@@ -497,6 +497,7 @@ public final class SqsUtils {
                 batchContext.addSuccess(message);
             } catch (Exception e) {
                 batchContext.addFailure(message, e);
+                LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
             }
         }
 
@@ -518,7 +519,7 @@ public final class SqsUtils {
         } catch (Exception e) {
             LOG.error("Failed creating handler instance", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
-                    "https://github.com/awslabs/aws-lambda-powertools-java/issues", e);
+                    "https://github.com/aws-powertools/powertools-lambda-java/issues", e);
         }
     }
 

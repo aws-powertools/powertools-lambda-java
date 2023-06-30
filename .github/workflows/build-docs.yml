@@ -3,14 +3,19 @@ name: Build Docs
 on:
   pull_request:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
+      - 'mkdocs.yml'
+      - 'Makefile'
+
   push:
     branches:
-      - master
+      - main
     paths:
       - 'docs/**'
+      - 'mkdocs.yml'
+      - 'Makefile'
 
 jobs:
   docs:
@@ -18,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v4
         with:
           python-version: "3.8"
       - name: Capture branch and tag

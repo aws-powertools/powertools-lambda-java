@@ -10,24 +10,24 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>2.0.0-beta</version>
+        <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <name>AWS Lambda Powertools for Java library SQS</name>
+    <name>Powertools for AWS Lambda (Java) library SQS</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java/issues</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
     <scm>
-        <url>https://github.com/awslabs/aws-lambda-powertools-java.git</url>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
     </scm>
     <developers>
         <developer>
-            <name>AWS Lambda Powertools team</name>
+            <name>Powertools for AWS Lambda team</name>
             <organization>Amazon Web Services</organization>
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>

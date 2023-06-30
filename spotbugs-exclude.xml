@@ -32,6 +32,10 @@
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
                 <Method name="getPersistenceStore"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
+                <Method name="getConfig"/>
+            </And>
         </Or>
     </Match>
     <Match>
@@ -68,6 +72,10 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
                 <Field name="store"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
+                <Field name="config"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
@@ -144,4 +152,13 @@
         <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
         <Method name="setLogLevelBasedOnSamplingRate"/>
     </Match>
+    <Match>
+        <Bug pattern="DMI_THREAD_PASSED_WHERE_RUNNABLE_EXPECTED"/>
+        <Or>
+            <And>
+                <Class name="helloworld.App"/>
+                <Method name="threadOption1"/>
+            </And>
+        </Or>
+    </Match>    
 </FindBugsFilter>

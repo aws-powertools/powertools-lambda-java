@@ -1,14 +1,17 @@
-# AWS Lambda Powertools for Java
+# Powertools for AWS Lambda (Java)
 
-![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/awslabs/aws-lambda-powertools-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent)
+![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent) [![codecov.io](https://codecov.io/github/aws-powertools/powertools-lambda-java/branch/main/graphs/badge.svg)](https://app.codecov.io/gh/aws-powertools/powertools-lambda-java)
 
-A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier. ([AWS Lambda Powertools Python](https://github.com/awslabs/aws-lambda-powertools-python) is also available).
 
-**[📜Documentation](https://awslabs.github.io/aws-lambda-powertools-java/)** | **[Feature request](https://github.com/awslabs/aws-lambda-powertools-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/awslabs/aws-lambda-powertools-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
+Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity.
+
+> Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
+
+**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
 
 ### Installation
 
-Powertools is available in Maven Central. You can use your favourite dependency management tool to install it
+Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
 
 * [maven](https://maven.apache.org/):
 ```xml
@@ -17,17 +20,17 @@ Powertools is available in Maven Central. You can use your favourite dependency 
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>2.0.0-beta</version>
+        <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>2.0.0-beta</version>
+        <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>2.0.0-beta</version>
+        <version>2.0.0-SNAPSHOT</version>
     </dependency>
     ...
 </dependencies>
@@ -40,9 +43,9 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
     <plugins>
         ...
         <plugin>
-             <groupId>org.codehaus.mojo</groupId>
+             <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.14.0</version>
+             <version>1.13.1</version>
              <configuration>
                  <source>1.8</source>
                  <target>1.8</target>
@@ -77,8 +80,9 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 
 ## Example
 
-See **[example](https://github.com/aws-samples/aws-lambda-powertools-examples/tree/main/java)** for example project showcasing usage of different utilities. 
-Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](https://github.com/aws-samples/aws-lambda-powertools-examples/blob/main/CONTRIBUTING.md#security-issue-notifications).
+See the **[examples](examples)**  directory for example projects showcasing usage of different utilities.
+
+Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
 ## Credits
 
