@@ -58,7 +58,7 @@ public interface SQSBatchProcessor<ITEM> extends BatchProcessor<SQSEvent, ITEM, 
         if (failWholeBatch) {
             // Add the remaining messages to the batch item failures
             event.getRecords()
-                    .subList(messageCursor, event.getRecords().size()) // TODO test the cursors...
+                    .subList(messageCursor, event.getRecords().size())
                     .forEach(message -> response.getBatchItemFailures().add(BatchItemFailure.builder().withItemIdentifier(message.getMessageId()).build()));
         }
         return response;
