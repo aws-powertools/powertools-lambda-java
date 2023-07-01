@@ -3,6 +3,7 @@ package software.amazon.lambda.powertools.batch2;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse.BatchItemFailure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,7 @@ public interface DynamoDBBatchProcessor extends BatchProcessor<DynamodbEvent, Vo
                 processRecord(record, context);
             } catch (Throwable t) {
                 DDB_BATCH_LOGGER.error("Error while processing record with id {}: {}, adding it to batch item failures", record.getEventID(), t.getMessage());
-                response.getBatchItemFailures().add(new StreamsEventResponse.BatchItemFailure(record.getEventID()));
+                response.getBatchItemFailures().add(BatchItemFailure.builder().withItemIdentifier(record.getEventID()).build());
             }
         }
         return response;

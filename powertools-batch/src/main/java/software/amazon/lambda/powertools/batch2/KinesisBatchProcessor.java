@@ -3,6 +3,7 @@ package software.amazon.lambda.powertools.batch2;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse.BatchItemFailure;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.utilities.EventDeserializer;
@@ -29,7 +30,7 @@ public interface KinesisBatchProcessor<ITEM> extends BatchProcessor<KinesisEvent
                 }
             } catch (Throwable t) {
                 KINESIS_BATCH_LOGGER.error("Error while processing record with id {}: {}, adding it to batch item failures", record.getEventID(), t.getMessage());
-                response.getBatchItemFailures().add(new StreamsEventResponse.BatchItemFailure(record.getEventID()));
+                response.getBatchItemFailures().add(BatchItemFailure.builder().withItemIdentifier(record.getEventID()).build());
             }
         }
         return response;
