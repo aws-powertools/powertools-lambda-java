@@ -1,19 +1,18 @@
 package software.amazon.lambda.powertools.batch;
 
-import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
-import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import software.amazon.lambda.powertools.batch.BatchMessageProcessor;
-import software.amazon.lambda.powertools.batch.message.*;
+import com.amazonaws.services.lambda.runtime.events.*;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.function.Consumer;
 
+
 /**
- * Let's make this builder-style so that we can extend the interface
- * if we need to with extra fields without breaking clients
+ * A builder-style interface we can use within an existing Lambda RequestHandler to
+ * deal with our batch responses.
+ *
+ * @see software.amazon.lambda.powertools.batch.examples.ExampleMessageHandlerBuilder
  */
 public class BatchMessageHandlerBuilder {
 
@@ -32,15 +31,15 @@ public class BatchMessageHandlerBuilder {
     }
 
     // TODO - can we put a meaningful type on the message, or do we need to do it, per-message-type?
-    public List<String> process(SQSEvent message, Consumer<SqsMessage> messageHandler) {
+    public SQSBatchResponse process(SQSEvent message, Consumer<SQSEvent.SQSMessage> messageHandler) {
         throw new NotImplementedException();
     };
 
-    public List<String> process(KinesisEvent message, Consumer<KinesisDataStreamsMessage> messageHandler) {
+    public StreamsEventResponse process(KinesisEvent message, Consumer<KinesisEvent.KinesisEventRecord> messageHandler) {
         throw new NotImplementedException();
     }
 
-    public List<String> process(DynamodbEvent message, Consumer<DynamoDbStreamMessage> messageHandler) {
+    public StreamsEventResponse process(DynamodbEvent message, Consumer<DynamodbEvent.DynamodbStreamRecord> messageHandler) {
         throw new NotImplementedException();
     }
 
