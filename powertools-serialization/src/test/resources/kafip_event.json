@@ -1,0 +1,14 @@
+{
+  "invocationId": "arn:aws:iam::EXAMPLE",
+  "applicationArn": "arn:aws:kinesis:EXAMPLE",
+  "streamArn": "arn:aws:kinesis:EXAMPLE",
+  "records": [
+    {
+      "kinesisFirehoseRecordMetadata": {
+        "approximateArrivalTimestamp": 1428537600
+      },
+      "recordId": "record-id",
+      "data": "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0="
+    }
+  ]
+}

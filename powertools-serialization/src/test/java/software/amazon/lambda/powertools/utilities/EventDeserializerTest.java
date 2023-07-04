@@ -129,7 +129,23 @@ public class EventDeserializerTest {
     public void testDeserializeAPIGatewayEventAsList_shouldThrowException(APIGatewayProxyRequestEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).asListOf(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
-                .hasMessageContaining("consider using 'as' instead");
+                .hasMessageContaining("consider using 'as' instead")
+                .hasMessageContaining("Cannot load the event as a list of");
+    }
+
+    @ParameterizedTest
+    @Event(value = "apigw_event.json", type = HashMap.class)
+    public void testDeserializeAPIGatewayMapEventAsList_shouldThrowException(Map<String, APIGatewayProxyRequestEvent> event) {
+        assertThatThrownBy(() -> extractDataFrom(event).asListOf(Product.class))
+                .isInstanceOf(EventDeserializationException.class)
+                .hasMessage("The content of this event is not a list, consider using 'as' instead");
+    }
+
+    @Test
+    public void testDeserializeEmptyEventAsList_shouldThrowException() {
+        assertThatThrownBy(() -> extractDataFrom(null).asListOf(Product.class))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Event content is null: the event may be malformed (missing fields)");
     }
 
     @ParameterizedTest
@@ -145,7 +161,14 @@ public class EventDeserializerTest {
     public void testDeserializeAPIGatewayNoBody_shouldThrowException(APIGatewayProxyRequestEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Event content is null");
+                .hasMessage("Event content is null: the event may be malformed (missing fields)");
+    }
+
+    @Test
+    public void testDeserializeAPIGatewayNoBodyAsList_shouldThrowException() {
+        assertThatThrownBy(() -> extractDataFrom(new Object()).asListOf(Product.class))
+                .isInstanceOf(EventDeserializationException.class)
+                .hasMessage("The content of this event is not a list, consider using 'as' instead");
     }
 
     @ParameterizedTest
@@ -164,9 +187,83 @@ public class EventDeserializerTest {
 
 
     private void assertProduct(Product product) {
-assertThat(product)
+        assertThat(product)
                 .isEqualTo(new Product(1234, "product", 42))
                 .usingRecursiveComparison();
+    }
+
+    @ParameterizedTest
+    @Event(value = "scheduled_event.json", type = ScheduledEvent.class)
+    public void testDeserializeScheduledEventMessageAsObject_shouldReturnObject(ScheduledEvent event) {
+        Product product = extractDataFrom(event).as(Product.class);
+        assertProduct(product);
+    }
+    @ParameterizedTest
+    @Event(value = "alb_event.json", type = ApplicationLoadBalancerRequestEvent.class)
+    public void testDeserializeALBEventMessageAsObjectShouldReturnObject(ApplicationLoadBalancerRequestEvent event) {
+            Product product = extractDataFrom(event).as(Product.class);
+            assertProduct(product);
+    }
+
+    @ParameterizedTest
+    @Event(value = "cwl_event.json", type = CloudWatchLogsEvent.class)
+    public void testDeserializeCWLEventMessageAsObjectShouldReturnObject(CloudWatchLogsEvent event) {
+        Product product = extractDataFrom(event).as(Product.class);
+        assertProduct(product);
+    }
+
+    @ParameterizedTest
+    @Event(value = "kf_event.json", type = KinesisFirehoseEvent.class)
+    public void  testDeserializeKFEventMessageAsListShouldReturnList(KinesisFirehoseEvent event) {
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
+        assertThat(products).hasSize(1);
+        assertProduct(products.get(0));
+    }
+
+    @ParameterizedTest
+    @Event(value = "amq_event.json", type = ActiveMQEvent.class)
+    public void testDeserializeAMQEventMessageAsListShouldReturnList(ActiveMQEvent event) {
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
+        assertThat(products).hasSize(1);
+        assertProduct(products.get(0));
+    }
+
+    @ParameterizedTest
+    @Event(value = "rabbitmq_event.json", type = RabbitMQEvent.class)
+    public void testDeserializeRabbitMQEventMessageAsListShouldReturnList(RabbitMQEvent event) {
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
+        assertThat(products).hasSize(1);
+        assertProduct(products.get(0));
+    }
+
+    @ParameterizedTest
+    @Event(value = "kasip_event.json", type = KinesisAnalyticsStreamsInputPreprocessingEvent.class)
+    public void testDeserializeKasipEventMessageAsListShouldReturnList(KinesisAnalyticsStreamsInputPreprocessingEvent event) {
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
+        assertThat(products).hasSize(1);
+        assertProduct(products.get(0));
+    }
+
+    @ParameterizedTest
+    @Event(value = "kafip_event.json", type = KinesisAnalyticsFirehoseInputPreprocessingEvent.class)
+    public void testDeserializeKafipEventMessageAsListShouldReturnList(KinesisAnalyticsFirehoseInputPreprocessingEvent event) {
+        List<Product> products = extractDataFrom(event).asListOf(Product.class);
+        assertThat(products).hasSize(1);
+        assertProduct(products.get(0));
+    }
+
+    @ParameterizedTest
+    @Event(value = "apigwv2_event.json", type = APIGatewayV2HTTPEvent.class)
+    public void testDeserializeApiGWV2EventMessageAsObjectShouldReturnObject(APIGatewayV2HTTPEvent event) {
+        Product product = extractDataFrom(event).as(Product.class);
+        assertProduct(product);
+    }
+
+    @ParameterizedTest
+    @Event(value = "cfcr_event.json", type = CloudFormationCustomResourceEvent.class)
+    public void testDeserializeCfcrEventMessageAsObjectShouldReturnObject(CloudFormationCustomResourceEvent event) {
+        Product product = extractDataFrom(event).as(Product.class);
+        assertProduct(product);
     }
 
 }
