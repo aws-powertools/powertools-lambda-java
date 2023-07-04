@@ -26,7 +26,7 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 /**
  * Use this if you need to customize some part of the JSON Schema validation
  * (eg. specification version, Jackson ObjectMapper, or adding functions to JMESPath).
- * <p>
+ *
  * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
  * is just a wrapper of {@link JsonConfig}.
  */
@@ -62,7 +62,7 @@ public class ValidationConfig {
      * {@link Base64Function} and {@link Base64GZipFunction} are already built-in.
      *
      * @param function the function to add
-     * @param <T>      Must extends {@link BaseFunction}
+     * @param <T> Must extend {@link BaseFunction}
      */
     public <T extends BaseFunction> void addFunction(T function) {
         JsonConfig.get().addFunction(function);

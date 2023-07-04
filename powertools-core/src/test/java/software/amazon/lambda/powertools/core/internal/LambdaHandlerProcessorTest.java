@@ -20,7 +20,6 @@ import static software.amazon.lambda.powertools.core.internal.SystemWrapper.gete
 class LambdaHandlerProcessorTest {
 
     private Signature signature = mock(Signature.class);
-    ;
     private ProceedingJoinPoint pjpMock = mock(ProceedingJoinPoint.class);
 
     @Test
@@ -38,6 +37,7 @@ class LambdaHandlerProcessorTest {
 
         assertThat(LambdaHandlerProcessor.isHandlerMethod(pjpMock)).isTrue();
     }
+
     @Test
     void isHandlerMethod_shouldReturnFalse() {
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(Object.class, new Object[]{});
@@ -232,5 +232,4 @@ class LambdaHandlerProcessorTest {
         when(pjpMock.getSignature()).thenReturn(signature);
         return pjpMock;
     }
-
 }
