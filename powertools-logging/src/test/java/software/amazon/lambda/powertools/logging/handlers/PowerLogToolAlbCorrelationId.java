@@ -18,10 +18,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.logging.CorrelationIdPathConstants;
 import software.amazon.lambda.powertools.logging.Logging;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
 import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
 
 public class PowerLogToolAlbCorrelationId implements RequestHandler<ApplicationLoadBalancerRequestEvent, Object> {

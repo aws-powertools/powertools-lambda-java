@@ -21,12 +21,13 @@ import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 public class PowerLogToolEnabledWithClearState implements RequestHandler<Object, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolEnabledWithClearState.class);
     public static int COUNT = 1;
+    private final Logger LOG = LogManager.getLogger(PowerLogToolEnabledWithClearState.class);
+
     @Override
     @Logging(clearState = true)
     public Object handleRequest(Object input, Context context) {
-        if(COUNT == 1) {
+        if (COUNT == 1) {
             LoggingUtils.appendKey("TestKey", "TestValue");
         }
         LOG.info("Test event");

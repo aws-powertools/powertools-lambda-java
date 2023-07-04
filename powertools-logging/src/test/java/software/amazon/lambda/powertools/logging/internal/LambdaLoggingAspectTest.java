@@ -13,22 +13,6 @@
  */
 package software.amazon.lambda.powertools.logging.internal;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -49,25 +33,21 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.core.internal.SystemWrapper;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolAlbCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayRestApiCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledWithClearState;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledForStream;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledWithCustomMapper;
+import software.amazon.lambda.powertools.logging.handlers.*;
 
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.RequestParametersEntity;
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.ResponseElementsEntity;
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.S3BucketEntity;
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.S3Entity;
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.S3EventNotificationRecord;
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.S3ObjectEntity;
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.UserIdentityEntity;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.*;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
@@ -290,6 +270,20 @@ class LambdaLoggingAspectTest {
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
+    }
+
+    @Test
+    void shouldLogCorrelationIdOnStreamHandler() throws IOException {
+        RequestStreamHandler handler = new PowerLogToolEventBridgeCorrelationId();
+        String eventId = "3";
+        String event = "{\"id\":" + eventId + "}";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
+        handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
+
+
+        assertThat(ThreadContext.getImmutableContext())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("correlation_id", eventId);
     }
 
     @Test

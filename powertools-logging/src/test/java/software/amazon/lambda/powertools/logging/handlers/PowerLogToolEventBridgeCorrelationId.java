@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -15,14 +15,23 @@ package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.powertools.logging.Logging;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class PowerToolDisabledForStream implements RequestStreamHandler {
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.EVENT_BRIDGE;
+
+public class PowerLogToolEventBridgeCorrelationId implements RequestStreamHandler {
+
+    private final Logger LOG = LogManager.getLogger(PowerLogToolEventBridgeCorrelationId.class);
 
     @Override
-    public void handleRequest(InputStream input, OutputStream output, Context context) {
-
+    @Logging(correlationIdPath = EVENT_BRIDGE)
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
+        LOG.info("Test event");
     }
 }
