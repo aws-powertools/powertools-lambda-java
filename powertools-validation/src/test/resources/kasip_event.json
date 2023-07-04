@@ -1,0 +1,17 @@
+{
+  "invocationId": "arn:aws:iam::EXAMPLE",
+  "applicationArn": "arn:aws:kinesis:EXAMPLE",
+  "streamArn": "arn:aws:kinesis:EXAMPLE",
+  "records": [
+    {
+      "kinesisStreamRecordMetadata": {
+        "sequenceNumber": "49545115243490985018280067714973144582180062593244200961",
+        "partitionKey": "partitionKey-03",
+        "shardId": "12",
+        "approximateArrivalTimestamp": 1428537600
+      },
+      "recordId": "record-id",
+      "data": "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0="
+    }
+  ]
+}

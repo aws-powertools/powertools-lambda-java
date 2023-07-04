@@ -21,15 +21,15 @@ public class Basket {
 
     private String hiddenProduct;
 
+    public Basket() {
+    }
+
     public List<Product> getProducts() {
         return products;
     }
 
     public void setProducts(List<Product> products) {
         this.products = products;
-    }
-
-    public Basket() {
     }
 
     public void add(Product product) {
