@@ -15,11 +15,12 @@ package software.amazon.lambda.powertools.parameters.transform;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
 import java.util.Base64;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.*;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
@@ -27,8 +28,11 @@ public class TransformationManagerTest {
 
     TransformationManager manager;
 
+    Class<BasicTransformer> transformer;
+
     @BeforeEach
     public void setup() {
+        transformer = BasicTransformer.class;
         manager = new TransformationManager();
     }
 
@@ -59,6 +63,14 @@ public class TransformationManagerTest {
     }
 
     @Test
+    public void performBasicTransformation_throwsTransformationException() {
+        manager.setTransformer(transformer);
+
+        assertThatExceptionOfType(TransformationException.class)
+                .isThrownBy(() -> manager.performBasicTransformation("value"));
+    }
+
+    @Test
     public void performBasicTransformation_shouldPerformTransformation() {
         manager.setTransformer(base64);
 
@@ -81,5 +93,13 @@ public class TransformationManagerTest {
         ObjectToDeserialize object = manager.performComplexTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}", ObjectToDeserialize.class);
 
         assertThat(object).isNotNull();
+    }
+
+    @Test
+    public void performComplexTransformation_throwsTransformationException() {
+        manager.setTransformer(transformer);
+
+        assertThatExceptionOfType(TransformationException.class)
+                .isThrownBy(() -> manager.performComplexTransformation("value", ObjectToDeserialize.class));
     }
 }

@@ -22,13 +22,16 @@ import org.mockito.Mock;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.*;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.openMocks;
 
@@ -36,6 +39,9 @@ public class SSMProviderTest {
 
     @Mock
     SsmClient client;
+
+    @Mock
+    TransformationManager transformationManager;
 
     @Captor
     ArgumentCaptor<GetParameterRequest> paramCaptor;
@@ -181,10 +187,24 @@ public class SSMProviderTest {
         assertThat(request2.nextToken()).isEqualTo("123abc");
     }
 
+    @Test
+    public void testSecretsProviderBuilderMissingCacheManager_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> SSMProvider.builder()
+                        .withClient(client)
+                        .withTransformationManager(transformationManager)
+                        .build())
+                .withMessage("No CacheManager provided, please provide one");
+    }
+
     private void initMock(String expectedValue) {
         Parameter parameter = Parameter.builder().value(expectedValue).build();
         GetParameterResponse result = GetParameterResponse.builder().parameter(parameter).build();
         when(client.getParameter(paramCaptor.capture())).thenReturn(result);
+        provider.defaultMaxAge(1, ChronoUnit.DAYS);
+        provider.withMaxAge(2, ChronoUnit.DAYS);
+        provider.recursive();
     }
 
 }

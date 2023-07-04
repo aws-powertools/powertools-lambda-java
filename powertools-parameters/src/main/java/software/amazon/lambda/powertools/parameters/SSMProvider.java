@@ -74,7 +74,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  */
 public class SSMProvider extends BaseProvider {
 
-    private final SsmClient client;
+    private SsmClient client;
 
     private boolean decrypt = false;
     private boolean recursive = false;
@@ -90,6 +90,15 @@ public class SSMProvider extends BaseProvider {
     SSMProvider(CacheManager cacheManager, SsmClient client) {
         super(cacheManager);
         this.client = client;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param cacheManager handles the parameter caching
+     */
+    SSMProvider(CacheManager cacheManager) {
+        super(cacheManager);
     }
 
     /**

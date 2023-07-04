@@ -164,13 +164,13 @@ public final class ParamManager {
         return transformationManager;
     }
 
-    private static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
+    protected static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
         try {
             Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
             T provider = constructor.newInstance(cacheManager);
             provider.setTransformationManager(transformationManager);
             return provider;
-        } catch (NoSuchMethodException | IllegalAccessException | InstantiationException | InvocationTargetException e) {
+        } catch (ReflectiveOperationException e) {
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
                     "https://github.com/aws-powertools/powertools-lambda-java/issues", e);
         }

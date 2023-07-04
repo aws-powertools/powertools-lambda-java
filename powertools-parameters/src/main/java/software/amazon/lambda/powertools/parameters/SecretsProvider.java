@@ -58,7 +58,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  */
 public class SecretsProvider extends BaseProvider {
 
-    private final SecretsManagerClient client;
+    private SecretsManagerClient client;
 
     /**
      * Constructor with custom {@link SecretsManagerClient}. <br/>
@@ -71,6 +71,15 @@ public class SecretsProvider extends BaseProvider {
     SecretsProvider(CacheManager cacheManager, SecretsManagerClient client) {
         super(cacheManager);
         this.client = client;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param cacheManager handles the parameter caching
+     */
+    SecretsProvider(CacheManager cacheManager) {
+        super(cacheManager);
     }
 
     /**
