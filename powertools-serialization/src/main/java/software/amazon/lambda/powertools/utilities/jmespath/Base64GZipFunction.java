@@ -54,7 +54,7 @@ public class Base64GZipFunction extends BaseFunction {
             return "";
         }
         if (!isCompressed(compressed)) {
-            new String(compressed, UTF_8);
+            return new String(compressed, UTF_8);
         }
         try {
             StringBuilder out = new StringBuilder();
