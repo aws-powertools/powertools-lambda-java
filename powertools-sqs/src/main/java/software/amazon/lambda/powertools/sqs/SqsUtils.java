@@ -45,7 +45,7 @@ public final class SqsUtils {
     private static S3Client s3Client;
 
     // The attribute on an SQS-FIFO message used to record the message group ID
-    private static final String MessageGroupIdKey = "MessageGroupId";
+    private static final String MESSAGE_GROUP_ID = "MessageGroupId";
 
     private SqsUtils() {
     }
@@ -519,7 +519,7 @@ public final class SqsUtils {
                     // If we are trying to process a message that has a messageGroupId, we are on a FIFO queue. A failure
                     // now stops us from processing the rest of the batch.
                     String messageGroupId = message.getAttributes() != null ?
-                            message.getAttributes().get(MessageGroupIdKey) : null;
+                            message.getAttributes().get(MESSAGE_GROUP_ID) : null;
 
                     if (messageGroupId != null) {
                         failWholeBatch = true;

@@ -1,7 +1,8 @@
 package software.amazon.lambda.powertools.sqs.exception;
 
 /**
- * Thrown to indicate that a
+ * Indicates that a message has been skipped due to the batch it is
+ * within failing.
  */
 public class SkippedMessageDueToFailedBatchException extends Exception {
 
