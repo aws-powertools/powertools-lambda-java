@@ -55,7 +55,7 @@ public class ParamManagerTest {
     }
 
     @Test
-    public void testCreateProvider_throwsException() {
+    public void testCreateUninstanciableProvider_throwsException() {
 
         // Act & Assert
         assertThatRuntimeException().isThrownBy(() -> ParamManager.createProvider(BaseProvider.class));

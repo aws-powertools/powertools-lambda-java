@@ -164,7 +164,7 @@ public final class ParamManager {
         return transformationManager;
     }
 
-    protected static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
+   static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
         try {
             Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
             T provider = constructor.newInstance(cacheManager);

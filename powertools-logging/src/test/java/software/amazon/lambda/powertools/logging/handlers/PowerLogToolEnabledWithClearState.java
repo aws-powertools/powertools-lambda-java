@@ -22,7 +22,7 @@ import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 public class PowerLogToolEnabledWithClearState implements RequestHandler<Object, Object> {
     public static int COUNT = 1;
-    private final Logger LOG = LogManager.getLogger(PowerLogToolEnabledWithClearState.class);
+    private static final Logger LOG = LogManager.getLogger(PowerLogToolEnabledWithClearState.class);
 
     @Override
     @Logging(clearState = true)

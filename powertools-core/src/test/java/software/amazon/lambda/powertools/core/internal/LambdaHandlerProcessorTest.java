@@ -80,7 +80,7 @@ class LambdaHandlerProcessorTest {
 
         boolean isPlacedOnRequestHandler = LambdaHandlerProcessor.placedOnRequestHandler(pjpMock);
 
-        assertFalse(isPlacedOnRequestHandler);
+        assertThat(isPlacedOnRequestHandler).isFalse();
     }
 
     @Test
@@ -104,7 +104,7 @@ class LambdaHandlerProcessorTest {
     }
 
     @Test
-    void placedOStreamHandler_shouldInvalidateOnTypeOfArgsOneValid() {
+    void placedOnStreamHandler_shouldInvalidateOnTypeOfArgsOneValid() {
         Object[] args = {mock(InputStream.class), new Object(), new Object()};
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
@@ -114,7 +114,7 @@ class LambdaHandlerProcessorTest {
     }
 
     @Test
-    void placedOStreamHandler_shouldInvalidateOnTypeOfArgsSomeValid() {
+    void placedOnStreamHandler_shouldInvalidateOnTypeOfArgsSomeValid() {
         Object[] args = {mock(InputStream.class), mock(OutputStream.class), new Object()};
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
@@ -132,7 +132,7 @@ class LambdaHandlerProcessorTest {
             Optional xRayTraceId = LambdaHandlerProcessor.getXrayTraceId();
 
             assertTrue(xRayTraceId.isPresent());
-            assertEquals(traceID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, ""), xRayTraceId.get());
+            assertThat(traceID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, "")).isEqualTo(xRayTraceId.get());
         }
     }
 
@@ -154,7 +154,7 @@ class LambdaHandlerProcessorTest {
 
         Context context = LambdaHandlerProcessor.extractContext(pjpMock);
 
-        assertNotNull(context);
+        assertThat(context).isNotNull();
     }
 
     @Test

@@ -28,11 +28,10 @@ public class TransformationManagerTest {
 
     TransformationManager manager;
 
-    Class<BasicTransformer> transformer;
+    Class<BasicTransformer> basicTransformer = BasicTransformer.class;
 
     @BeforeEach
     public void setup() {
-        transformer = BasicTransformer.class;
         manager = new TransformationManager();
     }
 
@@ -63,8 +62,8 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void performBasicTransformation_throwsTransformationException() {
-        manager.setTransformer(transformer);
+    public void performBasicTransformation_abstractTransformer_throwsTransformationException() {
+        manager.setTransformer(basicTransformer);
 
         assertThatExceptionOfType(TransformationException.class)
                 .isThrownBy(() -> manager.performBasicTransformation("value"));
@@ -97,7 +96,7 @@ public class TransformationManagerTest {
 
     @Test
     public void performComplexTransformation_throwsTransformationException() {
-        manager.setTransformer(transformer);
+        manager.setTransformer(basicTransformer);
 
         assertThatExceptionOfType(TransformationException.class)
                 .isThrownBy(() -> manager.performComplexTransformation("value", ObjectToDeserialize.class));

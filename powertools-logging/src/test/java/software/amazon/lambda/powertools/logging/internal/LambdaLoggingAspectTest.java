@@ -276,7 +276,7 @@ class LambdaLoggingAspectTest {
     void shouldLogCorrelationIdOnStreamHandler() throws IOException {
         RequestStreamHandler handler = new PowerLogToolEventBridgeCorrelationId();
         String eventId = "3";
-        String event = "{\"id\":" + eventId + "}";
+        String event = "{\"id\":" + eventId + "}"; // CorrelationIdPathConstants.EVENT_BRIDGE
         ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
         handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
 

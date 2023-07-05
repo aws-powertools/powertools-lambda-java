@@ -48,7 +48,7 @@ public class Base64GZipFunctionTest {
     }
 
     @Test
-    public void testPowertoolsGdzipEmptyJsonAttribute() throws IOException {
+    public void testPowertoolsGzipEmptyJsonAttribute() throws IOException {
         JsonNode event = JsonConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
         Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip('')");
         JsonNode result = expression.search(event);
@@ -57,7 +57,7 @@ public class Base64GZipFunctionTest {
     }
 
     @Test
-    public void testPowertoolsGdzipNotCompressedJsonAttribute() throws IOException {
+    public void testPowertoolsGzipNotCompressedJsonAttribute() throws IOException {
         JsonNode event = JsonConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
         Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(encodedString)");
         JsonNode result = expression.search(event);

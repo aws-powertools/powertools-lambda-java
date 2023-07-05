@@ -23,10 +23,13 @@ public class AppConfigProviderTest {
     private final String environmentName = "test";
     private final String applicationName = "fakeApp";
     private final String defaultTestKey = "key1";
+    
     @Mock
     AppConfigDataClient client;
+    
     @Captor
     ArgumentCaptor<StartConfigurationSessionRequest> startSessionRequestCaptor;
+    
     @Captor
     ArgumentCaptor<GetLatestConfigurationRequest> getLatestConfigurationRequestCaptor;
     private AppConfigProvider provider;
