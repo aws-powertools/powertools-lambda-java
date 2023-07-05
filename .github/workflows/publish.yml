@@ -24,7 +24,7 @@ jobs:
           RELEASE_TAG_VERSION=${{ github.event.release.tag_name }}
           echo "RELEASE_TAG_VERSION=${RELEASE_TAG_VERSION:1}" >> $GITHUB_ENV
       - name: Publish package
-        run: mvn -P sign,build-without-spotbugs clean deploy -DskipTests
+        run: mvn -Prelease clean deploy -DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
