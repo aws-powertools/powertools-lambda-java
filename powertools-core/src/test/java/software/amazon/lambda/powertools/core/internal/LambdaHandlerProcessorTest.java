@@ -13,7 +13,7 @@ import java.io.OutputStream;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
@@ -44,7 +44,7 @@ class LambdaHandlerProcessorTest {
 
         boolean isHandlerMethod = LambdaHandlerProcessor.isHandlerMethod(pjpMock);
 
-        assertFalse(isHandlerMethod);
+        assertThat(isHandlerMethod).isFalse();
     }
 
     @Test
@@ -70,7 +70,7 @@ class LambdaHandlerProcessorTest {
 
         boolean isPlacedOnRequestHandler = LambdaHandlerProcessor.placedOnRequestHandler(pjpMock);
 
-        assertFalse(isPlacedOnRequestHandler);
+        assertThat(isPlacedOnRequestHandler).isFalse();
     }
 
     @Test
@@ -90,7 +90,7 @@ class LambdaHandlerProcessorTest {
 
         boolean isPlacedOnStreamHandler = LambdaHandlerProcessor.placedOnStreamHandler(pjpMock);
 
-        assertFalse(isPlacedOnStreamHandler);
+        assertThat(isPlacedOnStreamHandler).isFalse();
     }
 
     @Test
@@ -100,27 +100,27 @@ class LambdaHandlerProcessorTest {
 
         boolean isPlacedOnStreamHandler = LambdaHandlerProcessor.placedOnStreamHandler(pjpMock);
 
-        assertFalse(isPlacedOnStreamHandler);
+        assertThat(isPlacedOnStreamHandler).isFalse();
     }
 
     @Test
-    void placedOnStreamHandler_shouldInvalidateOnTypeOfArgsOneValid() {
-        Object[] args = {mock(InputStream.class), new Object(), new Object()};
+    void placedOnStreamHandler_shouldInvalidateOnTypeOfArgs_invalidOutputStreamArg() {
+        Object[] args = {mock(InputStream.class), new Object(), mock(Context.class)};
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         boolean isPlacedOnStreamHandler = LambdaHandlerProcessor.placedOnStreamHandler(pjpMock);
 
-        assertFalse(isPlacedOnStreamHandler);
+        assertThat(isPlacedOnStreamHandler).isFalse();
     }
 
     @Test
-    void placedOnStreamHandler_shouldInvalidateOnTypeOfArgsSomeValid() {
+    void placedOnStreamHandler_shouldInvalidateOnTypeOfArgs_invalidContextArg() {
         Object[] args = {mock(InputStream.class), mock(OutputStream.class), new Object()};
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         boolean isPlacedOnStreamHandler = LambdaHandlerProcessor.placedOnStreamHandler(pjpMock);
 
-        assertFalse(isPlacedOnStreamHandler);
+        assertThat(isPlacedOnStreamHandler).isFalse();
     }
 
     @Test
@@ -131,7 +131,7 @@ class LambdaHandlerProcessorTest {
 
             Optional xRayTraceId = LambdaHandlerProcessor.getXrayTraceId();
 
-            assertTrue(xRayTraceId.isPresent());
+            assertThat(xRayTraceId.isPresent()).isTrue();
             assertThat(traceID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, "")).isEqualTo(xRayTraceId.get());
         }
     }
@@ -143,7 +143,7 @@ class LambdaHandlerProcessorTest {
 
             boolean isXRayTraceIdPresent = LambdaHandlerProcessor.getXrayTraceId().isPresent();
 
-            assertFalse(isXRayTraceIdPresent);
+            assertThat(isXRayTraceIdPresent).isFalse();
         }
     }
 
@@ -174,14 +174,14 @@ class LambdaHandlerProcessorTest {
 
         Context context = LambdaHandlerProcessor.extractContext(pjpMock);
 
-        assertNull(context);
+        assertThat(context).isNull();
     }
 
     @Test
     void isColdStart() {
         boolean isColdStart = LambdaHandlerProcessor.isColdStart();
 
-        assertTrue(isColdStart);
+        assertThat(isColdStart).isTrue();
     }
 
     @Test
@@ -190,7 +190,7 @@ class LambdaHandlerProcessorTest {
 
         boolean isColdStart = LambdaHandlerProcessor.isColdStart();
 
-        assertFalse(isColdStart);
+        assertThat(isColdStart).isFalse();
     }
 
     @Test
@@ -200,7 +200,7 @@ class LambdaHandlerProcessorTest {
 
             boolean isSamLocal = LambdaHandlerProcessor.isSamLocal();
 
-            assertTrue(isSamLocal);
+            assertThat(isSamLocal).isTrue();
         }
     }
 
@@ -212,7 +212,7 @@ class LambdaHandlerProcessorTest {
 
             String actualServiceName = LambdaHandlerProcessor.serviceName();
 
-            assertEquals(expectedServiceName, actualServiceName);
+            assertThat(actualServiceName).isEqualTo(expectedServiceName);
         }
     }
 
@@ -222,7 +222,7 @@ class LambdaHandlerProcessorTest {
         try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
             mockedSystemWrapper.when(() -> getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME)).thenReturn(null);
 
-            assertEquals(LambdaConstants.SERVICE_UNDEFINED, LambdaHandlerProcessor.serviceName());
+            assertThat(LambdaHandlerProcessor.serviceName()).isEqualTo(LambdaConstants.SERVICE_UNDEFINED);
         }
     }
 

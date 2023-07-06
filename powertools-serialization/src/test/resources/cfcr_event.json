@@ -7,12 +7,12 @@
   "LogicalResourceId": "logicalResourceId",
   "ResourceType": "resourceType",
   "ResourceProperties": {
-    "id":1234,
+    "id": 1234,
     "name": "product",
     "price": 42
   },
   "OldResourceProperties": {
-    "id":1234,
+    "id": 1234,
     "name": "product",
     "price": 40
   }

@@ -1,0 +1,9 @@
+{
+  "products": {
+    "12345": {
+      "id": 43242,
+      "name": "FooBar XY",
+      "price": 258
+    }
+  }
+}

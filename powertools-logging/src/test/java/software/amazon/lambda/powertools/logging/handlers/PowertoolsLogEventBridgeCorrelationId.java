@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -14,22 +14,24 @@
 package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-public class PowerLogToolAlbCorrelationId implements RequestHandler<ApplicationLoadBalancerRequestEvent, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolAlbCorrelationId.class);
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.EVENT_BRIDGE;
+
+public class PowertoolsLogEventBridgeCorrelationId implements RequestStreamHandler {
+
+    private final Logger LOG = LogManager.getLogger(PowertoolsLogEventBridgeCorrelationId.class);
 
     @Override
-    @Logging(correlationIdPath = APPLICATION_LOAD_BALANCER)
-    public Object handleRequest(ApplicationLoadBalancerRequestEvent input, Context context) {
+    @Logging(correlationIdPath = EVENT_BRIDGE)
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         LOG.info("Test event");
-        LOG.debug("Test debug event");
-        return null;
     }
 }

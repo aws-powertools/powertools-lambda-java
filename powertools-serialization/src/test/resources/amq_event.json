@@ -15,7 +15,7 @@
       "destination": {
         "physicalName": "testQueue"
       },
-      "data":"ewogICJpZCI6IDEyMzQsCiAgIm5hbWUiOiAicHJvZHVjdCIsCiAgInByaWNlIjogNDIKfQ==",
+      "data": "ewogICJpZCI6IDEyMzQsCiAgIm5hbWUiOiAicHJvZHVjdCIsCiAgInByaWNlIjogNDIKfQ==",
       "timestamp": 1598827811958,
       "brokerInTime": 1598827811958,
       "brokerOutTime": 1598827811959,

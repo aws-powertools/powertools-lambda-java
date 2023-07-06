@@ -50,7 +50,7 @@ public class Base64GZipFunction extends BaseFunction {
     }
 
     public static String decompress(byte[] compressed) {
-        if (compressed.length == 0) {
+        if (compressed == null || compressed.length == 0) {
             return "";
         }
         if (!isCompressed(compressed)) {

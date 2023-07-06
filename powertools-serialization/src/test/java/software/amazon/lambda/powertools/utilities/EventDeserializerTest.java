@@ -18,6 +18,7 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import software.amazon.lambda.powertools.utilities.model.Basket;
+import software.amazon.lambda.powertools.utilities.model.Order;
 import software.amazon.lambda.powertools.utilities.model.Product;
 
 import java.util.HashMap;
@@ -134,9 +135,9 @@ public class EventDeserializerTest {
     }
 
     @ParameterizedTest
-    @Event(value = "apigw_event.json", type = HashMap.class)
-    public void testDeserializeAPIGatewayMapEventAsList_shouldThrowException(Map<String, APIGatewayProxyRequestEvent> event) {
-        assertThatThrownBy(() -> extractDataFrom(event).asListOf(Product.class))
+    @Event(value = "custom_event_map.json", type = HashMap.class)
+    public void testDeserializeAPIGatewayMapEventAsList_shouldThrowException(Map<String, Order> event) {
+        assertThatThrownBy(() -> extractDataFrom(event).asListOf(Order.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessage("The content of this event is not a list, consider using 'as' instead");
     }
@@ -198,11 +199,12 @@ public class EventDeserializerTest {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
+
     @ParameterizedTest
     @Event(value = "alb_event.json", type = ApplicationLoadBalancerRequestEvent.class)
     public void testDeserializeALBEventMessageAsObjectShouldReturnObject(ApplicationLoadBalancerRequestEvent event) {
-            Product product = extractDataFrom(event).as(Product.class);
-            assertProduct(product);
+        Product product = extractDataFrom(event).as(Product.class);
+        assertProduct(product);
     }
 
     @ParameterizedTest
@@ -214,7 +216,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kf_event.json", type = KinesisFirehoseEvent.class)
-    public void  testDeserializeKFEventMessageAsListShouldReturnList(KinesisFirehoseEvent event) {
+    public void testDeserializeKFEventMessageAsListShouldReturnList(KinesisFirehoseEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
         assertProduct(products.get(0));

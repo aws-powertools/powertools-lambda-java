@@ -41,8 +41,7 @@ import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 
@@ -115,7 +114,7 @@ public class ValidationAspectTest {
         when(validation.inboundSchema()).thenReturn("");
         when(validation.outboundSchema()).thenReturn("classpath:/schema_v7.json");
 
-        validationAspect.around(pjp, validation);
+        assertThatNoException().isThrownBy(() -> validationAspect.around(pjp, validation));
     }
 
     @Test

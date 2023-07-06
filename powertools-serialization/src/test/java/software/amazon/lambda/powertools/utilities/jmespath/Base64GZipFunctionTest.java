@@ -17,24 +17,22 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import io.burt.jmespath.Expression;
 import io.burt.jmespath.JmesPathType;
-import io.burt.jmespath.function.ArgumentConstraints;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 import java.io.IOException;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Base64GZipFunctionTest {
 
     @Test
     public void testConstructor() {
         Base64GZipFunction base64GZipFunction = new Base64GZipFunction();
-        assertEquals(base64GZipFunction.name(), "powertools_base64_gzip");
-        assertEquals(base64GZipFunction.argumentConstraints().expectedType().toLowerCase(), JmesPathType.STRING.name().toLowerCase());
-        assertEquals(base64GZipFunction.argumentConstraints().minArity(), 1);
-        assertEquals(base64GZipFunction.argumentConstraints().minArity(), 1);
+        assertThat(base64GZipFunction.name()).isEqualTo("powertools_base64_gzip");
+        assertThat(base64GZipFunction.argumentConstraints().expectedType().toLowerCase()).isEqualTo(JmesPathType.STRING.name().toLowerCase());
+        assertThat(base64GZipFunction.argumentConstraints().minArity()).isEqualTo(1);
+        assertThat(base64GZipFunction.argumentConstraints().maxArity()).isEqualTo(1);
 
     }
 
@@ -54,6 +52,12 @@ public class Base64GZipFunctionTest {
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(result.asText()).isEqualTo("");
+    }
+
+    @Test
+    public void testBase64GzipDecompress() {
+        String result = Base64GZipFunction.decompress(null);
+        assertThat(result).isEqualTo("");
     }
 
     @Test

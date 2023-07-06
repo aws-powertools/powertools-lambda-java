@@ -264,7 +264,7 @@ class LambdaLoggingAspectTest {
     @ParameterizedTest
     @Event(value = "albEvent.json", type = ApplicationLoadBalancerRequestEvent.class)
     void shouldLogCorrelationIdOnALBEvent(ApplicationLoadBalancerRequestEvent event) {
-        RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowerLogToolAlbCorrelationId();
+        RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowertoolsLogAlbCorrelationId();
         handler.handleRequest(event, context);
 
         assertThat(ThreadContext.getImmutableContext())
@@ -274,7 +274,7 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogCorrelationIdOnStreamHandler() throws IOException {
-        RequestStreamHandler handler = new PowerLogToolEventBridgeCorrelationId();
+        RequestStreamHandler handler = new PowertoolsLogEventBridgeCorrelationId();
         String eventId = "3";
         String event = "{\"id\":" + eventId + "}"; // CorrelationIdPathConstants.EVENT_BRIDGE
         ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
@@ -288,7 +288,7 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogAndClearLogContextOnEachRequest() throws IOException {
-        requestHandler = new PowerLogToolEnabledWithClearState();
+        requestHandler = new PowertoolsLogEnabledWithClearState();
         S3EventNotification s3EventNotification = s3EventNotification();
 
         requestHandler.handleRequest(s3EventNotification, context);
