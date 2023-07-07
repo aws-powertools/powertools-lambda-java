@@ -26,8 +26,11 @@ times with the same parameters**. This makes idempotent operations safe to retry
 ## Getting started
 
 ### Installation
-=== "Maven"
-    ```xml hl_lines="3-7 24-27"
+Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
+
+=== "Maven Java 11+"
+
+    ```xml hl_lines="3-7 16 18 24-27"
     <dependencies>
         ...
         <dependency>
@@ -37,7 +40,7 @@ times with the same parameters**. This makes idempotent operations safe to retry
         </dependency>
         ...
     </dependencies>
-
+    ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
     <build>
         <plugins>
@@ -47,15 +50,14 @@ times with the same parameters**. This makes idempotent operations safe to retry
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.13.1</version>
                  <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
+                     <source>11</source> <!-- or higher -->
+                     <target>11</target> <!-- or higher -->
+                     <complianceLevel>11</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
                              <artifactId>powertools-idempotency</artifactId>
                          </aspectLibrary>
-                         ...
                      </aspectLibraries>
                  </configuration>
                  <executions>
@@ -69,6 +71,91 @@ times with the same parameters**. This makes idempotent operations safe to retry
             ...
         </plugins>
     </build>
+    ```
+
+=== "Maven Java 1.8"
+
+    ```xml hl_lines="3-7 16 18 24-27"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-idempotency</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.14.0</version>
+                 <configuration>
+                     <source>1.8</source>
+                     <target>1.8</target>
+                     <complianceLevel>1.8</complianceLevel>
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-idempotency</artifactId>
+                         </aspectLibrary>
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
+
+=== "Gradle Java 11+"
+
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-idempotency:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11 // or higher
+        targetCompatibility = 11 // or higher
+    ```
+
+=== "Gradle Java 1.8"
+
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-idempotency:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
     ```
 
 ### Required resources
@@ -273,7 +360,7 @@ Imagine the function executes successfully, but the client never receives the re
 !!! warning "Warning: Idempotency for JSON payloads"
     The payload extracted by the `EventKeyJMESPath` is treated as a string by default, so will be sensitive to differences in whitespace even when the JSON payload itself is identical.
 
-    To alter this behaviour, you can use the [JMESPath built-in function](utilities.md#powertools_json-function) `powertools_json()` to treat the payload as a JSON object rather than a string.
+    To alter this behaviour, you can use the [JMESPath built-in function](serialization.md#jmespath-functions) `powertools_json()` to treat the payload as a JSON object rather than a string.
 
 === "PaymentFunction.java"
 
