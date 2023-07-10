@@ -54,6 +54,15 @@ public class Base64GZipFunctionTest {
     }
 
     @Test
+    public void testPowertoolsGzipWrongArgumentType() throws IOException {
+        JsonNode event = JsonConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
+        Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(null)");
+        JsonNode result = expression.search(event);
+
+        assertThat(result.getNodeType()).isEqualTo(JsonNodeType.NULL);
+    }
+
+    @Test
     public void testBase64GzipDecompressNull() {
         String result = Base64GZipFunction.decompress(null);
         assertThat(result).isNull();
