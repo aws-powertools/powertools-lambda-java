@@ -1,6 +1,7 @@
 package software.amazon.lambda.powertools.sqs;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.tests.EventLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,7 +38,8 @@ public class SqsUtilsFifoBatchProcessorTest {
     private ArgumentCaptor<DeleteMessageBatchRequest> deleteMessageBatchCaptor;
 
     public SqsUtilsFifoBatchProcessorTest() throws IOException {
-        sqsBatchEvent  =  MAPPER.readValue(SqsUtilsFifoBatchProcessorTest.class.getResource("/SqsFifoBatchEvent.json"), SQSEvent.class);
+        //sqsBatchEvent  =  MAPPER.readValue(SqsUtilsFifoBatchProcessorTest.class.getResource("/SqsFifoBatchEvent.json"), SQSEvent.class);
+        sqsBatchEvent = EventLoader.loadSQSEvent("SqsFifoBatchEvent.json");
     }
 
     @BeforeEach
