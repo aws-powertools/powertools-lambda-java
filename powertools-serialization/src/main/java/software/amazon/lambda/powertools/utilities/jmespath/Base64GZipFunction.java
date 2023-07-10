@@ -46,6 +46,10 @@ public class Base64GZipFunction extends BaseFunction {
 
         String decompressString = decompress(decode(encodedString.getBytes(UTF_8)));
 
+        if (decompressString == null) {
+            return runtime.createNull();
+        }
+
         return runtime.createString(decompressString);
     }
 
