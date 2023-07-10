@@ -495,10 +495,6 @@ public final class SqsUtils {
             client = SqsClient.create();
         }
 
-        // If we are working on a FIFO queue, when any message fails we should stop processing and return the
-        // rest of the batch as failed too. We use this variable to track when that has happened.
-        // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
-
         BatchContext batchContext = new BatchContext(client);
         Queue<SQSMessage> messagesToProcess = new LinkedList<>(event.getRecords());
         while (!messagesToProcess.isEmpty()) {
@@ -514,7 +510,8 @@ public final class SqsUtils {
 
                 // If we are trying to process a message that has a messageGroupId, we are on a FIFO queue. A failure
                 // now stops us from processing the rest of the batch; we break out of the loop leaving unprocessed
-                // messages in the queu
+                // messages in the queue
+                // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
                 String messageGroupId = message.getAttributes() != null ?
                         message.getAttributes().get(MESSAGE_GROUP_ID) : null;
                 if (messageGroupId != null) {
@@ -528,15 +525,13 @@ public final class SqsUtils {
 
         // If we have a FIFO batch failure, unprocessed messages will remain on the queue
         // past the failed message. We have to add these to the errors
-        while (!messagesToProcess.isEmpty()) {
-            SQSMessage message = messagesToProcess.remove();
+        messagesToProcess.forEach(message -> {
             LOG.info("Skipping message {} as another message with a message group failed in this batch",
                     message.getMessageId());
             batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
-        }
+        });
 
         batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
-
         return handlerReturn;
     }
 
