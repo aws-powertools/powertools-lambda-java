@@ -15,7 +15,9 @@ import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSes
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AppConfigProviderTest {

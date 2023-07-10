@@ -13,7 +13,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 

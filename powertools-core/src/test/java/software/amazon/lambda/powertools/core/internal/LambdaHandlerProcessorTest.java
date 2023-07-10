@@ -14,7 +14,9 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.when;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 class LambdaHandlerProcessorTest {

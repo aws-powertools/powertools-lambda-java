@@ -13,9 +13,9 @@
  */
 package software.amazon.lambda.powertools.parameters.transform;
 
-import java.util.Base64;
-
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
+
+import java.util.Base64;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

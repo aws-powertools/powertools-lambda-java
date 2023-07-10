@@ -13,7 +13,11 @@
  */
 package software.amazon.lambda.powertools.validation.internal;
 
-import com.amazonaws.services.lambda.runtime.events.*;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2WebSocketResponse;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsInputPreprocessingResponse;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;

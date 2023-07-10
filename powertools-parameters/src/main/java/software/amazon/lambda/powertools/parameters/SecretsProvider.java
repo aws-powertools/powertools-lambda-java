@@ -13,10 +13,6 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
-import java.time.temporal.ChronoUnit;
-import java.util.Base64;
-import java.util.Map;
-
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -28,6 +24,10 @@ import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
+
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;

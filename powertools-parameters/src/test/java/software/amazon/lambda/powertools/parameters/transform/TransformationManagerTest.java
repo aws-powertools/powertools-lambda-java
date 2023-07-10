@@ -19,7 +19,9 @@ import software.amazon.lambda.powertools.parameters.exception.TransformationExce
 
 import java.util.Base64;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 

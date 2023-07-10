@@ -29,7 +29,9 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class SecretsProviderTest {

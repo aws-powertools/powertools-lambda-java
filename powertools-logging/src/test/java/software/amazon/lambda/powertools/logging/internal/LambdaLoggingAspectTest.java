@@ -33,9 +33,24 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.core.internal.SystemWrapper;
-import software.amazon.lambda.powertools.logging.handlers.*;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayRestApiCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
+import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledWithCustomMapper;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabledWithClearState;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventBridgeCorrelationId;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
@@ -47,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification.*;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
@@ -322,24 +336,24 @@ class LambdaLoggingAspectTest {
     }
 
     private S3EventNotification s3EventNotification() {
-        S3EventNotificationRecord record = new S3EventNotificationRecord("us-west-2",
+        S3EventNotification.S3EventNotificationRecord record = new S3EventNotification.S3EventNotificationRecord("us-west-2",
                 "ObjectCreated:Put",
                 "aws:s3",
                 null,
                 "2.1",
-                new RequestParametersEntity("127.0.0.1"),
-                new ResponseElementsEntity("C3D13FE58DE4C810", "FMyUVURIY8/IgAtTv8xRjskZQpcIZ9KG4V5Wp6S7S/JRWeUWerMUE5JgHvANOjpD"),
-                new S3Entity("testConfigRule",
-                        new S3BucketEntity("mybucket",
-                                new UserIdentityEntity("A3NL1KOZZKExample"),
+                new S3EventNotification.RequestParametersEntity("127.0.0.1"),
+                new S3EventNotification.ResponseElementsEntity("C3D13FE58DE4C810", "FMyUVURIY8/IgAtTv8xRjskZQpcIZ9KG4V5Wp6S7S/JRWeUWerMUE5JgHvANOjpD"),
+                new S3EventNotification.S3Entity("testConfigRule",
+                        new S3EventNotification.S3BucketEntity("mybucket",
+                                new S3EventNotification.UserIdentityEntity("A3NL1KOZZKExample"),
                                 "arn:aws:s3:::mybucket"),
-                        new S3ObjectEntity("HappyFace.jpg",
+                        new S3EventNotification.S3ObjectEntity("HappyFace.jpg",
                                 1024L,
                                 "d41d8cd98f00b204e9800998ecf8427e",
                                 "096fKKXTRTtl3on89fVO.nfljtsv6qko",
                                 "0055AED6DCD90281E5"),
                         "1.0"),
-                new UserIdentityEntity("AIDAJDPLRKLG7UEXAMPLE")
+                new S3EventNotification.UserIdentityEntity("AIDAJDPLRKLG7UEXAMPLE")
         );
 
         return new S3EventNotification(singletonList(record));
