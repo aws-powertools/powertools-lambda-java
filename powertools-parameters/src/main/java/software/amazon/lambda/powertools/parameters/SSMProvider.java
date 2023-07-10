@@ -13,10 +13,6 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -31,6 +27,10 @@ import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
+
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 
@@ -74,7 +74,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  */
 public class SSMProvider extends BaseProvider {
 
-    private final SsmClient client;
+    private SsmClient client;
 
     private boolean decrypt = false;
     private boolean recursive = false;
@@ -90,6 +90,15 @@ public class SSMProvider extends BaseProvider {
     SSMProvider(CacheManager cacheManager, SsmClient client) {
         super(cacheManager);
         this.client = client;
+    }
+
+    /**
+     * Constructor
+     *
+     * @param cacheManager handles the parameter caching
+     */
+    SSMProvider(CacheManager cacheManager) {
+        super(cacheManager);
     }
 
     /**

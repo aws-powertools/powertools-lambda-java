@@ -25,7 +25,11 @@ import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
 import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.model.*;
+import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
+import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
+import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
+import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
+import software.amazon.awssdk.services.ssm.model.Parameter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +39,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 public class ParamManagerIntegrationTest {

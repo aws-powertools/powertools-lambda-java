@@ -1,0 +1,26 @@
+{
+  "records": [
+    {
+      "eventSource": "aws:sns",
+      "eventVersion": "1.0",
+      "eventSubscriptionArn": "arn:aws:sns:eu-central-1:123456789012:TopicSendToMe:e3ddc7d5-2f86-40b8-a13d-3362f94fd8dd",
+      "sns": {
+        "type": "Notification",
+        "messageId": "dc918f50-80c6-56a2-ba33-d8a9bbf013ab",
+        "topicArn": "arn:aws:sns:eu-central-1:123456789012:TopicSendToMe",
+        "subject": "Test sns message",
+        "message": "{\"id\":1234, \"name\":\"product\", \"price\":42}",
+        "signatureVersion": "1",
+        "signature": "UWnPpkqPAphyr+6PXzUF9++4zJcw==",
+        "signingCertUrl": "https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-a86cb10b4e1f29c941702d737128f7b6.pem",
+        "unsubscribeUrl": "https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe",
+        "messageAttributes": {
+          "name": {
+            "type": "String",
+            "value": "Bob"
+          }
+        }
+      }
+    }
+  ]
+}

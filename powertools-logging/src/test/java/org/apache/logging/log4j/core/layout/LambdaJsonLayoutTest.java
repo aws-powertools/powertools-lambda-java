@@ -13,15 +13,6 @@
  */
 package org.apache.logging.log4j.core.layout;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Map;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,6 +24,15 @@ import org.mockito.Mock;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolSamplingEnabled;
 import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;

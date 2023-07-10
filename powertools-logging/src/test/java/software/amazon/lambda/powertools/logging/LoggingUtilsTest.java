@@ -13,12 +13,12 @@
  */
 package software.amazon.lambda.powertools.logging;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
