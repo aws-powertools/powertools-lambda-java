@@ -50,14 +50,13 @@ public class Base64GZipFunctionTest {
         JsonNode event = JsonConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
         Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip('')");
         JsonNode result = expression.search(event);
-        assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
-        assertThat(result.asText()).isEqualTo("");
+        assertThat(result).isNull();
     }
 
     @Test
-    public void testBase64GzipDecompress() {
+    public void testBase64GzipDecompressNull() {
         String result = Base64GZipFunction.decompress(null);
-        assertThat(result).isEqualTo("");
+        assertThat(result).isNull();
     }
 
     @Test
