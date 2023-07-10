@@ -76,7 +76,7 @@ public class ValidationInboundStringHandler implements RequestHandler<APIGateway
             "  },\n" +
             "  \"additionalProperties\": true\n" +
             "}";
-    
+
     @Override
     @Validation(inboundSchema = schema)
     public String handleRequest(APIGatewayV2HTTPEvent input, Context context) {

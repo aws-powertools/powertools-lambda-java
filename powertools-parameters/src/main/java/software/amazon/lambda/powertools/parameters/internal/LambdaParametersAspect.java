@@ -5,7 +5,9 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
-import software.amazon.lambda.powertools.parameters.*;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.Param;
+import software.amazon.lambda.powertools.parameters.ParamManager;
 
 @Aspect
 public class LambdaParametersAspect {
@@ -16,9 +18,6 @@ public class LambdaParametersAspect {
 
     @Around("getParam(paramAnnotation)")
     public Object injectParam(final ProceedingJoinPoint joinPoint, final Param paramAnnotation) {
-        if(null == paramAnnotation.provider()) {
-            throw new IllegalArgumentException("provider for Param annotation cannot be null!");
-        }
         BaseProvider provider = ParamManager.getProvider(paramAnnotation.provider());
 
         if(paramAnnotation.transformer().isInterface()) {

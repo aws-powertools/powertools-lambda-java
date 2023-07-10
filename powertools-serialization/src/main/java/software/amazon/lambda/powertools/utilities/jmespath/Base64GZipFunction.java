@@ -46,25 +46,29 @@ public class Base64GZipFunction extends BaseFunction {
 
         String decompressString = decompress(decode(encodedString.getBytes(UTF_8)));
 
+        if (decompressString == null) {
+            return runtime.createNull();
+        }
+
         return runtime.createString(decompressString);
     }
 
     public static String decompress(byte[] compressed) {
-        if ((compressed == null) || (compressed.length == 0)) {
-            return "";
+        if (compressed == null || compressed.length == 0) {
+            return null;
+        }
+        if (!isCompressed(compressed)) {
+            return new String(compressed, UTF_8);
         }
         try {
             StringBuilder out = new StringBuilder();
-            if (isCompressed(compressed)) {
-                GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressed));
-                BufferedReader bf = new BufferedReader(new InputStreamReader(gzipStream, UTF_8));
 
-                String line;
-                while ((line = bf.readLine()) != null) {
-                    out.append(line);
-                }
-            } else {
-                out.append(Arrays.toString(compressed));
+            GZIPInputStream gzipStream = new GZIPInputStream(new ByteArrayInputStream(compressed));
+            BufferedReader bf = new BufferedReader(new InputStreamReader(gzipStream, UTF_8));
+
+            String line;
+            while ((line = bf.readLine()) != null) {
+                out.append(line);
             }
             return out.toString();
         } catch (IOException e) {

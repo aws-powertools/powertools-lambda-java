@@ -18,5 +18,9 @@
       "exclusiveMinimum": true
     }
   },
-  "required": ["id", "name", "price"]
+  "required": [
+    "id",
+    "name",
+    "price"
+  ]
 }

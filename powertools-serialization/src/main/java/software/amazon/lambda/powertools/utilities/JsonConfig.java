@@ -45,6 +45,7 @@ public class JsonConfig {
             new JsonFunction()
     );
     private final RuntimeConfiguration configuration = new RuntimeConfiguration.Builder()
+            .withSilentTypeErrors(true)
             .withFunctionRegistry(customFunctions)
             .build();
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());

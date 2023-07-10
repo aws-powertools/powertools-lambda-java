@@ -15,15 +15,13 @@ package software.amazon.lambda.powertools.validation.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import software.amazon.lambda.powertools.validation.Validation;
 
+public class GenericSchemaV7Handler<T> implements RequestHandler<T, String> {
 
-public class ValidationInboundClasspathHandler implements RequestHandler<APIGatewayProxyRequestEvent, String> {
-
-    @Override
     @Validation(inboundSchema = "classpath:/schema_v7.json")
-    public String handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    @Override
+    public String handleRequest(T input, Context context) {
         return "OK";
     }
 }

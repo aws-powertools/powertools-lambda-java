@@ -13,10 +13,10 @@
  */
 package software.amazon.lambda.powertools.logging;
 
-import java.util.Map;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.ThreadContext;
+
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 

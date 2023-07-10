@@ -27,13 +27,19 @@ import static java.util.Optional.of;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 public final class LambdaHandlerProcessor {
+
     // SERVICE_NAME cannot be final for testing purposes
-    private static String SERVICE_NAME = null != System.getenv("POWERTOOLS_SERVICE_NAME")
-            ? System.getenv("POWERTOOLS_SERVICE_NAME") : "service_undefined";
+    private static String SERVICE_NAME = calculateServiceName();
+
     private static Boolean IS_COLD_START = null;
 
     private LambdaHandlerProcessor() {
         // Hide default constructor
+    }
+
+    private static String calculateServiceName() {
+        return null != getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME)
+                ? getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME) : LambdaConstants.SERVICE_UNDEFINED;
     }
 
     public static boolean isHandlerMethod(final ProceedingJoinPoint pjp) {
@@ -56,21 +62,22 @@ public final class LambdaHandlerProcessor {
 
     public static Context extractContext(final ProceedingJoinPoint pjp) {
 
-        if (isHandlerMethod(pjp)) {
-            if (placedOnRequestHandler(pjp)) {
-                return (Context) pjp.getArgs()[1];
-            }
-
-            if (placedOnStreamHandler(pjp)) {
-                return (Context) pjp.getArgs()[2];
-            }
+        if (placedOnRequestHandler(pjp)) {
+            return (Context) pjp.getArgs()[1];
+        } else if (placedOnStreamHandler(pjp)) {
+            return (Context) pjp.getArgs()[2];
+        } else {
+            return null;
         }
-
-        return null;
     }
 
     public static String serviceName() {
         return SERVICE_NAME;
+    }
+
+    // Method used for testing purposes
+    protected static void resetServiceName() {
+        SERVICE_NAME = calculateServiceName();
     }
 
     public static boolean isColdStart() {
@@ -82,13 +89,13 @@ public final class LambdaHandlerProcessor {
     }
 
     public static boolean isSamLocal() {
-        return "true".equals(System.getenv("AWS_SAM_LOCAL"));
+        return "true".equals(getenv(LambdaConstants.AWS_SAM_LOCAL));
     }
 
     public static Optional<String> getXrayTraceId() {
-        final String X_AMZN_TRACE_ID = getenv("_X_AMZN_TRACE_ID");
-        if(X_AMZN_TRACE_ID != null) {
-            return of(X_AMZN_TRACE_ID.split(";")[0].replace("Root=", ""));
+        final String X_AMZN_TRACE_ID = getenv(LambdaConstants.X_AMZN_TRACE_ID);
+        if (X_AMZN_TRACE_ID != null) {
+            return of(X_AMZN_TRACE_ID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, ""));
         }
         return empty();
     }
