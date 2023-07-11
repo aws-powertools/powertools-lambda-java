@@ -2,7 +2,7 @@ package software.amazon.lambda.powertools.batch;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.sun.xml.internal.ws.api.message.Message;
+import software.amazon.lambda.powertools.batch3.BatchMessageHandlerBuilder;
 
 import java.util.List;
 import java.util.stream.Collectors;

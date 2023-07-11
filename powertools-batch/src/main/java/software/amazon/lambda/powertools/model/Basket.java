@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.batch2.examples.model;
+package software.amazon.lambda.powertools.model;
 
 import java.util.ArrayList;
 import java.util.Arrays;

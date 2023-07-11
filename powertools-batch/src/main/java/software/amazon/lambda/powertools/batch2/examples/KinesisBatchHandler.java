@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import software.amazon.lambda.powertools.batch2.KinesisBatchProcessor;
-import software.amazon.lambda.powertools.batch2.examples.model.Basket;
+import software.amazon.lambda.powertools.model.Basket;
 
 public class KinesisBatchHandler implements RequestHandler<KinesisEvent, StreamsEventResponse>, KinesisBatchProcessor<Basket> {
     @Override

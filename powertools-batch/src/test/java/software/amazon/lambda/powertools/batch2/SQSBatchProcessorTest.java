@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
-import software.amazon.lambda.powertools.batch2.examples.model.Product;
+import software.amazon.lambda.powertools.model.Product;
 
 public class SQSBatchProcessorTest {
     @Mock

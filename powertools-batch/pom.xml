@@ -61,6 +61,10 @@
             <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-sqs</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

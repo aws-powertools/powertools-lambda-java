@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import software.amazon.lambda.powertools.batch2.SQSBatchProcessor;
-import software.amazon.lambda.powertools.batch2.examples.model.Basket;
+import software.amazon.lambda.powertools.model.Basket;
 
 public class SQSBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse>, SQSBatchProcessor<Basket> {
     @Override
