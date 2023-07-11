@@ -26,10 +26,11 @@ are returned to the queue.
 
 ## Install
 
-To install this utility, add the following dependency to your project.
+Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
 
-=== "Maven"
-    ```xml hl_lines="3 4 5 6 7 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36"
+=== "Maven Java 11+"
+
+    ```xml hl_lines="3-7 16 18 24-27""
     <dependencies>
         ...
         <dependency>
@@ -39,6 +40,7 @@ To install this utility, add the following dependency to your project.
         </dependency>
         ...
     </dependencies>
+    ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
     <build>
         <plugins>
@@ -47,6 +49,51 @@ To install this utility, add the following dependency to your project.
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.13.1</version>
+                 <configuration>
+                     <source>11</source> <!-- or higher -->
+                     <target>11</target> <!-- or higher -->
+                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-sqs</artifactId>
+                         </aspectLibrary>
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
+
+=== "Maven Java 1.8"
+
+    ```xml hl_lines="3-7 16 18 24-27"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-sqs</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.14.0</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
@@ -71,24 +118,44 @@ To install this utility, add the following dependency to your project.
     </build>
     ```
 
-=== "Gradle"
+=== "Gradle Java 11+"
 
-    ```groovy
-    plugins{
-        id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
-    }
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11 // or higher
+        targetCompatibility = 11 // or higher
+    ```
 
-    repositories {
-        mavenCentral()
-    }
+=== "Gradle Java 1.8"
 
-    dependencies {
-        ...
-        aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
-//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
-//      implementation 'org.aspectj:aspectjrt:1.9.19'
-    }
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
     ```
 
 ## IAM Permissions

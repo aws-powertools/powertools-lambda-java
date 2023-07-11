@@ -28,24 +28,63 @@ This project separates core utilities that will be available in other runtimes v
 
 ## Install
 
+**Quick hello world example using SAM CLI**
+
+You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including Powertools for AWS Lambda (Java).
+
+```bash
+sam init
+  
+Which template source would you like to use?
+	1 - AWS Quick Start Templates
+	2 - Custom Template Location
+Choice: 1
+
+Choose an AWS Quick Start application template
+	1 - Hello World Example
+	2 - Data processing
+	3 - Hello World Example with Powertools for AWS Lambda
+	4 - Multi-step workflow
+	5 - Scheduled task
+	6 - Standalone function
+	7 - Serverless API
+	8 - Infrastructure event management
+	9 - Lambda Response Streaming
+	10 - Serverless Connector Hello World Example
+	11 - Multi-step workflow with Connectors
+	12 - Full Stack
+	13 - Lambda EFS example
+	14 - DynamoDB Example
+	15 - Machine Learning
+Template: 3
+
+Which runtime would you like to use?
+	1 - dotnet6
+	2 - java17
+	3 - java11
+	4 - java8.al2
+	5 - java8
+	6 - nodejs18.x
+	7 - nodejs16.x
+	8 - nodejs14.x
+	9 - python3.9
+	10 - python3.8
+	11 - python3.7
+	12 - python3.10
+Runtime: 2, 3, 4 or 5
+```
+
+**Manual installation**
 Powertools for AWS Lambda (Java) dependencies are available in Maven Central. You can use your favourite dependency management tool to install it
 
 * [Maven](https://maven.apache.org/)
 * [Gradle](https://gradle.org)
 
-**Quick hello world examples using SAM CLI**
+Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
 
-You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including Powertools for AWS Lambda (Java).
+=== "Maven Java 11+"
 
-```bash
-  sam init --location gh:aws-samples/cookiecutter-aws-sam-powertools-java
-```
-
-For more information about the project and available options refer to this [repository](https://github.com/aws-samples/cookiecutter-aws-sam-powertools-java/blob/main/README.md)
-
-=== "Maven"
-
-    ```xml hl_lines="3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55" 
+    ```xml
     <dependencies>
         ...
         <dependency>
@@ -74,6 +113,69 @@ For more information about the project and available options refer to this [repo
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.13.1</version>
+                 <configuration>
+                     <source>11</source> <!-- or higher -->
+                     <target>11</target> <!-- or higher -->
+                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-tracing</artifactId>
+                         </aspectLibrary>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-logging</artifactId>
+                         </aspectLibrary>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-metrics</artifactId>
+                         </aspectLibrary>
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
+
+=== "Maven Java 1.8"
+
+    ```xml
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-tracing</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-metrics</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.14.0</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
@@ -106,29 +208,56 @@ For more information about the project and available options refer to this [repo
     </build>
     ```
 
-=== "Gradle"
+=== "Gradle Java 11+"
 
     ```groovy
-    plugins{
-        id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
-        aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
-        aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
-//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
-//      implementation 'org.aspectj:aspectjrt:1.9.19'
-    }
-
-    sourceCompatibility = 11
-    targetCompatibility = 11
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11
+        targetCompatibility = 11
     ```
+
+=== "Gradle Java 1.8"
+
+    ```groovy
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    ```
+
+???+ tip "Why a different configuration?"
+    Lambda Powertools for Java is using [AspectJ](https://eclipse.dev/aspectj/doc/released/progguide/starting.html) internally 
+    to handle annotations. Recently, in order to support Java 17 we had to move to `dev.aspectj:aspectj-maven-plugin` because  
+    `org.codehaus.mojo:aspectj-maven-plugin` does not support Java 17. 
+    Under the hood, `org.codehaus.mojo:aspectj-maven-plugin` is based on AspectJ 1.9.7, 
+    while `dev.aspectj:aspectj-maven-plugin` is based on AspectJ 1.9.8, compiled for Java 11+.
 
 ## Environment variables
 
