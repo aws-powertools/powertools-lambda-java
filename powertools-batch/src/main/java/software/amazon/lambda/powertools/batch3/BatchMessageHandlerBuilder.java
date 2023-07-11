@@ -5,7 +5,8 @@ import software.amazon.lambda.powertools.batch3.examples.SqsExampleWithIdempoten
 
 /**
  * A builder-style interface we can use within an existing Lambda RequestHandler to
- * deal with our batch responses.
+ * deal with our batch responses. A second tier of builders is returned per-event-source
+ * to bind the appropriate message types and provider source-specific logic and tuneables.
  *
  * @see SqsExampleWithIdempotency
  */

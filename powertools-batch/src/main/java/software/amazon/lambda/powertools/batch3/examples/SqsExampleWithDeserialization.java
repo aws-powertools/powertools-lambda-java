@@ -18,7 +18,7 @@ public class SqsExampleWithDeserialization implements RequestHandler<SQSEvent, O
         // Example 2 - process a deserialized message
         return new BatchMessageHandlerBuilder()
                 .withSqsBatchHandler()
-                .<Basket>processMessage(sqsEvent, basket -> {
+                .<Basket>processMessage(sqsEvent, (basket, ctx) -> {
 
                 });
     }
