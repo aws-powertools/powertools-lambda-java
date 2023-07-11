@@ -497,7 +497,8 @@ public final class SqsUtils {
 
         BatchContext batchContext = new BatchContext(client);
         int offset = 0;
-        while (offset < event.getRecords().size()) {
+        boolean failedBatch = false;
+        while (offset < event.getRecords().size() && !failedBatch) {
             // Get the current message and advance to the next. Doing this here
             // makes it easier for us to know where we are up to if we have to
             // break out of here early.
@@ -522,7 +523,7 @@ public final class SqsUtils {
                 if (messageGroupId != null) {
                     LOG.info("A message in a message batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
                             , messageGroupId, message.getMessageId());
-                    break;
+                    failedBatch = true;
                 }
                 LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
             }
