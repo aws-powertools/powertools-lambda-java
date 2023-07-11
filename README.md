@@ -13,24 +13,24 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
 
-* [maven](https://maven.apache.org/):
+#### Maven:
 ```xml
 <dependencies>
     ...
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
+        <version>1.16.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
+        <version>1.16.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
+        <version>1.16.0</version>
     </dependency>
     ...
 </dependencies>
@@ -38,6 +38,7 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
 
 And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project:
 
+For Java 11+, use the following:
 ```xml
 <build>
     <plugins>
@@ -77,6 +78,93 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
     </plugins>
 </build>
 ```
+
+For Java 8, use the following:
+```xml
+<build>
+    <plugins>
+        ...
+        <plugin>
+             <groupId>org.codehaus.mojo</groupId>
+             <artifactId>aspectj-maven-plugin</artifactId>
+             <version>1.14.0</version>
+             <configuration>
+                 <source>1.8</source>
+                 <target>1.8</target>
+                 <complianceLevel>1.8</complianceLevel>
+                 <aspectLibraries>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-logging</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-tracing</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-metrics</artifactId>
+                     </aspectLibrary>
+                 </aspectLibraries>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>compile</goal>
+                     </goals>
+                 </execution>
+             </executions>
+        </plugin>
+        ...
+    </plugins>
+</build>
+```
+#### gradle
+
+For Java 11+:
+
+    ```groovy
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11
+        targetCompatibility = 11
+    ```
+
+For Java8:
+
+    ```groovy
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    ```
+
 
 ## Example
 
