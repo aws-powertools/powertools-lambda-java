@@ -1,0 +1,14 @@
+{
+  "id": "cdc73f9d-aea9-11e3-9d5a-835b769c0d9c",
+  "source": "aws.events",
+  "account": "123456789012",
+  "region": "eu-central-1",
+  "resources": [
+    "arn:aws:events:eu-central-1:123456789012:rule/my-schedule"
+  ],
+  "detail": {
+    "id": 1234,
+    "name": "product",
+    "price": 42
+  }
+}

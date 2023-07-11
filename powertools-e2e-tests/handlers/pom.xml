@@ -10,7 +10,7 @@
     <description>Fake handlers that use Powertools for AWS Lambda (Java).</description>
 
     <properties>
-        <lambda.powertools.version>1.15.0</lambda.powertools.version>
+        <lambda.powertools.version>1.17.0-SNAPSHOT</lambda.powertools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>

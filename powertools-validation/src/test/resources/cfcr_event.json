@@ -1,0 +1,20 @@
+{
+  "requestType": "requestType",
+  "serviceToken": "serviceToken",
+  "responseUrl": "responseUrl",
+  "stackId": "stackId",
+  "requestId": "requestId",
+  "logicalResourceId": "logicalResourceId",
+  "resourceType": "resourceType",
+  "resourceProperties": {
+    "id": 1234,
+    "name": "product",
+    "price": 42
+  },
+  "oldResourceProperties": {
+    "id": 1234,
+    "name": "product",
+    "price": 40
+  }
+}
+

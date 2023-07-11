@@ -1,7 +1,5 @@
 package software.amazon.lambda.powertools.logging.handlers;
 
-import java.io.IOException;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
@@ -12,6 +10,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
+
+import java.io.IOException;
 
 public class PowerToolLogEventEnabledWithCustomMapper implements RequestHandler<S3EventNotification, Object> {
 

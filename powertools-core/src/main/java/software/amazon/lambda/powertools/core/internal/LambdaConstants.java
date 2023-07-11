@@ -18,4 +18,9 @@ public class LambdaConstants {
     public static final String AWS_REGION_ENV = "AWS_REGION";
     public static final String AWS_LAMBDA_INITIALIZATION_TYPE = "AWS_LAMBDA_INITIALIZATION_TYPE";
     public static final String ON_DEMAND = "on-demand";
+    public static final String X_AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
+    public static final String AWS_SAM_LOCAL = "AWS_SAM_LOCAL";
+    public static final String ROOT_EQUALS = "Root=";
+    public static final String POWERTOOLS_SERVICE_NAME = "POWERTOOLS_SERVICE_NAME";
+    public static final String SERVICE_UNDEFINED = "service_undefined";
 }

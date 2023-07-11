@@ -15,22 +15,21 @@ package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 
-public class PowerLogToolEnabledWithClearState implements RequestHandler<Object, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolEnabledWithClearState.class);
-    public static int COUNT = 1;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
+
+public class PowertoolsLogAlbCorrelationId implements RequestHandler<ApplicationLoadBalancerRequestEvent, Object> {
+    private final Logger LOG = LogManager.getLogger(PowertoolsLogAlbCorrelationId.class);
+
     @Override
-    @Logging(clearState = true)
-    public Object handleRequest(Object input, Context context) {
-        if(COUNT == 1) {
-            LoggingUtils.appendKey("TestKey", "TestValue");
-        }
+    @Logging(correlationIdPath = APPLICATION_LOAD_BALANCER)
+    public Object handleRequest(ApplicationLoadBalancerRequestEvent input, Context context) {
         LOG.info("Test event");
-        COUNT++;
+        LOG.debug("Test debug event");
         return null;
     }
 }
