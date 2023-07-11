@@ -27,7 +27,6 @@ import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
 
 public class SqsUtilsFifoBatchProcessorTest {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
     private static SQSEvent sqsBatchEvent;
     private MockitoSession session;
 
@@ -38,7 +37,6 @@ public class SqsUtilsFifoBatchProcessorTest {
     private ArgumentCaptor<DeleteMessageBatchRequest> deleteMessageBatchCaptor;
 
     public SqsUtilsFifoBatchProcessorTest() throws IOException {
-        //sqsBatchEvent  =  MAPPER.readValue(SqsUtilsFifoBatchProcessorTest.class.getResource("/SqsFifoBatchEvent.json"), SQSEvent.class);
         sqsBatchEvent = EventLoader.loadSQSEvent("SqsFifoBatchEvent.json");
     }
 
