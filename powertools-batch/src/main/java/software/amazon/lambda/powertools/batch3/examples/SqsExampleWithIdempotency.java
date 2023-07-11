@@ -21,6 +21,7 @@ public class SqsExampleWithIdempotency implements RequestHandler<SQSEvent, Objec
         // return ...
         return new BatchMessageHandlerBuilder()
                 .withSqsBatchHandler()
+                .withFailureHandler(msg -> System.out.println("Whoops: " + msg.getMessageId()))
                 .processRawMessage(sqsEvent, this::processWithIdempotency);
 
         }
