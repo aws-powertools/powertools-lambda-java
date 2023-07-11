@@ -503,7 +503,7 @@ public final class SqsUtils {
             try {
                 handlerReturn.add(handler.process(message));
                 batchContext.addSuccess(message);
-            } catch(Exception e){
+            } catch (Exception e) {
 
                 // Record the failure
                 batchContext.addFailure(message, e);
