@@ -496,9 +496,14 @@ public final class SqsUtils {
         }
 
         BatchContext batchContext = new BatchContext(client);
-        Queue<SQSMessage> messagesToProcess = new LinkedList<>(event.getRecords());
-        while (!messagesToProcess.isEmpty()) {
-            SQSMessage message = messagesToProcess.remove();
+        int offset = 0;
+        while (offset < event.getRecords().size()) {
+            // Get the current message and advance to the next. Doing this here
+            // makes it easier for us to know where we are up to if we have to
+            // break out of here early.
+            SQSMessage message = event.getRecords().get(offset);
+            offset++;
+
             // If the batch hasn't failed, try process the message
             try {
                 handlerReturn.add(handler.process(message));
@@ -525,11 +530,15 @@ public final class SqsUtils {
 
         // If we have a FIFO batch failure, unprocessed messages will remain on the queue
         // past the failed message. We have to add these to the errors
-        messagesToProcess.forEach(message -> {
-            LOG.info("Skipping message {} as another message with a message group failed in this batch",
-                    message.getMessageId());
-            batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
-        });
+        if (offset < event.getRecords().size()) {
+            event.getRecords()
+                    .subList(offset, event.getRecords().size())
+                    .forEach(message -> {
+                        LOG.info("Skipping message {} as another message with a message group failed in this batch",
+                                message.getMessageId());
+                        batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
+                    });
+        }
 
         batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
         return handlerReturn;

@@ -71,6 +71,50 @@ public class SqsUtilsFifoBatchProcessorTest {
         assertThat(results.size()).isEqualTo(3);
     }
 
+    /**
+     * Check that a failure in the middle of the batch:
+     * - deletes the successful message explicitly from SQS
+     * - marks the failed and subsequent message as failed
+     * - does not delete the failed or subsequent message
+     */
+    @Test
+    public void singleFailureInMiddleOfBatch() {
+        // Arrange
+        Mockito.when(sqsClient.deleteMessageBatch(deleteMessageBatchCaptor.capture())).thenReturn(DeleteMessageBatchResponse
+                .builder().build());
+
+        // Act
+        AtomicInteger processedCount = new AtomicInteger();
+        assertThatExceptionOfType(SQSBatchProcessingException.class)
+                .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) -> {
+                    int value = processedCount.getAndIncrement();
+                    if (value == 1) {
+                        throw new RuntimeException("Whoops");
+                    }
+                    return true;
+                }))
+
+        // Assert
+                .isInstanceOf(SQSBatchProcessingException.class)
+                .satisfies(e -> {
+                    List<SQSEvent.SQSMessage> failures = ((SQSBatchProcessingException)e).getFailures();
+                    assertThat(failures.size()).isEqualTo(2);
+                    List<String> failureIds = failures.stream()
+                            .map(SQSEvent.SQSMessage::getMessageId)
+                            .collect(Collectors.toList());
+                    assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(1).getMessageId());
+                    assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(2).getMessageId());
+                });
+
+        DeleteMessageBatchRequest deleteRequest = deleteMessageBatchCaptor.getValue();
+        List<String> messageIds = deleteRequest.entries().stream()
+                .map(DeleteMessageBatchRequestEntry::id)
+                .collect(Collectors.toList());
+        assertThat(deleteRequest.entries().size()).isEqualTo(1);
+        assertThat(messageIds.contains(sqsBatchEvent.getRecords().get(0).getMessageId())).isTrue();
+
+    }
+
     @Test
     public void singleFailureAtEndOfBatch() {
 
