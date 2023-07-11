@@ -10,7 +10,7 @@ This sample can be used either with the Serverless Application Model (SAM) or wi
 To use the SAM CLI, you need the following tools.
 
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* Java11 - [Install the Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+* Java 8 - [Install Java 8](https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/downloads-list.html)
 * Maven - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
@@ -26,7 +26,7 @@ sam deploy --guided
 To use CDK you need the following tools.
 
 * CDK - [Install CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
-* Java11 - [Install the Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+* Java 8 - [Install Java 8](https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/downloads-list.html)
 * Maven - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
