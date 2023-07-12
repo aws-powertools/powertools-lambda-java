@@ -37,13 +37,18 @@ public final class ParamManager {
 
     /**
      * Get a concrete implementation of {@link BaseProvider}.<br/>
-     * You can specify {@link SecretsProvider}, {@link SSMProvider}, {@link DynamoDbProvider},  or create your
+     * You can specify {@link SecretsProvider}, {@link SSMProvider} or create your
      * custom provider by extending {@link BaseProvider} if you need to integrate with a different parameter store.
+     * @deprecated You should not use this method directly but a typed one (getSecretsProvider, getSsmProvider, getDynamoDbProvider, getAppConfigProvider), will be removed in v2
      * @return a {@link SecretsProvider}
      */
+    // TODO in v2: remove public access to this and review how we get providers (it was not designed for DDB and AppConfig in mind initially)
     public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
         if (providerClass == null) {
             throw new IllegalStateException("providerClass cannot be null.");
+        }
+        if (providerClass == DynamoDbProvider.class || providerClass == AppConfigProvider.class) {
+            throw new IllegalArgumentException(providerClass + " cannot be instantiated like this, additional parameters are required");
         }
         return (T) providers.computeIfAbsent(providerClass, ParamManager::createProvider);
     }
@@ -166,7 +171,7 @@ public final class ParamManager {
    static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
         try {
             Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
-            T provider = constructor.newInstance(cacheManager);
+            T provider = constructor.newInstance(cacheManager); // FIXME: avoid reflection here as we may have issues (#
             provider.setTransformationManager(transformationManager);
             return provider;
         } catch (ReflectiveOperationException e) {
