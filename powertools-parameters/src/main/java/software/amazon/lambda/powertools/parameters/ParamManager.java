@@ -171,7 +171,7 @@ public final class ParamManager {
    static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
         try {
             Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
-            T provider = constructor.newInstance(cacheManager); // FIXME: avoid reflection here as we may have issues (#
+            T provider = constructor.newInstance(cacheManager); // FIXME: avoid reflection here as we may have issues (#1280)
             provider.setTransformationManager(transformationManager);
             return provider;
         } catch (ReflectiveOperationException e) {
