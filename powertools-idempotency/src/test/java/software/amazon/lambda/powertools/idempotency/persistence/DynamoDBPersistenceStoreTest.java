@@ -168,21 +168,20 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
 
         // WHEN: call putRecord
         long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        assertThatThrownBy(() -> dynamoDBPersistenceStore.putRecord(
+        dynamoDBPersistenceStore.putRecord(
                 new DataRecord("key",
                         DataRecord.Status.INPROGRESS,
                         expiry2,
-                        null,
+                        "Fake Data 2",
                         null
-                ), now)
-        ).isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+                ), now);
 
-        // THEN: item was not updated, retrieve the initial one
+        // THEN: item was update updated, retrieve the new one
         Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
-        assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
-        assertThat(itemInDb.get("data").s()).isEqualTo("Fake Data");
+        assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry2));
+        assertThat(itemInDb.get("data").s()).isEqualTo("Fake Data 2");
     }
 
 

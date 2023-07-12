@@ -152,6 +152,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
 
             Map<String, AttributeValue> expressionAttributeValues = Stream.of(
                     new AbstractMap.SimpleEntry<>(":now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()),
+                    new AbstractMap.SimpleEntry<>(":now_milliseconds", AttributeValue.builder().n(String.valueOf(now.getEpochSecond() * 1000)).build()),
                     new AbstractMap.SimpleEntry<>(":inprogress", AttributeValue.builder().s(INPROGRESS.toString()).build())
             ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -160,7 +161,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                     PutItemRequest.builder()
                             .tableName(tableName)
                             .item(item)
-                            .conditionExpression("attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now AND #status = :inprogress)")
+                            .conditionExpression("attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_milliseconds AND #status = :inprogress)")
                             .expressionAttributeNames(expressionAttributeNames)
                             .expressionAttributeValues(expressionAttributeValues)
                             .build()
