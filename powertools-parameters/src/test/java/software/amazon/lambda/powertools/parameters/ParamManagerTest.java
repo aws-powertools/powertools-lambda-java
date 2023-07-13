@@ -18,6 +18,7 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.internal.CustomProvider;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -79,23 +80,38 @@ public class ParamManagerTest {
     }
 
     @Test
-    public void testGetSecretsProvider() {
+    public void testGetSecretsProvider_withoutParameter_shouldCreateDefaultClient() {
 
         // Act
         SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
 
         // Assert
         assertNotNull(secretsProvider);
+        assertNotNull(secretsProvider.getClient());
     }
 
     @Test
-    public void testGetSSMProvider() {
+    public void testGetSSMProvider_withoutParameter_shouldCreateDefaultClient() {
 
         // Act
         SSMProvider ssmProvider = ParamManager.getSsmProvider();
 
         // Assert
         assertNotNull(ssmProvider);
+        assertNotNull(ssmProvider.getClient());
     }
 
+    @Test
+    public void testGetDynamoDBProvider_requireOtherParameters_throwException() {
+
+        // Act & Assert
+        assertThatIllegalArgumentException().isThrownBy(() -> ParamManager.getProvider(DynamoDbProvider.class));
+    }
+
+    @Test
+    public void testGetAppConfigProvider_requireOtherParameters_throwException() {
+
+        // Act & Assert
+        assertThatIllegalArgumentException().isThrownBy(() -> ParamManager.getProvider(AppConfigProvider.class));
+    }
 }

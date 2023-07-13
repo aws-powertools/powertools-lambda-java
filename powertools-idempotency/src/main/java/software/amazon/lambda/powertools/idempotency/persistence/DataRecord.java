@@ -28,7 +28,7 @@ public class DataRecord {
     private final String status;
 
     /**
-     * This field is control how long the result of the idempotent
+     * This field is controlling how long the result of the idempotent
      * event is cached. It is stored in _seconds since epoch_.
      *
      * DynamoDB's TTL mechanism is used to remove the record once the
