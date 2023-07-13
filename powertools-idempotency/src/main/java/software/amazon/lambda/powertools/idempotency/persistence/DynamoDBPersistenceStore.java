@@ -126,6 +126,19 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         return itemToRecord(response.item());
     }
 
+    /**
+     * Store's the given idempotency record in the DDB store. If there
+     * is an existing record that has expired - either due to the
+     * cache expiry or due to the in_progress_expiry - the record
+     * will be overwritten and the idempotent operation can continue.
+     *
+     * <b>Note: This method writes only expiry and status information - not
+     * the results of the operation itself.</b>
+     *
+     * @param record DataRecord instance to store
+     * @param now
+     * @throws IdempotencyItemAlreadyExistsException
+     */
     @Override
     public void putRecord(DataRecord record, Instant now) throws IdempotencyItemAlreadyExistsException {
         Map<String, AttributeValue> item = new HashMap<>(getKey(record.getIdempotencyKey()));
