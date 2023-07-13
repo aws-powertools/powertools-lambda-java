@@ -165,7 +165,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
 
             Map<String, AttributeValue> expressionAttributeValues = Stream.of(
                     new AbstractMap.SimpleEntry<>(":now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()),
-                    new AbstractMap.SimpleEntry<>(":now_milliseconds", AttributeValue.builder().n(String.valueOf(now.getEpochSecond() * 1000)).build()),
+                    new AbstractMap.SimpleEntry<>(":now_milliseconds", AttributeValue.builder().n(String.valueOf(now.toEpochMilli())).build()),
                     new AbstractMap.SimpleEntry<>(":inprogress", AttributeValue.builder().s(INPROGRESS.toString()).build())
             ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
