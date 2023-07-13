@@ -172,6 +172,18 @@ See the **[examples](examples)**  directory for example projects showcasing usag
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
+## How to support Powertools for AWS Lambda (Java)?
+
+### Becoming a reference customer
+
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (Java), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (Java) (become a reference)](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+
+The following companies, among others, use Powertools:
+
+* [Capital One](https://www.capitalone.com/)
+* [CPQi (Exadel Financial Services)](https://cpqi.com/)
+* [Europace AG](https://europace.de/)
+
 ## Credits
 
 * [MkDocs](https://www.mkdocs.org/)
