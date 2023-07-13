@@ -58,7 +58,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  */
 public class SecretsProvider extends BaseProvider {
 
-    private SecretsManagerClient client;
+    private final SecretsManagerClient client;
 
     /**
      * Constructor with custom {@link SecretsManagerClient}. <br/>
@@ -74,12 +74,13 @@ public class SecretsProvider extends BaseProvider {
     }
 
     /**
-     * Constructor
+     * Constructor with only a CacheManager<br/>
      *
+     * Used in {@link ParamManager#createProvider(Class)}
      * @param cacheManager handles the parameter caching
      */
     SecretsProvider(CacheManager cacheManager) {
-        super(cacheManager);
+        this(cacheManager, Builder.createClient());
     }
 
     /**
@@ -135,6 +136,11 @@ public class SecretsProvider extends BaseProvider {
         return this;
     }
 
+    // For test purpose only
+    SecretsManagerClient getClient() {
+        return client;
+    }
+
     /**
      * Create a builder that can be used to configure and create a {@link SecretsProvider}.
      *
@@ -161,19 +167,7 @@ public class SecretsProvider extends BaseProvider {
             }
             SecretsProvider provider;
             if (client == null) {
-                SecretsManagerClientBuilder secretsManagerClientBuilder = SecretsManagerClient.builder()
-                        .httpClientBuilder(UrlConnectionHttpClient.builder())
-                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
-
-                // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-                // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-                // fall back to the default provider chain if the mode is anything other than on-demand.
-                String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                    secretsManagerClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-                }
-
-                client = secretsManagerClientBuilder.build();
+                client = createClient();
             }
 
             provider = new SecretsProvider(cacheManager, client);
@@ -194,6 +188,22 @@ public class SecretsProvider extends BaseProvider {
         public Builder withClient(SecretsManagerClient client) {
             this.client = client;
             return this;
+        }
+
+        private static SecretsManagerClient createClient() {
+            SecretsManagerClientBuilder secretsManagerClientBuilder = SecretsManagerClient.builder()
+                    .httpClientBuilder(UrlConnectionHttpClient.builder())
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
+
+            // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
+            // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
+            // fall back to the default provider chain if the mode is anything other than on-demand.
+            String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
+            if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
+                secretsManagerClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
+            }
+
+            return secretsManagerClientBuilder.build();
         }
 
         /**
