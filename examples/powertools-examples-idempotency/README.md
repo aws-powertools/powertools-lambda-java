@@ -1,21 +1,20 @@
 # Idempotency
 
 This project contains an example of Lambda function using the idempotency module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/idempotency/).
+The example exposes a HTTP POST endpoint. When the user sends the address of a webpage to it, the endpoint fetches the contents of the URL and returns them to the user:
+
+```bash
+ curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/helloidem/ -H "Content-Type: application/json" -d '{"address": "https://checkip.amazonaws.com"}'
+```
+
+this should return the contents of the webpage, for instance:
+```json
+{ "message": "hello world", "location": "123.123.123.1" }
+```
+
+Check out [App.java](src/main/java/helloworld/App.java) to see how it works!
 
 ## Deploy the sample application
 
-This sample is based on Serverless Application Model (SAM) and you can use the SAM Command Line Interface (SAM CLI) to build it and deploy it to AWS.
-
-To use the SAM CLI, you need the following tools.
-
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* Java11 - [Install the Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
-* Maven - [Install Maven](https://maven.apache.org/install.html)
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
-
-To build and deploy your application for the first time, run the following in your shell:
-
-```bash
-Coreutilities$ sam build
-Coreutilities$ sam deploy --guided
-```
+This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
+started with SAM in [the examples directory](../README.md)
