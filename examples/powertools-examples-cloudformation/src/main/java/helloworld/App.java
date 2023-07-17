@@ -31,7 +31,7 @@ public class App extends AbstractCustomResourceHandler {
 
     /**
      * This method is invoked when CloudFormation Creates the Custom Resource.
-     * The method creates an Amazon S3 Bucket with the provided `BucketName`
+     * In this example, the method creates an Amazon S3 Bucket with the provided `BucketName`
      *
      * @param cloudFormationCustomResourceEvent Create Event from CloudFormation
      * @param context                           Lambda Context
@@ -60,7 +60,7 @@ public class App extends AbstractCustomResourceHandler {
 
     /**
      * This method is invoked when CloudFormation Updates the Custom Resource.
-     * The method creates an Amazon S3 Bucket with the provided `BucketName`, if the `BucketName` differs from the previous `BucketName`
+     * In this example, the method creates an Amazon S3 Bucket with the provided `BucketName`, if the `BucketName` differs from the previous `BucketName` (for initial creation)
      *
      * @param cloudFormationCustomResourceEvent Update Event from CloudFormation
      * @param context                           Lambda Context

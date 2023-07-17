@@ -12,10 +12,6 @@ Globals:
 Parameters:
   BucketNameParam:
     Type: String
-    Default: sample-bucket-name-20230307-abc123
-  RetentionDaysParam:
-    Type: Number
-    Default: 10
 
 Resources:
   HelloWorldCustomResource:
@@ -23,7 +19,6 @@ Resources:
     Properties:
       ServiceToken: !GetAtt HelloWorldFunction.Arn
       BucketName: !Ref BucketNameParam
-      RetentionDays: !Ref RetentionDaysParam
 
   HelloWorldFunction:
     Type: AWS::Serverless::Function

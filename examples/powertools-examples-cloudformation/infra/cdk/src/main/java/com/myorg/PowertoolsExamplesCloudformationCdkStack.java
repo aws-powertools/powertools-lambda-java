@@ -75,20 +75,10 @@ public class PowertoolsExamplesCloudformationCdkStack extends Stack {
                         "s3:DeleteBucket"))
                 .resources(singletonList("*")).build()));
 
-        CfnParameter bucketName = CfnParameter.Builder
-                .create(this, "BucketNameParam")
-                .type("String")
-                .defaultValue(SAMPLE_BUCKET_NAME)
-                .build();
-        CfnParameter retentionDays = CfnParameter.Builder.create(this, "RetentionDaysParam")
-                .type("Number")
-                .defaultValue(10)
-                .build();
-
+        String bucketName = (String) this.getNode().tryGetContext("BucketNameParam");
 
         Map<String, Serializable> crProperties = new HashMap<>();
-        crProperties.put("BucketName", bucketName.getValueAsString());
-        crProperties.put("RetentionDays", retentionDays.getValueAsNumber());
+        crProperties.put("BucketName", bucketName);
         CustomResource.Builder
                 .create(this, "HelloWorldCustomResource")
                 .serviceToken(helloWorldFunction.getFunctionArn())
