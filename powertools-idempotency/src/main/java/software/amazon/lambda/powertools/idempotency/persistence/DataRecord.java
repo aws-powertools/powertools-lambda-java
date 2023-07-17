@@ -26,9 +26,30 @@ import java.util.OptionalLong;
 public class DataRecord {
     private final String idempotencyKey;
     private final String status;
+
+    /**
+     * This field is controlling how long the result of the idempotent
+     * event is cached. It is stored in _seconds since epoch_.
+     *
+     * DynamoDB's TTL mechanism is used to remove the record once the
+     * expiry has been reached, and subsequent execution of the request
+     * will be permitted. The user must configure this on their table.
+     */
     private final long expiryTimestamp;
     private final String responseData;
     private final String payloadHash;
+
+    /**
+     * The in-progress field is set to the remaining lambda execution time
+     * when the record is created.
+     * This field is stored in _milliseconds since epoch_.
+     *
+     * This ensures that:
+     *
+     * 1/ other concurrently executing requests are blocked from starting
+     * 2/ if a lambda times out, subsequent requests will be allowed again, despite
+     *     the fact that the idempotency record is already in the table
+     */
     private final OptionalLong inProgressExpiryTimestamp;
 
     public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData, String payloadHash) {
