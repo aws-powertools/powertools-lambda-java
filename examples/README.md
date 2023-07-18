@@ -1,11 +1,20 @@
-## aws-lambda-powertools-examples
+# Lambda Powertools for Java Examples 
 
 This directory holds example projects demoing different components of the Powertools for AWS Lambda (Java).
 Each example can be copied from its subdirectory and used independently of the rest of this repository.
 
-### Working with AWS Serverless Application Model (SAM) Examples
+## The Examples
+
+* [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules 
+* [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
+* [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
+* [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
+* [powertools-examples-sqs](powertools-examples-sqs) - Processes SQS batch requests
+* [powertools-examples-validation](powertools-examples-validation) - Uses the validation module to validate user requests received via API Gateway
+
+## Working with AWS Serverless Application Model (SAM) Examples
 Many of the examples use [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/) (SAM). To get started
-with them, you can use the SAM Command Line Interface (SAM CLI) to build it and deploy an example to AWS.
+with them, you can use the SAM Command Line Interface (SAM CLI) to build it and deploy an example to AWS. 
 
 To use the SAM CLI, you need the following tools.
 
@@ -13,6 +22,12 @@ To use the SAM CLI, you need the following tools.
 * Java11 - [Install the Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
 * Maven - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+
+To learn more about SAM, 
+[check out the developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli.html).
+You can use the CLI to [test events locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-invoke.html),
+and [run the application locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-start-api.html),
+amongst other things.
 
 To build and deploy an example application for the first time, run the following in your shell:
 
@@ -34,3 +49,13 @@ The first command will build the source of your application. The second command 
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
+
+### SAM - Other Tools 
+
+If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
+The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
+
+* [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
+* [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
+* [VS Code](https://docs.aws.amazon.com/toolkit-for-vscode/latest/userguide/welcome.html)
+* [Visual Studio](https://docs.aws.amazon.com/toolkit-for-visual-studio/latest/user-guide/welcome.html)
