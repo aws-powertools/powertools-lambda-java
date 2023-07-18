@@ -13,15 +13,14 @@
  */
 package software.amazon.lambda.powertools.idempotency.persistence;
 
-import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-
 import java.time.Instant;
 import java.util.Objects;
-import java.util.OptionalInt;
 import java.util.OptionalLong;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 
 /**
- * Data Class for idempotency records. This is actually the item that will be stored in the persistence layer.
+ * Data Class for idempotency records. This is actually the item that will be stored in the
+ * persistence layer.
  */
 public class DataRecord {
     private final String idempotencyKey;
@@ -31,7 +30,12 @@ public class DataRecord {
     private final String payloadHash;
     private final OptionalLong inProgressExpiryTimestamp;
 
-    public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData, String payloadHash) {
+    public DataRecord(
+            String idempotencyKey,
+            Status status,
+            long expiryTimestamp,
+            String responseData,
+            String payloadHash) {
         this.idempotencyKey = idempotencyKey;
         this.status = status.toString();
         this.expiryTimestamp = expiryTimestamp;
@@ -40,7 +44,13 @@ public class DataRecord {
         this.inProgressExpiryTimestamp = OptionalLong.empty();
     }
 
-    public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData, String payloadHash, OptionalLong inProgressExpiryTimestamp) {
+    public DataRecord(
+            String idempotencyKey,
+            Status status,
+            long expiryTimestamp,
+            String responseData,
+            String payloadHash,
+            OptionalLong inProgressExpiryTimestamp) {
         this.idempotencyKey = idempotencyKey;
         this.status = status.toString();
         this.expiryTimestamp = expiryTimestamp;
@@ -54,7 +64,8 @@ public class DataRecord {
     }
 
     /**
-     * Check if data record is expired (based on expiration configured in the {@link IdempotencyConfig})
+     * Check if data record is expired (based on expiration configured in the {@link
+     * IdempotencyConfig})
      *
      * @return Whether the record is currently expired or not
      */
@@ -104,17 +115,19 @@ public class DataRecord {
         return Objects.hash(idempotencyKey, status, expiryTimestamp, responseData, payloadHash);
     }
 
-
     /**
      * Status of the record:
+     *
      * <ul>
-     *  <li>INPROGRESS: record initialized when function starts</li>
-     *  <li>COMPLETED: record updated with the result of the function when it ends</li>
-     *  <li>EXPIRED: record expired, idempotency will not happen</li>
+     *   <li>INPROGRESS: record initialized when function starts
+     *   <li>COMPLETED: record updated with the result of the function when it ends
+     *   <li>EXPIRED: record expired, idempotency will not happen
      * </ul>
      */
     public enum Status {
-        INPROGRESS("INPROGRESS"), COMPLETED("COMPLETED"), EXPIRED("EXPIRED");
+        INPROGRESS("INPROGRESS"),
+        COMPLETED("COMPLETED"),
+        EXPIRED("EXPIRED");
 
         private final String status;
 

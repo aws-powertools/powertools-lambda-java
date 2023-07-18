@@ -13,13 +13,17 @@
  */
 package software.amazon.lambda.powertools.idempotency.internal;
 
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+
+import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
-import com.amazonaws.services.lambda.runtime.Context;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyKey;
@@ -27,25 +31,20 @@ import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
-
 /**
- * Aspect that handles the {@link Idempotent} annotation.
- * It uses the {@link IdempotencyHandler} to actually do the job.
+ * Aspect that handles the {@link Idempotent} annotation. It uses the {@link IdempotencyHandler} to
+ * actually do the job.
  */
 @Aspect
 public class IdempotentAspect {
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(idempotent)")
-    public void callAt(Idempotent idempotent) {
-    }
+    public void callAt(Idempotent idempotent) {}
 
-    @Around(value = "callAt(idempotent) && execution(@Idempotent * *.*(..))", argNames = "pjp,idempotent")
-    public Object around(ProceedingJoinPoint pjp,
-                         Idempotent idempotent) throws Throwable {
+    @Around(
+            value = "callAt(idempotent) && execution(@Idempotent * *.*(..))",
+            argNames = "pjp,idempotent")
+    public Object around(ProceedingJoinPoint pjp, Idempotent idempotent) throws Throwable {
 
         String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
         if (idempotencyDisabledEnv != null && !idempotencyDisabledEnv.equalsIgnoreCase("false")) {
@@ -54,13 +53,15 @@ public class IdempotentAspect {
 
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
         if (method.getReturnType().equals(void.class)) {
-            throw new IdempotencyConfigurationException("The annotated method doesn't return anything. Unable to perform idempotency on void return type");
+            throw new IdempotencyConfigurationException(
+                    "The annotated method doesn't return anything. Unable to perform idempotency on void return type");
         }
 
         boolean isHandler = placedOnRequestHandler(pjp);
         JsonNode payload = getPayload(pjp, method, isHandler);
         if (payload == null) {
-            throw new IdempotencyConfigurationException("Unable to get payload from the method. Ensure there is at least one parameter or that you use @IdempotencyKey");
+            throw new IdempotencyConfigurationException(
+                    "Unable to get payload from the method. Ensure there is at least one parameter or that you use @IdempotencyKey");
         }
 
         Context lambdaContext;
@@ -70,12 +71,14 @@ public class IdempotentAspect {
             lambdaContext = Idempotency.getInstance().getConfig().getLambdaContext();
         }
 
-        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(pjp, method.getName(), payload, lambdaContext);
+        IdempotencyHandler idempotencyHandler =
+                new IdempotencyHandler(pjp, method.getName(), payload, lambdaContext);
         return idempotencyHandler.handle();
     }
 
     /**
      * Retrieve the payload from the annotated method parameters
+     *
      * @param pjp joinPoint
      * @param method the annotated method
      * @return the payload used for idempotency

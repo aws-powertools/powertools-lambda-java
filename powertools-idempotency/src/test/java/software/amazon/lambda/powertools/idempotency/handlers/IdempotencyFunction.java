@@ -1,9 +1,29 @@
+/*
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package software.amazon.lambda.powertools.idempotency.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -13,22 +33,16 @@ import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-public class IdempotencyFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    private final static Logger LOG = LogManager.getLogger();
+public class IdempotencyFunction
+        implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    private static final Logger LOG = LogManager.getLogger();
 
     public boolean handlerExecuted = false;
 
     public IdempotencyFunction(DynamoDbClient client) {
         // we need to initialize idempotency configuration before the handleRequest method is called
-        Idempotency.config().withConfig(
+        Idempotency.config()
+                .withConfig(
                         IdempotencyConfig.builder()
                                 .withEventKeyJMESPath("powertools_json(body).address")
                                 .build())
@@ -36,12 +50,13 @@ public class IdempotencyFunction implements RequestHandler<APIGatewayProxyReques
                         DynamoDBPersistenceStore.builder()
                                 .withTableName("idempotency_table")
                                 .withDynamoDbClient(client)
-                                .build()
-                ).configure();
+                                .build())
+                .configure();
     }
 
     @Idempotent
-    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+    public APIGatewayProxyResponseEvent handleRequest(
+            final APIGatewayProxyRequestEvent input, final Context context) {
         handlerExecuted = true;
         Map<String, String> headers = new HashMap<>();
 
@@ -50,22 +65,25 @@ public class IdempotencyFunction implements RequestHandler<APIGatewayProxyReques
         headers.put("Access-Control-Allow-Methods", "GET, OPTIONS");
         headers.put("Access-Control-Allow-Headers", "*");
 
-        APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
-                .withHeaders(headers);
+        APIGatewayProxyResponseEvent response =
+                new APIGatewayProxyResponseEvent().withHeaders(headers);
         try {
-            String address = JsonConfig.get().getObjectMapper().readTree(input.getBody()).get("address").asText();
+            String address =
+                    JsonConfig.get()
+                            .getObjectMapper()
+                            .readTree(input.getBody())
+                            .get("address")
+                            .asText();
             final String pageContents = this.getPageContents(address);
-            String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
+            String output =
+                    String.format(
+                            "{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
             LOG.debug("ip is {}", pageContents);
-            return response
-                    .withStatusCode(200)
-                    .withBody(output);
+            return response.withStatusCode(200).withBody(output);
 
         } catch (IOException e) {
-            return response
-                    .withBody("{}")
-                    .withStatusCode(500);
+            return response.withBody("{}").withStatusCode(500);
         }
     }
 

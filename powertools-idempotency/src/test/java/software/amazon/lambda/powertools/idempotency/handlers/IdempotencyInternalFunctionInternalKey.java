@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -20,7 +20,8 @@ import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 
 /**
- * Simple Lambda function with @{@link Idempotent} annotation on a sub method (not the handleRequest one)
+ * Simple Lambda function with @{@link Idempotent} annotation on a sub method (not the handleRequest
+ * one)
  */
 public class IdempotencyInternalFunctionInternalKey implements RequestHandler<Product, Basket> {
 

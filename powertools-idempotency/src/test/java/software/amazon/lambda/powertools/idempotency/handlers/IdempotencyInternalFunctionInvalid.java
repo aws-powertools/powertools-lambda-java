@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -20,9 +20,9 @@ import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 
 /**
- * Simple Lambda function with @{@link Idempotent} annotation a sub method.<br/>
- * This one is invalid as there are two parameters and <code>@IdempotencyKey</code>
- * is not used to specify which one will be used as a key for persistence.
+ * Simple Lambda function with @{@link Idempotent} annotation a sub method.<br>
+ * This one is invalid as there are two parameters and <code>@IdempotencyKey</code> is not used to
+ * specify which one will be used as a key for persistence.
  */
 public class IdempotencyInternalFunctionInvalid implements RequestHandler<Product, Basket> {
 
@@ -33,9 +33,8 @@ public class IdempotencyInternalFunctionInvalid implements RequestHandler<Produc
 
     @Idempotent
     private Basket createBasket(String magicProduct, Product p) {
-        Basket b =  new Basket(p);
+        Basket b = new Basket(p);
         b.add(new Product(0, magicProduct, 0));
         return b;
     }
-
 }

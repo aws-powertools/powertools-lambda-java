@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2022 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -21,14 +21,15 @@ import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 
 /**
- * Simple Lambda function with @{@link Idempotent} annotation a sub method.<br/>
- * This one is invalid because the annotated method return type is void, thus we cannot store any response.
+ * Simple Lambda function with @{@link Idempotent} annotation a sub method.<br>
+ * This one is invalid because the annotated method return type is void, thus we cannot store any
+ * response.
  */
 public class IdempotencyInternalFunctionVoid implements RequestHandler<Product, Basket> {
 
     @Override
     public Basket handleRequest(Product input, Context context) {
-        Basket b =  new Basket(input);
+        Basket b = new Basket(input);
         addProduct("fake", b);
         return b;
     }
@@ -37,5 +38,4 @@ public class IdempotencyInternalFunctionVoid implements RequestHandler<Product, 
     private void addProduct(@IdempotencyKey String productName, Basket b) {
         b.add(new Product(0, productName, 0));
     }
-
 }

@@ -19,9 +19,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * &#64;IdempotencyKey is used to signal that a method parameter is used as a key for idempotency.<br/>
- * Must be used in conjunction with the &#64;Idempotency annotation.<br/>
- * Example:<br/>
+ * &#64;IdempotencyKey is used to signal that a method parameter is used as a key for idempotency.
+ * <br>
+ * Must be used in conjunction with the &#64;Idempotency annotation.<br>
+ * Example:<br>
+ *
  * <pre>
  *     &#64;Idempotent
  *     private MyObject subMethod(String param1, @IdempotencyKey String param2) {
@@ -29,9 +31,9 @@ import java.lang.annotation.Target;
  *         return something;
  *     }
  * </pre>
+ *
  * Note: This annotation is not needed when the method only has one parameter.
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PARAMETER)
-public @interface IdempotencyKey {
-}
+public @interface IdempotencyKey {}

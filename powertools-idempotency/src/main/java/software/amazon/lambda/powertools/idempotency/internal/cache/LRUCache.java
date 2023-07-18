@@ -17,8 +17,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Implementation of a simple LRU Cache based on a {@link LinkedHashMap}
- * See <a href="https://stackoverflow.com/a/6400874/270653">here</a>.
+ * Implementation of a simple LRU Cache based on a {@link LinkedHashMap} See <a
+ * href="https://stackoverflow.com/a/6400874/270653">here</a>.
+ *
  * @param <K> Type of the keys
  * @param <V> Types of the values
  */

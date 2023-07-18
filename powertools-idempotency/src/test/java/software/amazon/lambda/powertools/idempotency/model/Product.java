@@ -22,8 +22,7 @@ public class Product {
 
     private double price;
 
-    public Product() {
-    }
+    public Product() {}
 
     public Product(long id, String name, double price) {
         this.id = id;
@@ -60,7 +59,9 @@ public class Product {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return id == product.id && Double.compare(product.price, price) == 0 && Objects.equals(name, product.name);
+        return id == product.id
+                && Double.compare(product.price, price) == 0
+                && Objects.equals(name, product.name);
     }
 
     @Override

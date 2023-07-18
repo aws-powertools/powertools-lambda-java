@@ -13,6 +13,19 @@
  */
 package software.amazon.lambda.powertools.idempotency.persistence;
 
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.ON_DEMAND;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
+
+import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.OptionalLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
@@ -25,20 +38,6 @@ import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
-
-import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.ON_DEMAND;
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
  * DynamoDB version of the {@link PersistenceStore}. Will store idempotency data in DynamoDB.<br>
@@ -60,19 +59,18 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
     private final String validationAttr;
     private final DynamoDbClient dynamoDbClient;
 
-    /**
-     * Private: use the {@link Builder} to instantiate a new {@link DynamoDBPersistenceStore}
-     */
-    private DynamoDBPersistenceStore(String tableName,
-                                     String keyAttr,
-                                     String staticPkValue,
-                                     String sortKeyAttr,
-                                     String expiryAttr,
-                                     String inProgressExpiryAttr,
-                                     String statusAttr,
-                                     String dataAttr,
-                                     String validationAttr,
-                                     DynamoDbClient client) {
+    /** Private: use the {@link Builder} to instantiate a new {@link DynamoDBPersistenceStore} */
+    private DynamoDBPersistenceStore(
+            String tableName,
+            String keyAttr,
+            String staticPkValue,
+            String sortKeyAttr,
+            String expiryAttr,
+            String inProgressExpiryAttr,
+            String statusAttr,
+            String dataAttr,
+            String validationAttr,
+            DynamoDbClient client) {
         this.tableName = tableName;
         this.keyAttr = keyAttr;
         this.staticPkValue = staticPkValue;
@@ -87,16 +85,20 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             this.dynamoDbClient = client;
         } else {
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
-            if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
-                DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
-                        .httpClient(UrlConnectionHttpClient.builder().build())
-                        .region(Region.of(System.getenv(AWS_REGION_ENV)));
+            if (idempotencyDisabledEnv == null
+                    || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
+                DynamoDbClientBuilder ddbBuilder =
+                        DynamoDbClient.builder()
+                                .httpClient(UrlConnectionHttpClient.builder().build())
+                                .region(Region.of(System.getenv(AWS_REGION_ENV)));
 
                 // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-                // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-                // fall back to the default provider chain if the mode is anything other than on-demand.
+                // when using snap-start mode, the env var creds provider isn't used and causes a
+                // fatal error if set
+                // fall back to the default provider chain if the mode is anything other than
+                // on-demand.
                 String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(ON_DEMAND)) {
+                if (initializationType != null && initializationType.equals(ON_DEMAND)) {
                     ddbBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
 
@@ -111,13 +113,13 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
 
     @Override
     public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
-        GetItemResponse response = dynamoDbClient.getItem(
-                GetItemRequest.builder()
-                        .tableName(tableName)
-                        .key(getKey(idempotencyKey))
-                        .consistentRead(true)
-                        .build()
-        );
+        GetItemResponse response =
+                dynamoDbClient.getItem(
+                        GetItemRequest.builder()
+                                .tableName(tableName)
+                                .key(getKey(idempotencyKey))
+                                .consistentRead(true)
+                                .build());
 
         if (!response.hasItem()) {
             throw new IdempotencyItemNotFoundException(idempotencyKey);
@@ -127,91 +129,132 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
     }
 
     @Override
-    public void putRecord(DataRecord record, Instant now) throws IdempotencyItemAlreadyExistsException {
+    public void putRecord(DataRecord record, Instant now)
+            throws IdempotencyItemAlreadyExistsException {
         Map<String, AttributeValue> item = new HashMap<>(getKey(record.getIdempotencyKey()));
-        item.put(this.expiryAttr, AttributeValue.builder().n(String.valueOf(record.getExpiryTimestamp())).build());
-        item.put(this.statusAttr, AttributeValue.builder().s(record.getStatus().toString()).build());
+        item.put(
+                this.expiryAttr,
+                AttributeValue.builder().n(String.valueOf(record.getExpiryTimestamp())).build());
+        item.put(
+                this.statusAttr, AttributeValue.builder().s(record.getStatus().toString()).build());
 
         if (record.getInProgressExpiryTimestamp().isPresent()) {
-            item.put(this.inProgressExpiryAttr, AttributeValue.builder().n(String.valueOf(record.getInProgressExpiryTimestamp().getAsLong())).build());
+            item.put(
+                    this.inProgressExpiryAttr,
+                    AttributeValue.builder()
+                            .n(String.valueOf(record.getInProgressExpiryTimestamp().getAsLong()))
+                            .build());
         }
 
         if (this.payloadValidationEnabled) {
-            item.put(this.validationAttr, AttributeValue.builder().s(record.getPayloadHash()).build());
+            item.put(
+                    this.validationAttr,
+                    AttributeValue.builder().s(record.getPayloadHash()).build());
         }
 
         try {
             LOG.debug("Putting record for idempotency key: {}", record.getIdempotencyKey());
 
-            Map<String, String> expressionAttributeNames = Stream.of(
-                            new AbstractMap.SimpleEntry<>("#id", this.keyAttr),
-                            new AbstractMap.SimpleEntry<>("#expiry", this.expiryAttr),
-                            new AbstractMap.SimpleEntry<>("#in_progress_expiry", this.inProgressExpiryAttr),
-                            new AbstractMap.SimpleEntry<>("#status", this.statusAttr))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            Map<String, String> expressionAttributeNames =
+                    Stream.of(
+                                    new AbstractMap.SimpleEntry<>("#id", this.keyAttr),
+                                    new AbstractMap.SimpleEntry<>("#expiry", this.expiryAttr),
+                                    new AbstractMap.SimpleEntry<>(
+                                            "#in_progress_expiry", this.inProgressExpiryAttr),
+                                    new AbstractMap.SimpleEntry<>("#status", this.statusAttr))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-            Map<String, AttributeValue> expressionAttributeValues = Stream.of(
-                    new AbstractMap.SimpleEntry<>(":now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()),
-                    new AbstractMap.SimpleEntry<>(":inprogress", AttributeValue.builder().s(INPROGRESS.toString()).build())
-            ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
+            Map<String, AttributeValue> expressionAttributeValues =
+                    Stream.of(
+                                    new AbstractMap.SimpleEntry<>(
+                                            ":now",
+                                            AttributeValue.builder()
+                                                    .n(String.valueOf(now.getEpochSecond()))
+                                                    .build()),
+                                    new AbstractMap.SimpleEntry<>(
+                                            ":inprogress",
+                                            AttributeValue.builder()
+                                                    .s(INPROGRESS.toString())
+                                                    .build()))
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             dynamoDbClient.putItem(
                     PutItemRequest.builder()
                             .tableName(tableName)
                             .item(item)
-                            .conditionExpression("attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now AND #status = :inprogress)")
+                            .conditionExpression(
+                                    "attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now AND #status = :inprogress)")
                             .expressionAttributeNames(expressionAttributeNames)
                             .expressionAttributeValues(expressionAttributeValues)
-                            .build()
-            );
+                            .build());
         } catch (ConditionalCheckFailedException e) {
-            LOG.debug("Failed to put record for already existing idempotency key: {}", record.getIdempotencyKey());
-            throw new IdempotencyItemAlreadyExistsException("Failed to put record for already existing idempotency key: " + record.getIdempotencyKey(), e);
+            LOG.debug(
+                    "Failed to put record for already existing idempotency key: {}",
+                    record.getIdempotencyKey());
+            throw new IdempotencyItemAlreadyExistsException(
+                    "Failed to put record for already existing idempotency key: "
+                            + record.getIdempotencyKey(),
+                    e);
         }
     }
 
     @Override
     public void updateRecord(DataRecord record) {
         LOG.debug("Updating record for idempotency key: {}", record.getIdempotencyKey());
-        String updateExpression = "SET #response_data = :response_data, #expiry = :expiry, #status = :status";
+        String updateExpression =
+                "SET #response_data = :response_data, #expiry = :expiry, #status = :status";
 
-        Map<String, String> expressionAttributeNames = Stream.of(
-                        new AbstractMap.SimpleEntry<>("#response_data", this.dataAttr),
-                        new AbstractMap.SimpleEntry<>("#expiry", this.expiryAttr),
-                        new AbstractMap.SimpleEntry<>("#status", this.statusAttr))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, String> expressionAttributeNames =
+                Stream.of(
+                                new AbstractMap.SimpleEntry<>("#response_data", this.dataAttr),
+                                new AbstractMap.SimpleEntry<>("#expiry", this.expiryAttr),
+                                new AbstractMap.SimpleEntry<>("#status", this.statusAttr))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        Map<String, AttributeValue> expressionAttributeValues = Stream.of(
-                        new AbstractMap.SimpleEntry<>(":response_data", AttributeValue.builder().s(record.getResponseData()).build()),
-                        new AbstractMap.SimpleEntry<>(":expiry", AttributeValue.builder().n(String.valueOf(record.getExpiryTimestamp())).build()),
-                        new AbstractMap.SimpleEntry<>(":status", AttributeValue.builder().s(record.getStatus().toString()).build()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        Map<String, AttributeValue> expressionAttributeValues =
+                Stream.of(
+                                new AbstractMap.SimpleEntry<>(
+                                        ":response_data",
+                                        AttributeValue.builder()
+                                                .s(record.getResponseData())
+                                                .build()),
+                                new AbstractMap.SimpleEntry<>(
+                                        ":expiry",
+                                        AttributeValue.builder()
+                                                .n(String.valueOf(record.getExpiryTimestamp()))
+                                                .build()),
+                                new AbstractMap.SimpleEntry<>(
+                                        ":status",
+                                        AttributeValue.builder()
+                                                .s(record.getStatus().toString())
+                                                .build()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         if (payloadValidationEnabled) {
             updateExpression += ", #validation_key = :validation_key";
             expressionAttributeNames.put("#validation_key", this.validationAttr);
-            expressionAttributeValues.put(":validation_key", AttributeValue.builder().s(record.getPayloadHash()).build());
+            expressionAttributeValues.put(
+                    ":validation_key", AttributeValue.builder().s(record.getPayloadHash()).build());
         }
 
-        dynamoDbClient.updateItem(UpdateItemRequest.builder()
-                .tableName(tableName)
-                .key(getKey(record.getIdempotencyKey()))
-                .updateExpression(updateExpression)
-                .expressionAttributeNames(expressionAttributeNames)
-                .expressionAttributeValues(expressionAttributeValues)
-                .build()
-        );
+        dynamoDbClient.updateItem(
+                UpdateItemRequest.builder()
+                        .tableName(tableName)
+                        .key(getKey(record.getIdempotencyKey()))
+                        .updateExpression(updateExpression)
+                        .expressionAttributeNames(expressionAttributeNames)
+                        .expressionAttributeValues(expressionAttributeValues)
+                        .build());
     }
 
     @Override
     public void deleteRecord(String idempotencyKey) {
         LOG.debug("Deleting record for idempotency key: {}", idempotencyKey);
-        dynamoDbClient.deleteItem(DeleteItemRequest.builder()
-                .tableName(tableName)
-                .key(getKey(idempotencyKey))
-                .build()
-        );
+        dynamoDbClient.deleteItem(
+                DeleteItemRequest.builder()
+                        .tableName(tableName)
+                        .key(getKey(idempotencyKey))
+                        .build());
     }
 
     /**
@@ -241,12 +284,15 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         // data and validation payload may be null
         AttributeValue data = item.get(this.dataAttr);
         AttributeValue validation = item.get(this.validationAttr);
-        return new DataRecord(item.get(sortKeyAttr != null ? sortKeyAttr: keyAttr).s(),
+        return new DataRecord(
+                item.get(sortKeyAttr != null ? sortKeyAttr : keyAttr).s(),
                 DataRecord.Status.valueOf(item.get(this.statusAttr).s()),
                 Long.parseLong(item.get(this.expiryAttr).n()),
                 data != null ? data.s() : null,
                 validation != null ? validation.s() : null,
-                item.get(this.inProgressExpiryAttr) != null ? OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n())) : OptionalLong.empty());
+                item.get(this.inProgressExpiryAttr) != null
+                        ? OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n()))
+                        : OptionalLong.empty());
     }
 
     public static Builder builder() {
@@ -254,9 +300,9 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
     }
 
     /**
-     * Use this builder to get an instance of {@link DynamoDBPersistenceStore}.<br/>
-     * With this builder you can configure the characteristics of the DynamoDB Table
-     * (name, key, sort key, and other field names).<br/>
+     * Use this builder to get an instance of {@link DynamoDBPersistenceStore}.<br>
+     * With this builder you can configure the characteristics of the DynamoDB Table (name, key,
+     * sort key, and other field names).<br>
      * You can also set a custom {@link DynamoDbClient} for further tuning.
      */
     public static class Builder {
@@ -264,7 +310,8 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
 
         private String tableName;
         private String keyAttr = "id";
-        private String staticPkValue = String.format("idempotency#%s", funcEnv != null ? funcEnv : "");
+        private String staticPkValue =
+                String.format("idempotency#%s", funcEnv != null ? funcEnv : "");
         private String sortKeyAttr;
         private String expiryAttr = "expiration";
 
@@ -275,8 +322,9 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         private DynamoDbClient dynamoDbClient;
 
         /**
-         * Initialize and return a new instance of {@link DynamoDBPersistenceStore}.<br/>
+         * Initialize and return a new instance of {@link DynamoDBPersistenceStore}.<br>
          * Example:<br>
+         *
          * <pre>
          *     DynamoDBPersistenceStore.builder().withTableName("idempotency_store").build();
          * </pre>
@@ -287,7 +335,17 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             if (StringUtils.isEmpty(tableName)) {
                 throw new IllegalArgumentException("Table name is not specified");
             }
-            return new DynamoDBPersistenceStore(tableName, keyAttr, staticPkValue, sortKeyAttr, expiryAttr, inProgressExpiryAttr, statusAttr, dataAttr, validationAttr, dynamoDbClient);
+            return new DynamoDBPersistenceStore(
+                    tableName,
+                    keyAttr,
+                    staticPkValue,
+                    sortKeyAttr,
+                    expiryAttr,
+                    inProgressExpiryAttr,
+                    statusAttr,
+                    dataAttr,
+                    validationAttr,
+                    dynamoDbClient);
         }
 
         /**
@@ -313,8 +371,8 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         }
 
         /**
-         * DynamoDB attribute value for partition key (optional), by default "idempotency#[function-name]".
-         * This will be used if the {@link #sortKeyAttr} is set.
+         * DynamoDB attribute value for partition key (optional), by default
+         * "idempotency#[function-name]". This will be used if the {@link #sortKeyAttr} is set.
          *
          * @param staticPkValue name of the partition key attribute in the table
          * @return the builder instance (to chain operations)
@@ -347,7 +405,8 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         }
 
         /**
-         * DynamoDB attribute name for in progress expiry timestamp (optional), by default "in_progress_expiration"
+         * DynamoDB attribute name for in progress expiry timestamp (optional), by default
+         * "in_progress_expiration"
          *
          * @param inProgressExpiryAttr name of the attribute in the table
          * @return the builder instance (to chain operations)
@@ -391,9 +450,9 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         }
 
         /**
-         * Custom {@link DynamoDbClient} used to query DynamoDB (optional).<br/>
-         * The default one uses {@link UrlConnectionHttpClient} as a http client and
-         * add com.amazonaws.xray.interceptors.TracingInterceptor (X-Ray) if available in the classpath.
+         * Custom {@link DynamoDbClient} used to query DynamoDB (optional).<br>
+         * The default one uses {@link UrlConnectionHttpClient} as a http client and add
+         * com.amazonaws.xray.interceptors.TracingInterceptor (X-Ray) if available in the classpath.
          *
          * @param dynamoDbClient the {@link DynamoDbClient} instance to use
          * @return the builder instance (to chain operations)

@@ -14,18 +14,19 @@
 package software.amazon.lambda.powertools.idempotency;
 
 import com.amazonaws.services.lambda.runtime.Context;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * &#64;Idempotent is used to signal that the annotated method is idempotent:<br/>
- * Calling this method one or multiple times with the same parameter will always return the same result.<br/>
- * This annotation can be placed on the
- * {@link com.amazonaws.services.lambda.runtime.RequestHandler#handleRequest(Object, Context)}
- * method of a Lambda function:<br/>
+ * &#64;Idempotent is used to signal that the annotated method is idempotent:<br>
+ * Calling this method one or multiple times with the same parameter will always return the same
+ * result.<br>
+ * This annotation can be placed on the {@link
+ * com.amazonaws.services.lambda.runtime.RequestHandler#handleRequest(Object, Context)} method of a
+ * Lambda function:<br>
+ *
  * <pre>
  *     &#64;Idempotent
  *     public String handleRequest(String event, Context ctx) {
@@ -33,11 +34,11 @@ import java.lang.annotation.Target;
  *         return something;
  *     }
  * </pre>
- * <br/>
- * It can also be placed on another method. In that case you may need to use the &#64;{@link IdempotencyKey}
+ *
+ * <br>
+ * It can also be placed on another method. In that case you may need to use the &#64;{@link
+ * IdempotencyKey}
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Idempotent {
-
-}
+public @interface Idempotent {}

@@ -29,10 +29,9 @@ public class Basket {
         this.products = products;
     }
 
-    public Basket() {
-    }
+    public Basket() {}
 
-    public Basket( Product ...p){
+    public Basket(Product... p) {
         products.addAll(Arrays.asList(p));
     }
 

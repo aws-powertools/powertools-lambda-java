@@ -15,10 +15,11 @@ package software.amazon.lambda.powertools.idempotency.exceptions;
 
 /**
  * Exception thrown when Idempotency is not well configured:
+ *
  * <ul>
- *     <li>An annotated method does not return anything</li>
- *     <li>An annotated method does not have parameters or more than one without
- *     the {@link software.amazon.lambda.powertools.idempotency.IdempotencyKey} annotation</li>
+ *   <li>An annotated method does not return anything
+ *   <li>An annotated method does not have parameters or more than one without the {@link
+ *       software.amazon.lambda.powertools.idempotency.IdempotencyKey} annotation
  * </ul>
  */
 public class IdempotencyConfigurationException extends RuntimeException {

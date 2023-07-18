@@ -18,15 +18,20 @@ import software.amazon.lambda.powertools.idempotency.persistence.BasePersistence
 
 /**
  * Holds the configuration for idempotency:
+ *
  * <ul>
- *     <li>The persistence layer to use for persisting the request and response of the function (mandatory).</li>
- *     <li>The general configuration for idempotency (optional, see {@link IdempotencyConfig.Builder} methods to see defaults values.</li>
+ *   <li>The persistence layer to use for persisting the request and response of the function
+ *       (mandatory).
+ *   <li>The general configuration for idempotency (optional, see {@link IdempotencyConfig.Builder}
+ *       methods to see defaults values.
  * </ul>
- * <br/>
- * Use it before the function handler ({@link com.amazonaws.services.lambda.runtime.RequestHandler#handleRequest(Object, Context)})
- * get called.
- * <br/>
+ *
+ * <br>
+ * Use it before the function handler ({@link
+ * com.amazonaws.services.lambda.runtime.RequestHandler#handleRequest(Object, Context)}) get called.
+ * <br>
  * Example:
+ *
  * <pre>
  *     Idempotency.config().withPersistenceStore(...).configure();
  * </pre>
@@ -35,8 +40,7 @@ public class Idempotency {
     private IdempotencyConfig config;
     private BasePersistenceStore persistenceStore;
 
-    private Idempotency() {
-    }
+    private Idempotency() {}
 
     public IdempotencyConfig getConfig() {
         return config;
@@ -44,7 +48,8 @@ public class Idempotency {
 
     public BasePersistenceStore getPersistenceStore() {
         if (persistenceStore == null) {
-            throw new IllegalStateException("Persistence Store is null, did you call 'configure()'?");
+            throw new IllegalStateException(
+                    "Persistence Store is null, did you call 'configure()'?");
         }
         return persistenceStore;
     }
@@ -58,7 +63,7 @@ public class Idempotency {
     }
 
     private static class Holder {
-        private final static Idempotency instance = new Idempotency();
+        private static final Idempotency instance = new Idempotency();
     }
 
     public static Idempotency getInstance() {
@@ -66,8 +71,8 @@ public class Idempotency {
     }
 
     /**
-     * Can be used in a method which is not the handler to capture the Lambda context,
-     * to calculate the remaining time before the invocation times out.
+     * Can be used in a method which is not the handler to capture the Lambda context, to calculate
+     * the remaining time before the invocation times out.
      *
      * @param lambdaContext
      */
@@ -90,11 +95,13 @@ public class Idempotency {
         private BasePersistenceStore store;
 
         /**
-         * Use this method after configuring persistence layer (mandatory) and idem potency configuration (optional)
+         * Use this method after configuring persistence layer (mandatory) and idem potency
+         * configuration (optional)
          */
         public void configure() {
             if (store == null) {
-                throw new IllegalStateException("Persistence Layer is null, configure one with 'withPersistenceStore()'");
+                throw new IllegalStateException(
+                        "Persistence Layer is null, configure one with 'withPersistenceStore()'");
             }
             if (config == null) {
                 config = IdempotencyConfig.builder().build();
@@ -113,6 +120,4 @@ public class Idempotency {
             return this;
         }
     }
-
-
 }
