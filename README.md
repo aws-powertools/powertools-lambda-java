@@ -36,7 +36,7 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
 </dependencies>
 ```
 
-Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project. A different configuration is need for projects on Java 8. 
+Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project. A different configuration is needed for projects on Java 8. 
 
 <details>
     <summary><b>Maven - Java 11 and newer</b></summary>
