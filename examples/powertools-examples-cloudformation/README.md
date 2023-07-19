@@ -7,20 +7,7 @@ This project contains an example of Lambda function using the CloudFormation mod
 This sample can be used either with the Serverless Application Model (SAM) or with CDK.
 
 ### Deploy with SAM CLI
-To use the SAM CLI, you need the following tools.
-
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* Java 8 - [Install Java 8](https://docs.aws.amazon.com/corretto/latest/corretto-8-ug/downloads-list.html)
-* Maven - [Install Maven](https://maven.apache.org/install.html)
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
-
-To build and deploy this application for the first time, run the following in your shell:
-
-```bash
-cd infra/sam
-sam build
-sam deploy --guided --parameter-overrides BucketNameParam=my-unique-bucket-20230717
-```
+To deploy it using the SAM CLI, check out the instructions for getting started in [the examples directory](../README.md)
 
 ### Deploy with CDK
 To use CDK you need the following tools.
