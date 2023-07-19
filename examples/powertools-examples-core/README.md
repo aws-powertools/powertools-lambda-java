@@ -40,7 +40,7 @@ and `ServerlessAirline`. The values in each of these are published by the code i
 You can also watch the trace information or log information using the SAM CLI:
 ```bash
 # Tail the logs
-sam logs --tail $MY_STACK_NAME
+sam logs --tail $MY_STACK
 
 # Tail the traces
 sam traces --tail
