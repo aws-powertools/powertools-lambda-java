@@ -11,6 +11,7 @@ Each example can be copied from its subdirectory and used independently of the r
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
 * [powertools-examples-sqs](powertools-examples-sqs) - Processes SQS batch requests
 * [powertools-examples-validation](powertools-examples-validation) - Uses the validation module to validate user requests received via API Gateway
+* [powertools-examples-cloudformation](powertools-examples-cloudformation) - Deploys a Cloudformation custom resource
 
 ## Working with AWS Serverless Application Model (SAM) Examples
 Many of the examples use [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/) (SAM). To get started

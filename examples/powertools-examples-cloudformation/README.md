@@ -1,4 +1,4 @@
-# Cloudformation Custom Resource Example
+# Lambda Powertools for Java - Cloudformation Custom Resource Example
 
 This project contains an example of Lambda function using the CloudFormation module of Powertools for AWS Lambda in Java. For more information on this module, please refer to the [documentation](https://awslabs.github.io/aws-lambda-powertools-java/utilities/custom_resources/).
 
