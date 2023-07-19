@@ -10,7 +10,10 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.16.1] - 2023-07-19
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
+* Fix: idempotency timeout bug (#1285) by @scottgerring
+* Fix: ParamManager cannot provide default SSM & Secrets providers (#1282) by @jeromevdl
+* Fix: Handle batch failures in FIFO queues correctly (#1183) by @scottgerring
+* Deps: Bump third party dependencies to the latest versions.
 
 
 ## [1.16.0] - 2023-06-29
