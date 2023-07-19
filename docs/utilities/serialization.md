@@ -234,14 +234,14 @@ It can also handle a collection of elements like the records of an SQS event:
 | `APIGatewayV2HTTPEvent`                           | `body`                                                    |      |
 | `SNSEvent`                                        | `Records[0].Sns.Message`                                  |      |
 | `SQSEvent`                                        | `Records[*].body`                                         | x    | 
- | `ScheduledEvent`                                  | `detail`                                                  |      |
- | `ApplicationLoadBalancerRequestEvent`             | `body`                                                    |      | 
- | `CloudWatchLogsEvent`                             | `powertools_base64_gzip(data)`                            |      | 
- | `CloudFormationCustomResourceEvent`               | `resourceProperties`                                      |      | 
- | `KinesisEvent`                                    | `Records[*].kinesis.powertools_base64(data)`              | x    | 
- | `KinesisFirehoseEvent`                            | `Records[*].powertools_base64(data)`                      | x    | 
- | `KafkaEvent`                                      | `records[*].values[*].powertools_base64(value)`           | x    | 
- | `ActiveMQEvent`                                   | `messages[*].powertools_base64(data)`                     | x    | 
+| `ScheduledEvent`                                  | `detail`                                                  |      |
+| `ApplicationLoadBalancerRequestEvent`             | `body`                                                    |      | 
+| `CloudWatchLogsEvent`                             | `powertools_base64_gzip(data)`                            |      | 
+| `CloudFormationCustomResourceEvent`               | `resourceProperties`                                      |      | 
+| `KinesisEvent`                                    | `Records[*].kinesis.powertools_base64(data)`              | x    | 
+| `KinesisFirehoseEvent`                            | `Records[*].powertools_base64(data)`                      | x    | 
+| `KafkaEvent`                                      | `records[*].values[*].powertools_base64(value)`           | x    | 
+| `ActiveMQEvent`                                   | `messages[*].powertools_base64(data)`                     | x    | 
 | `RabbitMQEvent`                                   | `rmqMessagesByQueue[*].values[*].powertools_base64(data)` | x    | 
 | `KinesisAnalyticsFirehoseInputPreprocessingEvent` | `Records[*].kinesis.powertools_base64(data)`              | x    | 
 | `KinesisAnalyticsStreamsInputPreprocessingEvent`  | `Records[*].kinesis.powertools_base64(data)`              | x    | 

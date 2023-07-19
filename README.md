@@ -13,24 +13,24 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
 
-* [maven](https://maven.apache.org/):
+#### Maven:
 ```xml
 <dependencies>
     ...
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
+        <version>1.16.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
+        <version>1.16.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.17.0-SNAPSHOT</version>
+        <version>1.16.0</version>
     </dependency>
     ...
 </dependencies>
@@ -38,6 +38,7 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
 
 And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project:
 
+For Java 11+, use the following:
 ```xml
 <build>
     <plugins>
@@ -78,11 +79,110 @@ And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambd
 </build>
 ```
 
+For Java 8, use the following:
+```xml
+<build>
+    <plugins>
+        ...
+        <plugin>
+             <groupId>org.codehaus.mojo</groupId>
+             <artifactId>aspectj-maven-plugin</artifactId>
+             <version>1.14.0</version>
+             <configuration>
+                 <source>1.8</source>
+                 <target>1.8</target>
+                 <complianceLevel>1.8</complianceLevel>
+                 <aspectLibraries>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-logging</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-tracing</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-metrics</artifactId>
+                     </aspectLibrary>
+                 </aspectLibraries>
+             </configuration>
+             <executions>
+                 <execution>
+                     <goals>
+                         <goal>compile</goal>
+                     </goals>
+                 </execution>
+             </executions>
+        </plugin>
+        ...
+    </plugins>
+</build>
+```
+#### gradle
+
+For Java 11+:
+
+    ```groovy
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11
+        targetCompatibility = 11
+    ```
+
+For Java8:
+
+    ```groovy
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    ```
+
+
 ## Example
 
 See the **[examples](examples)**  directory for example projects showcasing usage of different utilities.
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
+
+## How to support Powertools for AWS Lambda (Java)?
+
+### Becoming a reference customer
+
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (Java), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (Java) (become a reference)](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+
+The following companies, among others, use Powertools:
+
+* [Capital One](https://www.capitalone.com/)
+* [CPQi (Exadel Financial Services)](https://cpqi.com/)
+* [Europace AG](https://europace.de/)
 
 ## Credits
 

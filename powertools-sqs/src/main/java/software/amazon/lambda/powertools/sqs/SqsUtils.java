@@ -15,7 +15,9 @@ package software.amazon.lambda.powertools.sqs;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
 import software.amazon.payloadoffloading.PayloadS3Pointer;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
@@ -42,6 +45,9 @@ public final class SqsUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
     private static SqsClient client;
     private static S3Client s3Client;
+
+    // The attribute on an SQS-FIFO message used to record the message group ID
+    private static final String MESSAGE_GROUP_ID = "MessageGroupId";
 
     private SqsUtils() {
     }
@@ -490,19 +496,52 @@ public final class SqsUtils {
         }
 
         BatchContext batchContext = new BatchContext(client);
+        int offset = 0;
+        boolean failedBatch = false;
+        while (offset < event.getRecords().size() && !failedBatch) {
+            // Get the current message and advance to the next. Doing this here
+            // makes it easier for us to know where we are up to if we have to
+            // break out of here early.
+            SQSMessage message = event.getRecords().get(offset);
+            offset++;
 
-        for (SQSMessage message : event.getRecords()) {
+            // If the batch hasn't failed, try process the message
             try {
                 handlerReturn.add(handler.process(message));
                 batchContext.addSuccess(message);
             } catch (Exception e) {
+
+                // Record the failure
                 batchContext.addFailure(message, e);
+
+                // If we are trying to process a message that has a messageGroupId, we are on a FIFO queue. A failure
+                // now stops us from processing the rest of the batch; we break out of the loop leaving unprocessed
+                // messages in the queue
+                // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
+                String messageGroupId = message.getAttributes() != null ?
+                        message.getAttributes().get(MESSAGE_GROUP_ID) : null;
+                if (messageGroupId != null) {
+                    LOG.info("A message in a message batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
+                            , messageGroupId, message.getMessageId());
+                    failedBatch = true;
+                }
                 LOG.error("Encountered issue processing message: {}", message.getMessageId(), e);
             }
         }
 
-        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
+        // If we have a FIFO batch failure, unprocessed messages will remain on the queue
+        // past the failed message. We have to add these to the errors
+        if (offset < event.getRecords().size()) {
+            event.getRecords()
+                    .subList(offset, event.getRecords().size())
+                    .forEach(message -> {
+                        LOG.info("Skipping message {} as another message with a message group failed in this batch",
+                                message.getMessageId());
+                        batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
+                    });
+        }
 
+        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
         return handlerReturn;
     }
 

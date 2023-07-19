@@ -74,8 +74,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  */
 public class SSMProvider extends BaseProvider {
 
-    private SsmClient client;
-
+    private final SsmClient client;
     private boolean decrypt = false;
     private boolean recursive = false;
 
@@ -93,12 +92,13 @@ public class SSMProvider extends BaseProvider {
     }
 
     /**
-     * Constructor
+     * Constructor with only a CacheManager<br/>
      *
+     * Used in {@link ParamManager#createProvider(Class)}
      * @param cacheManager handles the parameter caching
      */
     SSMProvider(CacheManager cacheManager) {
-        super(cacheManager);
+        this(cacheManager, Builder.createClient());
     }
 
     /**
@@ -228,6 +228,11 @@ public class SSMProvider extends BaseProvider {
         decrypt = false;
     }
 
+    // For tests purpose only
+    SsmClient getClient() {
+        return client;
+    }
+
     /**
      * Create a builder that can be used to configure and create a {@link SSMProvider}.
      *
@@ -236,6 +241,7 @@ public class SSMProvider extends BaseProvider {
     public static SSMProvider.Builder builder() {
         return new SSMProvider.Builder();
     }
+
 
     static class Builder {
         private SsmClient client;
@@ -253,19 +259,7 @@ public class SSMProvider extends BaseProvider {
             }
             SSMProvider provider;
             if (client == null) {
-                SsmClientBuilder ssmClientBuilder = SsmClient.builder()
-                        .httpClientBuilder(UrlConnectionHttpClient.builder())
-                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
-
-                // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-                // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-                // fall back to the default provider chain if the mode is anything other than on-demand.
-                String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                    ssmClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-                }
-
-                client = ssmClientBuilder.build();
+                client = createClient();
             }
 
             provider = new SSMProvider(cacheManager, client);
@@ -286,6 +280,22 @@ public class SSMProvider extends BaseProvider {
         public SSMProvider.Builder withClient(SsmClient client) {
             this.client = client;
             return this;
+        }
+
+        private static SsmClient createClient() {
+            SsmClientBuilder ssmClientBuilder = SsmClient.builder()
+                    .httpClientBuilder(UrlConnectionHttpClient.builder())
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
+
+            // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
+            // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
+            // fall back to the default provider chain if the mode is anything other than on-demand.
+            String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
+            if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
+                ssmClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
+            }
+
+            return ssmClientBuilder.build();
         }
 
         /**
