@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="Lambda">
+            <PatternLayout>
+                <pattern>%d{dd MMM yyyy HH:mm:ss,SSS} [%p] &lt;%X{AWSRequestId}&gt; (%t) %c:%L: %m%n</pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Lambda"/>
+        </Root>
+        <Logger name="JsonLogger" level="INFO" additivity="false"/>
+        <Logger name="software.amazon.lambda.powertools" level="DEBUG"/>
+    </Loggers>
+</Configuration>

@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-examples</artifactId>
-    <version>1.17.0-SNAPSHOT</version>
+    <version>1.16.1</version>
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) library Examples</name>
@@ -21,6 +21,7 @@
         <module>powertools-examples-serialization</module>
         <module>powertools-examples-sqs</module>
         <module>powertools-examples-validation</module>
+        <module>powertools-examples-cloudformation</module>
     </modules>
 
     <!-- Don't deploy the examples -->
