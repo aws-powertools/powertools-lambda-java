@@ -56,7 +56,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
      *     <li>Second call (and next ones) will retrieve from the cache (if cache is enabled, which is by default) or from the store, the handler won't be called. Until the expiration happens (by default 1 hour).</li>
      * </ul>
      */
-    @Idempotent
+    @Idempotent // The magic is here!
     @Logging(logEvent = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
