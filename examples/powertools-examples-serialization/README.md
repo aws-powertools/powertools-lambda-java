@@ -56,7 +56,7 @@ For the SQS handler, we have to send a request to our queue. We can either const
 find it from the SQS section of the AWS console.
 
 ```bash
- aws sqs send-message --queue-url "https://sqs.[REGION].amazonaws.com/[ACCOUNT-ID]/sqs-event-deserialization-queue" --message-body '{"id": 1234, "name": "product", "price"
+ aws sqs send-message --queue-url "https://sqs.[REGION].amazonaws.com/[ACCOUNT-ID]/sqs-event-deserialization-queue" --message-body '{"id": 1234, "name": "product", "price": 123}'
 ```
 
 Here we can find the message by filtering through the logs for messages that have come back from our SQS handler:
