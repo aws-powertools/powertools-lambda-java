@@ -17,7 +17,7 @@ public class SimpleBuilderTest {
         BatchMessageHandler<SQSEvent, SQSBatchResponse> messageHandler = new BatchMessageHandlerBuilder()
                 .withSqsBatchHandler()
                 .withFailureHandler((c, e) -> System.out.println("Whoops!"))
-                .buildWithMessageHandler(this::processMessage);
+                .buildWithMessageHandler(this::processMessage, Basket.class);
 
         assertThat(messageHandler).isNotNull();
     }

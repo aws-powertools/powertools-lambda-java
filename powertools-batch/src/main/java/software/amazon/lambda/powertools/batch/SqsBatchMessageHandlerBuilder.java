@@ -21,6 +21,7 @@ public class SqsBatchMessageHandlerBuilder extends AbstractMessageHandlerBuilder
     public BatchMessageHandler<SQSEvent, SQSBatchResponse> buildWithRawMessageHandler(BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler) {
             return new SqsBatchMessageHandler<Void>(
                     null,
+                    null,
                     rawMessageHandler,
                     successHandler,
                     failureHandler
@@ -28,9 +29,10 @@ public class SqsBatchMessageHandlerBuilder extends AbstractMessageHandlerBuilder
     }
 
     @Override
-    public <M> BatchMessageHandler<SQSEvent, SQSBatchResponse> buildWithMessageHandler(BiConsumer<M, Context> messageHandler) {
+    public <M> BatchMessageHandler<SQSEvent, SQSBatchResponse> buildWithMessageHandler(BiConsumer<M, Context> messageHandler, Class<M> messageClass) {
         return new SqsBatchMessageHandler<>(
                 messageHandler,
+                messageClass,
                 null,
                 successHandler,
                 failureHandler

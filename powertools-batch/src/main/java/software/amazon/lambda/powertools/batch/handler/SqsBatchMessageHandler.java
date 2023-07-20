@@ -7,12 +7,12 @@ import software.amazon.lambda.powertools.utilities.EventDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.lang.model.type.DeclaredType;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent, SQSBatchResponse> {
+    private final Class<M> messageClass;
     Logger SQS_BATCH_LOGGER = LoggerFactory.getLogger(SqsBatchMessageHandler.class);
 
     // The attribute on an SQS-FIFO message used to record the message group ID
@@ -22,13 +22,15 @@ public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent,
     private final BiConsumer<M, Context> messageHandler;
     private final BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler;
     private final Consumer<SQSEvent.SQSMessage> successHandler;
-    private final BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler;
+    private final BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler;
 
-    public SqsBatchMessageHandler(BiConsumer<M, Context> messageHandler, BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler, Consumer<SQSEvent.SQSMessage> successHandler, BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler) {
+    public SqsBatchMessageHandler(BiConsumer<M, Context> messageHandler, Class<M> messageClass, BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler, Consumer<SQSEvent.SQSMessage> successHandler, BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler) {
         this.messageHandler = messageHandler;
+        this.messageClass = messageClass;
         this.rawMessageHandler = rawMessageHandler;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
+
     }
 
     @Override
@@ -51,9 +53,15 @@ public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent,
                 if (this.rawMessageHandler != null) {
                     rawMessageHandler.accept(message, context);
                 } else {
-                    M messageDeserialized = EventDeserializer.extractDataFrom(message).as();
+                    M messageDeserialized = EventDeserializer.extractDataFrom(message).as(messageClass);
                     messageHandler.accept(messageDeserialized, context);
                 }
+
+                // Report success if we have a handler
+                if (this.successHandler != null) {
+                    this.successHandler.accept(message);
+                }
+
             } catch (Throwable t) {
                 SQS_BATCH_LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures", message.getMessageId(), t.getMessage());
                 response.getBatchItemFailures().add(SQSBatchResponse.BatchItemFailure.builder().withItemIdentifier(message.getMessageId()).build());
@@ -61,6 +69,11 @@ public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent,
                     failWholeBatch = true;
                     SQS_BATCH_LOGGER.info("A message in a batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
                             , messageGroupId, message.getMessageId());
+                }
+
+                // Report failure if we have a handler
+                if (this.failureHandler != null) {
+                    this.failureHandler.accept(message, t);
                 }
             }
         }

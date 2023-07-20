@@ -18,7 +18,7 @@ import java.util.function.Consumer;
  * @param <R> The type of the batch response
  */
 abstract class AbstractMessageHandlerBuilder<T, C, E, R> {
-    protected BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler;
+    protected BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler;
     protected Consumer<SQSEvent.SQSMessage> successHandler;
 
     public C withSuccessHandler(Consumer<SQSEvent.SQSMessage> handler) {
@@ -26,14 +26,23 @@ abstract class AbstractMessageHandlerBuilder<T, C, E, R> {
         return getThis();
     }
 
-    public C withFailureHandler(BiConsumer<SQSEvent.SQSMessage, Exception> handler) {
+    public C withFailureHandler(BiConsumer<SQSEvent.SQSMessage, Throwable> handler) {
         this.failureHandler = handler;
         return getThis();
     }
 
     public abstract BatchMessageHandler<E, R> buildWithRawMessageHandler(BiConsumer<T, Context> handler);
 
-    public abstract <M> BatchMessageHandler<E, R> buildWithMessageHandler(BiConsumer<M, Context> handler);
+    public BatchMessageHandler<E, R> buildWithRawMessageHandler(Consumer<T> handler) {
+        return buildWithRawMessageHandler((f, c) -> handler.accept(f));
+    }
+
+    public abstract <M> BatchMessageHandler<E, R> buildWithMessageHandler(BiConsumer<M, Context> handler, Class<M> messageClass);
+
+    public <M> BatchMessageHandler<E, R> buildWithMessageHandler(Consumer<M> handler, Class<M> messageClass) {
+        return buildWithMessageHandler((f, c) -> handler.accept(f), messageClass);
+    }
+
 
     protected abstract C getThis();
 }
