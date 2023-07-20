@@ -20,9 +20,6 @@ import java.util.function.Consumer;
 abstract class AbstractMessageHandlerBuilder<T, C, E, R> {
     protected BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler;
     protected Consumer<SQSEvent.SQSMessage> successHandler;
-    protected BiConsumer<?, Context> messageHandler;
-    protected BiConsumer<T, Context> rawMessageHandler;
-
 
     public C withSuccessHandler(Consumer<SQSEvent.SQSMessage> handler) {
         this.successHandler = handler;
@@ -34,26 +31,9 @@ abstract class AbstractMessageHandlerBuilder<T, C, E, R> {
         return getThis();
     }
 
-    public <M> C withMessageHandler(BiConsumer<M, Context> handler) {
-        if (this.rawMessageHandler != null) {
-            throw new TooManyMessageHandlersException();
-        }
+    public abstract BatchMessageHandler<E, R> buildWithRawMessageHandler(BiConsumer<T, Context> handler);
 
-        this.messageHandler = handler;
-        return getThis();
-    }
+    public abstract <M> BatchMessageHandler<E, R> buildWithMessageHandler(BiConsumer<M, Context> handler);
 
-    public C withRawMessageHandler(BiConsumer<T, Context> handler) {
-        if (this.messageHandler != null) {
-            throw new TooManyMessageHandlersException();
-        }
-
-        this.rawMessageHandler = handler;
-        return getThis();
-    }
-
-    public abstract BatchMessageHandler<E, R> build();
-
-
-        protected abstract C getThis();
+    protected abstract C getThis();
 }

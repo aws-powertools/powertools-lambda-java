@@ -4,41 +4,31 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import software.amazon.lambda.powertools.utilities.EventDeserializer;
-import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.lang.model.type.DeclaredType;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class SqsBatchMessageHandler implements BatchMessageHandler<SQSEvent, SQSBatchResponse> {
+public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent, SQSBatchResponse> {
     Logger SQS_BATCH_LOGGER = LoggerFactory.getLogger(SqsBatchMessageHandler.class);
 
     // The attribute on an SQS-FIFO message used to record the message group ID
     // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#sample-fifo-queues-message-event
     String MESSAGE_GROUP_ID_KEY = "MessageGroupId";
 
-    private final BiConsumer<? extends Object, Context> messageHandler;
+    private final BiConsumer<M, Context> messageHandler;
     private final BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler;
     private final Consumer<SQSEvent.SQSMessage> successHandler;
     private final BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler;
-    private final Class<?> bodyClass;
 
-    public SqsBatchMessageHandler(BiConsumer<?, Context> messageHandler, BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler, Consumer<SQSEvent.SQSMessage> successHandler, BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler) {
+    public SqsBatchMessageHandler(BiConsumer<M, Context> messageHandler, BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler, Consumer<SQSEvent.SQSMessage> successHandler, BiConsumer<SQSEvent.SQSMessage, Exception> failureHandler) {
         this.messageHandler = messageHandler;
         this.rawMessageHandler = rawMessageHandler;
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
-
-        // If we've got a message handler, work out once now what type we have to deserialize
-        if (this.messageHandler != null) {
-            this.bodyClass = (Class<?>) ((ParameterizedTypeImpl) messageHandler.getClass()
-                    .getGenericInterfaces()[0])
-                    .getActualTypeArguments()[0];
-        } else {
-            bodyClass = null;
-        }
     }
 
     @Override
@@ -61,13 +51,8 @@ public class SqsBatchMessageHandler implements BatchMessageHandler<SQSEvent, SQS
                 if (this.rawMessageHandler != null) {
                     rawMessageHandler.accept(message, context);
                 } else {
-                    // TODO this is bad bad not good
-                    // TODO fix
-                    // TODO either with type bounds for the concrete consumer type on the builder (and buildWithHandler(..))
-                    // TODO .... or by making this cast in the constructor
-                    Object messageDeserialized = EventDeserializer.extractDataFrom(message).as(bodyClass);
-                    BiConsumer<Object, Context> consumerCast = (BiConsumer<Object, Context>) messageHandler;
-                    consumerCast.accept(messageDeserialized, context);
+                    M messageDeserialized = EventDeserializer.extractDataFrom(message).as();
+                    messageHandler.accept(messageDeserialized, context);
                 }
             } catch (Throwable t) {
                 SQS_BATCH_LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures", message.getMessageId(), t.getMessage());
