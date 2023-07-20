@@ -1,4 +1,4 @@
-package software.amazon.lambda.powertools.batch;
+package software.amazon.lambda.powertools.batch.builder;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
@@ -11,7 +11,7 @@ import java.util.function.BiConsumer;
 /**
  * Builds a batch processor for the SQS event source.
  */
-public class SqsBatchMessageHandlerBuilder extends AbstractMessageHandlerBuilder<SQSEvent.SQSMessage,
+public class SqsBatchMessageHandlerBuilder extends AbstractBatchMessageHandlerBuilder<SQSEvent.SQSMessage,
         SqsBatchMessageHandlerBuilder,
         SQSEvent,
         SQSBatchResponse> {

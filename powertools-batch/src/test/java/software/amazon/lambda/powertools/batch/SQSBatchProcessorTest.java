@@ -59,8 +59,6 @@ public class SQSBatchProcessorTest {
     }
 
 
-
-
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
     public void shouldAddMessageToBatchFailure_whenException_withProduct(SQSEvent event) {

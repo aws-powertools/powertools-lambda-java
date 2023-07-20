@@ -3,7 +3,6 @@ package software.amazon.lambda.powertools.batch;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import org.junit.jupiter.api.Test;
-import software.amazon.lambda.powertools.batch.SqsBatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.model.Basket;
 import com.amazonaws.services.lambda.runtime.Context;

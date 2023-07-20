@@ -1,4 +1,4 @@
-package software.amazon.lambda.powertools.batch;
+package software.amazon.lambda.powertools.batch.exception;
 
 public class TooManyMessageHandlersException extends RuntimeException {
 

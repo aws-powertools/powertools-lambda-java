@@ -1,6 +1,6 @@
 package software.amazon.lambda.powertools.batch;
 
-import software.amazon.lambda.powertools.batch.SqsBatchMessageHandlerBuilder;
+import software.amazon.lambda.powertools.batch.builder.*;
 
 /**
  * A builder-style interface we can use within an existing Lambda RequestHandler to
@@ -9,12 +9,22 @@ import software.amazon.lambda.powertools.batch.SqsBatchMessageHandlerBuilder;
  **/
 public class BatchMessageHandlerBuilder {
 
+    /**
+     * Build an SQS-batch message handler.
+     *
+     * @return A fluent builder interface to continue the building
+     */
     public SqsBatchMessageHandlerBuilder withSqsBatchHandler() {
         return new SqsBatchMessageHandlerBuilder();
     }
 
-    public DdbMessageHandlerBuilder withDynamoDbBatchHandler() {
-        return new DdbMessageHandlerBuilder();
+    /**
+     * Build a DynamoDB streams batch message handler.
+     *
+     * @return A fluent builder interface to continue the building
+     */
+    public DdbBatchMessageHandlerBuilder withDynamoDbBatchHandler() {
+        return new DdbBatchMessageHandlerBuilder();
     }
 
 }
