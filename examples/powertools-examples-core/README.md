@@ -1,4 +1,4 @@
-# Lambda Powertools for Java - Core Utilities Example
+#  Powertools for AWS Lambda (Java) - Core Utilities Example
 
 This project demonstrates the Lambda for Powertools Java module - including 
 [logging](https://docs.powertools.aws.dev/lambda/java/core/logging/),
