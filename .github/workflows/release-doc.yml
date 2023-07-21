@@ -1,12 +1,10 @@
 name: Docs
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
-      - "mkdocs.yml"
+  release:
+    types:
+      - published
+  workflow_dispatch: {}
 
 jobs:
   release-docs:
