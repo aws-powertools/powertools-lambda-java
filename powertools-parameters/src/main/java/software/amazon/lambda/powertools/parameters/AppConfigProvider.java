@@ -67,7 +67,7 @@ public class AppConfigProvider extends BaseProvider{
         // so that we can the initial token. If we already have a session, we can take
         // the next request token from there.
         EstablishedSession establishedSession = establishedSessions.getOrDefault(key, null);
-        String sessionToken = establishedSession != null ?
+        String sessionToken = establishedSession != null?
                 establishedSession.nextSessionToken :
                 client.startConfigurationSession(StartConfigurationSessionRequest.builder()
                             .applicationIdentifier(this.application)
@@ -87,9 +87,9 @@ public class AppConfigProvider extends BaseProvider{
         // Get the value of the key. Note that AppConfig will return null if the value
         // has not changed since we last asked for it in this session - in this case
         // we return the value we stashed at last request.
-        String value = response.configuration() != null ?
+        String value = response.configuration() != null?
                 response.configuration().asUtf8String() : // if we have a new value, use it
-                    establishedSession != null ?
+                    establishedSession != null?
                             establishedSession.lastConfigurationValue : // if we don't but we have a previous value, use that
                             null; // otherwise we've got no value
 
