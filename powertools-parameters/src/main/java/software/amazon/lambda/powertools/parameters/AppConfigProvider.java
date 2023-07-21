@@ -27,7 +27,7 @@ import java.util.Map;
  * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/parameters/">Parameters provider documentation</a>
  * @see <a href="https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-working.html">AppConfig documentation</a>
  */
-public class AppConfigProvider extends BaseProvider {
+public class AppConfigProvider extends BaseProvider{
 
     private static class EstablishedSession {
         private final String nextSessionToken;
@@ -70,15 +70,15 @@ public class AppConfigProvider extends BaseProvider {
         String sessionToken = establishedSession != null ?
                 establishedSession.nextSessionToken :
                 client.startConfigurationSession(StartConfigurationSessionRequest.builder()
-                                .applicationIdentifier(this.application)
-                                .environmentIdentifier(this.environment)
-                                .configurationProfileIdentifier(key)
-                                .build())
-                        .initialConfigurationToken();
+                            .applicationIdentifier(this.application)
+                            .environmentIdentifier(this.environment)
+                            .configurationProfileIdentifier(key)
+                            .build())
+                    .initialConfigurationToken();
 
         // Get the configuration using the token
         GetLatestConfigurationResponse response = client.getLatestConfiguration(GetLatestConfigurationRequest.builder()
-                .configurationToken(sessionToken)
+                        .configurationToken(sessionToken)
                 .build());
 
         // Get the next session token we'll use next time we are asked for this key
@@ -89,9 +89,9 @@ public class AppConfigProvider extends BaseProvider {
         // we return the value we stashed at last request.
         String value = response.configuration() != null ?
                 response.configuration().asUtf8String() : // if we have a new value, use it
-                establishedSession != null ?
-                        establishedSession.lastConfigurationValue : // if we don't but we have a previous value, use that
-                        null; // otherwise we've got no value
+                    establishedSession != null ?
+                            establishedSession.lastConfigurationValue : // if we don't but we have a previous value, use that
+                            null; // otherwise we've got no value
 
         // Update the cache so we can get the next value later
         establishedSessions.put(key, new EstablishedSession(nextSessionToken, value));
