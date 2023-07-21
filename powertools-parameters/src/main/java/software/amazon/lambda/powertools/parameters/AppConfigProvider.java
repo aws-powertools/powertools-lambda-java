@@ -2,6 +2,8 @@ package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
@@ -10,6 +12,7 @@ import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfiguratio
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.lambda.powertools.core.internal.LambdaConstants;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -146,13 +149,15 @@ public class AppConfigProvider extends BaseProvider{
             if (client == null) {
                 AppConfigDataClientBuilder appConfigDataClientBuilder = AppConfigDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
-                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
+                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                        .overrideConfiguration(ClientOverrideConfiguration.builder()
+                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(PARAMETERS)).build());
 
                 // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
                 // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
                 // fall back to the default provider chain if the mode is anything other than on-demand.
                 String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
+                if (initializationType != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
                     appConfigDataClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
 

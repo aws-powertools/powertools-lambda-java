@@ -13,25 +13,26 @@
  */
 package software.amazon.lambda.powertools.sqs;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
 import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
-import software.amazon.payloadoffloading.PayloadS3Pointer;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
+import software.amazon.payloadoffloading.PayloadS3Pointer;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
@@ -43,6 +44,7 @@ public final class SqsUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SqsUtils.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
+    public static final String SQS = "sqs";
     private static SqsClient client;
     private static S3Client s3Client;
 
@@ -491,8 +493,9 @@ public final class SqsUtils {
                                              final Class<? extends Exception>... nonRetryableExceptions) {
         final List<R> handlerReturn = new ArrayList<>();
 
-        if(client == null) {
-            client = SqsClient.create();
+        if (client == null) {
+            client = (SqsClient) SqsClient.builder()
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(SQS)).build());
         }
 
         BatchContext batchContext = new BatchContext(client);
@@ -576,8 +579,9 @@ public final class SqsUtils {
     }
 
     public static S3Client s3Client() {
-        if(null == s3Client) {
-            SqsUtils.s3Client = S3Client.create();
+        if (null == s3Client) {
+            s3Client = (S3Client) S3Client.builder().
+                    overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(SQS)).build());
         }
 
         return s3Client;

@@ -15,12 +15,15 @@ package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClientBuilder;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.lambda.powertools.core.internal.LambdaConstants;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
@@ -193,7 +196,8 @@ public class SecretsProvider extends BaseProvider {
         private static SecretsManagerClient createClient() {
             SecretsManagerClientBuilder secretsManagerClientBuilder = SecretsManagerClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(PARAMETERS)).build());
 
             // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
             // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set

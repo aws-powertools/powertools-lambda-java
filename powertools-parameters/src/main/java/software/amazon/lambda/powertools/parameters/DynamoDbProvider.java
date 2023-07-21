@@ -2,6 +2,8 @@ package software.amazon.lambda.powertools.parameters;
 
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -12,6 +14,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.lambda.powertools.core.internal.LambdaConstants;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -192,7 +195,8 @@ public class DynamoDbProvider extends BaseProvider {
         private static DynamoDbClient createClient() {
             DynamoDbClientBuilder dynamoDbClientBuilder = DynamoDbClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(PARAMETERS)).build());
 
             // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
             // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set

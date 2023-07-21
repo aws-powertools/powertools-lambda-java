@@ -519,6 +519,7 @@
                                 @{argLine}
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
+                                --add-exports=java.xml.crypto/com.sun.org.slf4j.internal=ALL-UNNAMED
                             </argLine>
                         </configuration>
                     </plugin>
