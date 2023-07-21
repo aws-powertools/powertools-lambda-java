@@ -105,7 +105,6 @@
         <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
-            <version>1.9.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -131,11 +130,6 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-tests</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

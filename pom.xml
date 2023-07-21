@@ -52,6 +52,7 @@
         <module>powertools-test-suite</module>
         <module>powertools-cloudformation</module>
         <module>powertools-idempotency</module>
+        <module>powertools-large-messages</module>
         <module>powertools-e2e-tests</module>
         <module>examples</module>
     </modules>
@@ -258,6 +259,12 @@
                 <groupId>org.junit.jupiter</groupId>
                 <artifactId>junit-jupiter-params</artifactId>
                 <version>${junit-jupiter.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit-pioneer</groupId>
+                <artifactId>junit-pioneer</artifactId>
+                <version>1.9.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
