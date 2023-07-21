@@ -239,7 +239,7 @@ to customise what is logged.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -256,7 +256,7 @@ to customise what is logged.
      */
     public class AppLogEvent implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(AppLogEvent.class);
         
         @Logging(logEvent = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -315,7 +315,7 @@ You can set a Correlation ID using `correlationIdPath` attribute by passing a [J
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(correlationIdPath = "/headers/my_request_id_header")
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -364,7 +364,7 @@ for known event sources, where either a request ID or X-Ray Trace ID are present
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(correlationIdPath = CorrelationIdPathConstants.API_GATEWAY_REST)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -417,7 +417,7 @@ You can append your own keys to your existing logs via `appendKey`.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(logEvent = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -449,7 +449,7 @@ You can remove any additional key from entry using `LoggingUtils.removeKeys()`.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(logEvent = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -484,7 +484,7 @@ this means that custom keys can be persisted across invocations. If you want all
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(clearState = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -545,7 +545,7 @@ specific fields from received event due to security.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
 
         static {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -575,7 +575,7 @@ via `samplingRate` attribute on annotation.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(samplingRate = 0.5)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {

@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class IdempotencyFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    private final static Logger LOG = LogManager.getLogger();
+    private final static Logger LOG = LogManager.getLogger(IdempotencyFunction.class);
 
     public boolean handlerExecuted = false;
 
