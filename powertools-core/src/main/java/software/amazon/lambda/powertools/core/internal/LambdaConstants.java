@@ -16,6 +16,8 @@ package software.amazon.lambda.powertools.core.internal;
 public class LambdaConstants {
     public static final String LAMBDA_FUNCTION_NAME_ENV = "AWS_LAMBDA_FUNCTION_NAME";
     public static final String AWS_REGION_ENV = "AWS_REGION";
+    public static final String AWS_LAMBDA_INITIALIZATION_TYPE = "AWS_LAMBDA_INITIALIZATION_TYPE";
+    public static final String ON_DEMAND = "on-demand";
     public static final String X_AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
     public static final String AWS_SAM_LOCAL = "AWS_SAM_LOCAL";
     public static final String ROOT_EQUALS = "Root=";
