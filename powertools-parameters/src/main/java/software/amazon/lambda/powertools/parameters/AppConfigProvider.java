@@ -18,7 +18,7 @@ import java.util.Map;
  * a mechanism to retrieve and update configuration of applications over time.
  * AppConfig requires the user to create an application, environment, and configuration profile.
  * The configuration profile's value can then be retrieved, by key name, through this provider.
- * <p>
+ *
  * Because AppConfig is designed to handle rollouts of configuration over time, we must first
  * establish a session for each key we wish to retrieve, and then poll the session for the latest
  * value when the user re-requests it. This means we must hold a keyed set of session tokens
