@@ -131,6 +131,19 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         return itemToRecord(response.item());
     }
 
+    /**
+     * Store's the given idempotency record in the DDB store. If there
+     * is an existing record that has expired - either due to the
+     * cache expiry or due to the in_progress_expiry - the record
+     * will be overwritten and the idempotent operation can continue.
+     *
+     * <b>Note: This method writes only expiry and status information - not
+     * the results of the operation itself.</b>
+     *
+     * @param record DataRecord instance to store
+     * @param now
+     * @throws IdempotencyItemAlreadyExistsException
+     */
     @Override
     public void putRecord(DataRecord record, Instant now) throws IdempotencyItemAlreadyExistsException {
         Map<String, AttributeValue> item = new HashMap<>(getKey(record.getIdempotencyKey()));
@@ -157,6 +170,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
 
             Map<String, AttributeValue> expressionAttributeValues = Stream.of(
                     new AbstractMap.SimpleEntry<>(":now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()),
+                    new AbstractMap.SimpleEntry<>(":now_milliseconds", AttributeValue.builder().n(String.valueOf(now.toEpochMilli())).build()),
                     new AbstractMap.SimpleEntry<>(":inprogress", AttributeValue.builder().s(INPROGRESS.toString()).build())
             ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -165,7 +179,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                     PutItemRequest.builder()
                             .tableName(tableName)
                             .item(item)
-                            .conditionExpression("attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now AND #status = :inprogress)")
+                            .conditionExpression("attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_milliseconds AND #status = :inprogress)")
                             .expressionAttributeNames(expressionAttributeNames)
                             .expressionAttributeValues(expressionAttributeValues)
                             .build()
