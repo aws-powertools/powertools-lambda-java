@@ -18,7 +18,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.ON
  * If you don't use this, a default S3Client will be created.
  * <pre>
  * public MyLambdaHandler() {
- *     LargeMessageConfig.builder().withS3Client(S3Client.create()).build();
+ *     LargeMessageConfig.init().withS3Client(S3Client.create());
  * }
  * </pre>
  */
@@ -44,8 +44,8 @@ public class LargeMessageConfig {
     }
 
     // For tests purpose
-    void setS3Client(S3Client s3Client) {
-        this.s3Client = s3Client;
+    void resetS3Client() {
+        this.s3Client = null;
     }
 
     // Getter needs to initialize if not done with setter

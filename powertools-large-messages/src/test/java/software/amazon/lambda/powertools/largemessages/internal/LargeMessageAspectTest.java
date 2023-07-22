@@ -71,7 +71,7 @@ public class LargeMessageAspectTest {
         return snsRecord.getSNS().getMessage();
     }
 
-    @LargeMessage(deleteS3Objects = false)
+    @LargeMessage(deleteS3Object = false)
     private String processSQSMessageNoDelete(SQSMessage sqsMessage, Context context) {
         return sqsMessage.getBody();
     }

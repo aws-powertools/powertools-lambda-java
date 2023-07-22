@@ -12,12 +12,12 @@ public class LargeMessageConfigTest {
 
     @BeforeEach
     public void setup() {
-        LargeMessageConfig.get().setS3Client(null);
+        LargeMessageConfig.get().resetS3Client();
     }
 
     @AfterEach
     public void tearDown() {
-        LargeMessageConfig.get().setS3Client(null);
+        LargeMessageConfig.get().resetS3Client();
     }
 
     @Test

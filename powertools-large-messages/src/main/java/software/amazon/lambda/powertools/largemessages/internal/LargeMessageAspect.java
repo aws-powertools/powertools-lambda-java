@@ -12,7 +12,9 @@ import java.util.Optional;
 
 import static java.lang.String.format;
 
-
+/**
+ * Handle {@link LargeMessage} annotations.
+ */
 @Aspect
 public class LargeMessageAspect {
 
@@ -42,7 +44,7 @@ public class LargeMessageAspect {
             return pjp.proceed(proceedArgs);
         }
 
-        return largeMessageProcessor.get().process(pjp, largeMessage.deleteS3Objects());
+        return largeMessageProcessor.get().process(pjp, largeMessage.deleteS3Object());
     }
 
 }
