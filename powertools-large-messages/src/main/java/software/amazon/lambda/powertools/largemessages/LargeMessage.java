@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * client libraries.</p>
  *
  * <p>This version of the {@code @LargeMessage} is compatible with version
- *  1.1.0+ of {@code amazon-sqs-java-extended-client-lib} / {@code amazon-sns-java-extended-client-lib}.</p>
+ * 1.1.0+ of {@code amazon-sqs-java-extended-client-lib} / {@code amazon-sns-java-extended-client-lib}.</p>
  * <br/>
  * <p>Put this annotation on a method where the first parameter is either a {@link com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage} or {@link com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord}.
  * <br/>

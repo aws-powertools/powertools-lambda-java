@@ -17,13 +17,11 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
-import software.amazon.awssdk.utils.StringInputStream;
 import software.amazon.lambda.powertools.largemessages.LargeMessage;
 import software.amazon.lambda.powertools.largemessages.LargeMessageConfig;
 import software.amazon.lambda.powertools.largemessages.LargeMessageProcessingException;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
 
@@ -39,16 +37,15 @@ import static org.mockito.MockitoAnnotations.openMocks;
 
 public class LargeMessageAspectTest {
 
-    @Mock
-    private S3Client s3Client;
-
-    @Mock
-    private Context context;
-
     private static final String BIG_MSG = "A biiiiiiiig message";
     private static final String BUCKET_NAME = "bucketname";
     private static final String BUCKET_KEY = "c71eb2ae-37e0-4265-8909-32f4153faddf";
     private static final String BIG_MESSAGE_BODY = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\", {\"s3BucketName\":\"" + BUCKET_NAME + "\", \"s3Key\":\"" + BUCKET_KEY + "\"}]";
+
+    @Mock
+    private S3Client s3Client;
+    @Mock
+    private Context context;
 
     @BeforeEach
     public void init() throws NoSuchFieldException, IllegalAccessException {
@@ -198,25 +195,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testIOException_shouldThrowLargeMessageProcessingException() {
-        // given
-        ResponseInputStream<GetObjectResponse> s3Response = new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new StringInputStream("test") {
-            @Override
-            public void close() throws IOException {
-                throw new IOException("Failed");
-            }
-        }));
-        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3Response);
-        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
-
-        // when / then
-        assertThatThrownBy(() -> processSQSMessage(sqsMessage, context))
-                .isInstanceOf(LargeMessageProcessingException.class)
-                .hasMessage(format("Failed processing S3 record with [Bucket Name: %s Bucket Key: %s], unable to get S3 object content", BUCKET_NAME, BUCKET_KEY));
-    }
-
-    @Test
-    public void testS3Exception_shouldThrowLargeMessageProcessingException() {
+    public void testGetS3ObjectException_shouldThrowLargeMessageProcessingException() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(S3Exception.create("Permission denied", new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
         SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
@@ -224,7 +203,20 @@ public class LargeMessageAspectTest {
         // when / then
         assertThatThrownBy(() -> processSQSMessage(sqsMessage, context))
                 .isInstanceOf(LargeMessageProcessingException.class)
-                .hasMessage(format("Failed processing S3 record with [Bucket Name: %s Bucket Key: %s]", BUCKET_NAME, BUCKET_KEY));
+                .hasMessage(format("Failed processing S3 record [%s]", BIG_MESSAGE_BODY));
+    }
+
+    @Test
+    public void testDeleteS3ObjectException_shouldThrowLargeMessageProcessingException() {
+        // given
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
+        when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenThrow(S3Exception.create("Permission denied", new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
+
+        // when / then
+        assertThatThrownBy(() -> processSQSMessage(sqsMessage, context))
+                .isInstanceOf(LargeMessageProcessingException.class)
+                .hasMessage(format("Failed deleting S3 record [%s]", BIG_MESSAGE_BODY));
     }
 
     private ResponseInputStream<GetObjectResponse> s3ObjectWithLargeMessage() {

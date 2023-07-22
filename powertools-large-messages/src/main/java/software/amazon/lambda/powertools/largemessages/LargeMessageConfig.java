@@ -27,7 +27,8 @@ public class LargeMessageConfig {
     private static final LargeMessageConfig INSTANCE = new LargeMessageConfig();
     private S3Client s3Client;
 
-    private LargeMessageConfig() {}
+    private LargeMessageConfig() {
+    }
 
     public static LargeMessageConfig get() {
         return INSTANCE;
