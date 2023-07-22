@@ -20,9 +20,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@code SqsLargeMessage} is used to signal that the annotated method
+ * @deprecated See software.amazon.lambda.powertools.largemessages.LargeMessage in powertools-large-messages module.
+ * Will be removed in version 2.
+ *
+ * <p>{@code SqsLargeMessage} is used to signal that the annotated method
  * should be extended to handle large SQS messages which have been offloaded
- * to S3
+ * to S3</p>
  *
  * <p>{@code SqsLargeMessage} automatically retrieves and deletes messages
  * which have been offloaded to S3 using the {@code amazon-sqs-java-extended-client-lib}
@@ -73,6 +76,7 @@ import java.lang.annotation.Target;
  * <p>To disable deletion of payloads setting the following annotation parameter
  * {@code @SqsLargeMessage(deletePayloads=false)}</p>
  */
+@Deprecated
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface SqsLargeMessage {

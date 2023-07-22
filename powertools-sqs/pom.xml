@@ -29,6 +29,7 @@
 
     <name>Powertools for AWS Lambda (Java) library SQS</name>
     <description>
+        Deprecated: Batch processing is now handled in powertools-batch and large messages in powertools-large-messages modules.
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
     <url>https://aws.amazon.com/lambda/</url>
