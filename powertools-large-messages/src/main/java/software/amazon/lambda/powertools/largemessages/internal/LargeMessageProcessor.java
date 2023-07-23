@@ -20,8 +20,9 @@ import static java.lang.String.format;
  *            ({@link com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage} and {@link com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord} at the moment)
  */
 public abstract class LargeMessageProcessor<T> {
-
+    protected static final String RESERVED_ATTRIBUTE_NAME = "ExtendedPayloadSize";
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageProcessor.class);
+
     private final S3Client s3Client = LargeMessageConfig.get().getS3Client();
     private final S3BackedPayloadStore payloadStore = new S3BackedPayloadStore(new S3Dao(s3Client), "DUMMY");
 
@@ -29,16 +30,23 @@ public abstract class LargeMessageProcessor<T> {
         Object[] proceedArgs = pjp.getArgs();
         T message = (T) proceedArgs[0];
 
-        String payloadPointer = getMessageContent(message);
-
-        if (payloadPointer == null || !isBodyLargeMessagePointer(payloadPointer)) {
-            LOG.warn("No content in the message or not a large message, proceeding");
+        if (!isLargeMessage(message)) {
+            LOG.warn("Not a large message, proceeding");
             return pjp.proceed(proceedArgs);
         }
+
+        String payloadPointer = getMessageContent(message);
+        if (payloadPointer == null) {
+            LOG.warn("No content in the message, proceeding");
+            return pjp.proceed(proceedArgs);
+        }
+        // legacy attribute (sqs only)
+        payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer", "software.amazon.payloadoffloading.PayloadS3Pointer");
 
         String s3ObjectContent = getS3ObjectContent(payloadPointer);
 
         updateMessageContent(message, s3ObjectContent);
+        removeLargeMessageAttributes(message);
 
         Object response = pjp.proceed(proceedArgs);
 
@@ -47,10 +55,6 @@ public abstract class LargeMessageProcessor<T> {
         }
 
         return response;
-    }
-
-    protected boolean isBodyLargeMessagePointer(String messageBody) {
-        return messageBody.startsWith("[\"software.amazon.payloadoffloading.PayloadS3Pointer\"");
     }
 
     /**
@@ -69,6 +73,19 @@ public abstract class LargeMessageProcessor<T> {
      */
     protected abstract void updateMessageContent(T message, String messageContent);
 
+    /**
+     * Check if the message is actually a large message (indicator in message attributes)
+     * @param message the message itself
+     * @return true if the message is a large message
+     */
+    protected abstract boolean isLargeMessage(T message);
+
+    /**
+     * Remove the large message indicator (in message attributes)
+     * @param message the message itself
+     */
+    protected abstract void removeLargeMessageAttributes(T message);
+
     private String getS3ObjectContent(String payloadPointer) {
         try {
             return payloadStore.getOriginalPayload(payloadPointer);
@@ -85,4 +102,5 @@ public abstract class LargeMessageProcessor<T> {
             throw new LargeMessageProcessingException(format("Failed deleting S3 record [%s]", payloadPointer), e);
         }
     }
+
 }

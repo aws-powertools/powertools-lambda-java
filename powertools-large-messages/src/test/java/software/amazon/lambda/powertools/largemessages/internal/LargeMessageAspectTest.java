@@ -2,8 +2,10 @@ package software.amazon.lambda.powertools.largemessages.internal;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent.KinesisEventRecord;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNS;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +25,7 @@ import software.amazon.lambda.powertools.largemessages.LargeMessageProcessingExc
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -87,7 +90,7 @@ public class LargeMessageAspectTest {
     public void testLargeSQSMessageWithDefaultDeletion() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
-        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
 
         // when
         String message = processSQSMessage(sqsMessage, context);
@@ -110,7 +113,7 @@ public class LargeMessageAspectTest {
     public void testLargeSNSMessageWithDefaultDeletion() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
-        SNSRecord snsRecord = snsRecordWithMessage(BIG_MESSAGE_BODY);
+        SNSRecord snsRecord = snsRecordWithMessage(BIG_MESSAGE_BODY, true);
 
         //when
         String message = processSNSMessageWithoutContext(snsRecord);
@@ -133,7 +136,7 @@ public class LargeMessageAspectTest {
     public void testLargeSQSMessageWithNoDeletion_shouldNotDelete() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
-        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
 
         // when
         String message = processSQSMessageNoDelete(sqsMessage, context);
@@ -170,7 +173,7 @@ public class LargeMessageAspectTest {
     @Test
     public void testSmallMessage_shouldProceedWithoutS3() {
         // given
-        SQSMessage sqsMessage = sqsMessageWithBody("This is small message");
+        SQSMessage sqsMessage = sqsMessageWithBody("This is small message", false);
 
         // when
         String message = processSQSMessage(sqsMessage, context);
@@ -184,7 +187,7 @@ public class LargeMessageAspectTest {
     @Test
     public void testNullMessage_shouldProceedWithoutS3() {
         // given
-        SQSMessage sqsMessage = sqsMessageWithBody(null);
+        SQSMessage sqsMessage = sqsMessageWithBody(null, true);
 
         // when
         String message = processSQSMessage(sqsMessage, context);
@@ -198,7 +201,7 @@ public class LargeMessageAspectTest {
     public void testGetS3ObjectException_shouldThrowLargeMessageProcessingException() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(S3Exception.create("Permission denied", new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
-        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
 
         // when / then
         assertThatThrownBy(() -> processSQSMessage(sqsMessage, context))
@@ -211,7 +214,7 @@ public class LargeMessageAspectTest {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
         when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenThrow(S3Exception.create("Permission denied", new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
-        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY);
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
 
         // when / then
         assertThatThrownBy(() -> processSQSMessage(sqsMessage, context))
@@ -223,14 +226,21 @@ public class LargeMessageAspectTest {
         return new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new ByteArrayInputStream(BIG_MSG.getBytes())));
     }
 
-    private SQSMessage sqsMessageWithBody(String messageBody) {
+    private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage) {
         SQSMessage sqsMessage = new SQSMessage();
         sqsMessage.setBody(messageBody);
+        if (largeMessage) {
+            sqsMessage.setMessageAttributes(Collections.singletonMap(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME, new SQSEvent.MessageAttribute()));
+        }
         return sqsMessage;
     }
 
-    private SNSRecord snsRecordWithMessage(String messageBody) {
-        return new SNSRecord().withSns(new SNS().withMessage(messageBody));
+    private SNSRecord snsRecordWithMessage(String messageBody, boolean largeMessage) {
+        SNS sns = new SNS().withMessage(messageBody);
+        if (largeMessage) {
+            sns.setMessageAttributes(Collections.singletonMap(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME, new SNSEvent.MessageAttribute()));
+        }
+        return new SNSRecord().withSns(sns);
     }
 
     private void setupContext() {
