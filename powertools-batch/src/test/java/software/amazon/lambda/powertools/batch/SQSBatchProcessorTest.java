@@ -17,6 +17,9 @@ public class SQSBatchProcessorTest {
     @Mock
     private Context context;
 
+    // A handler that works
+    private void processMessageSucceeds(SQSEvent.SQSMessage sqsMessage) {
+    }
 
     // A handler that throws an exception for _one_ of the sample messages
     private void processMessageFailsForFixedMessage(SQSEvent.SQSMessage message, Context context) {
@@ -109,5 +112,32 @@ public class SQSBatchProcessorTest {
         SQSBatchResponse.BatchItemFailure batchItemFailure = sqsBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("e9144555-9a4f-4ec3-99a0-34ce359b4b54");
     }
+
+    @ParameterizedTest
+    @Event(value = "sqs_event.json", type = SQSEvent.class)
+    public void failingSuccessHandlerShouldntFailBatchButShouldFailMessage(SQSEvent event) {
+        // Arrange
+        AtomicBoolean wasCalledAndFailed = new AtomicBoolean(false);
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .withSuccessHandler((e) -> {
+                    if (e.getMessageId().equals("e9144555-9a4f-4ec3-99a0-34ce359b4b54")) {
+                        wasCalledAndFailed.set(true);
+                        throw new RuntimeException("Success handler throws");
+                    }
+                })
+                .buildWithRawMessageHandler(this::processMessageSucceeds);
+
+        // Act
+        SQSBatchResponse sqsBatchResponse = handler.processBatch(event, context);
+
+        // Assert
+        assertThat(sqsBatchResponse).isNotNull();
+        assertThat(wasCalledAndFailed.get()).isTrue();
+        SQSBatchResponse.BatchItemFailure batchItemFailure = sqsBatchResponse.getBatchItemFailures().get(0);
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("e9144555-9a4f-4ec3-99a0-34ce359b4b54");
+    }
+
+
 
 }

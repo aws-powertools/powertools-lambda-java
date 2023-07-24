@@ -2,8 +2,6 @@ package software.amazon.lambda.powertools.batch;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
-import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -99,12 +97,12 @@ public class KinesisBatchProcessorTest {
     @Event(value = "kinesis_event.json", type = KinesisEvent.class)
     public void failingSuccessHandlerShouldntFailBatchButShouldFailMessage(KinesisEvent event) {
         // Arrange
-        AtomicBoolean wasCalled = new AtomicBoolean(false);
+        AtomicBoolean wasCalledAndFailed = new AtomicBoolean(false);
         BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
                 .withKinesisBatchHandler()
                 .withSuccessHandler((e) -> {
-                    wasCalled.set(true);
                     if (e.getKinesis().getSequenceNumber().equals("49545115243490985018280067714973144582180062593244200961")) {
+                        wasCalledAndFailed.set(true);
                         throw new RuntimeException("Success handler throws");
                     }
                 })
@@ -116,7 +114,7 @@ public class KinesisBatchProcessorTest {
         // Assert
         assertThat(kinesisBatchResponse).isNotNull();
         assertThat(kinesisBatchResponse.getBatchItemFailures().size()).isEqualTo(1);
-        assertThat(wasCalled.get()).isTrue();
+        assertThat(wasCalledAndFailed.get()).isTrue();
         StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("49545115243490985018280067714973144582180062593244200961");
     }
