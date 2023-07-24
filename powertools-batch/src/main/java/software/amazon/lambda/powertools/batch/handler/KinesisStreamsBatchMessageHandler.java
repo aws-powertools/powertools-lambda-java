@@ -4,11 +4,23 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.utilities.EventDeserializer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * A batch message handler for Kinesis Streams batch processing.
+ *
+ * Refer to <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting">The kinesis batch processing document</a>
+ * @param <M>
+ */
 public class KinesisStreamsBatchMessageHandler <M> implements BatchMessageHandler<KinesisEvent, StreamsEventResponse> {
+    Logger LOGGER = LoggerFactory.getLogger(KinesisStreamsBatchMessageHandler.class);
 
     private final BiConsumer<KinesisEvent.KinesisEventRecord, Context> rawMessageHandler;
     private final BiConsumer<M, Context> messageHandler;
@@ -30,6 +42,38 @@ public class KinesisStreamsBatchMessageHandler <M> implements BatchMessageHandle
 
     @Override
     public StreamsEventResponse processBatch(KinesisEvent event, Context context) {
-        throw new RuntimeException("Not implemented");
+        List<StreamsEventResponse.BatchItemFailure> batchFailures = new ArrayList<>();
+
+        for (KinesisEvent.KinesisEventRecord record : event.getRecords()) {
+            try {
+                if (this.rawMessageHandler != null) {
+                    rawMessageHandler.accept(record, context);
+                } else {
+                    M messageDeserialized = EventDeserializer.extractDataFrom(record).as(messageClass);
+                    messageHandler.accept(messageDeserialized, context);
+                }
+
+                // Report success if we have a handler
+                if (this.successHandler != null) {
+                    this.successHandler.accept(record);
+                }
+            } catch (Throwable t) {
+                batchFailures.add(new StreamsEventResponse.BatchItemFailure(record.getKinesis().getSequenceNumber()));
+
+                // Report failure if we have a handler
+                if (this.failureHandler != null) {
+                    // A failing failure handler is no reason to fail the batch
+                    try {
+                        this.failureHandler.accept(record, t);
+                    }
+                    catch (Throwable t2) {
+                        LOGGER.warn("failureHandler threw handling failure", t2);
+                    }
+                }
+            }
+        }
+
+        return new StreamsEventResponse(batchFailures);
     }
 }
+

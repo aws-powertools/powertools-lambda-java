@@ -27,4 +27,12 @@ public class BatchMessageHandlerBuilder {
         return new DdbBatchMessageHandlerBuilder();
     }
 
+    /**
+     * Builds a Kinesis streams batch message handler.
+     *
+     * @return a fluent builder interface to continue the building
+     */
+    public KinesisBatchMessageHandlerBuilder withKinesisBatchHandler() {
+        return new KinesisBatchMessageHandlerBuilder();
+    }
 }

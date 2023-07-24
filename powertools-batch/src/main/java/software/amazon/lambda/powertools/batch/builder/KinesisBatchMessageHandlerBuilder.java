@@ -8,8 +8,8 @@ import software.amazon.lambda.powertools.batch.handler.KinesisStreamsBatchMessag
 
 import java.util.function.BiConsumer;
 
-public class KinesisStreamsBatchProcessorBuilder extends AbstractBatchMessageHandlerBuilder<KinesisEvent.KinesisEventRecord,
-        KinesisStreamsBatchProcessorBuilder,
+public class KinesisBatchMessageHandlerBuilder extends AbstractBatchMessageHandlerBuilder<KinesisEvent.KinesisEventRecord,
+        KinesisBatchMessageHandlerBuilder,
         KinesisEvent,
         StreamsEventResponse>
 {
@@ -34,7 +34,7 @@ public class KinesisStreamsBatchProcessorBuilder extends AbstractBatchMessageHan
     }
 
     @Override
-    protected KinesisStreamsBatchProcessorBuilder getThis() {
-        return null;
+    protected KinesisBatchMessageHandlerBuilder getThis() {
+        return this;
     }
 }

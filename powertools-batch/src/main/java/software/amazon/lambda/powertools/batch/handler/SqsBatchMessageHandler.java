@@ -13,7 +13,7 @@ import java.util.function.Consumer;
 
 public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent, SQSBatchResponse> {
     private final Class<M> messageClass;
-    Logger SQS_BATCH_LOGGER = LoggerFactory.getLogger(SqsBatchMessageHandler.class);
+    Logger LOGGER = LoggerFactory.getLogger(SqsBatchMessageHandler.class);
 
     // The attribute on an SQS-FIFO message used to record the message group ID
     // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#sample-fifo-queues-message-event
@@ -63,18 +63,25 @@ public class SqsBatchMessageHandler <M> implements BatchMessageHandler<SQSEvent,
                 }
 
             } catch (Throwable t) {
-                SQS_BATCH_LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures", message.getMessageId(), t.getMessage());
+                LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures", message.getMessageId(), t.getMessage());
                 response.getBatchItemFailures().add(SQSBatchResponse.BatchItemFailure.builder().withItemIdentifier(message.getMessageId()).build());
                 if (messageGroupId != null) {
                     failWholeBatch = true;
-                    SQS_BATCH_LOGGER.info("A message in a batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
+                    LOGGER.info("A message in a batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
                             , messageGroupId, message.getMessageId());
                 }
 
                 // Report failure if we have a handler
                 if (this.failureHandler != null) {
-                    this.failureHandler.accept(message, t);
+                    // A failing failure handler is no reason to fail the batch
+                    try {
+                        this.failureHandler.accept(message, t);
+                    }
+                    catch (Throwable t2) {
+                        LOGGER.warn("failureHandler threw handling failure", t2);
+                    }
                 }
+
             }
         }
 
