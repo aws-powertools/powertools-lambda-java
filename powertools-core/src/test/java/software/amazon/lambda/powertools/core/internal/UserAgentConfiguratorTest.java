@@ -9,17 +9,17 @@ import java.util.regex.Pattern;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mockStatic;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
-import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurer.VERSION_KEY;
-import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurer.getVersionFromProperties;
-import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurer.VERSION_PROPERTIES_FILENAME;
-import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurer.AWS_EXECUTION_ENV;
+import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurator.VERSION_KEY;
+import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurator.getVersionFromProperties;
+import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurator.VERSION_PROPERTIES_FILENAME;
+import static software.amazon.lambda.powertools.core.internal.UserAgentConfigurator.AWS_EXECUTION_ENV;
 
 
 
-public class UserAgentConfigurerTest {
+public class UserAgentConfiguratorTest {
 
     private static final String SEM_VER_PATTERN = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
-    private static final String VERSION = UserAgentConfigurer.getProjectVersion();
+    private static final String VERSION = UserAgentConfigurator.getProjectVersion();
 
 
     @Test
@@ -65,7 +65,7 @@ public class UserAgentConfigurerTest {
 
     @Test
     public void testGetUserAgent() {
-        String userAgent = UserAgentConfigurer.getUserAgent("test-feature");
+        String userAgent = UserAgentConfigurator.getUserAgent("test-feature");
 
         assertThat(userAgent).isNotNull();
         assertThat(userAgent).isEqualTo("PT/test-feature/" + VERSION + " PTEnv/NA");
@@ -74,7 +74,7 @@ public class UserAgentConfigurerTest {
 
     @Test
     public void testGetUserAgent_NoFeature() {
-        String userAgent = UserAgentConfigurer.getUserAgent("");
+        String userAgent = UserAgentConfigurator.getUserAgent("");
 
         assertThat(userAgent).isNotNull();
         assertThat(userAgent).isEqualTo("PT/no-op/" + VERSION + " PTEnv/NA");
@@ -82,7 +82,7 @@ public class UserAgentConfigurerTest {
 
     @Test
     public void testGetUserAgent_NullFeature() {
-        String userAgent = UserAgentConfigurer.getUserAgent(null);
+        String userAgent = UserAgentConfigurator.getUserAgent(null);
 
         assertThat(userAgent).isNotNull();
         assertThat(userAgent).isEqualTo("PT/no-op/" + VERSION + " PTEnv/NA");
@@ -92,7 +92,7 @@ public class UserAgentConfigurerTest {
     public void testGetUserAgent_SetAWSExecutionEnv() {
         try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
             mockedSystemWrapper.when(() -> getenv(AWS_EXECUTION_ENV)).thenReturn("AWS_Lambda_java8");
-            String userAgent = UserAgentConfigurer.getUserAgent("test-feature");
+            String userAgent = UserAgentConfigurator.getUserAgent("test-feature");
 
             assertThat(userAgent).isNotNull();
             assertThat(userAgent).isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");

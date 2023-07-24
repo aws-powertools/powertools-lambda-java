@@ -10,7 +10,10 @@ import java.util.Properties;
 
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
-public class UserAgentConfigurer {
+/**
+ * Can be used to create a string that can server as a User-Agent suffix in requests made with the AWS SDK clients
+ */
+public class UserAgentConfigurator {
 
     public static final String NA = "NA";
     public static final String VERSION_KEY = "powertools.version";
@@ -18,7 +21,7 @@ public class UserAgentConfigurer {
     public static final String PT_EXEC_ENV_VARIABLE = "${PT_EXEC_ENV}";
     public static final String VERSION_PROPERTIES_FILENAME = "version.properties";
     public static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
-    private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurator.class);
     private static final String NO_OP = "no-op";
     private static String PT_VERSION = getProjectVersion();
     private static String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + PT_VERSION + " PTEnv/" + PT_EXEC_ENV_VARIABLE;
@@ -86,5 +89,4 @@ public class UserAgentConfigurer {
                 .replace(PT_FEATURE_VARIABLE, ptFeature)
                 .replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
     }
-
 }

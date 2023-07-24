@@ -24,7 +24,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
@@ -94,7 +94,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
                 DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
                         .httpClient(UrlConnectionHttpClient.builder().build())
-                        .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(IDEMPOTENCY)).build())
+                        .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(IDEMPOTENCY)).build())
                         .region(Region.of(System.getenv(AWS_REGION_ENV)));
 
                 // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start

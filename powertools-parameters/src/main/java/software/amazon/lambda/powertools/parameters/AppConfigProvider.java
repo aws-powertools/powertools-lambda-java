@@ -12,6 +12,7 @@ import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfiguratio
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.lambda.powertools.core.internal.LambdaConstants;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -151,7 +152,7 @@ public class AppConfigProvider extends BaseProvider{
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                         .overrideConfiguration(ClientOverrideConfiguration.builder()
-                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(PARAMETERS)).build());
+                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build());
 
                 // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
                 // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set

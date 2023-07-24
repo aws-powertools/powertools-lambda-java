@@ -22,7 +22,7 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.lambda.powertools.core.internal.UserAgentConfigurer;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
@@ -495,7 +495,7 @@ public final class SqsUtils {
 
         if (client == null) {
             client = (SqsClient) SqsClient.builder()
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(SQS)).build());
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(SQS)).build());
         }
 
         BatchContext batchContext = new BatchContext(client);
@@ -581,7 +581,7 @@ public final class SqsUtils {
     public static S3Client s3Client() {
         if (null == s3Client) {
             s3Client = (S3Client) S3Client.builder().
-                    overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurer.getUserAgent(SQS)).build());
+                    overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(SQS)).build());
         }
 
         return s3Client;
