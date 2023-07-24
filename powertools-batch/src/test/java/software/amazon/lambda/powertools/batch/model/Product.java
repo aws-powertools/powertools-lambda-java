@@ -1,3 +1,5 @@
+package software.amazon.lambda.powertools.batch.model;
+
 /*
  * Copyright 2022 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
@@ -11,7 +13,6 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.model;
 
 import java.util.Objects;
 

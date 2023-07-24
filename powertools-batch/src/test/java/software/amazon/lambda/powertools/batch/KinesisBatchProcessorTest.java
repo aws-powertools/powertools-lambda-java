@@ -7,7 +7,7 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
-import software.amazon.lambda.powertools.model.Product;
+import software.amazon.lambda.powertools.batch.model.Product;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 

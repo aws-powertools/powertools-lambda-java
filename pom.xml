@@ -41,6 +41,7 @@
         <module>powertools-e2e-tests</module>
         <module>examples</module>
         <module>powertools-batch</module>
+        <module>examples/powertools-examples-batch</module>
     </modules>
 
     <scm>
