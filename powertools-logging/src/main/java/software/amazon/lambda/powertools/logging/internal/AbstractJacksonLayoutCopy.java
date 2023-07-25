@@ -477,12 +477,12 @@ abstract class AbstractJacksonLayoutCopy extends AbstractStringLayout {
 
         @Override
         public void setEndOfBatch(boolean endOfBatch) {
-
+            // do nothing
         }
 
         @Override
         public void setIncludeLocation(boolean locationRequired) {
-
+            // do nothing
         }
 
         @Override
