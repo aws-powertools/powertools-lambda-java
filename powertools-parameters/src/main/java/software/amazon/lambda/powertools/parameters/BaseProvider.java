@@ -36,7 +36,7 @@ public abstract class BaseProvider implements ParamProvider {
     private TransformationManager transformationManager;
     private Clock clock;
 
-    public BaseProvider(CacheManager cacheManager) {
+    protected BaseProvider(CacheManager cacheManager) {
         this.cacheManager = cacheManager;
     }
 
