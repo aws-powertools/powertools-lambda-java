@@ -9,7 +9,11 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
 import software.amazon.lambda.powertools.cloudformation.Response;
@@ -22,6 +26,8 @@ import java.util.Objects;
 
 public class App extends AbstractCustomResourceHandler {
     private final static Logger log = LogManager.getLogger(App.class);
+    public static final String CFN_CUSTOM_RESOURCE_EVENT_CANNOT_BE_NULL = "cloudFormationCustomResourceEvent cannot be null.";
+    public static final String BUCKET_NAME = "BucketName";
     private final S3Client s3Client;
 
     public App() {
@@ -40,11 +46,11 @@ public class App extends AbstractCustomResourceHandler {
     @Override
     protected Response create(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         // Validate the CloudFormation Custom Resource event
-        Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"), "BucketName cannot be null.");
+        Objects.requireNonNull(cloudFormationCustomResourceEvent, CFN_CUSTOM_RESOURCE_EVENT_CANNOT_BE_NULL);
+        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get(BUCKET_NAME), "BucketName cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
-        String bucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName");
+        String bucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get(BUCKET_NAME);
         log.info("Bucket Name {}", bucketName);
         try {
             // Create the S3 bucket with the given bucketName
@@ -69,8 +75,8 @@ public class App extends AbstractCustomResourceHandler {
     @Override
     protected Response update(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         // Validate the CloudFormation Custom Resource event
-        Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"), "BucketName cannot be null.");
+        Objects.requireNonNull(cloudFormationCustomResourceEvent, CFN_CUSTOM_RESOURCE_EVENT_CANNOT_BE_NULL);
+        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get(BUCKET_NAME), "BucketName cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
         // Get the physicalResourceId. physicalResourceId is the value returned to CloudFormation in the Create request, and passed in on subsequent requests (e.g. UPDATE or DELETE)
@@ -78,7 +84,7 @@ public class App extends AbstractCustomResourceHandler {
         log.info("Physical Resource ID {}", physicalResourceId);
 
         // Get the BucketName from the CloudFormation Event
-        String newBucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName");
+        String newBucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get(BUCKET_NAME);
 
         // Check if the physicalResourceId equals the new BucketName
         if (!physicalResourceId.equals(newBucketName)) {
@@ -111,7 +117,7 @@ public class App extends AbstractCustomResourceHandler {
     @Override
     protected Response delete(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         // Validate the CloudFormation Custom Resource event
-        Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
+        Objects.requireNonNull(cloudFormationCustomResourceEvent, CFN_CUSTOM_RESOURCE_EVENT_CANNOT_BE_NULL);
         Objects.requireNonNull(cloudFormationCustomResourceEvent.getPhysicalResourceId(), "PhysicalResourceId cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
