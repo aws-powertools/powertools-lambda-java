@@ -284,11 +284,10 @@ public class Infrastructure {
         if (!StringUtils.isEmpty(largeMessagesBucket)) {
             Bucket offloadBucket = Bucket.Builder
                     .create(stack, "LargeMessagesOffloadBucket")
-//                    .removalPolicy(RemovalPolicy.DESTROY)
-//                    .autoDeleteObjects(true)
+                    .removalPolicy(RemovalPolicy.RETAIN) // autodelete does not work without cdk deploy
                     .bucketName(largeMessagesBucket)
                     .build();
-            // just in case ...
+            // instead of autodelete, have a lifecycle rule to delete files after a day
             LifecycleRule.builder().expiration(Duration.days(1)).enabled(true).build();
             offloadBucket.grantReadWrite(function);
         }

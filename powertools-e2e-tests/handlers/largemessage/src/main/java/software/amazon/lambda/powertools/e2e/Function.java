@@ -41,7 +41,7 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
         return SQSBatchResponse.builder().build();
     }
 
-    @LargeMessage(deleteS3Object = false)
+    @LargeMessage
     private void processRawMessage(SQSMessage sqsMessage, Context context) {
         String bodyMD5 = md5(sqsMessage.getBody());
         if (!sqsMessage.getMd5OfBody().equals(bodyMD5)) {
