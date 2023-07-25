@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
  */
 public class DynamoDbProvider extends BaseProvider {
 
+    private static final String VALUE = "value";
     private final DynamoDbClient client;
     private final String tableName;
 
@@ -50,17 +51,17 @@ public class DynamoDbProvider extends BaseProvider {
         GetItemResponse resp = client.getItem(GetItemRequest.builder()
                 .tableName(tableName)
                 .key(Collections.singletonMap("id", AttributeValue.fromS(key)))
-                .attributesToGet("value")
+                .attributesToGet(VALUE)
                 .build());
 
         // If we have an item at the key, we should be able to get a 'val' out of it. If not it's
         // exceptional.
         // If we don't have an item at the key, we should return null.
         if (resp.hasItem() && !resp.item().values().isEmpty()) {
-            if (!resp.item().containsKey("value")) {
+            if (!resp.item().containsKey(VALUE)) {
                 throw new DynamoDbProviderSchemaException("Missing 'value': " + resp.item().toString());
             }
-            return resp.item().get("value").s();
+            return resp.item().get(VALUE).s();
         }
 
         return null;
@@ -88,14 +89,14 @@ public class DynamoDbProvider extends BaseProvider {
                         if (!i.containsKey("sk")) {
                             throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
                         }
-                        if (!i.containsKey("value")) {
+                        if (!i.containsKey(VALUE)) {
                             throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
                         }
                     })
                     .collect(
                             Collectors.toMap(
                                     (i) -> i.get("sk").s(),
-                                    (i) -> i.get("value").s()));
+                                    (i) -> i.get(VALUE).s()));
 
 
     }
