@@ -32,14 +32,14 @@ import software.amazon.lambda.powertools.idempotency.persistence.BasePersistence
  * </pre>
  */
 public class Idempotency {
-    private IdempotencyConfig config;
+    private IdempotencyConfig idempotencyConfig;
     private BasePersistenceStore persistenceStore;
 
     private Idempotency() {
     }
 
     public IdempotencyConfig getConfig() {
-        return config;
+        return idempotencyConfig;
     }
 
     public BasePersistenceStore getPersistenceStore() {
@@ -49,8 +49,8 @@ public class Idempotency {
         return persistenceStore;
     }
 
-    private void setConfig(IdempotencyConfig config) {
-        this.config = config;
+    private void setConfig(IdempotencyConfig idempotencyConfig) {
+        this.idempotencyConfig = idempotencyConfig;
     }
 
     private void setPersistenceStore(BasePersistenceStore persistenceStore) {
