@@ -15,10 +15,12 @@
 package software.amazon.lambda.powertools;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,7 +52,8 @@ public class MetricsE2ET {
                                 })
                                 .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
-        functionName = infrastructure.deploy();
+        Map<String, String> outputs = infrastructure.deploy();
+        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
     @AfterAll
