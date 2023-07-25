@@ -10,8 +10,6 @@ import software.amazon.lambda.powertools.largemessages.LargeMessage;
 
 import java.util.Optional;
 
-import static java.lang.String.format;
-
 /**
  * Handle {@link LargeMessage} annotations.
  */
@@ -40,7 +38,7 @@ public class LargeMessageAspect {
         Optional<LargeMessageProcessor<?>> largeMessageProcessor = LargeMessageProcessorFactory.get(message);
 
         if (!largeMessageProcessor.isPresent()) {
-            LOG.warn(format("@LargeMessage annotation is placed on a method with unsupported message type [%s], proceeding", message.getClass()));
+            LOG.warn("@LargeMessage annotation is placed on a method with unsupported message type [{}], proceeding", message.getClass());
             return pjp.proceed(proceedArgs);
         }
 

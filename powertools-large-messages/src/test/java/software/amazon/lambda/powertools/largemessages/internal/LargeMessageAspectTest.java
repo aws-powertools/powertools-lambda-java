@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.events.KinesisEvent.KinesisEventRec
 import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNS;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.MessageAttribute;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,7 +25,11 @@ import software.amazon.lambda.powertools.largemessages.LargeMessageProcessingExc
 
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -37,12 +41,17 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.largemessages.internal.LargeSQSMessageProcessor.calculateMessageAttributesMd5;
+import static software.amazon.lambda.powertools.largemessages.internal.LargeSQSMessageProcessor.calculateMessageBodyMd5;
 
 public class LargeMessageAspectTest {
 
     private static final String BIG_MSG = "A biiiiiiiig message";
+    private static final String BIG_MSG_MD5 = "919ebd392d8cb7161f95cb612a903d42";
+
     private static final String BUCKET_NAME = "bucketname";
     private static final String BUCKET_KEY = "c71eb2ae-37e0-4265-8909-32f4153faddf";
+
     private static final String BIG_MESSAGE_BODY = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\", {\"s3BucketName\":\"" + BUCKET_NAME + "\", \"s3Key\":\"" + BUCKET_KEY + "\"}]";
 
     @Mock
@@ -64,6 +73,17 @@ public class LargeMessageAspectTest {
     @LargeMessage
     private String processSQSMessage(SQSMessage sqsMessage, Context context) {
         return sqsMessage.getBody();
+    }
+
+    @LargeMessage
+    private String processSQSMessageWithMd5Checks(SQSMessage transformedMessage, String initialBodyMD5, String initialAttributesMD5) {
+        assertThat(transformedMessage.getMd5OfBody()).isNotEqualTo(initialBodyMD5);
+        assertThat(transformedMessage.getMd5OfBody()).isEqualTo(BIG_MSG_MD5);
+
+        assertThat(transformedMessage.getMessageAttributes()).hasSize(3);
+
+        assertThat(transformedMessage.getMd5OfMessageAttributes()).isNotEqualTo(initialAttributesMD5);
+        return transformedMessage.getBody();
     }
 
     @LargeMessage
@@ -107,6 +127,36 @@ public class LargeMessageAspectTest {
                     assertThat(deleteObjectRequest.key())
                             .isEqualTo(BUCKET_KEY);
                 });
+    }
+
+    @Test
+    public void testLargeSQSMessage_shouldChangeMd5OfBodyAndAttributes() {
+        // given
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
+
+        MessageAttribute stringListAttribute = new MessageAttribute();
+        stringListAttribute.setStringListValues(Collections.singletonList("customAttributeValue"));
+        stringListAttribute.setDataType("StringList");
+
+        MessageAttribute binAttribute = new MessageAttribute();
+        binAttribute.setBinaryValue(ByteBuffer.wrap("customAttributeValue".getBytes(StandardCharsets.UTF_8)));
+        binAttribute.setDataType("Binary");
+
+        MessageAttribute listBinAttribute = new MessageAttribute();
+        listBinAttribute.setBinaryListValues(Collections.singletonList(ByteBuffer.wrap("customAttributeValue".getBytes(StandardCharsets.UTF_8))));
+        listBinAttribute.setDataType("BinaryList");
+
+        Map<String, MessageAttribute> attrs = new HashMap<>();
+        attrs.put("stringListAttribute", stringListAttribute);
+        attrs.put("binAttribute", binAttribute);
+        attrs.put("listBinAttribute", listBinAttribute);
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true, attrs);
+
+        // when
+        String message = processSQSMessageWithMd5Checks(sqsMessage, sqsMessage.getMd5OfBody(), sqsMessage.getMd5OfMessageAttributes());
+
+        // then
+        assertThat(message).isEqualTo(BIG_MSG);
     }
 
     @Test
@@ -227,10 +277,28 @@ public class LargeMessageAspectTest {
     }
 
     private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage) {
+        return sqsMessageWithBody(messageBody, largeMessage, null);
+    }
+
+    private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage, Map<String, MessageAttribute> optionalAttributes) {
         SQSMessage sqsMessage = new SQSMessage();
         sqsMessage.setBody(messageBody);
+        if (messageBody != null) {
+            sqsMessage.setMd5OfBody(calculateMessageBodyMd5(messageBody).orElseThrow(() -> new RuntimeException("Unable to md5 body " + messageBody)));
+        }
+
         if (largeMessage) {
-            sqsMessage.setMessageAttributes(Collections.singletonMap(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME, new SQSEvent.MessageAttribute()));
+            Map<String, MessageAttribute> attributeMap = new HashMap<>();
+            if (optionalAttributes != null) {
+                attributeMap.putAll(optionalAttributes);
+            }
+            MessageAttribute payloadAttribute = new MessageAttribute();
+            payloadAttribute.setStringValue("300450");
+            payloadAttribute.setDataType("Number");
+            attributeMap.put(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME, payloadAttribute);
+
+            sqsMessage.setMessageAttributes(attributeMap);
+            sqsMessage.setMd5OfMessageAttributes(calculateMessageAttributesMd5(attributeMap).orElseThrow(() -> new RuntimeException("Unable to md5 attributes " + attributeMap)));
         }
         return sqsMessage;
     }

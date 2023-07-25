@@ -43,7 +43,11 @@ public abstract class LargeMessageProcessor<T> {
         // legacy attribute (sqs only)
         payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer", "software.amazon.payloadoffloading.PayloadS3Pointer");
 
+        LOG.info("Large message [{}]: retrieving content from S3", getMessageId(message));
+
         String s3ObjectContent = getS3ObjectContent(payloadPointer);
+
+        LOG.debug("Large message [{}]: {}", getMessageId(message), s3ObjectContent);
 
         updateMessageContent(message, s3ObjectContent);
         removeLargeMessageAttributes(message);
@@ -51,11 +55,20 @@ public abstract class LargeMessageProcessor<T> {
         Object response = pjp.proceed(proceedArgs);
 
         if (deleteS3Object) {
+            LOG.info("Large message [{}]: deleting object from S3", getMessageId(message));
             deleteS3Object(payloadPointer);
         }
 
         return response;
     }
+
+    /**
+     * Retrieve the message id
+     *
+     * @param message the message itself
+     * @return the id of the message (String format)
+     */
+    protected abstract String getMessageId(T message);
 
     /**
      * Retrieve the content of the message (ex: body of an SQSMessage)
@@ -75,6 +88,7 @@ public abstract class LargeMessageProcessor<T> {
 
     /**
      * Check if the message is actually a large message (indicator in message attributes)
+     *
      * @param message the message itself
      * @return true if the message is a large message
      */
@@ -82,6 +96,7 @@ public abstract class LargeMessageProcessor<T> {
 
     /**
      * Remove the large message indicator (in message attributes)
+     *
      * @param message the message itself
      */
     protected abstract void removeLargeMessageAttributes(T message);

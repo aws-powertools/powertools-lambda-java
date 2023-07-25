@@ -1,14 +1,11 @@
 package software.amazon.lambda.powertools.largemessages;
 
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.ON_DEMAND;
 
 /**
  * Singleton instance for Large Message Config.
@@ -55,14 +52,6 @@ public class LargeMessageConfig {
             S3ClientBuilder s3ClientBuilder = S3Client.builder()
                     .httpClient(UrlConnectionHttpClient.builder().build())
                     .region(Region.of(System.getenv(AWS_REGION_ENV)));
-
-            // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-            // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-            // fall back to the default provider chain if the mode is anything other than on-demand.
-            String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-            if (initializationType != null && initializationType.equals(ON_DEMAND)) {
-                s3ClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-            }
             this.s3Client = s3ClientBuilder.build();
         }
         return this.s3Client;

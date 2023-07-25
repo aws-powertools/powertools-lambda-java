@@ -12,6 +12,11 @@ public class LargeSNSMessageProcessor extends LargeMessageProcessor<SNSRecord> {
     }
 
     @Override
+    protected String getMessageId(SNSRecord message) {
+        return message.getSNS().getMessageId();
+    }
+
+    @Override
     protected String getMessageContent(SNSRecord message) {
         return message.getSNS().getMessage();
     }
