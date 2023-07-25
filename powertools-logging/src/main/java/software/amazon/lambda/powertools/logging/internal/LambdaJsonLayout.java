@@ -187,7 +187,7 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
 
     @Override
     public Object wrapLogEvent(final LogEvent event) {
-        Map<String, Object> additionalFieldsMap = resolveAdditionalFields(event);
+        Map<String, Object> additionalFieldsMap = getAdditionalFields(event);
         // This class combines LogEvent with AdditionalFields during serialization
         return new LogEventWithAdditionalFields(event, additionalFieldsMap);
     }
@@ -200,7 +200,7 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
         super.toSerializable(event, writer);
     }
 
-    private Map<String, Object> resolveAdditionalFields(LogEvent logEvent) {
+    private Map<String, Object> getAdditionalFields(LogEvent logEvent) {
         // Note: LinkedHashMap retains order
         final Map<String, Object> additionalFieldsMap = new LinkedHashMap<>(additionalFields.length);
 
