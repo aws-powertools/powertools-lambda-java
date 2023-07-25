@@ -99,7 +99,7 @@
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
-                <Method name="LargeMessageConfig.s3Client"/>
+                <Field name="s3Client"/>
             </And>
         </Or>
     </Match>
