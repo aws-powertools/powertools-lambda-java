@@ -35,6 +35,10 @@ public final class ParamManager {
     // NOTE: For testing purposes `providers` cannot be final
     private static ConcurrentHashMap<Class<? extends BaseProvider>, BaseProvider> providers = new ConcurrentHashMap<>();
 
+    private ParamManager() {
+        // avoid instantiation, static methods
+    }
+
     /**
      * Get a concrete implementation of {@link BaseProvider}.<br/>
      * You can specify {@link SecretsProvider}, {@link SSMProvider} or create your
@@ -43,6 +47,7 @@ public final class ParamManager {
      * @return a {@link SecretsProvider}
      */
     // TODO in v2: remove public access to this and review how we get providers (it was not designed for DDB and AppConfig in mind initially)
+    @Deprecated
     public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
         if (providerClass == null) {
             throw new IllegalStateException("providerClass cannot be null.");
