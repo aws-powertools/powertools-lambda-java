@@ -13,14 +13,6 @@
  */
 package software.amazon.lambda.powertools.sqs;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,8 +22,14 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
-import software.amazon.payloadoffloading.PayloadS3Pointer;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
+import software.amazon.payloadoffloading.PayloadS3Pointer;
+
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
@@ -556,7 +554,6 @@ public final class SqsUtils {
             constructor.setAccessible(true);
             return constructor.newInstance(handler.getDeclaringClass().getDeclaredConstructor().newInstance());
         } catch (Exception e) {
-            LOG.error("Failed creating handler instance", e);
             throw new RuntimeException("Unexpected error occurred. Please raise issue at " +
                     "https://github.com/aws-powertools/powertools-lambda-java/issues", e);
         }
