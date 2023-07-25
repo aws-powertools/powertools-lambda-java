@@ -50,6 +50,10 @@ public class EventDeserializer {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventDeserializer.class);
 
+    private EventDeserializer() {
+        // avoid instantiation, static methods
+    }
+
     /**
      * Extract the meaningful part of a Lambda Event object. Main events are built-in:
      * <ul>
