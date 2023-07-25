@@ -18,8 +18,15 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
@@ -33,7 +40,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
@@ -261,11 +267,11 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
      * You can also set a custom {@link DynamoDbClient} for further tuning.
      */
     public static class Builder {
-        private static final String funcEnv = System.getenv(LAMBDA_FUNCTION_NAME_ENV);
+        private static final String LAMBDA_FUNCTION_NAME_ENV = System.getenv(LambdaConstants.LAMBDA_FUNCTION_NAME_ENV);
 
         private String tableName;
         private String keyAttr = "id";
-        private String staticPkValue = String.format("idempotency#%s", funcEnv != null ? funcEnv : "");
+        private String staticPkValue = String.format("idempotency#%s", LAMBDA_FUNCTION_NAME_ENV != null ? LAMBDA_FUNCTION_NAME_ENV : "");
         private String sortKeyAttr;
         private String expiryAttr = "expiration";
 
