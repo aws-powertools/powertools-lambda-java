@@ -52,13 +52,13 @@ public abstract class AbstractCustomResourceHandler
         String responseUrl = Objects.requireNonNull(event.getResponseUrl(),
                 "Event must have a non-null responseUrl to be able to send the response.");
 
-        CloudFormationResponse client = buildResponseClient();
+        CloudFormationResponse cloudFormationResponse = buildResponseClient();
 
         Response response = null;
         try {
             response = getResponse(event, context);
             LOG.debug("Preparing to send response {} to {}.", response, responseUrl);
-            client.send(event, context, response);
+            cloudFormationResponse.send(event, context, response);
         } catch (IOException ioe) {
             LOG.error("Unable to send response {} to {}.", response, responseUrl, ioe);
             onSendFailure(event, context, response, ioe);
@@ -70,7 +70,7 @@ public abstract class AbstractCustomResourceHandler
                 // In the case of a Update or Delete, a failure is sent with the existing PhysicalResourceId
                 // indicating no change.
                 // In the case of a Create, null will be set and changed to the Lambda LogStreamName before sending.
-                client.send(event, context, Response.failed(event.getPhysicalResourceId()));
+                cloudFormationResponse.send(event, context, Response.failed(event.getPhysicalResourceId()));
             } catch (Exception e) {
                 // unable to generate response AND send the failure
                 LOG.error("Unable to send failure response to {}.", responseUrl, e);
@@ -91,7 +91,7 @@ public abstract class AbstractCustomResourceHandler
                 case "Delete":
                     return delete(event, context);
                 default:
-                    LOG.warn("Unexpected request type \"" + event.getRequestType() + "\" for event " + event);
+                    LOG.warn("Unexpected request type \"{}\" for event {}", event.getRequestType(), event);
                     return null;
             }
         } catch (RuntimeException e) {
