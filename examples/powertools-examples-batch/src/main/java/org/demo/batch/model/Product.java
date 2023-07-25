@@ -11,7 +11,7 @@
  * limitations under the License.
  *
  */
-package model;
+package org.demo.batch.model;
 
 import java.util.Objects;
 
