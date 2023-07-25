@@ -1,14 +1,5 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
@@ -28,8 +19,17 @@ import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 import software.amazon.lambda.powertools.sqs.SqsUtils;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -114,8 +114,8 @@ public final class BatchContext {
                     map(SQSMessage::getMessageId)
                     .collect(toList());
 
-            LOG.debug(format("[%d] records failed processing, but exceptions are suppressed. " +
-                    "Failed messages %s", failedMessages.size(), messageIds));
+            LOG.debug("[{}] records failed processing, but exceptions are suppressed. " +
+                    "Failed messages {}", failedMessages.size(), messageIds);
         } else {
             throw new SQSBatchProcessingException(exceptions, failedMessages, successReturns);
         }
