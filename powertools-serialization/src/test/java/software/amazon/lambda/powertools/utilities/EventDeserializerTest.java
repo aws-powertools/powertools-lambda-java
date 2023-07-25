@@ -203,8 +203,8 @@ public class EventDeserializerTest {
 
     private void assertProduct(Product product) {
         assertThat(product)
-                .isEqualTo(new Product(1234, "product", 42))
-                .usingRecursiveComparison();
+                .usingRecursiveComparison()
+                .isEqualTo(new Product(1234, "product", 42));
     }
 
     @ParameterizedTest
