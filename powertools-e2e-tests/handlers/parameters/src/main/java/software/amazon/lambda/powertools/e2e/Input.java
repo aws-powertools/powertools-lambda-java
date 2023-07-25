@@ -1,12 +1,15 @@
 package software.amazon.lambda.powertools.e2e;
 
-import java.util.Map;
-
 public class Input {
 
     private String app;
     private String environment;
     private String key;
+
+    public Input() {
+        // for deserialization
+    }
+
     public void setApp(String app) {
         this.app = app;
     }

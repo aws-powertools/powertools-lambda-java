@@ -7,6 +7,7 @@ public class Input {
     private Map<String, String> keys;
 
     public Input() {
+        // for deserialization
     }
 
     public String getMessage() {

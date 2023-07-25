@@ -16,6 +16,7 @@ public class Input {
     }
 
     public Input() {
+        // for deserialization
     }
 
 

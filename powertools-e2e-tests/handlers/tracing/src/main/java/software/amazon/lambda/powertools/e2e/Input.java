@@ -4,6 +4,7 @@ public class Input {
     private String message;
 
     public Input() {
+        // for deserialization
     }
 
     public String getMessage() {

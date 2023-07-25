@@ -6,6 +6,7 @@ public class MyObject {
     private String code;
 
     public MyObject() {
+        // for deserialization
     }
 
     public long getId() {
