@@ -14,5 +14,10 @@
 package software.amazon.lambda.powertools.idempotency;
 
 public class Constants {
+
+    private Constants() {
+        // avoid instantiation, static fields
+    }
+
     public static final String IDEMPOTENCY_DISABLED_ENV = "POWERTOOLS_IDEMPOTENCY_DISABLED";
 }
