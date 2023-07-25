@@ -27,9 +27,6 @@ public class LargeSQSMessageProcessor extends LargeMessageProcessor<SQSMessage> 
     private static final byte STRING_LIST_TYPE_FIELD_INDEX = 3;
     private static final byte BINARY_LIST_TYPE_FIELD_INDEX = 4;
 
-    public LargeSQSMessageProcessor() {
-    }
-
     @Override
     protected String getMessageId(SQSMessage message) {
         return message.getMessageId();
@@ -91,6 +88,7 @@ public class LargeSQSMessageProcessor extends LargeMessageProcessor<SQSMessage> 
      * @param messageAttributes attributes of the SQS Message
      * @return the MD5 digest of the SQS Message attributes (or empty in case of error)
      */
+    @SuppressWarnings("squid:S4790") // MD5 algorithm is used by SQS, we must use MD5
     static Optional<String> calculateMessageAttributesMd5(final Map<String, MessageAttribute> messageAttributes) {
         List<String> sortedAttributeNames = new ArrayList<>(messageAttributes.keySet());
         Collections.sort(sortedAttributeNames);

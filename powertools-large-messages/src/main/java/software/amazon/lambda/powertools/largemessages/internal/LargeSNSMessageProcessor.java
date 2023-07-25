@@ -8,9 +8,6 @@ import java.util.Map;
 
 public class LargeSNSMessageProcessor extends LargeMessageProcessor<SNSRecord> {
 
-    public LargeSNSMessageProcessor() {
-    }
-
     @Override
     protected String getMessageId(SNSRecord message) {
         return message.getSNS().getMessageId();

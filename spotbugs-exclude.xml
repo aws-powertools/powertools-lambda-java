@@ -36,6 +36,10 @@
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
                 <Method name="getConfig"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
+                <Method name="getS3Client"/>
+            </And>
         </Or>
     </Match>
     <Match>
@@ -92,6 +96,10 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.utilities.EventDeserializer$EventPart"/>
                 <Field name="contentList"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
+                <Method name="s3Client"/>
             </And>
         </Or>
     </Match>
