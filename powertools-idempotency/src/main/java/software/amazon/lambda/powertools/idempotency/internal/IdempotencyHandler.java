@@ -20,7 +20,13 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
-import software.amazon.lambda.powertools.idempotency.exceptions.*;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlreadyInProgressException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyPersistenceLayerException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
@@ -83,9 +89,9 @@ public class IdempotencyHandler {
             // already exists. If it succeeds, there's no need to call getRecord.
             persistenceStore.saveInProgress(data, Instant.now(), getRemainingTimeInMillis());
         } catch (IdempotencyItemAlreadyExistsException iaee) {
-            DataRecord record = getIdempotencyRecord();
-            if (record != null) {
-                return handleForStatus(record);
+            DataRecord idempotencyRecord = getIdempotencyRecord();
+            if (idempotencyRecord != null) {
+                return handleForStatus(idempotencyRecord);
             }
         } catch (IdempotencyKeyException ike) {
             throw ike;
@@ -132,29 +138,29 @@ public class IdempotencyHandler {
     /**
      * Take appropriate action based on data_record's status
      *
-     * @param record DataRecord
+     * @param dataRecord DataRecord
      * @return Function's response previously used for this idempotency key, if it has successfully executed already.
      */
-    private Object handleForStatus(DataRecord record) {
+    private Object handleForStatus(DataRecord dataRecord) {
         // This code path will only be triggered if the record becomes expired between the saveInProgress call and here
-        if (EXPIRED.equals(record.getStatus())) {
+        if (EXPIRED.equals(dataRecord.getStatus())) {
             throw new IdempotencyInconsistentStateException("saveInProgress and getRecord return inconsistent results");
         }
 
-        if (INPROGRESS.equals(record.getStatus())) {
-            if (record.getInProgressExpiryTimestamp().isPresent()
-                    && record.getInProgressExpiryTimestamp().getAsLong() < Instant.now().toEpochMilli()) {
+        if (INPROGRESS.equals(dataRecord.getStatus())) {
+            if (dataRecord.getInProgressExpiryTimestamp().isPresent()
+                    && dataRecord.getInProgressExpiryTimestamp().getAsLong() < Instant.now().toEpochMilli()) {
                 throw new IdempotencyInconsistentStateException("Item should have been expired in-progress because it already time-outed.");
             }
-            throw new IdempotencyAlreadyInProgressException("Execution already in progress with idempotency key: " + record.getIdempotencyKey());
+            throw new IdempotencyAlreadyInProgressException("Execution already in progress with idempotency key: " + dataRecord.getIdempotencyKey());
         }
 
         Class<?> returnType = ((MethodSignature) pjp.getSignature()).getReturnType();
         try {
-            LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function", record.getIdempotencyKey());
+            LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function", dataRecord.getIdempotencyKey());
             if (returnType.equals(String.class))
-                return record.getResponseData();
-            return JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(), returnType);
+                return dataRecord.getResponseData();
+            return JsonConfig.get().getObjectMapper().reader().readValue(dataRecord.getResponseData(), returnType);
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException("Unable to get function response as " + returnType.getSimpleName(), e);
         }
