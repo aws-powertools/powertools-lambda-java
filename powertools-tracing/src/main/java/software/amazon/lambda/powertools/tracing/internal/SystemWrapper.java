@@ -1,7 +1,8 @@
 package software.amazon.lambda.powertools.tracing.internal;
 
 public class SystemWrapper {
-    public SystemWrapper() {
+    private SystemWrapper() {
+        // avoid instantiation, static methods
     }
 
     public static String getenv(String name) {
