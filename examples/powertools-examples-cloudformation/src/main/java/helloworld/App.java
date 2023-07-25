@@ -26,8 +26,8 @@ import java.util.Objects;
 
 public class App extends AbstractCustomResourceHandler {
     private final static Logger log = LogManager.getLogger(App.class);
-    public static final String CFN_CUSTOM_RESOURCE_EVENT_CANNOT_BE_NULL = "cloudFormationCustomResourceEvent cannot be null.";
-    public static final String BUCKET_NAME = "BucketName";
+    private static final String CFN_CUSTOM_RESOURCE_EVENT_CANNOT_BE_NULL = "cloudFormationCustomResourceEvent cannot be null.";
+    private static final String BUCKET_NAME = "BucketName";
     private final S3Client s3Client;
 
     public App() {
