@@ -14,12 +14,23 @@
 package software.amazon.lambda.powertools.core.internal;
 
 public class LambdaConstants {
+
+    private LambdaConstants() {
+        // avoid instantiation, static fields
+    }
+
     public static final String LAMBDA_FUNCTION_NAME_ENV = "AWS_LAMBDA_FUNCTION_NAME";
     public static final String AWS_REGION_ENV = "AWS_REGION";
-    // Also you can use AWS_LAMBDA_INITIALIZATION_TYPE to distinguish between on-demand and SnapStart initialization
-    // it's not recommended to use this env variable to initialize SDK clients or other resources.
+    /**
+     * @deprecated
+     * Also you can use AWS_LAMBDA_INITIALIZATION_TYPE to distinguish between on-demand and SnapStart initialization
+     * it's not recommended to use this env variable to initialize SDK clients or other resources.
+     */
     @Deprecated
     public static final String AWS_LAMBDA_INITIALIZATION_TYPE = "AWS_LAMBDA_INITIALIZATION_TYPE";
+    /**
+     * @deprecated see AWS_LAMBDA_INITIALIZATION_TYPE
+     */
     @Deprecated
     public static final String ON_DEMAND = "on-demand";
     public static final String X_AMZN_TRACE_ID = "_X_AMZN_TRACE_ID";
