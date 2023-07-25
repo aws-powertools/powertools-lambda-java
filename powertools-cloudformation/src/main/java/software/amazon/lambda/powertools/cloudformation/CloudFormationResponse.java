@@ -118,16 +118,14 @@ class CloudFormationResponse {
 
         @Override
         public String toString() {
-            final StringBuffer sb = new StringBuffer("ResponseBody{");
-            sb.append("status='").append(status).append('\'');
-            sb.append(", reason='").append(reason).append('\'');
-            sb.append(", physicalResourceId='").append(physicalResourceId).append('\'');
-            sb.append(", stackId='").append(stackId).append('\'');
-            sb.append(", requestId='").append(requestId).append('\'');
-            sb.append(", logicalResourceId='").append(logicalResourceId).append('\'');
-            sb.append(", noEcho=").append(noEcho);
-            sb.append('}');
-            return sb.toString();
+            return "ResponseBody{" + "status='" + status + '\'' +
+                    ", reason='" + reason + '\'' +
+                    ", physicalResourceId='" + physicalResourceId + '\'' +
+                    ", stackId='" + stackId + '\'' +
+                    ", requestId='" + requestId + '\'' +
+                    ", logicalResourceId='" + logicalResourceId + '\'' +
+                    ", noEcho=" + noEcho +
+                    '}';
         }
     }
 
@@ -232,7 +230,7 @@ class CloudFormationResponse {
             } else {
 
                 String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId() :
-                        event.getPhysicalResourceId() != null? event.getPhysicalResourceId() : context.getLogStreamName();
+                        (event.getPhysicalResourceId() != null ? event.getPhysicalResourceId() : context.getLogStreamName());
 
                 ResponseBody body = new ResponseBody(event, resp.getStatus(), physicalResourceId, resp.isNoEcho(), reason);
                 LOG.debug("ResponseBody: {}", body);
@@ -240,7 +238,6 @@ class CloudFormationResponse {
                 return new StringInputStream(node.toString());
             }
         } catch (RuntimeException e) {
-            LOG.error(e.getMessage());
             throw new CustomResourceResponseException("Unable to generate response body.", e);
         }
     }
