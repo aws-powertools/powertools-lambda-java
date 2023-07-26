@@ -197,6 +197,15 @@ The following companies, among others, use Powertools:
 * [MkDocs](https://www.mkdocs.org/)
 * [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
 
+## Connect
+
+* **Powertools for AWS Lambda on Discord**: `#java` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+* **Email**: <aws-lambda-powertools-feedback@amazon.com>
+
+## Security disclosures
+
+If you think you’ve found a potential security issue, please do not post it in the Issues.  Instead, please follow the instructions [here](https://aws.amazon.com/security/vulnerability-reporting/) or [email AWS security directly](mailto:aws-security@amazon.com).
+
 ## License
 
 This library is licensed under the Apache License, Version 2.0. See the LICENSE file.

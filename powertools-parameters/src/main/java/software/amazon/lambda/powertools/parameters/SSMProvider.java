@@ -13,19 +13,16 @@
  */
 package software.amazon.lambda.powertools.parameters;
 
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.SsmClientBuilder;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -34,8 +31,6 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 
 /**
  * AWS System Manager Parameter Store Provider <br/><br/>
@@ -286,21 +281,11 @@ public class SSMProvider extends BaseProvider {
         }
 
         private static SsmClient createClient() {
-            SsmClientBuilder ssmClientBuilder = SsmClient.builder()
+            return SsmClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build());
-            ;
-
-            // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-            // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-            // fall back to the default provider chain if the mode is anything other than on-demand.
-            String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-            if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                ssmClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-            }
-
-            return ssmClientBuilder.build();
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .build();
         }
 
         /**

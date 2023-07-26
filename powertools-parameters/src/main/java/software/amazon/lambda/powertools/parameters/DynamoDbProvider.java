@@ -1,19 +1,12 @@
 package software.amazon.lambda.powertools.parameters;
 
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
-import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
-import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import software.amazon.lambda.powertools.core.internal.LambdaConstants;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
@@ -22,8 +15,6 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 
 /**
  * Implements a {@link ParamProvider} on top of DynamoDB. The schema of the table
@@ -193,20 +184,11 @@ public class DynamoDbProvider extends BaseProvider {
         }
 
         private static DynamoDbClient createClient() {
-            DynamoDbClientBuilder dynamoDbClientBuilder = DynamoDbClient.builder()
+            return DynamoDbClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build());
-
-            // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-            // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-            // fall back to the default provider chain if the mode is anything other than on-demand.
-            String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-            if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                dynamoDbClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-            }
-
-            return dynamoDbClientBuilder.build();
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .build();
         }
     }
 }
