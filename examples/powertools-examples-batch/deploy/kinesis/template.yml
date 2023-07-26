@@ -32,10 +32,10 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../..
-      Handler: org.demo.batch.sqs.KinesisBatchSender::handleRequest
+      Handler: org.demo.batch.kinesis.KinesisBatchSender::handleRequest
       Environment:
         Variables:
-          POWERTOOLS_SERVICE_NAME: sqs-batch-demo
+          POWERTOOLS_SERVICE_NAME: kinesis-batch-demo
           STREAM_NAME: !Ref DemoKinesisStream
       Policies:
         - Statement:
@@ -51,7 +51,7 @@ Resources:
           Properties:
             Schedule: 'rate(5 minutes)'
             Name: !Join ["-", ["message-producer-schedule", !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]]]
-            Description: Produce message to SQS via a Lambda function
+            Description: Produce message to Kinesis via a Lambda function
             Enabled: true
 
   DemoKinesisConsumerFunction:
@@ -71,10 +71,10 @@ Resources:
             BatchSize: 2
 
 Outputs:
-  DemoSqsQueue:
+  DemoKinesisQueue:
     Description: "ARN for Kinesis Stream"
     Value: !GetAtt DemoKinesisStream.Arn
-  DemoSQSSenderFunction:
+  DemoKinesisSenderFunction:
     Description: "Kinesis Batch Sender - Lambda Function ARN"
     Value: !GetAtt DemoKinesisSenderFunction.Arn
   DemoSQSConsumerFunction:

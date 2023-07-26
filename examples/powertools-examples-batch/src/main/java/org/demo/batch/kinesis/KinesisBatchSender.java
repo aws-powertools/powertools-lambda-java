@@ -57,6 +57,7 @@ public class KinesisBatchSender implements RequestHandler<ScheduledEvent, String
                     try {
                         SdkBytes data = SdkBytes.fromUtf8String(objectMapper.writeValueAsString(product));
                         return PutRecordsRequestEntry.builder()
+                                .partitionKey(String.format("%d", id))
                                 .data(data)
                                 .build();
                     } catch (JsonProcessingException e) {
