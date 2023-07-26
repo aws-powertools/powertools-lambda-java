@@ -16,6 +16,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 import java.security.SecureRandom;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
 public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
 
@@ -45,14 +46,13 @@ public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
         WriteBatch.Builder<DdbProduct> productBuilder = WriteBatch.builder(DdbProduct.class)
                 .mappedTableResource(enhancedClient.table(tableName, TableSchema.fromBean(DdbProduct.class)));
 
-
-        for (int i = 0; i < 5; i++) {
+        IntStream.range(0, 5).forEach(i -> {
             String id = UUID.randomUUID().toString();
 
             float price = random.nextFloat();
             DdbProduct product = new DdbProduct(id, "product-" + id, price);
             productBuilder.addPutItem(product);
-        }
+        });
 
         BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder().writeBatches(
                 productBuilder.build())
@@ -61,7 +61,7 @@ public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
         BatchWriteResult batchWriteResult = enhancedClient.batchWriteItem(batchWriteItemEnhancedRequest);
 
 
-        LOGGER.info("Sent Message {}", batchWriteResult);
+        LOGGER.info("Wrote batch of messages to DynamoDB: {}", batchWriteResult);
 
         return "Success";
     }
