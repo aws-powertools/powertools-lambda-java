@@ -20,6 +20,7 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
+
 public class SqsBatchSender implements RequestHandler<ScheduledEvent, String> {
 
     private static final Logger LOGGER = LogManager.getLogger(SqsBatchSender.class);
