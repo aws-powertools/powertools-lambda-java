@@ -10,6 +10,10 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
 
 /**
+ * @deprecated
+ * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+ * Will be removed in V2.
+ *
  * {@link SqsBatch} is used to process batch messages in {@link SQSEvent}
  *
  * <p>
@@ -73,6 +77,7 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Deprecated
 public @interface SqsBatch {
 
     Class<? extends SqsMessageHandler<Object>> value();

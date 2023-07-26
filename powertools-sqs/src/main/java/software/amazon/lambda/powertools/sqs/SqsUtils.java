@@ -115,6 +115,11 @@ public final class SqsUtils {
     }
 
     /**
+     *
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -142,12 +147,17 @@ public final class SqsUtils {
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing.
      */
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final Class<? extends SqsMessageHandler<R>> handler) {
         return batchProcessor(event, false, handler);
     }
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -195,6 +205,7 @@ public final class SqsUtils {
      * @throws SQSBatchProcessingException if some messages fail during processing.
      */
     @SafeVarargs
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final Class<? extends SqsMessageHandler<R>> handler,
                                              final Class<? extends Exception>... nonRetryableExceptions) {
@@ -202,6 +213,10 @@ public final class SqsUtils {
     }
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -227,6 +242,7 @@ public final class SqsUtils {
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing and no suppression enabled.
      */
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final Class<? extends SqsMessageHandler<R>> handler) {
@@ -236,6 +252,10 @@ public final class SqsUtils {
     }
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -286,6 +306,7 @@ public final class SqsUtils {
      * @throws SQSBatchProcessingException if some messages fail during processing.
      */
     @SafeVarargs
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final Class<? extends SqsMessageHandler<R>> handler,
@@ -296,6 +317,10 @@ public final class SqsUtils {
     }
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -349,6 +374,7 @@ public final class SqsUtils {
      * @throws SQSBatchProcessingException if some messages fail during processing.
      */
     @SafeVarargs
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final Class<? extends SqsMessageHandler<R>> handler,
@@ -360,6 +386,10 @@ public final class SqsUtils {
     }
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -387,6 +417,7 @@ public final class SqsUtils {
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message-
      * @throws SQSBatchProcessingException if some messages fail during processing.
      */
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final SqsMessageHandler<R> handler) {
         return batchProcessor(event, false, handler);
@@ -394,6 +425,10 @@ public final class SqsUtils {
 
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -442,6 +477,7 @@ public final class SqsUtils {
      * @throws SQSBatchProcessingException if some messages fail during processing.
      */
     @SafeVarargs
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final SqsMessageHandler<R> handler,
                                              final Class<? extends Exception>... nonRetryableExceptions) {
@@ -450,6 +486,10 @@ public final class SqsUtils {
 
 
     /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     *
      * This utility method is used to process each {@link SQSMessage} inside the received {@link SQSEvent}
      *
      * <p>
@@ -476,6 +516,7 @@ public final class SqsUtils {
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing and no suppression enabled.
      */
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final SqsMessageHandler<R> handler) {
@@ -483,7 +524,13 @@ public final class SqsUtils {
 
     }
 
+    /**
+     * @deprecated
+     * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+     * Will be removed in V2.
+     */
     @SafeVarargs
+    @Deprecated
     public static <R> List<R> batchProcessor(final SQSEvent event,
                                              final boolean suppressException,
                                              final SqsMessageHandler<R> handler,
