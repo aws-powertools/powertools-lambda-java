@@ -1,0 +1,83 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Kinesis batch processing demo
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_LOGGER_SAMPLE_RATE: 1.0
+        POWERTOOLS_LOGGER_LOG_EVENT: true
+
+Resources:
+
+  DemoKinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+      ShardCount: 1
+
+  StreamConsumer:
+    Type: "AWS::Kinesis::StreamConsumer"
+    Properties:
+      StreamARN: !GetAtt DemoKinesisStream.Arn
+      ConsumerName: KinesisBatchHandlerConsumer
+
+  DemoKinesisSenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../..
+      Handler: org.demo.batch.sqs.KinesisBatchSender::handleRequest
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: sqs-batch-demo
+          STREAM_NAME: !Ref DemoKinesisStream
+      Policies:
+        - Statement:
+          - Sid: WriteToKinesis
+            Effect: Allow
+            Action:
+              - kinesis:PutRecords
+              - kinesis:DescribeStream
+            Resource: !GetAtt DemoKinesisStream.Arn
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(5 minutes)'
+            Name: !Join ["-", ["message-producer-schedule", !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]]]
+            Description: Produce message to SQS via a Lambda function
+            Enabled: true
+
+  DemoKinesisConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../..
+      Handler: org.demo.batch.kinesis.KinesisBatchHandler::handleRequest
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: kinesis-demo
+      Events:
+        Kinesis:
+          Type: Kinesis
+          Properties:
+            Stream: !GetAtt StreamConsumer.ConsumerARN
+            StartingPosition: LATEST
+            BatchSize: 2
+
+Outputs:
+  DemoSqsQueue:
+    Description: "ARN for Kinesis Stream"
+    Value: !GetAtt DemoKinesisStream.Arn
+  DemoSQSSenderFunction:
+    Description: "Kinesis Batch Sender - Lambda Function ARN"
+    Value: !GetAtt DemoKinesisSenderFunction.Arn
+  DemoSQSConsumerFunction:
+    Description: "SQS Batch Handler - Lambda Function ARN"
+    Value: !GetAtt DemoKinesisConsumerFunction.Arn
+
