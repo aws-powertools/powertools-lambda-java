@@ -1,21 +1,26 @@
-# Validation
+#  Powertools for AWS Lambda (Java) - Validation Example
 
-This project contains an example of Lambda function using the validation module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/validation/).
+This project contains an example of Lambda function using the validation module of Powertools for AWS Lambda (Java). 
+For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/validation/).
+
+The handler [InboundValidation](src/main/java/org/demo/validation/InboundValidation.java) validates incoming HTTP requests
+received from the API gateway against [schema.json](src/main/resources/schema.json).
 
 ## Deploy the sample application
 
-This sample is based on Serverless Application Model (SAM) and you can use the SAM Command Line Interface (SAM CLI) to build it and deploy it to AWS.
+This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
+started with SAM in [the examples directory](../README.md)
 
-To use the SAM CLI, you need the following tools.
+## Test the application
 
-* SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* Java11 - [Install the Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
-* Maven - [Install Maven](https://maven.apache.org/install.html)
-* Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
+To test the validation, we can POST a JSON object shaped like our schema: 
+```bash
+ curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/hello/ -H "Content-Type: application/json" -d '{"address": "https://checkip.amazonaws.com"}'
+```
 
-To build and deploy your application for the first time, run the following in your shell:
+If we break the schema - for instance, by removing one of the compulsory fields, 
+we will get an error back from our API and will see a `ValidationException` in the logs:
 
 ```bash
-sam build
-sam deploy --guided
+ sam logs --tail --stack-name $MY_STACK
 ```
