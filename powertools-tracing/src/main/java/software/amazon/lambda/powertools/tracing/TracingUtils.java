@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,20 +11,20 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.tracing;
 
-import java.util.function.Consumer;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import java.util.function.Consumer;
 
 /**
  * A class of helper functions to add additional functionality and ease
  * of use.
- *
  */
 public final class TracingUtils {
     private static ObjectMapper objectMapper;
@@ -32,7 +32,7 @@ public final class TracingUtils {
     /**
      * Put an annotation to the current subsegment with a String value.
      *
-     * @param key the key of the annotation
+     * @param key   the key of the annotation
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, String value) {
@@ -43,33 +43,33 @@ public final class TracingUtils {
     /**
      * Put an annotation to the current subsegment with a Number value.
      *
-     * @param key the key of the annotation
+     * @param key   the key of the annotation
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, Number value) {
         AWSXRay.getCurrentSubsegmentOptional()
-          .ifPresent(segment -> segment.putAnnotation(key, value));
+                .ifPresent(segment -> segment.putAnnotation(key, value));
     }
 
     /**
      * Put an annotation to the current subsegment with a Boolean value.
      *
-     * @param key the key of the annotation
+     * @param key   the key of the annotation
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, Boolean value) {
         AWSXRay.getCurrentSubsegmentOptional()
-          .ifPresent(segment -> segment.putAnnotation(key, value));
+                .ifPresent(segment -> segment.putAnnotation(key, value));
     }
 
     /**
      * Put additional metadata for the current subsegment.
-     *
+     * <p>
      * The namespace used will be the namespace of the current subsegment if it
      * is set else it will follow the namespace process as described in
      * {@link Tracing}
      *
-     * @param key the key of the metadata
+     * @param key   the key of the metadata
      * @param value the value of the metadata
      */
     public static void putMetadata(String key, Object value) {
@@ -83,8 +83,8 @@ public final class TracingUtils {
      * Put additional metadata for the current subsegment.
      *
      * @param namespace the namespace of the metadata
-     * @param key the key of the metadata
-     * @param value the value of the metadata
+     * @param key       the key of the metadata
+     * @param value     the value of the metadata
      */
     public static void putMetadata(String namespace, String key, Object value) {
         AWSXRay.getCurrentSubsegmentOptional()
@@ -94,14 +94,14 @@ public final class TracingUtils {
     /**
      * Adds a new subsegment around the passed consumer. This also provides access to
      * the newly created subsegment.
-     *
+     * <p>
      * The namespace used follows the flow as described in {@link Tracing}
-     *
+     * <p>
      * This method is intended for use with multi-threaded programming where the
      * context is lost between threads.
      *
-     * @param name the name of the subsegment
-     * @param entity the current x-ray context
+     * @param name       the name of the subsegment
+     * @param entity     the current x-ray context
      * @param subsegment the x-ray subsegment for the wrapped consumer
      */
     public static void withEntitySubsegment(String name, Entity entity, Consumer<Subsegment> subsegment) {
@@ -112,16 +112,17 @@ public final class TracingUtils {
     /**
      * Adds a new subsegment around the passed consumer. This also provides access to
      * the newly created subsegment.
-     *
+     * <p>
      * This method is intended for use with multi-threaded programming where the
      * context is lost between threads.
      *
-     * @param namespace the namespace of the subsegment
-     * @param name the name of the subsegment
-     * @param entity the current x-ray context
+     * @param namespace  the namespace of the subsegment
+     * @param name       the name of the subsegment
+     * @param entity     the current x-ray context
      * @param subsegment the x-ray subsegment for the wrapped consumer
      */
-    public static void withEntitySubsegment(String namespace, String name, Entity entity, Consumer<Subsegment> subsegment) {
+    public static void withEntitySubsegment(String namespace, String name, Entity entity,
+                                            Consumer<Subsegment> subsegment) {
         AWSXRay.setTraceEntity(entity);
         withSubsegment(namespace, name, subsegment);
     }
@@ -129,10 +130,10 @@ public final class TracingUtils {
     /**
      * Adds a new subsegment around the passed consumer. This also provides access to
      * the newly created subsegment.
-     *
+     * <p>
      * The namespace used follows the flow as described in {@link Tracing}
      *
-     * @param name the name of the subsegment
+     * @param name       the name of the subsegment
      * @param subsegment the x-ray subsegment for the wrapped consumer
      */
     public static void withSubsegment(String name, Consumer<Subsegment> subsegment) {
@@ -143,8 +144,8 @@ public final class TracingUtils {
      * Adds a new subsegment around the passed consumer. This also provides access to
      * the newly created subsegment.
      *
-     * @param namespace the namespace for the subsegment
-     * @param name the name of the subsegment
+     * @param namespace  the namespace for the subsegment
+     * @param name       the name of the subsegment
      * @param subsegment the x-ray subsegment for the wrapped consumer
      */
     public static void withSubsegment(String namespace, String name, Consumer<Subsegment> subsegment) {

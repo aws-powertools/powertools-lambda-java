@@ -1,5 +1,26 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.parameters;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,31 +38,18 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 public class DynamoDbProviderTest {
 
+    private final String tableName = "ddb-test-table";
     @Mock
     DynamoDbClient client;
-
     @Mock
     TransformationManager transformationManager;
-
     @Captor
     ArgumentCaptor<GetItemRequest> getItemValueCaptor;
-
     @Captor
     ArgumentCaptor<QueryRequest> queryRequestCaptor;
-
-
     private DynamoDbProvider provider;
-    private final String tableName = "ddb-test-table";
 
     @BeforeEach
     public void init() {
@@ -114,9 +122,10 @@ public class DynamoDbProviderTest {
                 .item(responseData)
                 .build());
         // Act
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            provider.getValue(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                provider.getValue(key);
+            });
     }
 
 
@@ -180,10 +189,11 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            // Act
-           provider.getMultipleValues(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                // Act
+                provider.getMultipleValues(key);
+            });
     }
 
     @Test
@@ -200,10 +210,11 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            // Act
-            provider.getMultipleValues(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                // Act
+                provider.getMultipleValues(key);
+            });
     }
 
     @Test
@@ -214,6 +225,7 @@ public class DynamoDbProviderTest {
                 .withTable("table")
                 .build());
     }
+
     @Test
     public void testDynamoDBBuilderMissingTable_throwsException() {
 

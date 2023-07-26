@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,20 +11,20 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.core.internal;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import org.aspectj.lang.ProceedingJoinPoint;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Optional;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
+import org.aspectj.lang.ProceedingJoinPoint;
 
 public final class LambdaHandlerProcessor {
 

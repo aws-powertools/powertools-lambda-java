@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,12 +11,12 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
-
 import java.time.Duration;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 
 /**
  * Configuration of the idempotency feature. Use the {@link Builder} to create an instance.
@@ -31,7 +31,9 @@ public class IdempotencyConfig {
     private final String hashFunction;
     private Context lambdaContext;
 
-    private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath, boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems, long expirationInSeconds, String hashFunction) {
+    private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath,
+                              boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems,
+                              long expirationInSeconds, String hashFunction) {
         this.localCacheMaxItems = localCacheMaxItems;
         this.useLocalCache = useLocalCache;
         this.expirationInSeconds = expirationInSeconds;
@@ -39,6 +41,15 @@ public class IdempotencyConfig {
         this.payloadValidationJMESPath = payloadValidationJMESPath;
         this.throwOnNoIdempotencyKey = throwOnNoIdempotencyKey;
         this.hashFunction = hashFunction;
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link IdempotencyConfig}.
+     *
+     * @return a new instance of {@link Builder}
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     public int getLocalCacheMaxItems() {
@@ -69,22 +80,12 @@ public class IdempotencyConfig {
         return hashFunction;
     }
 
-
-    /**
-     * Create a builder that can be used to configure and create a {@link IdempotencyConfig}.
-     *
-     * @return a new instance of {@link Builder}
-     */
-    public static Builder builder() {
-        return new Builder();
+    public Context getLambdaContext() {
+        return lambdaContext;
     }
 
     public void setLambdaContext(Context lambdaContext) {
         this.lambdaContext = lambdaContext;
-    }
-
-    public Context getLambdaContext() {
-        return lambdaContext;
     }
 
     public static class Builder {
@@ -107,6 +108,7 @@ public class IdempotencyConfig {
          * <pre>
          * Idempotency.config().withConfig(config).configure();
          * </pre>
+         *
          * @return an instance of {@link IdempotencyConfig}.
          */
         public IdempotencyConfig build() {
@@ -124,15 +126,14 @@ public class IdempotencyConfig {
          * A JMESPath expression to extract the idempotency key from the event record. <br>
          * See <a href="https://jmespath.org/">https://jmespath.org/</a> for more details.<br>
          * Common paths are: <ul>
-         *     <li><code>powertools_json(body)</code> for APIGatewayProxyRequestEvent and APIGatewayV2HTTPEvent</li>
-         *     <li><code>Records[*].powertools_json(body)</code> for SQSEvent</li>
-         *     <li><code>Records[0].Sns.Message | powertools_json(@)</code> for SNSEvent</li>
-         *     <li><code>detail</code> for ScheduledEvent (EventBridge / CloudWatch events)</li>
-         *     <li><code>Records[*].kinesis.powertools_json(powertools_base64(data))</code> for KinesisEvent</li>
-         *     <li><code>Records[*].powertools_json(powertools_base64(data))</code> for KinesisFirehoseEvent</li>
-         *     <li>...</li>
+         * <li><code>powertools_json(body)</code> for APIGatewayProxyRequestEvent and APIGatewayV2HTTPEvent</li>
+         * <li><code>Records[*].powertools_json(body)</code> for SQSEvent</li>
+         * <li><code>Records[0].Sns.Message | powertools_json(@)</code> for SNSEvent</li>
+         * <li><code>detail</code> for ScheduledEvent (EventBridge / CloudWatch events)</li>
+         * <li><code>Records[*].kinesis.powertools_json(powertools_base64(data))</code> for KinesisEvent</li>
+         * <li><code>Records[*].powertools_json(powertools_base64(data))</code> for KinesisFirehoseEvent</li>
+         * <li>...</li>
          * </ul>
-         *
          *
          * @param eventKeyJMESPath path of the key in the Lambda event
          * @return the instance of the builder (to chain operations)

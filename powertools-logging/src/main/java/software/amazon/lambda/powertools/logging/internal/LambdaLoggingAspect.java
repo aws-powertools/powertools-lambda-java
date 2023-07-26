@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,36 +11,8 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.internal;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.util.IOUtils;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.DeclarePrecedence;
-import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Optional.empty;
@@ -56,6 +28,34 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonPointer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configurator;
+import org.apache.logging.log4j.core.util.IOUtils;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.DeclarePrecedence;
+import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 @Aspect
 @DeclarePrecedence("*, software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect")
@@ -76,6 +76,12 @@ public final class LambdaLoggingAspect {
         LEVEL_AT_INITIALISATION = LOG.getLevel();
     }
 
+    private static void resetLogLevels(Level logLevel) {
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        Configurator.setAllLevels(LogManager.getRootLogger().getName(), logLevel);
+        ctx.updateLoggers();
+    }
+
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(logging)")
     public void callAt(Logging logging) {
@@ -90,7 +96,7 @@ public final class LambdaLoggingAspect {
 
         Context extractedContext = extractContext(pjp);
 
-        if(null != extractedContext) {
+        if (null != extractedContext) {
             appendKeys(DefaultLambdaFields.values(extractedContext));
             appendKey("coldStart", isColdStart() ? "true" : "false");
             appendKey("service", serviceName());
@@ -108,18 +114,12 @@ public final class LambdaLoggingAspect {
 
         Object proceed = pjp.proceed(proceedArgs);
 
-        if(logging.clearState()) {
+        if (logging.clearState()) {
             ThreadContext.clearMap();
         }
 
         coldStartDone();
         return proceed;
-    }
-
-    private static void resetLogLevels(Level logLevel) {
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configurator.setAllLevels(LogManager.getRootLogger().getName(), logLevel);
-        ctx.updateLoggers();
     }
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
@@ -129,7 +129,8 @@ public final class LambdaLoggingAspect {
         if (isHandlerMethod(pjp)) {
 
             if (samplingRate < 0 || samplingRate > 1) {
-                LOG.debug("Skipping sampling rate configuration because of invalid value. Sampling rate: {}", samplingRate);
+                LOG.debug("Skipping sampling rate configuration because of invalid value. Sampling rate: {}",
+                        samplingRate);
                 return;
             }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,7 +11,16 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation.internal;
+
+import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
+import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
+import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -42,14 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.validation.Validation;
 import software.amazon.lambda.powertools.validation.ValidationConfig;
-
-import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
-import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
-import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
-import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
-import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 
 /**
  * Aspect for {@link Validation} annotation
@@ -108,27 +109,33 @@ public class ValidationAspect {
                     validate(event.getResourceProperties(), inboundJsonSchema);
                 } else if (obj instanceof KinesisEvent) {
                     KinesisEvent event = (KinesisEvent) obj;
-                    event.getRecords().forEach(record -> validate(decode(record.getKinesis().getData()), inboundJsonSchema));
+                    event.getRecords()
+                            .forEach(record -> validate(decode(record.getKinesis().getData()), inboundJsonSchema));
                 } else if (obj instanceof KinesisFirehoseEvent) {
                     KinesisFirehoseEvent event = (KinesisFirehoseEvent) obj;
                     event.getRecords().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else if (obj instanceof KafkaEvent) {
                     KafkaEvent event = (KafkaEvent) obj;
-                    event.getRecords().forEach((s, records) -> records.forEach(record -> validate(decode(record.getValue()), inboundJsonSchema)));
+                    event.getRecords().forEach((s, records) -> records.forEach(
+                            record -> validate(decode(record.getValue()), inboundJsonSchema)));
                 } else if (obj instanceof ActiveMQEvent) {
                     ActiveMQEvent event = (ActiveMQEvent) obj;
                     event.getMessages().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else if (obj instanceof RabbitMQEvent) {
                     RabbitMQEvent event = (RabbitMQEvent) obj;
-                    event.getRmqMessagesByQueue().forEach((s, records) -> records.forEach(record -> validate(decode(record.getData()), inboundJsonSchema)));
+                    event.getRmqMessagesByQueue().forEach((s, records) -> records.forEach(
+                            record -> validate(decode(record.getData()), inboundJsonSchema)));
                 } else if (obj instanceof KinesisAnalyticsFirehoseInputPreprocessingEvent) {
-                    KinesisAnalyticsFirehoseInputPreprocessingEvent event = (KinesisAnalyticsFirehoseInputPreprocessingEvent) obj;
+                    KinesisAnalyticsFirehoseInputPreprocessingEvent event =
+                            (KinesisAnalyticsFirehoseInputPreprocessingEvent) obj;
                     event.getRecords().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else if (obj instanceof KinesisAnalyticsStreamsInputPreprocessingEvent) {
-                    KinesisAnalyticsStreamsInputPreprocessingEvent event = (KinesisAnalyticsStreamsInputPreprocessingEvent) obj;
+                    KinesisAnalyticsStreamsInputPreprocessingEvent event =
+                            (KinesisAnalyticsStreamsInputPreprocessingEvent) obj;
                     event.getRecords().forEach(record -> validate(decode(record.getData()), inboundJsonSchema));
                 } else {
-                    LOG.warn("Unhandled event type {}, please use the 'envelope' parameter to specify what to validate", obj.getClass().getName());
+                    LOG.warn("Unhandled event type {}, please use the 'envelope' parameter to specify what to validate",
+                            obj.getClass().getName());
                 }
             }
         }
@@ -151,10 +158,12 @@ public class ValidationAspect {
                 ApplicationLoadBalancerResponseEvent response = (ApplicationLoadBalancerResponseEvent) result;
                 validate(response.getBody(), outboundJsonSchema);
             } else if (result instanceof KinesisAnalyticsInputPreprocessingResponse) {
-                KinesisAnalyticsInputPreprocessingResponse response = (KinesisAnalyticsInputPreprocessingResponse) result;
+                KinesisAnalyticsInputPreprocessingResponse response =
+                        (KinesisAnalyticsInputPreprocessingResponse) result;
                 response.getRecords().forEach(record -> validate(decode(record.getData()), outboundJsonSchema));
             } else {
-                LOG.warn("Unhandled response type {}, please use the 'envelope' parameter to specify what to validate", result.getClass().getName());
+                LOG.warn("Unhandled response type {}, please use the 'envelope' parameter to specify what to validate",
+                        result.getClass().getName());
             }
         }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,13 +11,13 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.transform;
 
-import software.amazon.lambda.powertools.parameters.exception.TransformationException;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.Base64;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
 /**
  * Transformer that take a base64 encoded string and return a decoded string.

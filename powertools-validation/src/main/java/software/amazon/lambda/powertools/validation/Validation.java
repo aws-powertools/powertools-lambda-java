@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,19 +11,19 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation;
+
+import static com.networknt.schema.SpecVersion.VersionFlag.V7;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.networknt.schema.SpecVersion.VersionFlag;
-
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import static com.networknt.schema.SpecVersion.VersionFlag.V7;
 
 /**
  * {@link Validation} is used to specify that the annotated method input and/or output needs to be valid.<br>

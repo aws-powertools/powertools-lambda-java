@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,18 +11,18 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.logging.log4j.ThreadContext;
-
-import java.util.Map;
 
 import static java.util.Arrays.asList;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import org.apache.logging.log4j.ThreadContext;
+
 /**
  * A class of helper functions to add additional functionality to Logging.
- *
+ * <p>
  * {@see Logging}
  */
 public final class LoggingUtils {
@@ -35,13 +35,12 @@ public final class LoggingUtils {
      * Appends an additional key and value to each log entry made. Duplicate values
      * for the same key will be replaced with the latest.
      *
-     * @param key The name of the key to be logged
+     * @param key   The name of the key to be logged
      * @param value The value to be logged
      */
     public static void appendKey(String key, String value) {
         ThreadContext.put(key, value);
     }
-
 
 
     /**
@@ -93,8 +92,8 @@ public final class LoggingUtils {
     }
 
     public static ObjectMapper objectMapper() {
-        if(null == objectMapper) {
-            objectMapper =  new ObjectMapper();
+        if (null == objectMapper) {
+            objectMapper = new ObjectMapper();
         }
 
         return objectMapper;
