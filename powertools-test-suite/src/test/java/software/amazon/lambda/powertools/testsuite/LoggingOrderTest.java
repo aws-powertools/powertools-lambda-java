@@ -1,6 +1,21 @@
 package software.amazon.lambda.powertools.testsuite;
 
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
+import com.amazonaws.xray.AWSXRay;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,13 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
-import com.amazonaws.xray.AWSXRay;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.AfterEach;
@@ -35,15 +43,6 @@ import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 import software.amazon.lambda.powertools.sqs.SqsUtils;
 import software.amazon.lambda.powertools.testsuite.handler.LoggingOrderMessageHandler;
 import software.amazon.lambda.powertools.testsuite.handler.TracingLoggingStreamMessageHandler;
-
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
-import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 public class LoggingOrderTest {
 
@@ -79,25 +78,30 @@ public class LoggingOrderTest {
      * after the event has been altered
      */
     @Test
-    public void testThatLoggingAnnotationActsLast()  throws IOException {
-        ResponseInputStream<GetObjectResponse> s3Response = new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new ByteArrayInputStream("A big message".getBytes())));
+    public void testThatLoggingAnnotationActsLast() throws IOException {
+        ResponseInputStream<GetObjectResponse> s3Response =
+                new ResponseInputStream<>(GetObjectResponse.builder().build(),
+                        AbortableInputStream.create(new ByteArrayInputStream("A big message".getBytes())));
 
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3Response);
-        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
+        SQSEvent sqsEvent = messageWithBody(
+                "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME +
+                        "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         LoggingOrderMessageHandler requestHandler = new LoggingOrderMessageHandler();
         requestHandler.handleRequest(sqsEvent, context);
 
         assertThat(Files.lines(Paths.get("target/logfile.json")))
                 .hasSize(2)
-                .satisfies(line -> {
-                    Map<String, Object> actual = parseToMap(line.get(0));
+                .satisfies(line ->
+                    {
+                        Map<String, Object> actual = parseToMap(line.get(0));
 
-                    String message = actual.get("message").toString();
+                        String message = actual.get("message").toString();
 
-                    assertThat(message)
-                            .contains("A big message");
-                });
+                        assertThat(message)
+                                .contains("A big message");
+                    });
     }
 
     @Test
@@ -107,7 +111,8 @@ public class LoggingOrderTest {
         S3EventNotification s3EventNotification = s3EventNotification();
 
         TracingLoggingStreamMessageHandler handler = new TracingLoggingStreamMessageHandler();
-        handler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(s3EventNotification)), output, context);
+        handler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(s3EventNotification)),
+                output, context);
 
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
                 .isNotEmpty();
@@ -121,7 +126,8 @@ public class LoggingOrderTest {
         when(context.getAwsRequestId()).thenReturn("RequestId");
     }
 
-    private void resetLogLevel(Level level) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void resetLogLevel(Level level)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels", Level.class);
         resetLogLevels.setAccessible(true);
         resetLogLevels.invoke(null, level);
@@ -138,25 +144,27 @@ public class LoggingOrderTest {
     }
 
     private S3EventNotification s3EventNotification() {
-        S3EventNotification.S3EventNotificationRecord record = new S3EventNotification.S3EventNotificationRecord("us-west-2",
-                "ObjectCreated:Put",
-                "aws:s3",
-                null,
-                "2.1",
-                new S3EventNotification.RequestParametersEntity("127.0.0.1"),
-                new S3EventNotification.ResponseElementsEntity("C3D13FE58DE4C810", "FMyUVURIY8/IgAtTv8xRjskZQpcIZ9KG4V5Wp6S7S/JRWeUWerMUE5JgHvANOjpD"),
-                new S3EventNotification.S3Entity("testConfigRule",
-                        new S3EventNotification.S3BucketEntity("mybucket",
-                                new S3EventNotification.UserIdentityEntity("A3NL1KOZZKExample"),
-                                "arn:aws:s3:::mybucket"),
-                        new S3EventNotification.S3ObjectEntity("HappyFace.jpg",
-                                1024L,
-                                "d41d8cd98f00b204e9800998ecf8427e",
-                                "096fKKXTRTtl3on89fVO.nfljtsv6qko",
-                                "0055AED6DCD90281E5"),
-                        "1.0"),
-                new S3EventNotification.UserIdentityEntity("AIDAJDPLRKLG7UEXAMPLE")
-        );
+        S3EventNotification.S3EventNotificationRecord record =
+                new S3EventNotification.S3EventNotificationRecord("us-west-2",
+                        "ObjectCreated:Put",
+                        "aws:s3",
+                        null,
+                        "2.1",
+                        new S3EventNotification.RequestParametersEntity("127.0.0.1"),
+                        new S3EventNotification.ResponseElementsEntity("C3D13FE58DE4C810",
+                                "FMyUVURIY8/IgAtTv8xRjskZQpcIZ9KG4V5Wp6S7S/JRWeUWerMUE5JgHvANOjpD"),
+                        new S3EventNotification.S3Entity("testConfigRule",
+                                new S3EventNotification.S3BucketEntity("mybucket",
+                                        new S3EventNotification.UserIdentityEntity("A3NL1KOZZKExample"),
+                                        "arn:aws:s3:::mybucket"),
+                                new S3EventNotification.S3ObjectEntity("HappyFace.jpg",
+                                        1024L,
+                                        "d41d8cd98f00b204e9800998ecf8427e",
+                                        "096fKKXTRTtl3on89fVO.nfljtsv6qko",
+                                        "0055AED6DCD90281E5"),
+                                "1.0"),
+                        new S3EventNotification.UserIdentityEntity("AIDAJDPLRKLG7UEXAMPLE")
+                );
 
         return new S3EventNotification(singletonList(record));
     }

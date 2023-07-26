@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -19,7 +20,9 @@ import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 
-/** Simple Lambda function with @{@link Idempotent} annotation on handleRequest method */
+/**
+ * Simple Lambda function with @{@link Idempotent} annotation on handleRequest method
+ */
 public class IdempotencyEnabledFunction implements RequestHandler<Product, Basket> {
 
     private boolean handlerCalled = false;

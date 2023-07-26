@@ -1,9 +1,8 @@
 package software.amazon.lambda.powertools.testutils.lambda;
 
+import java.time.Instant;
 import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 import software.amazon.lambda.powertools.testutils.logging.InvocationLogs;
-
-import java.time.Instant;
 
 public class InvocationResult {
 
@@ -21,6 +20,7 @@ public class InvocationResult {
         this.start = start;
         this.end = end;
     }
+
     public InvocationLogs getLogs() {
         return logs;
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,7 +28,8 @@ import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyFunctio
 
 public class IdempotencyTest extends DynamoDBConfig {
 
-    @Mock private Context context;
+    @Mock
+    private Context context;
 
     @BeforeEach
     void setUp() {

@@ -1,23 +1,42 @@
 package software.amazon.lambda.powertools.testutils;
 
+import static java.util.Collections.singletonList;
+
 import com.fasterxml.jackson.databind.JsonNode;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+import software.amazon.awscdk.App;
+import software.amazon.awscdk.BundlingOptions;
+import software.amazon.awscdk.BundlingOutput;
+import software.amazon.awscdk.DockerVolume;
+import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.*;
 import software.amazon.awscdk.cxapi.CloudAssembly;
-import software.amazon.awscdk.services.appconfig.*;
+import software.amazon.awscdk.services.appconfig.CfnApplication;
+import software.amazon.awscdk.services.appconfig.CfnConfigurationProfile;
+import software.amazon.awscdk.services.appconfig.CfnDeployment;
+import software.amazon.awscdk.services.appconfig.CfnDeploymentStrategy;
+import software.amazon.awscdk.services.appconfig.CfnEnvironment;
+import software.amazon.awscdk.services.appconfig.CfnHostedConfigurationVersion;
 import software.amazon.awscdk.services.dynamodb.Attribute;
 import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.Table;
-import software.amazon.awscdk.services.groundstation.CfnConfig;
 import software.amazon.awscdk.services.iam.PolicyStatement;
-import software.amazon.awscdk.services.iam.ServicePrincipal;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.lambda.Permission;
 import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
@@ -27,7 +46,12 @@ import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
-import software.amazon.awssdk.services.cloudformation.model.*;
+import software.amazon.awssdk.services.cloudformation.model.Capability;
+import software.amazon.awssdk.services.cloudformation.model.CreateStackRequest;
+import software.amazon.awssdk.services.cloudformation.model.DeleteStackRequest;
+import software.amazon.awssdk.services.cloudformation.model.DescribeStacksRequest;
+import software.amazon.awssdk.services.cloudformation.model.DescribeStacksResponse;
+import software.amazon.awssdk.services.cloudformation.model.OnFailure;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
@@ -35,14 +59,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.sts.StsClient;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static java.util.Collections.singletonList;
 
 /**
  * This class is in charge of bootstrapping the infrastructure for the tests.
@@ -71,12 +87,10 @@ public class Infrastructure {
     private final String account;
     private final String idempotencyTable;
     private final AppConfig appConfig;
-
-
+    private final SdkHttpClient httpClient;
     private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
-    private final SdkHttpClient httpClient;
 
     private Infrastructure(Builder builder) {
         this.stackName = builder.stackName;
@@ -110,8 +124,13 @@ public class Infrastructure {
                 .build();
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     /**
      * Use the CloudFormation SDK to create the stack
+     *
      * @return the name of the function deployed part of the stack
      */
     public String deploy() {
@@ -124,9 +143,11 @@ public class Infrastructure {
                 .onFailure(OnFailure.ROLLBACK)
                 .capabilities(Capability.CAPABILITY_IAM)
                 .build());
-        WaiterResponse<DescribeStacksResponse> waiterResponse = cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
+        WaiterResponse<DescribeStacksResponse> waiterResponse =
+                cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
         if (waiterResponse.matched().response().isPresent()) {
-            LOG.info("Stack " + waiterResponse.matched().response().get().stacks().get(0).stackName() + " successfully deployed");
+            LOG.info("Stack " + waiterResponse.matched().response().get().stacks().get(0).stackName() +
+                    " successfully deployed");
         } else {
             throw new RuntimeException("Failed to create stack");
         }
@@ -141,8 +162,202 @@ public class Infrastructure {
         cfn.deleteStack(DeleteStackRequest.builder().stackName(stackName).build());
     }
 
-    public static Builder builder() {
-        return new Builder();
+    /**
+     * Build the CDK Stack containing the required resources (Lambda function, LogGroup, DDB Table)
+     *
+     * @return the CDK stack
+     */
+    private Stack createStackWithLambda() {
+        Stack stack = new Stack(app, stackName);
+        List<String> packagingInstruction = Arrays.asList(
+                "/bin/sh",
+                "-c",
+                "cd " + pathToFunction +
+                        " && timeout -s SIGKILL 5m mvn clean install -ff " +
+                        " -Dmaven.test.skip=true " +
+                        " -Dmaven.resources.skip=true " +
+                        " -Dmaven.compiler.source=" + runtime.getMvnProperty() +
+                        " -Dmaven.compiler.target=" + runtime.getMvnProperty() +
+                        " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/"
+        );
+
+        BundlingOptions.Builder builderOptions = BundlingOptions.builder()
+                .command(packagingInstruction)
+                .image(runtime.getCdkRuntime().getBundlingImage())
+                .volumes(singletonList(
+                        // Mount local .m2 repo to avoid download all the dependencies again inside the container
+                        DockerVolume.builder()
+                                .hostPath(System.getProperty("user.home") + "/.m2/")
+                                .containerPath("/root/.m2/")
+                                .build()
+                ))
+                .user("root")
+                .outputType(BundlingOutput.ARCHIVED);
+
+        functionName = stackName + "-function";
+
+        LOG.debug("Building Lambda function with command " +
+                packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
+        Function function = Function.Builder
+                .create(stack, functionName)
+                .code(Code.fromAsset("handlers/", AssetOptions.builder()
+                        .bundling(builderOptions
+                                .command(packagingInstruction)
+                                .build())
+                        .build()))
+                .functionName(functionName)
+                .handler("software.amazon.lambda.powertools.e2e.Function::handleRequest")
+                .memorySize(1024)
+                .timeout(Duration.seconds(timeout))
+                .runtime(runtime.getCdkRuntime())
+                .environment(envVar)
+                .tracing(tracing ? Tracing.ACTIVE : Tracing.DISABLED)
+                .build();
+
+        LogGroup.Builder
+                .create(stack, functionName + "-logs")
+                .logGroupName("/aws/lambda/" + functionName)
+                .retention(RetentionDays.ONE_DAY)
+                .removalPolicy(RemovalPolicy.DESTROY)
+                .build();
+
+        if (!StringUtils.isEmpty(idempotencyTable)) {
+            Table table = Table.Builder
+                    .create(stack, "IdempotencyTable")
+                    .billingMode(BillingMode.PAY_PER_REQUEST)
+                    .removalPolicy(RemovalPolicy.DESTROY)
+                    .partitionKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
+                    .tableName(idempotencyTable)
+                    .timeToLiveAttribute("expiration")
+                    .build();
+
+            table.grantReadWriteData(function);
+        }
+
+        if (appConfig != null) {
+            CfnApplication app = CfnApplication.Builder
+                    .create(stack, "AppConfigApp")
+                    .name(appConfig.getApplication())
+                    .build();
+
+            CfnEnvironment environment = CfnEnvironment.Builder
+                    .create(stack, "AppConfigEnvironment")
+                    .applicationId(app.getRef())
+                    .name(appConfig.getEnvironment())
+                    .build();
+
+            // Create a fast deployment strategy so we don't have to wait ages
+            CfnDeploymentStrategy fastDeployment = CfnDeploymentStrategy.Builder
+                    .create(stack, "AppConfigDeployment")
+                    .name("FastDeploymentStrategy")
+                    .deploymentDurationInMinutes(0)
+                    .finalBakeTimeInMinutes(0)
+                    .growthFactor(100)
+                    .replicateTo("NONE")
+                    .build();
+
+            // Get the lambda permission to use AppConfig
+            function.addToRolePolicy(PolicyStatement.Builder
+                    .create()
+                    .actions(singletonList("appconfig:*"))
+                    .resources(singletonList("*"))
+                    .build()
+            );
+
+            CfnDeployment previousDeployment = null;
+            for (Map.Entry<String, String> entry : appConfig.getConfigurationValues().entrySet()) {
+                CfnConfigurationProfile configProfile = CfnConfigurationProfile.Builder
+                        .create(stack, "AppConfigProfileFor" + entry.getKey())
+                        .applicationId(app.getRef())
+                        .locationUri("hosted")
+                        .name(entry.getKey())
+                        .build();
+
+                CfnHostedConfigurationVersion configVersion = CfnHostedConfigurationVersion.Builder
+                        .create(stack, "AppConfigHostedVersionFor" + entry.getKey())
+                        .applicationId(app.getRef())
+                        .contentType("text/plain")
+                        .configurationProfileId(configProfile.getRef())
+                        .content(entry.getValue())
+                        .build();
+
+                CfnDeployment deployment = CfnDeployment.Builder
+                        .create(stack, "AppConfigDepoymentFor" + entry.getKey())
+                        .applicationId(app.getRef())
+                        .environmentId(environment.getRef())
+                        .deploymentStrategyId(fastDeployment.getRef())
+                        .configurationProfileId(configProfile.getRef())
+                        .configurationVersion(configVersion.getRef())
+                        .build();
+
+                // We need to chain the deployments to keep CFN happy
+                if (previousDeployment != null) {
+                    deployment.addDependsOn(previousDeployment);
+                }
+                previousDeployment = deployment;
+            }
+        }
+        return stack;
+    }
+
+    /**
+     * cdk synth to retrieve the CloudFormation template and assets directory
+     */
+    private void synthesize() {
+        CloudAssembly synth = app.synth();
+        cfnTemplate = synth.getStackByName(stack.getStackName()).getTemplate();
+        cfnAssetDirectory = synth.getDirectory();
+    }
+
+    /**
+     * Upload assets (mainly lambda function jars) to S3
+     */
+    private void uploadAssets() {
+        Map<String, Asset> assets = findAssets();
+        assets.forEach((objectKey, asset) ->
+            {
+                if (!asset.assetPath.endsWith(".jar")) {
+                    return;
+                }
+                ListObjectsV2Response objects =
+                        s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
+                if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
+                    LOG.debug("Asset already exists, skipping");
+                    return;
+                }
+                LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
+                s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(),
+                        Paths.get(cfnAssetDirectory, asset.assetPath));
+            });
+    }
+
+    /**
+     * Reading the cdk assets.json file to retrieve the list of assets to push to S3
+     *
+     * @return a map of assets
+     */
+    private Map<String, Asset> findAssets() {
+        Map<String, Asset> assets = new HashMap<>();
+        try {
+            JsonNode jsonNode = JsonConfig.get().getObjectMapper()
+                    .readTree(new File(cfnAssetDirectory, stackName + ".assets.json"));
+            JsonNode files = jsonNode.get("files");
+            files.iterator().forEachRemaining(file ->
+                {
+                    String assetPath = file.get("source").get("path").asText();
+                    String assetPackaging = file.get("source").get("packaging").asText();
+                    String bucketName =
+                            file.get("destinations").get("current_account-current_region").get("bucketName").asText();
+                    String objectKey =
+                            file.get("destinations").get("current_account-current_region").get("objectKey").asText();
+                    Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
+                            .replace("${AWS::Region}", region.toString()));
+                    assets.put(objectKey, asset);
+                });
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return assets;
     }
 
     public static class Builder {
@@ -224,193 +439,6 @@ public class Infrastructure {
             this.timeoutInSeconds = timeoutInSeconds;
             return this;
         }
-    }
-
-    /**
-     * Build the CDK Stack containing the required resources (Lambda function, LogGroup, DDB Table)
-     * @return the CDK stack
-     */
-    private Stack createStackWithLambda() {
-        Stack stack = new Stack(app, stackName);
-        List<String> packagingInstruction = Arrays.asList(
-                "/bin/sh",
-                "-c",
-                "cd " + pathToFunction +
-                        " && timeout -s SIGKILL 5m mvn clean install -ff " +
-                        " -Dmaven.test.skip=true " +
-                        " -Dmaven.resources.skip=true " +
-                        " -Dmaven.compiler.source=" + runtime.getMvnProperty() +
-                        " -Dmaven.compiler.target=" + runtime.getMvnProperty() +
-                        " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/"
-        );
-
-        BundlingOptions.Builder builderOptions = BundlingOptions.builder()
-                .command(packagingInstruction)
-                .image(runtime.getCdkRuntime().getBundlingImage())
-                .volumes(singletonList(
-                        // Mount local .m2 repo to avoid download all the dependencies again inside the container
-                        DockerVolume.builder()
-                                .hostPath(System.getProperty("user.home") + "/.m2/")
-                                .containerPath("/root/.m2/")
-                                .build()
-                ))
-                .user("root")
-                .outputType(BundlingOutput.ARCHIVED);
-
-        functionName = stackName + "-function";
-
-        LOG.debug("Building Lambda function with command "+ packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
-        Function function = Function.Builder
-                .create(stack, functionName)
-                .code(Code.fromAsset("handlers/", AssetOptions.builder()
-                        .bundling(builderOptions
-                                .command(packagingInstruction)
-                                .build())
-                        .build()))
-                .functionName(functionName)
-                .handler("software.amazon.lambda.powertools.e2e.Function::handleRequest")
-                .memorySize(1024)
-                .timeout(Duration.seconds(timeout))
-                .runtime(runtime.getCdkRuntime())
-                .environment(envVar)
-                .tracing(tracing ? Tracing.ACTIVE : Tracing.DISABLED)
-                .build();
-
-        LogGroup.Builder
-                .create(stack, functionName + "-logs")
-                .logGroupName("/aws/lambda/" + functionName)
-                .retention(RetentionDays.ONE_DAY)
-                .removalPolicy(RemovalPolicy.DESTROY)
-                .build();
-
-        if (!StringUtils.isEmpty(idempotencyTable)) {
-            Table table = Table.Builder
-                    .create(stack, "IdempotencyTable")
-                    .billingMode(BillingMode.PAY_PER_REQUEST)
-                    .removalPolicy(RemovalPolicy.DESTROY)
-                    .partitionKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
-                    .tableName(idempotencyTable)
-                    .timeToLiveAttribute("expiration")
-                    .build();
-
-            table.grantReadWriteData(function);
-        }
-
-        if (appConfig != null) {
-        CfnApplication app = CfnApplication.Builder
-                .create(stack, "AppConfigApp")
-                .name(appConfig.getApplication())
-                .build();
-
-            CfnEnvironment environment = CfnEnvironment.Builder
-                    .create(stack, "AppConfigEnvironment")
-                    .applicationId(app.getRef())
-                    .name(appConfig.getEnvironment())
-                    .build();
-
-            // Create a fast deployment strategy so we don't have to wait ages
-            CfnDeploymentStrategy fastDeployment = CfnDeploymentStrategy.Builder
-                    .create(stack, "AppConfigDeployment")
-                    .name("FastDeploymentStrategy")
-                    .deploymentDurationInMinutes(0)
-                    .finalBakeTimeInMinutes(0)
-                    .growthFactor(100)
-                    .replicateTo("NONE")
-                    .build();
-
-            // Get the lambda permission to use AppConfig
-            function.addToRolePolicy(PolicyStatement.Builder
-                    .create()
-                    .actions(singletonList("appconfig:*"))
-                    .resources(singletonList("*"))
-                    .build()
-            );
-
-            CfnDeployment previousDeployment = null;
-            for (Map.Entry<String,String> entry : appConfig.getConfigurationValues().entrySet()) {
-                CfnConfigurationProfile configProfile = CfnConfigurationProfile.Builder
-                        .create(stack, "AppConfigProfileFor" + entry.getKey())
-                        .applicationId(app.getRef())
-                        .locationUri("hosted")
-                        .name(entry.getKey())
-                        .build();
-
-                CfnHostedConfigurationVersion configVersion = CfnHostedConfigurationVersion.Builder
-                        .create(stack, "AppConfigHostedVersionFor" + entry.getKey())
-                        .applicationId(app.getRef())
-                        .contentType("text/plain")
-                        .configurationProfileId(configProfile.getRef())
-                        .content(entry.getValue())
-                        .build();
-
-                CfnDeployment deployment = CfnDeployment.Builder
-                        .create(stack, "AppConfigDepoymentFor" + entry.getKey())
-                        .applicationId(app.getRef())
-                        .environmentId(environment.getRef())
-                        .deploymentStrategyId(fastDeployment.getRef())
-                        .configurationProfileId(configProfile.getRef())
-                        .configurationVersion(configVersion.getRef())
-                        .build();
-
-                // We need to chain the deployments to keep CFN happy
-                if (previousDeployment != null) {
-                    deployment.addDependsOn(previousDeployment);
-                }
-                previousDeployment = deployment;
-            }
-        }
-        return stack;
-    }
-
-    /**
-     * cdk synth to retrieve the CloudFormation template and assets directory
-     */
-    private void synthesize() {
-        CloudAssembly synth = app.synth();
-        cfnTemplate = synth.getStackByName(stack.getStackName()).getTemplate();
-        cfnAssetDirectory = synth.getDirectory();
-    }
-
-    /**
-     * Upload assets (mainly lambda function jars) to S3
-     */
-    private void uploadAssets() {
-        Map<String, Asset> assets = findAssets();
-        assets.forEach((objectKey, asset) -> {
-            if (!asset.assetPath.endsWith(".jar")) {
-                return;
-            }
-            ListObjectsV2Response objects = s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
-            if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
-                LOG.debug("Asset already exists, skipping");
-                return;
-            }
-            LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
-            s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(), Paths.get(cfnAssetDirectory, asset.assetPath));
-        });
-    }
-
-    /**
-     * Reading the cdk assets.json file to retrieve the list of assets to push to S3
-     * @return a map of assets
-     */
-    private Map<String, Asset> findAssets() {
-        Map<String, Asset> assets = new HashMap<>();
-        try {
-            JsonNode jsonNode = JsonConfig.get().getObjectMapper().readTree(new File(cfnAssetDirectory, stackName + ".assets.json"));
-            JsonNode files = jsonNode.get("files");
-            files.iterator().forEachRemaining(file -> {
-                String assetPath = file.get("source").get("path").asText();
-                String assetPackaging = file.get("source").get("packaging").asText();
-                String bucketName = file.get("destinations").get("current_account-current_region").get("bucketName").asText();
-                String objectKey = file.get("destinations").get("current_account-current_region").get("objectKey").asText();
-                Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account).replace("${AWS::Region}", region.toString()));
-                assets.put(objectKey, asset);
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return assets;
     }
 
     private static class Asset {

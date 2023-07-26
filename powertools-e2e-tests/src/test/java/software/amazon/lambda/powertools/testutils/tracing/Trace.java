@@ -1,9 +1,8 @@
 package software.amazon.lambda.powertools.testutils.tracing;
 
-import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSegment;
-
 import java.util.ArrayList;
 import java.util.List;
+import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSegment;
 
 public class Trace {
     private final List<SubSegment> subsegments = new ArrayList<>();

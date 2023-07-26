@@ -1,5 +1,13 @@
 package software.amazon.lambda.powertools.parameters.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -11,14 +19,6 @@ import software.amazon.lambda.powertools.parameters.exception.TransformationExce
 import software.amazon.lambda.powertools.parameters.transform.Base64Transformer;
 import software.amazon.lambda.powertools.parameters.transform.JsonTransformer;
 import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 public class LambdaParametersAspectTest {
 
@@ -75,14 +75,17 @@ public class LambdaParametersAspectTest {
                 .isInstanceOf(ObjectToDeserialize.class)
                 .matches(
                         o -> o.getFoo().equals("Foo") &&
-                        o.getBar() == 42 &&
-                        o.getBaz() == 123456789);
+                                o.getBar() == 42 &&
+                                o.getBaz() == 123456789);
     }
 
     @Test
     public void testWithComplexTransformWrongTargetClass_ShouldThrowException() {
         assertThatExceptionOfType(TransformationException.class)
-                .isThrownBy(() -> {AnotherObject obj = wrongTransform; });
+                .isThrownBy(() ->
+                    {
+                        AnotherObject obj = wrongTransform;
+                    });
     }
 
 }

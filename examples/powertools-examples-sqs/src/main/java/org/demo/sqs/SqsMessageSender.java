@@ -1,11 +1,18 @@
-
 package org.demo.sqs;
+
+import static java.util.stream.Collectors.toList;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.stream.IntStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -16,15 +23,6 @@ import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
-
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.stream.IntStream;
-
-import static java.util.stream.Collectors.toList;
 
 public class SqsMessageSender implements RequestHandler<ScheduledEvent, String> {
 
@@ -50,22 +48,23 @@ public class SqsMessageSender implements RequestHandler<ScheduledEvent, String> 
 
         // Push 5 messages on each invoke.
         List<SendMessageBatchRequestEntry> batchRequestEntries = IntStream.range(0, 5)
-                .mapToObj(value -> {
-                    Map<String, MessageAttributeValue> attributeValueHashMap = new HashMap<>();
-                    attributeValueHashMap.put("Key" + value, MessageAttributeValue.builder()
-                            .dataType("String")
-                            .stringValue("Value" + value)
-                            .build());
+                .mapToObj(value ->
+                    {
+                        Map<String, MessageAttributeValue> attributeValueHashMap = new HashMap<>();
+                        attributeValueHashMap.put("Key" + value, MessageAttributeValue.builder()
+                                .dataType("String")
+                                .stringValue("Value" + value)
+                                .build());
 
-                    byte[] array = new byte[7];
-                    random.nextBytes(array);
+                        byte[] array = new byte[7];
+                        random.nextBytes(array);
 
-                    return SendMessageBatchRequestEntry.builder()
-                            .messageAttributes(attributeValueHashMap)
-                            .id(input.getId() + value)
-                            .messageBody("Sample Message " + value)
-                            .build();
-                }).collect(toList());
+                        return SendMessageBatchRequestEntry.builder()
+                                .messageAttributes(attributeValueHashMap)
+                                .id(input.getId() + value)
+                                .messageBody("Sample Message " + value)
+                                .build();
+                    }).collect(toList());
 
         SendMessageBatchResponse sendMessageBatchResponse = sqsClient.sendMessageBatch(SendMessageBatchRequest.builder()
                 .queueUrl(queueUrl)

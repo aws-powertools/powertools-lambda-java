@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
@@ -33,7 +34,13 @@ import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
@@ -59,7 +66,9 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
     private final String validationAttr;
     private final DynamoDbClient dynamoDbClient;
 
-    /** Private: use the {@link Builder} to instantiate a new {@link DynamoDBPersistenceStore} */
+    /**
+     * Private: use the {@link Builder} to instantiate a new {@link DynamoDBPersistenceStore}
+     */
     private DynamoDBPersistenceStore(
             String tableName,
             String keyAttr,
@@ -86,7 +95,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         } else {
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null
-                    || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
+                    || "false".equalsIgnoreCase(idempotencyDisabledEnv)) {
                 DynamoDbClientBuilder ddbBuilder =
                         DynamoDbClient.builder()
                                 .httpClient(UrlConnectionHttpClient.builder().build())
@@ -109,6 +118,10 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 this.dynamoDbClient = null;
             }
         }
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -293,10 +306,6 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 item.get(this.inProgressExpiryAttr) != null
                         ? OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n()))
                         : OptionalLong.empty());
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     /**

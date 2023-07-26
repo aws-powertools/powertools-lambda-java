@@ -1,5 +1,7 @@
 package org.demo.serialization;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -7,8 +9,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class APIGatewayRequestDeserializationFunctionTest {
 

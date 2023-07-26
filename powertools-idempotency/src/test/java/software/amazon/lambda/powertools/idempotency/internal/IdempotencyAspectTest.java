@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,13 +11,19 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.internal;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -38,7 +44,13 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlrea
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.handlers.*;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyEnabledFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunctionInternalKey;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunctionInvalid;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunctionVoid;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyStringFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyWithErrorFunction;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
@@ -47,9 +59,11 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class IdempotencyAspectTest {
 
-    @Mock private Context context;
+    @Mock
+    private Context context;
 
-    @Mock private BasePersistenceStore store;
+    @Mock
+    private BasePersistenceStore store;
 
     @BeforeEach
     void setUp() {

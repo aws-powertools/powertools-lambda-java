@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +26,18 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.BillingMode;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
+import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.DynamoDBConfig;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -144,15 +156,15 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         // WHEN: call putRecord
         long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         assertThatThrownBy(
-                        () ->
-                                dynamoDBPersistenceStore.putRecord(
-                                        new DataRecord(
-                                                "key",
-                                                DataRecord.Status.INPROGRESS,
-                                                expiry2,
-                                                null,
-                                                null),
-                                        now))
+                () ->
+                        dynamoDBPersistenceStore.putRecord(
+                                new DataRecord(
+                                        "key",
+                                        DataRecord.Status.INPROGRESS,
+                                        expiry2,
+                                        null,
+                                        null),
+                                now))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
 
         // THEN: item was not updated, retrieve the initial one
@@ -167,7 +179,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
 
     @Test
     public void
-            putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExistAndProgressNotExpiredAfterLambdaTimedOut() {
+    putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExistAndProgressNotExpiredAfterLambdaTimedOut() {
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
 
         // GIVEN: Insert a fake item with same id
@@ -188,15 +200,15 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         // WHEN: call putRecord
         long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         assertThatThrownBy(
-                        () ->
-                                dynamoDBPersistenceStore.putRecord(
-                                        new DataRecord(
-                                                "key",
-                                                DataRecord.Status.INPROGRESS,
-                                                expiry2,
-                                                null,
-                                                null),
-                                        now))
+                () ->
+                        dynamoDBPersistenceStore.putRecord(
+                                new DataRecord(
+                                        "key",
+                                        DataRecord.Status.INPROGRESS,
+                                        expiry2,
+                                        null,
+                                        null),
+                                now))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
 
         // THEN: item was not updated, retrieve the initial one
@@ -404,8 +416,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
             // DELETE
             persistenceStore.deleteRecord("mykey");
             assertThat(
-                            client.scan(ScanRequest.builder().tableName(TABLE_NAME_CUSTOM).build())
-                                    .count())
+                    client.scan(ScanRequest.builder().tableName(TABLE_NAME_CUSTOM).build())
+                            .count())
                     .isEqualTo(0);
 
         } finally {

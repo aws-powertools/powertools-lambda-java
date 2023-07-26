@@ -1,5 +1,12 @@
 package software.amazon.lambda.powertools;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,16 +17,9 @@ import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSe
 import software.amazon.lambda.powertools.testutils.tracing.Trace;
 import software.amazon.lambda.powertools.testutils.tracing.TraceFetcher;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
-
 public class TracingE2ET {
-    private static final String service = "TracingE2EService_" + UUID.randomUUID(); // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
+    private static final String service = "TracingE2EService_" + UUID.randomUUID();
+    // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
 
     private static Infrastructure infrastructure;
     private static String functionName;
@@ -38,8 +38,9 @@ public class TracingE2ET {
 
     @AfterAll
     public static void tearDown() {
-        if (infrastructure != null)
+        if (infrastructure != null) {
             infrastructure.destroy();
+        }
     }
 
     @Test
@@ -77,7 +78,8 @@ public class TracingE2ET {
         sub = handleRequest.getSubsegments().get(1);
         assertThat(sub.getName()).isIn("## internal_stuff", "## buildMessage");
 
-        SubSegment buildMessage = handleRequest.getSubsegments().stream().filter(subSegment -> subSegment.getName().equals("## buildMessage")).findFirst().orElse(null);
+        SubSegment buildMessage = handleRequest.getSubsegments().stream()
+                .filter(subSegment -> subSegment.getName().equals("## buildMessage")).findFirst().orElse(null);
         assertThat(buildMessage).isNotNull();
         assertThat(buildMessage.getAnnotations()).hasSize(1);
         assertThat(buildMessage.getAnnotations().get("message")).isEqualTo(message);

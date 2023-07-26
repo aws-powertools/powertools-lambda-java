@@ -1,12 +1,11 @@
 package software.amazon.lambda.powertools.testutils;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Defines configuration used to setup an AppConfig
  * deployment when the infrastructure is rolled out.
- *
+ * <p>
  * All fields are non-nullable.
  */
 public class AppConfig {

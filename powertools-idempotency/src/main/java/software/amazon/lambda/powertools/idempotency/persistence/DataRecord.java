@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
 import java.time.Instant;
@@ -100,8 +101,12 @@ public class DataRecord {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DataRecord record = (DataRecord) o;
         return expiryTimestamp == record.expiryTimestamp
                 && idempotencyKey.equals(record.idempotencyKey)

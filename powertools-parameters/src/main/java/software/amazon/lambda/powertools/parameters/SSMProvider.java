@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,8 +11,14 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
 
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
+
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -27,12 +33,6 @@ import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
-
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 
 /**
  * AWS System Manager Parameter Store Provider <br/><br/>
@@ -99,6 +99,15 @@ public class SSMProvider extends BaseProvider {
      */
     SSMProvider(CacheManager cacheManager) {
         super(cacheManager);
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link SSMProvider}.
+     *
+     * @return a new instance of {@link SSMProvider.Builder}
+     */
+    public static SSMProvider.Builder builder() {
+        return new SSMProvider.Builder();
     }
 
     /**
@@ -199,19 +208,20 @@ public class SSMProvider extends BaseProvider {
         // not using the client.getParametersByPathPaginator() as hardly testable
         GetParametersByPathResponse res = client.getParametersByPath(request);
         if (res.hasParameters()) {
-            res.parameters().forEach(parameter -> {
+            res.parameters().forEach(parameter ->
+                {
                 /* Standardize the parameter name
                    The parameter name returned by SSM will contained the full path.
                    However, for readability, we should return only the part after
                    the path.
                  */
-                String name = parameter.name();
-                if (name.startsWith(path)) {
-                    name = name.replaceFirst(path, "");
-                }
-                name = name.replaceFirst("/", "");
-                params.put(name, parameter.value());
-            });
+                    String name = parameter.name();
+                    if (name.startsWith(path)) {
+                        name = name.replaceFirst(path, "");
+                    }
+                    name = name.replaceFirst("/", "");
+                    params.put(name, parameter.value());
+                });
         }
 
         if (!StringUtils.isEmpty(res.nextToken())) {
@@ -226,15 +236,6 @@ public class SSMProvider extends BaseProvider {
         super.resetToDefaults();
         recursive = false;
         decrypt = false;
-    }
-
-    /**
-     * Create a builder that can be used to configure and create a {@link SSMProvider}.
-     *
-     * @return a new instance of {@link SSMProvider.Builder}
-     */
-    public static SSMProvider.Builder builder() {
-        return new SSMProvider.Builder();
     }
 
     static class Builder {
@@ -261,7 +262,7 @@ public class SSMProvider extends BaseProvider {
                 // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
                 // fall back to the default provider chain if the mode is anything other than on-demand.
                 String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
+                if (initializationType != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
                     ssmClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
                 }
 

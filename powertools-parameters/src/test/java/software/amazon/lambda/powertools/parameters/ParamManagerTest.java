@@ -11,16 +11,17 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
+
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.internal.CustomProvider;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
-
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class ParamManagerTest {
 

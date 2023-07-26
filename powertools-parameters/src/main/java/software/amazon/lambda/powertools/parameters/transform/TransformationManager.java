@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,11 +11,11 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.transform;
 
-import software.amazon.lambda.powertools.parameters.exception.TransformationException;
-
 import java.lang.reflect.InvocationTargetException;
+import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
 /**
  * Manager in charge of transforming parameter values in another format. <br/>
@@ -50,15 +50,18 @@ public class TransformationManager {
      */
     public String performBasicTransformation(String value) {
         if (transformer == null) {
-            throw new IllegalStateException("You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
+            throw new IllegalStateException(
+                    "You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
         }
         if (!BasicTransformer.class.isAssignableFrom(transformer)) {
             throw new IllegalStateException("Wrong Transformer for a String, choose a BasicTransformer.");
         }
         try {
-            BasicTransformer basicTransformer = (BasicTransformer) transformer.getDeclaredConstructor().newInstance(null);
+            BasicTransformer basicTransformer =
+                    (BasicTransformer) transformer.getDeclaredConstructor().newInstance(null);
             return basicTransformer.applyTransformation(value);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             throw new TransformationException(e);
         }
     }
@@ -66,19 +69,21 @@ public class TransformationManager {
     /**
      * Transform a String in a Java Object.
      *
-     * @param value the value to transform
+     * @param value       the value to transform
      * @param targetClass the type of the target object.
      * @return the value transformed in an object ot type T.
      */
     public <T> T performComplexTransformation(String value, Class<T> targetClass) {
         if (transformer == null) {
-            throw new IllegalStateException("You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
+            throw new IllegalStateException(
+                    "You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
         }
 
         try {
             Transformer<T> complexTransformer = transformer.getDeclaredConstructor().newInstance(null);
             return complexTransformer.applyTransformation(value, targetClass);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             throw new TransformationException(e);
         }
     }

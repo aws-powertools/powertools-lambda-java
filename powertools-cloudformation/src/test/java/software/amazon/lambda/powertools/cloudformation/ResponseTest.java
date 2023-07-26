@@ -1,28 +1,14 @@
 package software.amazon.lambda.powertools.cloudformation;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+
 public class ResponseTest {
-
-    static class DummyBean {
-        private final Object propertyWithLongName;
-
-        DummyBean(Object propertyWithLongName) {
-            this.propertyWithLongName = propertyWithLongName;
-        }
-
-        @SuppressWarnings("unused")
-        public Object getPropertyWithLongName() {
-            return propertyWithLongName;
-        }
-    }
 
     @Test
     void defaultValues() {
@@ -172,5 +158,18 @@ public class ResponseTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(Response.Status.FAILED);
+    }
+
+    static class DummyBean {
+        private final Object propertyWithLongName;
+
+        DummyBean(Object propertyWithLongName) {
+            this.propertyWithLongName = propertyWithLongName;
+        }
+
+        @SuppressWarnings("unused")
+        public Object getPropertyWithLongName() {
+            return propertyWithLongName;
+        }
     }
 }

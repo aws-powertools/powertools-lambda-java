@@ -1,5 +1,12 @@
 package software.amazon.lambda.powertools.parameters;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,31 +24,18 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 public class DynamoDbProviderTest {
 
+    private final String tableName = "ddb-test-table";
     @Mock
     DynamoDbClient client;
-
     @Mock
     TransformationManager transformationManager;
-
     @Captor
     ArgumentCaptor<GetItemRequest> getItemValueCaptor;
-
     @Captor
     ArgumentCaptor<QueryRequest> queryRequestCaptor;
-
-
     private DynamoDbProvider provider;
-    private final String tableName = "ddb-test-table";
 
     @BeforeEach
     public void init() {
@@ -114,9 +108,10 @@ public class DynamoDbProviderTest {
                 .item(responseData)
                 .build());
         // Act
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            provider.getValue(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                provider.getValue(key);
+            });
     }
 
 
@@ -180,10 +175,11 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            // Act
-           provider.getMultipleValues(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                // Act
+                provider.getMultipleValues(key);
+            });
     }
 
     @Test
@@ -200,10 +196,11 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            // Act
-            provider.getMultipleValues(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                // Act
+                provider.getMultipleValues(key);
+            });
     }
 
     @Test
@@ -214,6 +211,7 @@ public class DynamoDbProviderTest {
                 .withTable("table")
                 .build());
     }
+
     @Test
     public void testDynamoDBBuilderMissingTable_throwsException() {
 

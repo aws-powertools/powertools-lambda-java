@@ -1,5 +1,22 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.parameters;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Collectors;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -14,16 +31,11 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 /**
  * Implements a {@link ParamProvider} on top of DynamoDB. The schema of the table
  * is described in the Powertools for AWS Lambda (Java) documentation.
  *
  * @see <a href="https://docs.powertools.aws.dev/lambda-java/utilities/parameters">Parameters provider documentation</a>
- *
  */
 public class DynamoDbProvider extends BaseProvider {
 
@@ -32,10 +44,10 @@ public class DynamoDbProvider extends BaseProvider {
 
     public DynamoDbProvider(CacheManager cacheManager, String tableName) {
         this(cacheManager, DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                .build(),
+                        .httpClientBuilder(UrlConnectionHttpClient.builder())
+                        .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                        .build(),
                 tableName
         );
 
@@ -45,6 +57,15 @@ public class DynamoDbProvider extends BaseProvider {
         super(cacheManager);
         this.client = client;
         this.tableName = tableName;
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link DynamoDbProvider}.
+     *
+     * @return a new instance of {@link DynamoDbProvider.Builder}
+     */
+    public static DynamoDbProvider.Builder builder() {
+        return new DynamoDbProvider.Builder();
     }
 
     /**
@@ -90,9 +111,10 @@ public class DynamoDbProvider extends BaseProvider {
                 .build());
 
         return resp
-                    .items()
-                    .stream()
-                    .peek((i) -> {
+                .items()
+                .stream()
+                .peek((i) ->
+                    {
                         if (!i.containsKey("sk")) {
                             throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
                         }
@@ -100,21 +122,12 @@ public class DynamoDbProvider extends BaseProvider {
                             throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
                         }
                     })
-                    .collect(
-                            Collectors.toMap(
-                                    (i) -> i.get("sk").s(),
-                                    (i) -> i.get("value").s()));
+                .collect(
+                        Collectors.toMap(
+                                (i) -> i.get("sk").s(),
+                                (i) -> i.get("value").s()));
 
 
-    }
-
-    /**
-     * Create a builder that can be used to configure and create a {@link DynamoDbProvider}.
-     *
-     * @return a new instance of {@link DynamoDbProvider.Builder}
-     */
-    public static DynamoDbProvider.Builder builder() {
-        return new DynamoDbProvider.Builder();
     }
 
     static class Builder {

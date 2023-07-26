@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,7 +11,13 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation.internal;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -34,6 +40,8 @@ import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
 import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
 import com.networknt.schema.SpecVersion;
+import java.io.IOException;
+import java.util.stream.Stream;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,14 +60,6 @@ import software.amazon.lambda.powertools.validation.handlers.SQSWithCustomEnvelo
 import software.amazon.lambda.powertools.validation.handlers.SQSWithWrongEnvelopeHandler;
 import software.amazon.lambda.powertools.validation.handlers.ValidationInboundStringHandler;
 import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
-
-import java.io.IOException;
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.assertj.core.api.Assertions.assertThatNoException;
-import static org.mockito.Mockito.when;
 
 
 public class ValidationAspectTest {
@@ -109,9 +109,10 @@ public class ValidationAspectTest {
         when(validation.inboundSchema()).thenReturn("");
         when(validation.outboundSchema()).thenReturn("classpath:/schema_v7.json");
 
-        assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> {
-            validationAspect.around(pjp, validation);
-        });
+        assertThatExceptionOfType(ValidationException.class).isThrownBy(() ->
+            {
+                validationAspect.around(pjp, validation);
+            });
     }
 
     @Test
@@ -184,7 +185,8 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_SQS() {
-        PojoSerializer<SQSEvent> pojoSerializer = LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
+        PojoSerializer<SQSEvent> pojoSerializer =
+                LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
         SQSEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/sqs.json"));
 
         GenericSchemaV7Handler handler = new GenericSchemaV7Handler();
@@ -193,7 +195,8 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_SQS_CustomEnvelopeTakePrecedence() {
-        PojoSerializer<SQSEvent> pojoSerializer = LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
+        PojoSerializer<SQSEvent> pojoSerializer =
+                LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
         SQSEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/sqs_message.json"));
 
         SQSWithCustomEnvelopeHandler handler = new SQSWithCustomEnvelopeHandler();
@@ -202,7 +205,8 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_SQS_WrongEnvelope_shouldThrowValidationException() {
-        PojoSerializer<SQSEvent> pojoSerializer = LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
+        PojoSerializer<SQSEvent> pojoSerializer =
+                LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
         SQSEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/sqs_message.json"));
 
         SQSWithWrongEnvelopeHandler handler = new SQSWithWrongEnvelopeHandler();
@@ -211,7 +215,8 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_Kinesis() {
-        PojoSerializer<KinesisEvent> pojoSerializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, ClassLoader.getSystemClassLoader());
+        PojoSerializer<KinesisEvent> pojoSerializer =
+                LambdaEventSerializers.serializerFor(KinesisEvent.class, ClassLoader.getSystemClassLoader());
         KinesisEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/kinesis.json"));
 
         GenericSchemaV7Handler handler = new GenericSchemaV7Handler();
@@ -221,7 +226,8 @@ public class ValidationAspectTest {
     @ParameterizedTest
     @MethodSource("provideEventAndEventType")
     public void validateEEvent(String jsonResource, Class eventClass) throws IOException {
-        Object event = ValidationConfig.get().getObjectMapper().readValue(this.getClass().getResourceAsStream(jsonResource), eventClass);
+        Object event = ValidationConfig.get().getObjectMapper()
+                .readValue(this.getClass().getResourceAsStream(jsonResource), eventClass);
 
         GenericSchemaV7Handler<Object> handler = new GenericSchemaV7Handler();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");

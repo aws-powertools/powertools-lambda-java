@@ -1,14 +1,13 @@
 package org.demo.serialization;
 
+import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import java.util.List;
-
-import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
 
 
 public class SQSEventDeserializationFunction implements RequestHandler<SQSEvent, String> {

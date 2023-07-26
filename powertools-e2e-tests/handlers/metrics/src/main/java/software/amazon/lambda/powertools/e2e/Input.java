@@ -7,6 +7,9 @@ public class Input {
 
     private Map<String, String> dimensions;
 
+    public Input() {
+    }
+
     public Map<String, Double> getMetrics() {
         return metrics;
     }
@@ -14,10 +17,6 @@ public class Input {
     public void setMetrics(Map<String, Double> metrics) {
         this.metrics = metrics;
     }
-
-    public Input() {
-    }
-
 
     public Map<String, String> getDimensions() {
         return dimensions;

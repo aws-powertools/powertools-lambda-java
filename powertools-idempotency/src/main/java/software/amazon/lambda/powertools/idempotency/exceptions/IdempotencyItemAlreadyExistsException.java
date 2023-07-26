@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,9 +11,12 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
-/** Exception thrown when trying to store an item which already exists. */
+/**
+ * Exception thrown when trying to store an item which already exists.
+ */
 public class IdempotencyItemAlreadyExistsException extends RuntimeException {
     private static final long serialVersionUID = 9027152772149436500L;
 

@@ -1,13 +1,13 @@
 package software.amazon.lambda.powertools.sqs.handlers;
 
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.interactionClient;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import software.amazon.lambda.powertools.sqs.SqsBatch;
 import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
-
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.interactionClient;
 
 public class SqsMessageHandlerWithNonRetryableHandlerWithDelete implements RequestHandler<SQSEvent, String> {
 
@@ -24,11 +24,11 @@ public class SqsMessageHandlerWithNonRetryableHandlerWithDelete implements Reque
 
         @Override
         public String process(SQSMessage message) {
-            if(message.getMessageId().isEmpty()) {
+            if (message.getMessageId().isEmpty()) {
                 throw new IllegalArgumentException("Invalid message and was moved to DLQ");
             }
 
-            if("2e1424d4-f796-459a-9696-9c92662ba5da".equals(message.getMessageId())) {
+            if ("2e1424d4-f796-459a-9696-9c92662ba5da".equals(message.getMessageId())) {
                 throw new RuntimeException("Invalid message and should be reprocessed");
             }
 

@@ -5,6 +5,9 @@ import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.tests.EventLoader;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.URI;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,23 +19,24 @@ import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
-
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.URI;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.BillingMode;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
 public class AppTest {
+    private static DynamoDbClient client;
     @Mock
     private Context context;
     private App app;
-    private static DynamoDbClient client;
 
     @BeforeAll
     public static void setupDynamoLocal() {
         int port = getFreePort();
         try {
-            DynamoDBProxyServer dynamoProxy = ServerRunner.createServerFromCommandLineArgs(new String[]{
+            DynamoDBProxyServer dynamoProxy = ServerRunner.createServerFromCommandLineArgs(new String[] {
                     "-inMemory",
                     "-port",
                     Integer.toString(port)
@@ -79,7 +83,8 @@ public class AppTest {
 
     @Test
     public void testApp() {
-        APIGatewayProxyResponseEvent response = app.handleRequest(EventLoader.loadApiGatewayRestEvent("event.json"), context);
+        APIGatewayProxyResponseEvent response =
+                app.handleRequest(EventLoader.loadApiGatewayRestEvent("event.json"), context);
         Assertions.assertNotNull(response);
         Assertions.assertTrue(response.getBody().contains("hello world"));
     }

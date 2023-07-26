@@ -1,16 +1,14 @@
 package org.demo.serialization;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SQSEventDeserializationFunctionTest {
 
@@ -29,7 +27,7 @@ class SQSEventDeserializationFunctionTest {
         SQSEvent.SQSMessage message1 = messageWithBody("{  \"id\": 1234,  \"name\": \"product\",  \"price\": 42}");
         SQSEvent.SQSMessage message2 = messageWithBody("{  \"id\": 12345,  \"name\": \"product5\",  \"price\": 45}");
         SQSEvent event = new SQSEvent();
-        event.setRecords(new ArrayList<SQSEvent.SQSMessage>(){{
+        event.setRecords(new ArrayList<SQSEvent.SQSMessage>() {{
             add(message1);
             add(message2);
         }});

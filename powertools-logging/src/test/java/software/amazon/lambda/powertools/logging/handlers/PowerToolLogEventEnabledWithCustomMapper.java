@@ -8,10 +8,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import java.io.IOException;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
-
-import java.io.IOException;
 
 public class PowerToolLogEventEnabledWithCustomMapper implements RequestHandler<S3EventNotification, Object> {
 
@@ -40,7 +39,8 @@ public class PowerToolLogEventEnabledWithCustomMapper implements RequestHandler<
         }
 
         @Override
-        public void serialize(S3EventNotification o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        public void serialize(S3EventNotification o, JsonGenerator jsonGenerator, SerializerProvider serializerProvider)
+                throws IOException {
             jsonGenerator.writeStartObject();
             jsonGenerator.writeStringField("eventSource", o.getRecords().get(0).getEventSource());
             jsonGenerator.writeEndObject();

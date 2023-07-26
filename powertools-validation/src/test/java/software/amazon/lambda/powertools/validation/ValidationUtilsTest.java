@@ -1,24 +1,23 @@
 package software.amazon.lambda.powertools.validation;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.SpecVersion;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import software.amazon.lambda.powertools.validation.model.Basket;
-import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
-import software.amazon.lambda.powertools.validation.model.Product;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.SpecVersion;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import software.amazon.lambda.powertools.validation.model.Basket;
+import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
+import software.amazon.lambda.powertools.validation.model.Product;
 
 public class ValidationUtilsTest {
 
@@ -43,16 +42,18 @@ public class ValidationUtilsTest {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
         assertThatThrownBy(() -> getJsonSchema("classpath:/schema_v7_ko.json", true))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification V7");
+                .hasMessage(
+                        "The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification V7");
     }
 
     @Test
     public void testLoadMetaSchema_NoValidation() {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
 
-        assertThatNoException().isThrownBy(() -> {
-            getJsonSchema("classpath:/schema_v7_ko.json", false);
-        });
+        assertThatNoException().isThrownBy(() ->
+            {
+                getJsonSchema("classpath:/schema_v7_ko.json", false);
+            });
     }
 
     @Test
@@ -99,16 +100,19 @@ public class ValidationUtilsTest {
 
     @Test
     public void testValidateJsonNodeOK() throws IOException {
-        JsonNode node = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ok.json"));
+        JsonNode node =
+                ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ok.json"));
 
-        assertThatNoException().isThrownBy(() -> {
-            validate(node, schemaString);
-        });
+        assertThatNoException().isThrownBy(() ->
+            {
+                validate(node, schemaString);
+            });
     }
 
     @Test
     public void testValidateJsonNodeKO() throws IOException {
-        JsonNode node = ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ko.json"));
+        JsonNode node =
+                ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ko.json"));
 
         assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> validate(node, schema));
     }
@@ -121,9 +125,10 @@ public class ValidationUtilsTest {
         map.put("name", "FooBar XY");
         map.put("price", 258);
 
-        assertThatNoException().isThrownBy(() -> {
-            validate(map, schemaString);
-        });
+        assertThatNoException().isThrownBy(() ->
+            {
+                validate(map, schemaString);
+            });
     }
 
     @Test
@@ -147,9 +152,10 @@ public class ValidationUtilsTest {
     public void testValidateStringOK() {
         String json = "{\n  \"id\": 43242,\n  \"name\": \"FooBar XY\",\n  \"price\": 258\n}";
 
-        assertThatNoException().isThrownBy(() -> {
-            validate(json, schemaString);
-        });
+        assertThatNoException().isThrownBy(() ->
+            {
+                validate(json, schemaString);
+            });
     }
 
     @Test
@@ -163,9 +169,10 @@ public class ValidationUtilsTest {
     public void testValidateObjectOK() {
         Product product = new Product(42, "FooBar", 42);
 
-        assertThatNoException().isThrownBy(() -> {
-            validate(product, schemaString);
-        });
+        assertThatNoException().isThrownBy(() ->
+            {
+                validate(product, schemaString);
+            });
     }
 
     @Test
@@ -189,9 +196,10 @@ public class ValidationUtilsTest {
         basket.add(product2);
         MyCustomEvent event = new MyCustomEvent(basket);
 
-        assertThatNoException().isThrownBy(() -> {
-            validate(event, schemaString, "basket.products[0]");
-        });
+        assertThatNoException().isThrownBy(() ->
+            {
+                validate(event, schemaString, "basket.products[0]");
+            });
     }
 
     @Test
@@ -203,7 +211,8 @@ public class ValidationUtilsTest {
         basket.add(product2);
         MyCustomEvent event = new MyCustomEvent(basket);
 
-        assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> validate(event, schema, "basket.products[0]"));
+        assertThatExceptionOfType(ValidationException.class).isThrownBy(
+                () -> validate(event, schema, "basket.products[0]"));
     }
 
     @Test
@@ -227,7 +236,8 @@ public class ValidationUtilsTest {
         basket.add(product2);
         MyCustomEvent event = new MyCustomEvent(basket);
 
-        assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> validate(event, schema, "basket.products[*]"));
+        assertThatExceptionOfType(ValidationException.class).isThrownBy(
+                () -> validate(event, schema, "basket.products[*]"));
     }
 
     @Test

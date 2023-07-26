@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,24 +11,23 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.utilities.jmespath;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 
 import io.burt.jmespath.Adapter;
 import io.burt.jmespath.JmesPathType;
 import io.burt.jmespath.function.ArgumentConstraints;
 import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionArgument;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 
 /**
  * Function used by JMESPath to decode a Base64 encoded GZipped String into a decoded String
@@ -37,20 +36,6 @@ public class Base64GZipFunction extends BaseFunction {
 
     public Base64GZipFunction() {
         super("powertools_base64_gzip", ArgumentConstraints.typeOf(JmesPathType.STRING));
-    }
-
-    @Override
-    protected <T> T callFunction(Adapter<T> runtime, List<FunctionArgument<T>> arguments) {
-        T value = arguments.get(0).value();
-        String encodedString = runtime.toString(value);
-
-        String decompressString = decompress(decode(encodedString.getBytes(UTF_8)));
-
-        if (decompressString == null) {
-            return runtime.createNull();
-        }
-
-        return runtime.createString(decompressString);
     }
 
     public static String decompress(byte[] compressed) {
@@ -77,6 +62,21 @@ public class Base64GZipFunction extends BaseFunction {
     }
 
     public static boolean isCompressed(final byte[] compressed) {
-        return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) && (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
+        return (compressed[0] == (byte) (GZIPInputStream.GZIP_MAGIC)) &&
+                (compressed[1] == (byte) (GZIPInputStream.GZIP_MAGIC >> 8));
+    }
+
+    @Override
+    protected <T> T callFunction(Adapter<T> runtime, List<FunctionArgument<T>> arguments) {
+        T value = arguments.get(0).value();
+        String encodedString = runtime.toString(value);
+
+        String decompressString = decompress(decode(encodedString.getBytes(UTF_8)));
+
+        if (decompressString == null) {
+            return runtime.createNull();
+        }
+
+        return runtime.createString(decompressString);
     }
 }

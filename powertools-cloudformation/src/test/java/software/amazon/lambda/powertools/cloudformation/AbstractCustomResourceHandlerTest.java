@@ -1,15 +1,5 @@
 package software.amazon.lambda.powertools.cloudformation;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.lambda.powertools.cloudformation.Response.Status;
-
-import java.io.IOException;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -21,95 +11,16 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import java.io.IOException;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import software.amazon.awssdk.http.SdkHttpClient;
+import software.amazon.lambda.powertools.cloudformation.Response.Status;
+
 public class AbstractCustomResourceHandlerTest {
-
-    /**
-     * Bare-bones implementation that returns null for abstract methods.
-     */
-    static class NullCustomResourceHandler extends AbstractCustomResourceHandler {
-        NullCustomResourceHandler() {
-        }
-
-        NullCustomResourceHandler(SdkHttpClient client) {
-            super(client);
-        }
-
-        @Override
-        protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-            return null;
-        }
-
-        @Override
-        protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-            return null;
-        }
-
-        @Override
-        protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-            return null;
-        }
-    }
-
-    /**
-     * Uses a mocked CloudFormationResponse to avoid sending actual HTTP requests.
-     */
-    static class NoOpCustomResourceHandler extends NullCustomResourceHandler {
-
-        NoOpCustomResourceHandler() {
-            super(mock(SdkHttpClient.class));
-        }
-
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            return mock(CloudFormationResponse.class);
-        }
-    }
-
-    /**
-     * Creates a handler that will expect the Response to be sent with an expected status. Will throw an AssertionError
-     * if the method is sent with an unexpected status.
-     */
-    static class ExpectedStatusResourceHandler extends NoOpCustomResourceHandler {
-        private final Status expectedStatus;
-
-        ExpectedStatusResourceHandler(Status expectedStatus) {
-            this.expectedStatus = expectedStatus;
-        }
-
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            // create a CloudFormationResponse that fails if invoked with unexpected status
-            CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
-            try {
-                when(cfnResponse.send(any(), any(), argThat(resp -> resp.getStatus() != expectedStatus)))
-                        .thenThrow(new AssertionError("Expected response's status to be " + expectedStatus));
-            } catch (IOException | CustomResourceResponseException e) {
-                // this should never happen
-                throw new RuntimeException("Unexpected mocking exception", e);
-            }
-            return cfnResponse;
-        }
-    }
-
-    /**
-     * Always fails to send the response
-     */
-    static class FailToSendResponseHandler extends NoOpCustomResourceHandler {
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
-            try {
-                when(cfnResponse.send(any(), any()))
-                        .thenThrow(new IOException("Intentional send failure"));
-                when(cfnResponse.send(any(), any(), any()))
-                        .thenThrow(new IOException("Intentional send failure"));
-            } catch (IOException | CustomResourceResponseException e) {
-                // this should never happen
-                throw new RuntimeException("Unexpected mocking exception", e);
-            }
-            return cfnResponse;
-        }
-    }
 
     /**
      * Builds a valid Event with the provide request type.
@@ -287,5 +198,93 @@ public class AbstractCustomResourceHandlerTest {
         assertThat(response).isNull();
         verify(handler, times(1))
                 .onSendFailure(eq(event), eq(context), isNull(), any(IOException.class));
+    }
+
+    /**
+     * Bare-bones implementation that returns null for abstract methods.
+     */
+    static class NullCustomResourceHandler extends AbstractCustomResourceHandler {
+        NullCustomResourceHandler() {
+        }
+
+        NullCustomResourceHandler(SdkHttpClient client) {
+            super(client);
+        }
+
+        @Override
+        protected Response create(CloudFormationCustomResourceEvent event, Context context) {
+            return null;
+        }
+
+        @Override
+        protected Response update(CloudFormationCustomResourceEvent event, Context context) {
+            return null;
+        }
+
+        @Override
+        protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
+            return null;
+        }
+    }
+
+    /**
+     * Uses a mocked CloudFormationResponse to avoid sending actual HTTP requests.
+     */
+    static class NoOpCustomResourceHandler extends NullCustomResourceHandler {
+
+        NoOpCustomResourceHandler() {
+            super(mock(SdkHttpClient.class));
+        }
+
+        @Override
+        protected CloudFormationResponse buildResponseClient() {
+            return mock(CloudFormationResponse.class);
+        }
+    }
+
+    /**
+     * Creates a handler that will expect the Response to be sent with an expected status. Will throw an AssertionError
+     * if the method is sent with an unexpected status.
+     */
+    static class ExpectedStatusResourceHandler extends NoOpCustomResourceHandler {
+        private final Status expectedStatus;
+
+        ExpectedStatusResourceHandler(Status expectedStatus) {
+            this.expectedStatus = expectedStatus;
+        }
+
+        @Override
+        protected CloudFormationResponse buildResponseClient() {
+            // create a CloudFormationResponse that fails if invoked with unexpected status
+            CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
+            try {
+                when(cfnResponse.send(any(), any(), argThat(resp -> resp.getStatus() != expectedStatus)))
+                        .thenThrow(new AssertionError("Expected response's status to be " + expectedStatus));
+            } catch (IOException | CustomResourceResponseException e) {
+                // this should never happen
+                throw new RuntimeException("Unexpected mocking exception", e);
+            }
+            return cfnResponse;
+        }
+    }
+
+    /**
+     * Always fails to send the response
+     */
+    static class FailToSendResponseHandler extends NoOpCustomResourceHandler {
+        @Override
+        protected CloudFormationResponse buildResponseClient() {
+            CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
+            try {
+                when(cfnResponse.send(any(), any()))
+                        .thenThrow(new IOException("Intentional send failure"));
+                when(cfnResponse.send(any(), any(), any()))
+                        .thenThrow(new IOException("Intentional send failure"));
+            } catch (IOException | CustomResourceResponseException e) {
+                // this should never happen
+                throw new RuntimeException("Unexpected mocking exception", e);
+            }
+            return cfnResponse;
+        }
     }
 }

@@ -16,13 +16,14 @@ public class Function implements RequestHandler<Input, String> {
         }
         String message = buildMessage(input.getMessage(), context.getFunctionName());
 
-        TracingUtils.withSubsegment("internal_stuff", subsegment -> {
-            try {
-                Thread.sleep(100); // simulate stuff
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        TracingUtils.withSubsegment("internal_stuff", subsegment ->
+            {
+                try {
+                    Thread.sleep(100); // simulate stuff
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            });
 
         return message;
     }

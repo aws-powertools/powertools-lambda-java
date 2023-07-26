@@ -1,11 +1,10 @@
 package software.amazon.lambda.powertools.parameters.internal;
 
-import software.amazon.lambda.powertools.parameters.BaseProvider;
-import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 
 public class CustomProvider extends BaseProvider {
 

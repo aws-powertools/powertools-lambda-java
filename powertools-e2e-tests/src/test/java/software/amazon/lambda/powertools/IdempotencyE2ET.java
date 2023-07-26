@@ -1,5 +1,11 @@
 package software.amazon.lambda.powertools;
 
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
+
+import java.time.Year;
+import java.util.Collections;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -7,13 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
-
-import java.time.Year;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 public class IdempotencyE2ET {
     private static Infrastructure infrastructure;
@@ -34,8 +33,9 @@ public class IdempotencyE2ET {
 
     @AfterAll
     public static void tearDown() {
-        if (infrastructure != null)
+        if (infrastructure != null) {
             infrastructure.destroy();
+        }
     }
 
     @Test

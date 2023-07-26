@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.internal;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
@@ -39,7 +40,8 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 public class IdempotentAspect {
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(idempotent)")
-    public void callAt(Idempotent idempotent) {}
+    public void callAt(Idempotent idempotent) {
+    }
 
     @Around(
             value = "callAt(idempotent) && execution(@Idempotent * *.*(..))",
@@ -47,7 +49,7 @@ public class IdempotentAspect {
     public Object around(ProceedingJoinPoint pjp, Idempotent idempotent) throws Throwable {
 
         String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
-        if (idempotencyDisabledEnv != null && !idempotencyDisabledEnv.equalsIgnoreCase("false")) {
+        if (idempotencyDisabledEnv != null && !"false".equalsIgnoreCase(idempotencyDisabledEnv)) {
             return pjp.proceed(pjp.getArgs());
         }
 
@@ -79,7 +81,7 @@ public class IdempotentAspect {
     /**
      * Retrieve the payload from the annotated method parameters
      *
-     * @param pjp joinPoint
+     * @param pjp    joinPoint
      * @param method the annotated method
      * @return the payload used for idempotency
      */

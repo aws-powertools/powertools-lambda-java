@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,13 +11,16 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.time.Duration;
 import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 
-/** Configuration of the idempotency feature. Use the {@link Builder} to create an instance. */
+/**
+ * Configuration of the idempotency feature. Use the {@link Builder} to create an instance.
+ */
 public class IdempotencyConfig {
     private final int localCacheMaxItems;
     private final boolean useLocalCache;
@@ -43,6 +46,15 @@ public class IdempotencyConfig {
         this.payloadValidationJMESPath = payloadValidationJMESPath;
         this.throwOnNoIdempotencyKey = throwOnNoIdempotencyKey;
         this.hashFunction = hashFunction;
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link IdempotencyConfig}.
+     *
+     * @return a new instance of {@link Builder}
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     public int getLocalCacheMaxItems() {
@@ -73,21 +85,12 @@ public class IdempotencyConfig {
         return hashFunction;
     }
 
-    /**
-     * Create a builder that can be used to configure and create a {@link IdempotencyConfig}.
-     *
-     * @return a new instance of {@link Builder}
-     */
-    public static Builder builder() {
-        return new Builder();
+    public Context getLambdaContext() {
+        return lambdaContext;
     }
 
     public void setLambdaContext(Context lambdaContext) {
         this.lambdaContext = lambdaContext;
-    }
-
-    public Context getLambdaContext() {
-        return lambdaContext;
     }
 
     public static class Builder {
@@ -107,7 +110,7 @@ public class IdempotencyConfig {
          * <pre>
          * IdempotencyConfig.builder().withUseLocalCache().build();
          * </pre>
-         *
+         * <p>
          * This instance must then be passed to the {@link Idempotency.Config}:
          *
          * <pre>
@@ -168,7 +171,7 @@ public class IdempotencyConfig {
          * Whether to locally cache idempotency results, by default false
          *
          * @param useLocalCache boolean that indicate if a local cache must be used in addition to
-         *     the persistence store. If set to true, will use the {@link LRUCache}
+         *                      the persistence store. If set to true, will use the {@link LRUCache}
          * @return the instance of the builder (to chain operations)
          */
         public Builder withUseLocalCache(boolean useLocalCache) {
@@ -192,7 +195,7 @@ public class IdempotencyConfig {
          * See <a href="https://jmespath.org/">https://jmespath.org/</a> for more details.
          *
          * @param payloadValidationJMESPath JMES Path of a part of the payload to be used for
-         *     validation
+         *                                  validation
          * @return the instance of the builder (to chain operations)
          */
         public Builder withPayloadValidationJMESPath(String payloadValidationJMESPath) {
@@ -205,7 +208,7 @@ public class IdempotencyConfig {
          * false
          *
          * @param throwOnNoIdempotencyKey boolean to indicate if we must throw an Exception when
-         *     idempotency key could not be found in the payload.
+         *                                idempotency key could not be found in the payload.
          * @return the instance of the builder (to chain operations)
          */
         public Builder withThrowOnNoIdempotencyKey(boolean throwOnNoIdempotencyKey) {
@@ -227,13 +230,12 @@ public class IdempotencyConfig {
          * Function to use for calculating hashes, by default MD5.
          *
          * @param hashFunction Can be any algorithm supported by {@link
-         *     java.security.MessageDigest}, most commons are
-         *     <ul>
-         *       <li>MD5
-         *       <li>SHA-1
-         *       <li>SHA-256
-         *     </ul>
-         *
+         *                     java.security.MessageDigest}, most commons are
+         *                     <ul>
+         *                       <li>MD5
+         *                       <li>SHA-1
+         *                       <li>SHA-256
+         *                     </ul>
          * @return the instance of the builder (to chain operations)
          */
         public Builder withHashFunction(String hashFunction) {

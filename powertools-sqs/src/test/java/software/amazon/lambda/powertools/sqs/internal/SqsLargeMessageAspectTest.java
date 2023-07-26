@@ -1,14 +1,25 @@
 package software.amazon.lambda.powertools.sqs.internal;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.FailedProcessingLargePayloadException;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,30 +42,24 @@ import software.amazon.lambda.powertools.sqs.handlers.LambdaHandlerApiGateway;
 import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandler;
 import software.amazon.lambda.powertools.sqs.handlers.SqsNoDeleteMessageHandler;
 
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.FailedProcessingLargePayloadException;
-
 public class SqsLargeMessageAspectTest {
-
-    private RequestHandler<SQSEvent, String> requestHandler;
-
-    @Mock
-    private Context context;
-
-    @Mock
-    private S3Client s3Client;
 
     private static final String BUCKET_NAME = "bucketname";
     private static final String BUCKET_KEY = "c71eb2ae-37e0-4265-8909-32f4153faddf";
+    private RequestHandler<SQSEvent, String> requestHandler;
+    @Mock
+    private Context context;
+    @Mock
+    private S3Client s3Client;
+
+    private static Stream<Arguments> exception() {
+        return Stream.of(Arguments.of(S3Exception.builder()
+                        .message("Service Exception")
+                        .build()),
+                Arguments.of(SdkClientException.builder()
+                        .message("Client Exception")
+                        .build()));
+    }
 
     @BeforeEach
     void setUp() {
@@ -67,7 +72,9 @@ public class SqsLargeMessageAspectTest {
     @Test
     public void testLargeMessage() {
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
-        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
+        SQSEvent sqsEvent = messageWithBody(
+                "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME +
+                        "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         String response = requestHandler.handleRequest(sqsEvent, context);
 
@@ -79,13 +86,14 @@ public class SqsLargeMessageAspectTest {
         verify(s3Client).deleteObject(delete.capture());
 
         Assertions.assertThat(delete.getValue())
-                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest -> {
-                    assertThat(deleteObjectRequest.bucket())
-                            .isEqualTo(BUCKET_NAME);
+                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
+                    {
+                        assertThat(deleteObjectRequest.bucket())
+                                .isEqualTo(BUCKET_NAME);
 
-                    assertThat(deleteObjectRequest.key())
-                            .isEqualTo(BUCKET_KEY);
-                });
+                        assertThat(deleteObjectRequest.key())
+                                .isEqualTo(BUCKET_KEY);
+                    });
     }
 
     @Test
@@ -107,7 +115,9 @@ public class SqsLargeMessageAspectTest {
     public void shouldFailEntireBatchIfFailedDownloadingFromS3(RuntimeException exception) {
         when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(exception);
 
-        String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
+        String messageBody =
+                "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME +
+                        "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
         assertThatExceptionOfType(FailedProcessingLargePayloadException.class)
@@ -122,7 +132,9 @@ public class SqsLargeMessageAspectTest {
         requestHandler = new SqsNoDeleteMessageHandler();
 
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
-        SQSEvent sqsEvent = messageWithBody("[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
+        SQSEvent sqsEvent = messageWithBody(
+                "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME +
+                        "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         String response = requestHandler.handleRequest(sqsEvent, context);
 
@@ -131,19 +143,22 @@ public class SqsLargeMessageAspectTest {
         verify(s3Client, never()).deleteObject(any(DeleteObjectRequest.class));
     }
 
-
     @Test
     public void shouldFailEntireBatchIfFailedProcessingDownloadMessageFromS3() {
-        ResponseInputStream<GetObjectResponse> s3Response = new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new StringInputStream("test") {
-            @Override
-            public void close() throws IOException {
-                throw new IOException("Failed");
-            }
-        }));
+        ResponseInputStream<GetObjectResponse> s3Response =
+                new ResponseInputStream<>(GetObjectResponse.builder().build(),
+                        AbortableInputStream.create(new StringInputStream("test") {
+                            @Override
+                            public void close() throws IOException {
+                                throw new IOException("Failed");
+                            }
+                        }));
 
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3Response);
 
-        String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
+        String messageBody =
+                "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME +
+                        "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
         SQSEvent sqsEvent = messageWithBody(messageBody);
 
         assertThatExceptionOfType(FailedProcessingLargePayloadException.class)
@@ -157,7 +172,9 @@ public class SqsLargeMessageAspectTest {
     public void shouldNotDoAnyProcessingWhenNotSqsEvent() {
         LambdaHandlerApiGateway handler = new LambdaHandlerApiGateway();
 
-        String messageBody = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME + "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
+        String messageBody =
+                "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"" + BUCKET_NAME +
+                        "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]";
 
         APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
         event.setBody(messageBody);
@@ -170,16 +187,8 @@ public class SqsLargeMessageAspectTest {
     }
 
     private ResponseInputStream<GetObjectResponse> s3ObjectWithLargeMessage() {
-        return new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new ByteArrayInputStream("A big message".getBytes())));
-    }
-
-    private static Stream<Arguments> exception() {
-        return Stream.of(Arguments.of(S3Exception.builder()
-                        .message("Service Exception")
-                        .build()),
-                Arguments.of(SdkClientException.builder()
-                                .message("Client Exception")
-                        .build()));
+        return new ResponseInputStream<>(GetObjectResponse.builder().build(),
+                AbortableInputStream.create(new ByteArrayInputStream("A big message".getBytes())));
     }
 
     private SQSEvent messageWithBody(String messageBody) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
@@ -52,7 +53,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 public abstract class BasePersistenceStore implements PersistenceStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(BasePersistenceStore.class);
-
+    protected boolean payloadValidationEnabled = false;
     private String functionName = "";
     private boolean configured = false;
     private long expirationInSeconds = 60 * 60; // 1 hour default
@@ -60,7 +61,6 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     private LRUCache<String, DataRecord> cache;
     private String eventKeyJMESPath;
     private Expression<JsonNode> eventKeyCompiledJMESPath;
-    protected boolean payloadValidationEnabled = false;
     private Expression<JsonNode> validationKeyJMESPath;
     private boolean throwOnNoIdempotencyKey = false;
     private String hashFunctionName;
@@ -68,7 +68,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     /**
      * Initialize the base persistence layer from the configuration settings
      *
-     * @param config Idempotency configuration settings
+     * @param config       Idempotency configuration settings
      * @param functionName The name of the function being decorated
      */
     public void configure(IdempotencyConfig config, String functionName) {
@@ -106,7 +106,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     /**
      * Save record of function's execution completing successfully
      *
-     * @param data Payload
+     * @param data   Payload
      * @param result the response from the function
      */
     public void saveSuccess(JsonNode data, Object result, Instant now) {
@@ -185,7 +185,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     /**
      * Delete record from the persistence store
      *
-     * @param data Payload
+     * @param data      Payload
      * @param throwable The throwable thrown by the function
      */
     public void deleteRecord(JsonNode data, Throwable throwable) {
@@ -213,10 +213,10 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      *
      * @param data Payload
      * @return DataRecord representation of existing record found in persistence store
-     * @throws IdempotencyValidationException Payload doesn't match the stored record for the given
-     *     idempotency key
+     * @throws IdempotencyValidationException   Payload doesn't match the stored record for the given
+     *                                          idempotency key
      * @throws IdempotencyItemNotFoundException Exception thrown if no record exists in persistence
-     *     store with the idempotency key
+     *                                          store with the idempotency key
      */
     public DataRecord getRecord(JsonNode data, Instant now)
             throws IdempotencyValidationException, IdempotencyItemNotFoundException {
@@ -323,7 +323,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             node = data.decimalValue();
         } else if (data.isBoolean()) {
             node = data.asBoolean();
-        } else node = data; // anything else
+        } else {
+            node = data; // anything else
+        }
 
         MessageDigest hashAlgorithm = getHashAlgorithm();
         byte[] digest = hashAlgorithm.digest(node.toString().getBytes(StandardCharsets.UTF_8));
@@ -348,7 +350,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     /**
      * Validate that the hashed payload matches data provided and stored data record
      *
-     * @param data Payload
+     * @param data       Payload
      * @param dataRecord DataRecord instance
      */
     private void validatePayload(JsonNode data, DataRecord dataRecord)
@@ -378,14 +380,20 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param dataRecord DataRecord to save in cache
      */
     private void saveToCache(DataRecord dataRecord) {
-        if (!useLocalCache) return;
-        if (dataRecord.getStatus().equals(DataRecord.Status.INPROGRESS)) return;
+        if (!useLocalCache) {
+            return;
+        }
+        if (dataRecord.getStatus().equals(DataRecord.Status.INPROGRESS)) {
+            return;
+        }
 
         cache.put(dataRecord.getIdempotencyKey(), dataRecord);
     }
 
     private DataRecord retrieveFromCache(String idempotencyKey, Instant now) {
-        if (!useLocalCache) return null;
+        if (!useLocalCache) {
+            return null;
+        }
 
         DataRecord record = cache.get(idempotencyKey);
         if (record != null) {
@@ -400,12 +408,16 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     }
 
     private void deleteFromCache(String idempotencyKey) {
-        if (!useLocalCache) return;
+        if (!useLocalCache) {
+            return;
+        }
         cache.remove(idempotencyKey);
     }
 
-    /** For test purpose only (adding a cache to mock) */
-    void configure(
+    /**
+     * For test purpose only (adding a cache to mock)
+     */
+    void configureForTests(
             IdempotencyConfig config, String functionName, LRUCache<String, DataRecord> cache) {
         this.configure(config, functionName);
         this.cache = cache;

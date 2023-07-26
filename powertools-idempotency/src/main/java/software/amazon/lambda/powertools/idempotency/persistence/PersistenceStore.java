@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
 import java.time.Instant;
@@ -30,7 +31,7 @@ public interface PersistenceStore {
      * @param idempotencyKey the key of the record
      * @return DataRecord representation of existing record found in persistence store
      * @throws IdempotencyItemNotFoundException Exception thrown if no record exists in persistence
-     *     store with the idempotency key
+     *                                          store with the idempotency key
      */
     DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException;
 

@@ -2,10 +2,11 @@ package software.amazon.lambda.powertools.parameters.internal;
 
 public class AnotherObject {
 
-    public AnotherObject() {}
-
     private String another;
     private int object;
+
+    public AnotherObject() {
+    }
 
     public String getAnother() {
         return another;

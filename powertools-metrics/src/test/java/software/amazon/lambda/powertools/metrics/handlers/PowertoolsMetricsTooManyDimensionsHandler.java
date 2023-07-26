@@ -1,14 +1,13 @@
 package software.amazon.lambda.powertools.metrics.handlers;
 
-import java.util.stream.IntStream;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import java.util.stream.IntStream;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.Metrics;
-
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
 public class PowertoolsMetricsTooManyDimensionsHandler implements RequestHandler<Object, Object> {
 

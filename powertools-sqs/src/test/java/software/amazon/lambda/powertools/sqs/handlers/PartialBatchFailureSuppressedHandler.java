@@ -1,13 +1,13 @@
 package software.amazon.lambda.powertools.sqs.handlers;
 
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.interactionClient;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import software.amazon.lambda.powertools.sqs.SqsBatch;
 import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
-
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static software.amazon.lambda.powertools.sqs.internal.SqsMessageBatchProcessorAspectTest.interactionClient;
 
 public class PartialBatchFailureSuppressedHandler implements RequestHandler<SQSEvent, String> {
     @Override

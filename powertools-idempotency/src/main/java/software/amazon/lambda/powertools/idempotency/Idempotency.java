@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -40,30 +41,7 @@ public class Idempotency {
     private IdempotencyConfig config;
     private BasePersistenceStore persistenceStore;
 
-    private Idempotency() {}
-
-    public IdempotencyConfig getConfig() {
-        return config;
-    }
-
-    public BasePersistenceStore getPersistenceStore() {
-        if (persistenceStore == null) {
-            throw new IllegalStateException(
-                    "Persistence Store is null, did you call 'configure()'?");
-        }
-        return persistenceStore;
-    }
-
-    private void setConfig(IdempotencyConfig config) {
-        this.config = config;
-    }
-
-    private void setPersistenceStore(BasePersistenceStore persistenceStore) {
-        this.persistenceStore = persistenceStore;
-    }
-
-    private static class Holder {
-        private static final Idempotency instance = new Idempotency();
+    private Idempotency() {
     }
 
     public static Idempotency getInstance() {
@@ -87,6 +65,30 @@ public class Idempotency {
      */
     public static Config config() {
         return new Config();
+    }
+
+    public IdempotencyConfig getConfig() {
+        return config;
+    }
+
+    private void setConfig(IdempotencyConfig config) {
+        this.config = config;
+    }
+
+    public BasePersistenceStore getPersistenceStore() {
+        if (persistenceStore == null) {
+            throw new IllegalStateException(
+                    "Persistence Store is null, did you call 'configure()'?");
+        }
+        return persistenceStore;
+    }
+
+    private void setPersistenceStore(BasePersistenceStore persistenceStore) {
+        this.persistenceStore = persistenceStore;
+    }
+
+    private static class Holder {
+        private static final Idempotency instance = new Idempotency();
     }
 
     public static class Config {

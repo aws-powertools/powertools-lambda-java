@@ -1,5 +1,9 @@
 package software.amazon.lambda.powertools.parameters;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -8,16 +12,11 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * This class provides simple end-to-end style testing of the DynamoDBProvider class.
  * It is ignored, for now, as it requires AWS access and that's not yet run as part
  * of our unit test suite in the cloud.
- *
+ * <p>
  * The test is kept here for 1/ local development and 2/ in preparation for future
  * E2E tests running in the cloud CI. Once the E2E test structure is merged we
  * will move this across.
@@ -46,8 +45,8 @@ public class DynamoDbProviderE2ETest {
         testItem.put("id", AttributeValue.fromS("test_param"));
         testItem.put("value", AttributeValue.fromS("the_value_is_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
-                        .tableName(ParamsTestTable)
-                        .item(testItem)
+                .tableName(ParamsTestTable)
+                .item(testItem)
                 .build());
 
         // Act

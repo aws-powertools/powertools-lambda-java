@@ -4,6 +4,13 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -13,14 +20,6 @@ import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(App.class);
@@ -32,7 +31,8 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     public App(DynamoDbClient client) {
         Idempotency.config().withConfig(
                         IdempotencyConfig.builder()
-                                .withEventKeyJMESPath("powertools_json(body).address") // will retrieve the address field in the body which is a string transformed to json with `powertools_json`
+                                .withEventKeyJMESPath(
+                                        "powertools_json(body).address") // will retrieve the address field in the body which is a string transformed to json with `powertools_json`
                                 .build())
                 .withPersistenceStore(
                         DynamoDBPersistenceStore.builder()

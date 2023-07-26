@@ -1,9 +1,7 @@
 package software.amazon.lambda.powertools;
 
-import org.junit.jupiter.api.*;
-import software.amazon.lambda.powertools.testutils.AppConfig;
-import software.amazon.lambda.powertools.testutils.Infrastructure;
-import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
+import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,23 +9,29 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.Timeout;
+import software.amazon.lambda.powertools.testutils.AppConfig;
+import software.amazon.lambda.powertools.testutils.Infrastructure;
+import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ParametersE2ET {
+    private final AppConfig appConfig;
     private Infrastructure infrastructure;
     private String functionName;
-    private final AppConfig appConfig;
 
     public ParametersE2ET() {
         String appName = UUID.randomUUID().toString();
-        Map<String,String> params = new HashMap<>();
+        Map<String, String> params = new HashMap<>();
         params.put("key1", "value1");
         params.put("key2", "value2");
         appConfig = new AppConfig(appName, "e2etest", params);
     }
+
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
     public void setup() {
@@ -36,7 +40,7 @@ public class ParametersE2ET {
                 .pathToFunction("parameters")
                 .appConfig(appConfig)
                 .environmentVariables(
-                        Stream.of(new String[][]{
+                        Stream.of(new String[][] {
                                         {"POWERTOOLS_LOG_LEVEL", "INFO"},
                                         {"POWERTOOLS_SERVICE_NAME", ParametersE2ET.class.getSimpleName()}
                                 })
@@ -47,13 +51,14 @@ public class ParametersE2ET {
 
     @AfterAll
     public void tearDown() {
-        if (infrastructure != null)
+        if (infrastructure != null) {
             infrastructure.destroy();
+        }
     }
 
     @Test
     public void test_getAppConfigValue() {
-        for (Map.Entry<String, String >configKey:  appConfig.getConfigurationValues().entrySet()) {
+        for (Map.Entry<String, String> configKey : appConfig.getConfigurationValues().entrySet()) {
 
             // Arrange
             String event1 = "{" +

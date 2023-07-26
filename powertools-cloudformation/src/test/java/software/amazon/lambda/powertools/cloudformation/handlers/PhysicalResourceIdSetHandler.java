@@ -17,16 +17,16 @@ public class PhysicalResourceIdSetHandler extends AbstractCustomResourceHandler 
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-        return callsSucceed? Response.success(physicalResourceId) : Response.failed(physicalResourceId);
+        return callsSucceed ? Response.success(physicalResourceId) : Response.failed(physicalResourceId);
     }
 
     @Override
     protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-        return callsSucceed? Response.success(physicalResourceId) : Response.failed(physicalResourceId);
+        return callsSucceed ? Response.success(physicalResourceId) : Response.failed(physicalResourceId);
     }
 
     @Override
     protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-        return callsSucceed? Response.success(physicalResourceId) : Response.failed(physicalResourceId);
+        return callsSucceed ? Response.success(physicalResourceId) : Response.failed(physicalResourceId);
     }
 }

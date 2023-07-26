@@ -1,12 +1,12 @@
 package software.amazon.lambda.powertools.metrics.handlers;
 
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.metrics.Metrics;
-
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
 public class PowertoolsMetricsColdStartEnabledHandler implements RequestHandler<Object, Object> {
 

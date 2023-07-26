@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.internal;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
@@ -25,7 +26,13 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
-import software.amazon.lambda.powertools.idempotency.exceptions.*;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlreadyInProgressException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyPersistenceLayerException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
@@ -144,7 +151,7 @@ public class IdempotencyHandler {
      *
      * @param record DataRecord
      * @return Function's response previously used for this idempotency key, if it has successfully
-     *     executed already.
+     * executed already.
      */
     private Object handleForStatus(DataRecord record) {
         // This code path will only be triggered if the record becomes expired between the
@@ -157,7 +164,7 @@ public class IdempotencyHandler {
         if (INPROGRESS.equals(record.getStatus())) {
             if (record.getInProgressExpiryTimestamp().isPresent()
                     && record.getInProgressExpiryTimestamp().getAsLong()
-                            < Instant.now().toEpochMilli()) {
+                    < Instant.now().toEpochMilli()) {
                 throw new IdempotencyInconsistentStateException(
                         "Item should have been expired in-progress because it already time-outed.");
             }
@@ -171,7 +178,9 @@ public class IdempotencyHandler {
             LOG.debug(
                     "Response for key '{}' retrieved from idempotency store, skipping the function",
                     record.getIdempotencyKey());
-            if (returnType.equals(String.class)) return record.getResponseData();
+            if (returnType.equals(String.class)) {
+                return record.getResponseData();
+            }
             return JsonConfig.get()
                     .getObjectMapper()
                     .reader()
@@ -196,7 +205,9 @@ public class IdempotencyHandler {
                 throw ke;
             } catch (Exception e) {
                 throw new IdempotencyPersistenceLayerException(
-                        "Failed to delete record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
+                        "Failed to delete record from idempotency store. "
+                                +
+                                "If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
                         e);
             }
             throw handlerException;
@@ -206,7 +217,8 @@ public class IdempotencyHandler {
             persistenceStore.saveSuccess(data, response, Instant.now());
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException(
-                    "Failed to update record state to success in idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
+                    "Failed to update record state to success in idempotency store. "
+                            + "If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
                     e);
         }
         return response;

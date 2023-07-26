@@ -1,7 +1,6 @@
 package software.amazon.lambda.powertools.testutils.tracing;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,7 +91,7 @@ public class SegmentDocument {
         return !subsegments.isEmpty();
     }
 
-    public static class SubSegment{
+    public static class SubSegment {
         private String id;
 
         private String name;
