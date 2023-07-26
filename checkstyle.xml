@@ -52,6 +52,7 @@
 
   <module name="Header">
     <property name="headerFile" value="license-header"/>
+    <property name="ignoreLines" value="2"/> <!-- ignore date -->
     <property name="severity" value="error"/>
   </module>
 
