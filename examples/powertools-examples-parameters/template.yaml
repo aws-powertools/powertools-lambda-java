@@ -19,6 +19,9 @@ Resources:
       Handler: org.demo.parameters.ParametersFunction::handleRequest
       MemorySize: 512
       Tracing: Active
+      Environment:
+        Variables:
+          LOG_LEVEL: INFO
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref UserPwd

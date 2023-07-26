@@ -20,25 +20,27 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.1</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.1</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.16.0</version>
+        <version>1.16.1</version>
     </dependency>
     ...
 </dependencies>
 ```
 
-And configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project:
+Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project. A different configuration is needed for projects on Java 8. 
 
-For Java 11+, use the following:
+<details>
+    <summary><b>Maven - Java 11 and newer</b></summary>
+    
 ```xml
 <build>
     <plugins>
@@ -78,8 +80,11 @@ For Java 11+, use the following:
     </plugins>
 </build>
 ```
+</details>
 
-For Java 8, use the following:
+<details>
+<summary><b>Maven - Java 8</b></summary>    
+    
 ```xml
 <build>
     <plugins>
@@ -119,11 +124,12 @@ For Java 8, use the following:
     </plugins>
 </build>
 ```
-#### gradle
+</details>
 
-For Java 11+:
+<details>
+<summary><b>Gradle - Java 11+</b></summary>
 
-    ```groovy
+```groovy
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
@@ -141,11 +147,13 @@ For Java 11+:
         
         sourceCompatibility = 11
         targetCompatibility = 11
-    ```
+```
+</details>
 
-For Java8:
+<details>
+<summary><b>Gradle - Java 8</b></summary>    
 
-    ```groovy
+```groovy
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
@@ -163,10 +171,10 @@ For Java8:
         
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
-    ```
+```
+</details>
 
-
-## Example
+## Examples
 
 See the **[examples](examples)**  directory for example projects showcasing usage of different utilities.
 
@@ -188,6 +196,15 @@ The following companies, among others, use Powertools:
 
 * [MkDocs](https://www.mkdocs.org/)
 * [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
+
+## Connect
+
+* **Powertools for AWS Lambda on Discord**: `#java` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+* **Email**: <aws-lambda-powertools-feedback@amazon.com>
+
+## Security disclosures
+
+If you think you’ve found a potential security issue, please do not post it in the Issues.  Instead, please follow the instructions [here](https://aws.amazon.com/security/vulnerability-reporting/) or [email AWS security directly](mailto:aws-security@amazon.com).
 
 ## License
 

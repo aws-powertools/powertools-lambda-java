@@ -1,22 +1,17 @@
 package software.amazon.lambda.powertools.parameters;
 
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
-import software.amazon.awssdk.services.appconfigdata.AppConfigDataClientBuilder;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
-import software.amazon.lambda.powertools.core.internal.LambdaConstants;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
 
 /**
  * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
@@ -144,19 +139,10 @@ public class AppConfigProvider extends BaseProvider{
 
             // Create a AppConfigDataClient if we haven't been given one
             if (client == null) {
-                AppConfigDataClientBuilder appConfigDataClientBuilder = AppConfigDataClient.builder()
+                client = AppConfigDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
-                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
-
-                // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-                // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-                // fall back to the default provider chain if the mode is anything other than on-demand.
-                String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                    appConfigDataClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-                }
-
-                client = appConfigDataClientBuilder.build();
+                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                        .build();
             }
 
             AppConfigProvider provider = new AppConfigProvider(cacheManager, client, environment, application);

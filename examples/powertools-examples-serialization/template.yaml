@@ -32,7 +32,7 @@ Resources:
   SQSEventDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: Function
+      CodeUri: .
       Handler: org.demo.serialization.SQSEventDeserializationFunction::handleRequest
       Policies:
         - Statement:

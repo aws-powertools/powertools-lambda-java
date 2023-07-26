@@ -253,7 +253,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     ```
 
 ???+ tip "Why a different configuration?"
-    Lambda Powertools for Java is using [AspectJ](https://eclipse.dev/aspectj/doc/released/progguide/starting.html) internally 
+     Powertools for AWS Lambda (Java) is using [AspectJ](https://eclipse.dev/aspectj/doc/released/progguide/starting.html) internally 
     to handle annotations. Recently, in order to support Java 17 we had to move to `dev.aspectj:aspectj-maven-plugin` because  
     `org.codehaus.mojo:aspectj-maven-plugin` does not support Java 17. 
     Under the hood, `org.codehaus.mojo:aspectj-maven-plugin` is based on AspectJ 1.9.7, 
