@@ -64,7 +64,7 @@ Resources:
   DemoSQSSenderFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ..
+      CodeUri: ../..
       Handler: org.demo.batch.sqs.SqsBatchSender::handleRequest
       Environment:
         Variables:
@@ -96,7 +96,7 @@ Resources:
   DemoSQSConsumerFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ..
+      CodeUri: ../..
       Handler: org.demo.batch.sqs.SqsBatchHandler::handleRequest
       Environment:
         Variables:
