@@ -5,7 +5,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 
 import java.util.Optional;
 
-public class LargeMessageProcessorFactory {
+class LargeMessageProcessorFactory {
 
     private LargeMessageProcessorFactory() {
         // not intended to be instantiated

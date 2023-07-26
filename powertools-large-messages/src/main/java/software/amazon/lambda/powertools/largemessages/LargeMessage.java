@@ -50,6 +50,7 @@ public @interface LargeMessage {
 
     /**
      * Specify if S3 objects must be deleted after being processed (default = true)
+     Alternatively you might consider using S3 lifecycle policies to remove the payloads automatically after a period of time.
      */
     boolean deleteS3Object() default true;
 }

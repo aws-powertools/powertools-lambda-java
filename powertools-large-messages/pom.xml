@@ -129,7 +129,7 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>${maven-surefire-plugin.version}</version>
                 <configuration>
                     <environmentVariables>
                         <AWS_REGION>eu-central-1</AWS_REGION>

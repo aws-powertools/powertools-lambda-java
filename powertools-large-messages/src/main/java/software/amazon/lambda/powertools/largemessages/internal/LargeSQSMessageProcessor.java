@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public class LargeSQSMessageProcessor extends LargeMessageProcessor<SQSMessage> {
+class LargeSQSMessageProcessor extends LargeMessageProcessor<SQSMessage> {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeSQSMessageProcessor.class);
     private static final String LEGACY_RESERVED_ATTRIBUTE_NAME = "SQSLargePayloadSize";

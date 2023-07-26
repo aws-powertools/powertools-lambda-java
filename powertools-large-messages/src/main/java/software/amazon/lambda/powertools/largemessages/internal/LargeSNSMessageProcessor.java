@@ -6,7 +6,7 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LargeSNSMessageProcessor extends LargeMessageProcessor<SNSRecord> {
+class LargeSNSMessageProcessor extends LargeMessageProcessor<SNSRecord> {
 
     @Override
     protected String getMessageId(SNSRecord message) {

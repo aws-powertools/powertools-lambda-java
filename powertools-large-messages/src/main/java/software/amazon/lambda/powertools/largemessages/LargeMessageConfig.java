@@ -8,7 +8,7 @@ import software.amazon.awssdk.services.s3.S3ClientBuilder;
 import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
 
 /**
- * Singleton instance for Large Message Config.
+ * Singleton instance for Large Message Config. We need this to provide a way to customize the S3 client configuration used by the annotation.
  * <br/>
  * Optional: Use it in your Lambda constructor to pass a custom {@link S3Client} to the {@link software.amazon.lambda.powertools.largemessages.internal.LargeMessageProcessor}
  * <br/>
