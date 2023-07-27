@@ -10,12 +10,29 @@ It is made up of the following:
 - [App.java](src/main/java/helloworld/App.java) - Code for the application's Lambda function.
 - [events](events) - Invocation events that you can use to invoke the function.
 - [AppTests.java](src/test/java/helloworld/AppTest.java) - Unit tests for the application code. 
-- [template.yaml](template.yaml) - A template that defines the application's AWS resources.
 
 ## Deploy the sample application
 
-This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
-started with SAM in [the examples directory](../../README.md)
+This is a blank project for CDK development with Java.
+
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
+
+It is a [Maven](https://maven.apache.org/) based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
+
+The minimum to deploy the app should be
+```bash 
+cdk bootstrap && mvn package && cdk deploy
+```
+
+## Useful commands
+
+* `mvn package`     compile and run tests
+* `cdk ls`          list all stacks in the app
+* `cdk synth`       emits the synthesized CloudFormation template
+* `cdk deploy`      deploy this stack to your default AWS account/region
+* `cdk diff`        compare deployed stack with current state
+* `cdk docs`        open CDK documentation
+
 
 ## Test the application
 

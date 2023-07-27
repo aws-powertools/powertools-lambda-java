@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.amazon.lambda.examples</groupId>
     <version>1.17.0-SNAPSHOT</version>
     <artifactId>powertools-examples-core</artifactId>
     <packaging>jar</packaging>
-    
+
     <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
 
     <properties>
@@ -14,23 +14,45 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <cdk.version>2.88.0</cdk.version>
+        <constructs.version>[10.0.0,11.0.0)</constructs.version>
+        <junit.version>5.7.1</junit.version>
     </properties>
-
     <dependencies>
+        <!-- AWS Cloud Development Kit -->
+        <dependency>
+            <groupId>software.amazon.awscdk</groupId>
+            <artifactId>aws-cdk-lib</artifactId>
+            <version>${cdk.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>software.constructs</groupId>
+            <artifactId>constructs</artifactId>
+            <version>${constructs.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-tracing</artifactId>
-            <version>${project.version}</version>
+            <version>1.16.1</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
-            <version>${project.version}</version>
+            <version>1.16.1</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-metrics</artifactId>
-            <version>${project.version}</version>
+            <version>1.16.1</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -38,9 +60,9 @@
             <version>1.2.2</version>
         </dependency>
         <dependency>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>aws-lambda-java-events</artifactId>
-          <version>3.11.2</version>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+            <version>3.11.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -52,76 +74,83 @@
             <artifactId>log4j-api</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-
         <dependency>
-          <groupId>junit</groupId>
-          <artifactId>junit</artifactId>
-          <version>4.13.2</version>
-          <scope>test</scope>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
-      <plugins>
-        <plugin>
-             <groupId>dev.aspectj</groupId>
-             <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.13.1</version>
-             <configuration>
-                 <source>${maven.compiler.source}</source>
-                 <target>${maven.compiler.target}</target>
-                 <complianceLevel>${maven.compiler.target}</complianceLevel>
-                 <aspectLibraries>
-                     <aspectLibrary>
-                         <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-tracing</artifactId>
-                     </aspectLibrary>
-                     <aspectLibrary>
-                         <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-logging</artifactId>
-                     </aspectLibrary>
-                     <aspectLibrary>
-                         <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-metrics</artifactId>
-                     </aspectLibrary>
-                 </aspectLibraries>
-             </configuration>
-             <executions>
-                 <execution>
-                     <goals>
-                         <goal>compile</goal>
-                     </goals>
-                 </execution>
-             </executions>
-        </plugin>
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-shade-plugin</artifactId>
-            <version>3.5.0</version>
-            <executions>
-                <execution>
-                    <phase>package</phase>
-                    <goals>
-                        <goal>shade</goal>
-                    </goals>
-                    <configuration>
-                        <transformers>
-                            <transformer
-                                    implementation="com.github.edwgiz.maven_shade_plugin.log4j2_cache_transformer.PluginsCacheFileTransformer">
-                            </transformer>
-                        </transformers>
-                    </configuration>
-                </execution>
-            </executions>
-            <dependencies>
-                <dependency>
-                    <groupId>com.github.edwgiz</groupId>
-                    <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
-                    <version>2.15</version>
-                </dependency>
-            </dependencies>
-        </plugin>
-      </plugins>
+        <plugins>
+            <plugin>
+                <groupId>dev.aspectj</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.13.1</version>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <complianceLevel>${maven.compiler.target}</complianceLevel>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>software.amazon.lambda</groupId>
+                            <artifactId>powertools-tracing</artifactId>
+                        </aspectLibrary>
+                        <aspectLibrary>
+                            <groupId>software.amazon.lambda</groupId>
+                            <artifactId>powertools-logging</artifactId>
+                        </aspectLibrary>
+                        <aspectLibrary>
+                            <groupId>software.amazon.lambda</groupId>
+                            <artifactId>powertools-metrics</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="com.github.edwgiz.maven_shade_plugin.log4j2_cache_transformer.PluginsCacheFileTransformer">
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.edwgiz</groupId>
+                        <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
+                        <version>2.15</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <mainClass>cdk.CdkApp</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
     <profiles>
         <!-- Use a profile to enforce AspectJ version 1.9.7 if we are Java 1.8 otherwise we'll get class
