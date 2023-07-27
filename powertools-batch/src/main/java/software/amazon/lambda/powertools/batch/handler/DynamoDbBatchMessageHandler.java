@@ -11,14 +11,20 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-public class DdbBatchMessageHandler implements BatchMessageHandler<DynamodbEvent, StreamsEventResponse>{
-    Logger LOGGER = LoggerFactory.getLogger(DdbBatchMessageHandler.class);
+/**
+ * A batch message processor for DynamoDB Streams batches.
+ *
+ * @see <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-batchfailurereporting">DynamoDB Streams batch failure reporting</a>
+ *
+ */
+public class DynamoDbBatchMessageHandler implements BatchMessageHandler<DynamodbEvent, StreamsEventResponse>{
+    private final static Logger LOGGER = LoggerFactory.getLogger(DynamoDbBatchMessageHandler.class);
 
     private final Consumer<DynamodbEvent.DynamodbStreamRecord> successHandler;
     private final BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler;
     private final BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler;
 
-    public DdbBatchMessageHandler(Consumer<DynamodbEvent.DynamodbStreamRecord> successHandler, BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler, BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler) {
+    public DynamoDbBatchMessageHandler(Consumer<DynamodbEvent.DynamodbStreamRecord> successHandler, BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler, BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler) {
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.rawMessageHandler = rawMessageHandler;

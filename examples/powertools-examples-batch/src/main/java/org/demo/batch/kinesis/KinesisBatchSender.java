@@ -26,6 +26,12 @@ import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 
+
+/**
+ * A Lambda handler used to send message batches to Kinesis Streams. This is only here
+ * to produce an end-to-end demo, so that the {{@link org.demo.batch.kinesis.KinesisBatchHandler}}
+ * has some data to consume.
+ */
 public class KinesisBatchSender implements RequestHandler<ScheduledEvent, String> {
 
     private static final Logger LOGGER = LogManager.getLogger(KinesisBatchSender.class);

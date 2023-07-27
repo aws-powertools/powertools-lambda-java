@@ -3,9 +3,13 @@ package software.amazon.lambda.powertools.batch;
 import software.amazon.lambda.powertools.batch.builder.*;
 
 /**
- * A builder-style interface we can use within an existing Lambda RequestHandler to
- * deal with our batch responses. A second tier of builders is returned per-event-source
- * to bind the appropriate message types and provider source-specific logic and tuneables.
+ * A builder-style interface we can use to build batch processing handlers for SQS, Kinesis Streams,
+ * and DynamoDB Streams batches. The batch processing handlers that are returned allow
+ * the user to easily process batches of messages, one-by-one, while offloading
+ * the common issues - failure handling, partial responses, deserialization -
+ * to the library.
+ *
+ * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/batch/">Powertools for AWS Lambda (Java) Batch Documentation</a>
  **/
 public class BatchMessageHandlerBuilder {
 
@@ -23,8 +27,8 @@ public class BatchMessageHandlerBuilder {
      *
      * @return A fluent builder interface to continue the building
      */
-    public DdbBatchMessageHandlerBuilder withDynamoDbBatchHandler() {
-        return new DdbBatchMessageHandlerBuilder();
+    public DynamoDbBatchMessageHandlerBuilder withDynamoDbBatchHandler() {
+        return new DynamoDbBatchMessageHandlerBuilder();
     }
 
     /**

@@ -26,12 +26,9 @@ public class DynamoDBStreamBatchHandler implements RequestHandler<DynamodbEvent,
     }
 
     @Override
-    public StreamsEventResponse handleRequest(DynamodbEvent kinesisEvent, Context context) {
-        return handler.processBatch(kinesisEvent, context);
+    public StreamsEventResponse handleRequest(DynamodbEvent ddbEvent, Context context) {
+        return handler.processBatch(ddbEvent, context);
     }
 
-    private void processMessage(Product p, Context c) {
-        LOGGER.info("Processing product " + p);
-    }
 
 }

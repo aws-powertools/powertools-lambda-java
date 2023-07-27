@@ -14,13 +14,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
- * A batch message handler for Kinesis Streams batch processing.
+ * A batch message processor for Kinesis Streams batch processing.
  *
- * Refer to <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting">The kinesis batch processing document</a>
- * @param <M>
+ * Refer to <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting">Kinesis Batch failure reporting</a>
+ * @param <M> The user-defined type of the Kinesis record payload
  */
 public class KinesisStreamsBatchMessageHandler <M> implements BatchMessageHandler<KinesisEvent, StreamsEventResponse> {
-    Logger LOGGER = LoggerFactory.getLogger(KinesisStreamsBatchMessageHandler.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(KinesisStreamsBatchMessageHandler.class);
 
     private final BiConsumer<KinesisEvent.KinesisEventRecord, Context> rawMessageHandler;
     private final BiConsumer<M, Context> messageHandler;

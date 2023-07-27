@@ -5,19 +5,22 @@ import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import software.amazon.lambda.powertools.batch.exception.DeserializationNotSupportedException;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
-import software.amazon.lambda.powertools.batch.handler.DdbBatchMessageHandler;
+import software.amazon.lambda.powertools.batch.handler.DynamoDbBatchMessageHandler;
 
 import java.util.function.BiConsumer;
 
-public class DdbBatchMessageHandlerBuilder extends AbstractBatchMessageHandlerBuilder<DynamodbEvent.DynamodbStreamRecord,
-        DdbBatchMessageHandlerBuilder,
+/**
+ * Builds a batch processor for processing DynamoDB Streams batch events
+ **/
+public class DynamoDbBatchMessageHandlerBuilder extends AbstractBatchMessageHandlerBuilder<DynamodbEvent.DynamodbStreamRecord,
+        DynamoDbBatchMessageHandlerBuilder,
         DynamodbEvent,
         StreamsEventResponse> {
 
 
     @Override
     public BatchMessageHandler<DynamodbEvent, StreamsEventResponse> buildWithRawMessageHandler(BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler) {
-        return new DdbBatchMessageHandler(
+        return new DynamoDbBatchMessageHandler(
                 this.successHandler,
                 this.failureHandler,
                 rawMessageHandler);
@@ -30,7 +33,7 @@ public class DdbBatchMessageHandlerBuilder extends AbstractBatchMessageHandlerBu
     }
 
     @Override
-    protected DdbBatchMessageHandlerBuilder getThis() {
+    protected DynamoDbBatchMessageHandlerBuilder getThis() {
         return this;
     }
 }

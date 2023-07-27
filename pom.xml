@@ -39,9 +39,8 @@
         <module>powertools-cloudformation</module>
         <module>powertools-idempotency</module>
         <module>powertools-e2e-tests</module>
-        <module>examples</module>
         <module>powertools-batch</module>
-        <module>examples/powertools-examples-batch</module>
+        <module>examples</module>
     </modules>
 
     <scm>

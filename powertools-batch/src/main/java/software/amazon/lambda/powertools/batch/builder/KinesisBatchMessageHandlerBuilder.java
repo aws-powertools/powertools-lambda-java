@@ -8,6 +8,9 @@ import software.amazon.lambda.powertools.batch.handler.KinesisStreamsBatchMessag
 
 import java.util.function.BiConsumer;
 
+/**
+ * Builds a batch processor for processing Kinesis Streams batch events
+ */
 public class KinesisBatchMessageHandlerBuilder extends AbstractBatchMessageHandlerBuilder<KinesisEvent.KinesisEventRecord,
         KinesisBatchMessageHandlerBuilder,
         KinesisEvent,
