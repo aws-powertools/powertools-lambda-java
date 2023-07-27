@@ -3,7 +3,9 @@ title: SQS Batch Processing (Deprecated)
 description: Utility
 ---
 
-!!! warn "The SQS batch module is now deprecated and will be removed in v2. Use the [batch module](batch.md)."
+!!! warning
+    The SQS batch module is now deprecated and will be removed in v2 of the library. Use the [batch module](batch.md), 
+    and check out **[migrating to the batch library](#migrating-to-the-batch-library)** for migration instructions.  
 
 The SQS batch processing utility provides a way to handle partial failures when processing batches of messages from SQS.
 The utility handles batch processing for both 
@@ -460,3 +462,28 @@ Same capability is also provided by [SqsUtils Utility API](#sqsutils-utility-api
         }
     }
     ```
+
+## Migrating to the Batch Library
+The  [batch processing library](batch.md) provides a way to process messages and gracefully handle partial failures for
+SQS, Kinesis Streams, and DynamoDB Streams batch sources. In comparison the legacy SQS Batch library, it relies on
+[Lambda partial batch responses](https://aws.amazon.com/about-aws/whats-new/2021/11/aws-lambda-partial-batch-response-sqs-event-source/),
+which allows the library to provide a simpler, reliable interface for processing batches.
+
+In order to get started, check out the [processing messages from SQS](batch/#processing-messages-from-sqs) documentation. 
+In most cases, you will simply be able to retain your existing batch message handler function, and wrap it with the new 
+batch processing interface. Unlike this module, As the batch processor uses *partial batch responses* to communicate to
+Lambda which messages have been processed and must be removed from the queue, the return of the handler's process function
+must be returned to Lambda. 
+
+The new library also no longer requires the `SQS:DeleteMessage` action on the Lambda function's role policy, as Lambda
+itself now manages removal of messages from the queue. 
+
+!!! info 
+    Some tuneables from this library are no longer provided.
+
+    * **Non-retryable Exceptions** - there is no mechanism to indicate in a partial batch response that a particular message
+        should not be retried and instead moved to DLQ - a message either succeeds, or fails and is retried. A message
+        will be moved to the DLQ once the normal retry process has expired.
+    * **Suppress Exception** - The new batch processor does not throw an exception on failure of a handler. Instead,
+        its result must be returned by your code from your message handler to Lambda, so that Lambda can manage
+        the completed messages and retry behaviour.
