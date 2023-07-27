@@ -38,6 +38,7 @@ public class JsonConfig {
             .withFunctionRegistry(customFunctions)
             .build();
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
+
     private JsonConfig() {
     }
 
