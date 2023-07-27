@@ -29,6 +29,21 @@ public class DdbBatchProcessorTest {
 
     @ParameterizedTest
     @Event(value = "dynamo_event.json", type = DynamodbEvent.class)
+    public void batchProcessingSucceedsAndReturns(DynamodbEvent event) {
+        // Arrange
+        BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+                .withDynamoDbBatchHandler()
+                .buildWithRawMessageHandler(this::processMessageSucceeds);
+
+        // Act
+        StreamsEventResponse dynamodbBatchResponse = handler.processBatch(event, context);
+
+        // Assert
+        assertThat(dynamodbBatchResponse.getBatchItemFailures()).hasSize(0);
+    }
+
+    @ParameterizedTest
+    @Event(value = "dynamo_event.json", type = DynamodbEvent.class)
     public void shouldAddMessageToBatchFailure_whenException_withMessage(DynamodbEvent event) {
         // Arrange
         BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
@@ -40,6 +55,32 @@ public class DdbBatchProcessorTest {
 
         // Assert
         assertThat(dynamodbBatchResponse.getBatchItemFailures()).hasSize(1);
+        StreamsEventResponse.BatchItemFailure batchItemFailure = dynamodbBatchResponse.getBatchItemFailures().get(0);
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("4421584500000000017450439091");
+    }
+
+    @ParameterizedTest
+    @Event(value = "dynamo_event.json", type = DynamodbEvent.class)
+    public void failingFailureHandlerShouldntFailBatch(DynamodbEvent event) {
+        // Arrange
+        AtomicBoolean wasCalledAndFailed = new AtomicBoolean(false);
+        BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+                .withDynamoDbBatchHandler()
+                .withFailureHandler((m, e) -> {
+                    if (m.getDynamodb().getSequenceNumber().equals("4421584500000000017450439091")) {
+                        wasCalledAndFailed.set(true);
+                        throw new RuntimeException("Success handler throws");
+                    }
+                })
+                .buildWithRawMessageHandler(this::processMessageFailsForFixedMessage);
+
+        // Act
+        StreamsEventResponse dynamodbBatchResponse = handler.processBatch(event, context);
+
+        // Assert
+        assertThat(dynamodbBatchResponse).isNotNull();
+        assertThat(dynamodbBatchResponse.getBatchItemFailures().size()).isEqualTo(1);
+        assertThat(wasCalledAndFailed.get()).isTrue();
         StreamsEventResponse.BatchItemFailure batchItemFailure = dynamodbBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("4421584500000000017450439091");
     }
