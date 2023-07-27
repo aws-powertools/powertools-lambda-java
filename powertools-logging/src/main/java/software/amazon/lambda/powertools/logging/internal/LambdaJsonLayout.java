@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,12 +11,25 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.internal;
+
+import static java.time.Instant.ofEpochMilli;
+import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -30,74 +43,15 @@ import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.apache.logging.log4j.core.util.KeyValuePair;
 import org.apache.logging.log4j.util.Strings;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static java.time.Instant.ofEpochMilli;
-import static java.time.format.DateTimeFormatter.ISO_ZONED_DATE_TIME;
-
 /***
  *  Note: The LambdaJsonLayout should be considered to be deprecated. Please use JsonTemplateLayout instead.
  */
 @Deprecated
 @Plugin(name = "LambdaJsonLayout", category = Node.CATEGORY, elementType = Layout.ELEMENT_TYPE, printObject = true)
 public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
-    private static final String DEFAULT_FOOTER = "]";
-
-    private static final String DEFAULT_HEADER = "[";
-
     static final String CONTENT_TYPE = "application/json";
-
-    public static class Builder<B extends Builder<B>> extends AbstractJacksonLayoutCopy.Builder<B>
-            implements org.apache.logging.log4j.core.util.Builder<LambdaJsonLayout> {
-
-        @PluginBuilderAttribute
-        private boolean propertiesAsList;
-
-        @PluginBuilderAttribute
-        private boolean objectMessageAsJsonObject;
-
-        public Builder() {
-            super();
-            setCharset(StandardCharsets.UTF_8);
-        }
-
-        @Override
-        public LambdaJsonLayout build() {
-            final boolean encodeThreadContextAsList = isProperties() && propertiesAsList;
-            final String headerPattern = toStringOrNull(getHeader());
-            final String footerPattern = toStringOrNull(getFooter());
-            return new LambdaJsonLayout(getConfiguration(), isLocationInfo(), isProperties(), encodeThreadContextAsList,
-                    isComplete(), isCompact(), getEventEol(), headerPattern, footerPattern, getCharset(),
-                    isIncludeStacktrace(), isStacktraceAsString(), isIncludeNullDelimiter(),
-                    getAdditionalFields(), getObjectMessageAsJsonObject());
-        }
-
-        public boolean isPropertiesAsList() {
-            return propertiesAsList;
-        }
-
-        public B setPropertiesAsList(final boolean propertiesAsList) {
-            this.propertiesAsList = propertiesAsList;
-            return asBuilder();
-        }
-
-        public boolean getObjectMessageAsJsonObject() {
-            return objectMessageAsJsonObject;
-        }
-
-        public B setObjectMessageAsJsonObject(final boolean objectMessageAsJsonObject) {
-            this.objectMessageAsJsonObject = objectMessageAsJsonObject;
-            return asBuilder();
-        }
-    }
+    private static final String DEFAULT_FOOTER = "]";
+    private static final String DEFAULT_HEADER = "[";
 
     private LambdaJsonLayout(final Configuration config, final boolean locationInfo, final boolean properties,
                              final boolean encodeThreadContextAsList,
@@ -106,14 +60,32 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
                              final boolean includeStacktrace, final boolean stacktraceAsString,
                              final boolean includeNullDelimiter,
                              final KeyValuePair[] additionalFields, final boolean objectMessageAsJsonObject) {
-        super(config, new JacksonFactoryCopy.JSON(encodeThreadContextAsList, includeStacktrace, stacktraceAsString, objectMessageAsJsonObject).newWriter(
-                locationInfo, properties, compact),
+        super(config, new JacksonFactoryCopy.JSON(encodeThreadContextAsList, includeStacktrace, stacktraceAsString,
+                        objectMessageAsJsonObject).newWriter(
+                        locationInfo, properties, compact),
                 charset, compact, complete, eventEol,
                 null,
-                PatternLayout.newSerializerBuilder().setConfiguration(config).setPattern(headerPattern).setDefaultPattern(DEFAULT_HEADER).build(),
-                PatternLayout.newSerializerBuilder().setConfiguration(config).setPattern(footerPattern).setDefaultPattern(DEFAULT_FOOTER).build(),
+                PatternLayout.newSerializerBuilder().setConfiguration(config).setPattern(headerPattern)
+                        .setDefaultPattern(DEFAULT_HEADER).build(),
+                PatternLayout.newSerializerBuilder().setConfiguration(config).setPattern(footerPattern)
+                        .setDefaultPattern(DEFAULT_FOOTER).build(),
                 includeNullDelimiter,
                 additionalFields);
+    }
+
+    @PluginBuilderFactory
+    public static <B extends Builder<B>> B newBuilder() {
+        return new Builder<B>().asBuilder();
+    }
+
+    /**
+     * Creates a JSON Layout using the default settings. Useful for testing.
+     *
+     * @return A JSON Layout.
+     */
+    public static LambdaJsonLayout createDefaultLayout() {
+        return new LambdaJsonLayout(new DefaultConfiguration(), false, false, false, false, false, false,
+                DEFAULT_HEADER, DEFAULT_FOOTER, StandardCharsets.UTF_8, true, false, false, null, false);
     }
 
     /**
@@ -170,21 +142,6 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
         return CONTENT_TYPE + "; charset=" + this.getCharset();
     }
 
-    @PluginBuilderFactory
-    public static <B extends Builder<B>> B newBuilder() {
-        return new Builder<B>().asBuilder();
-    }
-
-    /**
-     * Creates a JSON Layout using the default settings. Useful for testing.
-     *
-     * @return A JSON Layout.
-     */
-    public static LambdaJsonLayout createDefaultLayout() {
-        return new LambdaJsonLayout(new DefaultConfiguration(), false, false, false, false, false, false,
-                DEFAULT_HEADER, DEFAULT_FOOTER, StandardCharsets.UTF_8, true, false, false, null, false);
-    }
-
     @Override
     public Object wrapLogEvent(final LogEvent event) {
         Map<String, Object> additionalFieldsMap = resolveAdditionalFields(event);
@@ -205,13 +162,58 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
         final Map<String, Object> additionalFieldsMap = new LinkedHashMap<>(additionalFields.length);
 
         // Go over MDC
-        logEvent.getContextData().forEach((key, value) -> {
-            if (Strings.isNotBlank(key) && value != null) {
-                additionalFieldsMap.put(key, value);
-            }
-        });
+        logEvent.getContextData().forEach((key, value) ->
+            {
+                if (Strings.isNotBlank(key) && value != null) {
+                    additionalFieldsMap.put(key, value);
+                }
+            });
 
         return additionalFieldsMap;
+    }
+
+    public static class Builder<B extends Builder<B>> extends AbstractJacksonLayoutCopy.Builder<B>
+            implements org.apache.logging.log4j.core.util.Builder<LambdaJsonLayout> {
+
+        @PluginBuilderAttribute
+        private boolean propertiesAsList;
+
+        @PluginBuilderAttribute
+        private boolean objectMessageAsJsonObject;
+
+        public Builder() {
+            super();
+            setCharset(StandardCharsets.UTF_8);
+        }
+
+        @Override
+        public LambdaJsonLayout build() {
+            final boolean encodeThreadContextAsList = isProperties() && propertiesAsList;
+            final String headerPattern = toStringOrNull(getHeader());
+            final String footerPattern = toStringOrNull(getFooter());
+            return new LambdaJsonLayout(getConfiguration(), isLocationInfo(), isProperties(), encodeThreadContextAsList,
+                    isComplete(), isCompact(), getEventEol(), headerPattern, footerPattern, getCharset(),
+                    isIncludeStacktrace(), isStacktraceAsString(), isIncludeNullDelimiter(),
+                    getAdditionalFields(), getObjectMessageAsJsonObject());
+        }
+
+        public boolean isPropertiesAsList() {
+            return propertiesAsList;
+        }
+
+        public B setPropertiesAsList(final boolean propertiesAsList) {
+            this.propertiesAsList = propertiesAsList;
+            return asBuilder();
+        }
+
+        public boolean getObjectMessageAsJsonObject() {
+            return objectMessageAsJsonObject;
+        }
+
+        public B setObjectMessageAsJsonObject(final boolean objectMessageAsJsonObject) {
+            this.objectMessageAsJsonObject = objectMessageAsJsonObject;
+            return asBuilder();
+        }
     }
 
     @JsonRootName(XmlConstants.ELT_EVENT)
@@ -237,7 +239,8 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
 
         @JsonGetter("timestamp")
         public String getTimestamp() {
-            return ISO_ZONED_DATE_TIME.format(ZonedDateTime.from(ofEpochMilli(logEvent.getTimeMillis()).atZone(ZoneId.systemDefault())));
+            return ISO_ZONED_DATE_TIME.format(
+                    ZonedDateTime.from(ofEpochMilli(logEvent.getTimeMillis()).atZone(ZoneId.systemDefault())));
         }
     }
 }

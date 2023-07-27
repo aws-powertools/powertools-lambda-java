@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,7 +11,12 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.utilities;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
@@ -29,19 +34,14 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import software.amazon.lambda.powertools.utilities.model.Basket;
 import software.amazon.lambda.powertools.utilities.model.Order;
 import software.amazon.lambda.powertools.utilities.model.Product;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
 
 public class EventDeserializerTest {
 
@@ -61,7 +61,8 @@ public class EventDeserializerTest {
 
     @Test
     public void testDeserializeStringArrayAsList_shouldReturnList() {
-        String productStr = "[{\"id\":1234, \"name\":\"product\", \"price\":42}, {\"id\":2345, \"name\":\"product2\", \"price\":43}]";
+        String productStr =
+                "[{\"id\":1234, \"name\":\"product\", \"price\":42}, {\"id\":2345, \"name\":\"product2\", \"price\":43}]";
         List<Product> products = extractDataFrom(productStr).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
@@ -254,7 +255,8 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kasip_event.json", type = KinesisAnalyticsStreamsInputPreprocessingEvent.class)
-    public void testDeserializeKasipEventMessageAsListShouldReturnList(KinesisAnalyticsStreamsInputPreprocessingEvent event) {
+    public void testDeserializeKasipEventMessageAsListShouldReturnList(
+            KinesisAnalyticsStreamsInputPreprocessingEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
         assertProduct(products.get(0));
@@ -262,7 +264,8 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kafip_event.json", type = KinesisAnalyticsFirehoseInputPreprocessingEvent.class)
-    public void testDeserializeKafipEventMessageAsListShouldReturnList(KinesisAnalyticsFirehoseInputPreprocessingEvent event) {
+    public void testDeserializeKafipEventMessageAsListShouldReturnList(
+            KinesisAnalyticsFirehoseInputPreprocessingEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
         assertProduct(products.get(0));

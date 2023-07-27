@@ -1,8 +1,31 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.metrics.internal;
 
-import java.lang.reflect.Field;
+import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
+import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.hasNoMetrics;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import java.lang.reflect.Field;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -16,21 +39,33 @@ import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 
-import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
-import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.hasNoMetrics;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
-
 @Aspect
 public class LambdaMetricsAspect {
-    private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
+    private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
+
+    private static String service(Metrics metrics) {
+        return !"".equals(metrics.service()) ? metrics.service() : serviceName();
+    }
+
+    // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed
+    public static void refreshMetricsContext(Metrics metrics) {
+        try {
+            Field f = metricsLogger().getClass().getDeclaredField("context");
+            f.setAccessible(true);
+            MetricsContext context = new MetricsContext();
+
+            DimensionSet[] defaultDimensions = hasDefaultDimension() ? MetricsUtils.getDefaultDimensions()
+                    : new DimensionSet[] {DimensionSet.of("Service", service(metrics))};
+
+            context.setDimensions(defaultDimensions);
+
+            f.set(metricsLogger(), context);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(metrics)")
@@ -52,8 +87,9 @@ public class LambdaMetricsAspect {
 
             Context extractedContext = extractContext(pjp);
 
-            if( null != extractedContext) {
-                coldStartSingleMetricIfApplicable(extractedContext.getAwsRequestId(), extractedContext.getFunctionName(), metrics);
+            if (null != extractedContext) {
+                coldStartSingleMetricIfApplicable(extractedContext.getAwsRequestId(),
+                        extractedContext.getFunctionName(), metrics);
                 logger.putProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
             }
 
@@ -79,12 +115,12 @@ public class LambdaMetricsAspect {
                                                    final Metrics metrics) {
         if (metrics.captureColdStart()
                 && isColdStart()) {
-                MetricsLogger metricsLogger = new MetricsLogger();
-                metricsLogger.setNamespace(namespace(metrics));
-                metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
-                metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
-                metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
-                metricsLogger.flush();
+            MetricsLogger metricsLogger = new MetricsLogger();
+            metricsLogger.setNamespace(namespace(metrics));
+            metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
+            metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
+            metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
+            metricsLogger.flush();
         }
 
     }
@@ -104,34 +140,12 @@ public class LambdaMetricsAspect {
         return !"".equals(metrics.namespace()) ? metrics.namespace() : NAMESPACE;
     }
 
-    private static String service(Metrics metrics) {
-        return !"".equals(metrics.service()) ? metrics.service() : serviceName();
-    }
-
     private void validateMetricsAndRefreshOnFailure(Metrics metrics) {
         try {
             validateBeforeFlushingMetrics(metrics);
-        } catch (ValidationException e){
+        } catch (ValidationException e) {
             refreshMetricsContext(metrics);
             throw e;
-        }
-    }
-
-    // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed
-    public static void refreshMetricsContext(Metrics metrics) {
-        try {
-            Field f = metricsLogger().getClass().getDeclaredField("context");
-            f.setAccessible(true);
-            MetricsContext context = new MetricsContext();
-
-            DimensionSet[] defaultDimensions = hasDefaultDimension() ? MetricsUtils.getDefaultDimensions()
-                    : new DimensionSet[]{DimensionSet.of("Service", service(metrics))};
-
-            context.setDimensions(defaultDimensions);
-
-            f.set(metricsLogger(), context);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
         }
     }
 }

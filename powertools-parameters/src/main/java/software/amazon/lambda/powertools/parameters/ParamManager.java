@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,17 +11,17 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
 
+import java.lang.reflect.Constructor;
+import java.util.concurrent.ConcurrentHashMap;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
-
-import java.lang.reflect.Constructor;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Utility class to retrieve instances of parameter providers.
@@ -39,8 +39,9 @@ public final class ParamManager {
      * Get a concrete implementation of {@link BaseProvider}.<br/>
      * You can specify {@link SecretsProvider}, {@link SSMProvider} or create your
      * custom provider by extending {@link BaseProvider} if you need to integrate with a different parameter store.
-     * @deprecated You should not use this method directly but a typed one (getSecretsProvider, getSsmProvider, getDynamoDbProvider, getAppConfigProvider), will be removed in v2
+     *
      * @return a {@link SecretsProvider}
+     * @deprecated You should not use this method directly but a typed one (getSecretsProvider, getSsmProvider, getDynamoDbProvider, getAppConfigProvider), will be removed in v2
      */
     // TODO in v2: remove public access to this and review how we get providers (it was not designed for DDB and AppConfig in mind initially)
     public static <T extends BaseProvider> T getProvider(Class<T> providerClass) {
@@ -48,7 +49,8 @@ public final class ParamManager {
             throw new IllegalStateException("providerClass cannot be null.");
         }
         if (providerClass == DynamoDbProvider.class || providerClass == AppConfigProvider.class) {
-            throw new IllegalArgumentException(providerClass + " cannot be instantiated like this, additional parameters are required");
+            throw new IllegalArgumentException(
+                    providerClass + " cannot be instantiated like this, additional parameters are required");
         }
         return (T) providers.computeIfAbsent(providerClass, ParamManager::createProvider);
     }
@@ -56,6 +58,7 @@ public final class ParamManager {
     /**
      * Get a {@link SecretsProvider} with default {@link SecretsManagerClient}.<br/>
      * If you need to customize the region, or other part of the client, use {@link ParamManager#getSecretsProvider(SecretsManagerClient)} instead.
+     *
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider() {
@@ -65,6 +68,7 @@ public final class ParamManager {
     /**
      * Get a {@link SSMProvider} with default {@link SsmClient}.<br/>
      * If you need to customize the region, or other part of the client, use {@link ParamManager#getSsmProvider(SsmClient)} instead.
+     *
      * @return a {@link SSMProvider}
      */
     public static SSMProvider getSsmProvider() {
@@ -89,6 +93,7 @@ public final class ParamManager {
     /**
      * Get a {@link AppConfigProvider} with default {@link AppConfigDataClient}.<br/>
      * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigDataClient, String, String)} instead.
+     *
      * @return a {@link AppConfigProvider}
      */
     public static AppConfigProvider getAppConfigProvider(String environment, String application) {
@@ -107,6 +112,7 @@ public final class ParamManager {
     /**
      * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
+     *
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider(SecretsManagerClient client) {
@@ -120,6 +126,7 @@ public final class ParamManager {
     /**
      * Get a {@link SSMProvider} with your custom {@link SsmClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
+     *
      * @return a {@link SSMProvider}
      */
     public static SSMProvider getSsmProvider(SsmClient client) {
@@ -133,6 +140,7 @@ public final class ParamManager {
     /**
      * Get a {@link DynamoDbProvider} with your custom {@link DynamoDbClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getDynamoDbProvider(String)} )} if you don't need this customization.
+     *
      * @return a {@link DynamoDbProvider}
      */
     public static DynamoDbProvider getDynamoDbProvider(DynamoDbClient client, String table) {
@@ -143,13 +151,15 @@ public final class ParamManager {
                 .withTransformationManager(transformationManager)
                 .build());
     }
-    
+
     /**
      * Get a {@link AppConfigProvider} with your custom {@link AppConfigDataClient}.<br/>
      * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider(String, String)} if you don't need this customization.
+     *
      * @return a {@link AppConfigProvider}
      */
-    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client, String environment, String application) {
+    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client, String environment,
+                                                         String application) {
         return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
                 .withClient(client)
                 .withCacheManager(cacheManager)
@@ -168,10 +178,11 @@ public final class ParamManager {
         return transformationManager;
     }
 
-   static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
+    static <T extends BaseProvider> T createProvider(Class<T> providerClass) {
         try {
             Constructor<T> constructor = providerClass.getDeclaredConstructor(CacheManager.class);
-            T provider = constructor.newInstance(cacheManager); // FIXME: avoid reflection here as we may have issues (#1280)
+            T provider =
+                    constructor.newInstance(cacheManager); // FIXME: avoid reflection here as we may have issues (#1280)
             provider.setTransformationManager(transformationManager);
             return provider;
         } catch (ReflectiveOperationException e) {

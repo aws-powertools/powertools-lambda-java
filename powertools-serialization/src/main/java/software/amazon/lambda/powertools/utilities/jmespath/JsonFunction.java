@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.utilities.jmespath;
 
 import io.burt.jmespath.Adapter;
@@ -18,7 +19,6 @@ import io.burt.jmespath.JmesPathType;
 import io.burt.jmespath.function.ArgumentConstraints;
 import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionArgument;
-
 import java.util.List;
 
 public class JsonFunction extends BaseFunction {

@@ -1,9 +1,28 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.metrics;
+
+import static java.util.Objects.requireNonNull;
+import static java.util.Optional.ofNullable;
+import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.getXrayTraceId;
+import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.REQUEST_ID_PROPERTY;
+import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.TRACE_ID_PROPERTY;
 
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
-
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
 import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
@@ -12,16 +31,10 @@ import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
-import static java.util.Objects.requireNonNull;
-import static java.util.Optional.ofNullable;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.getXrayTraceId;
-import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.REQUEST_ID_PROPERTY;
-import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.TRACE_ID_PROPERTY;
-
 /**
  * A class used to retrieve the instance of the {@code MetricsLogger} used by
  * {@code Metrics}.
- *
+ * <p>
  * {@see Metrics}
  */
 public final class MetricsUtils {
@@ -43,6 +56,7 @@ public final class MetricsUtils {
     /**
      * Configure default dimension to be used by logger.
      * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
+     *
      * @param dimensionSets Default value of dimensions set for logger
      */
     public static void defaultDimensions(final DimensionSet... dimensionSets) {
@@ -52,15 +66,15 @@ public final class MetricsUtils {
     /**
      * Configure default dimension to be used by logger.
      * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
+     *
      * @param dimensionSet Default value of dimension set for logger
      * @deprecated use {@link #defaultDimensions(DimensionSet...)} instead
-     *
      */
     @Deprecated
     public static void defaultDimensionSet(final DimensionSet dimensionSet) {
         requireNonNull(dimensionSet, "Null dimension set not allowed");
 
-        if(dimensionSet.getDimensionKeys().size() > 0) {
+        if (dimensionSet.getDimensionKeys().size() > 0) {
             defaultDimensions(dimensionSet);
         }
     }
@@ -81,10 +95,11 @@ public final class MetricsUtils {
                                         final double value,
                                         final Unit unit,
                                         final Consumer<MetricsLogger> logger) {
-        withMetricsLogger(metricsLogger -> {
-            metricsLogger.putMetric(name, value, unit);
-            logger.accept(metricsLogger);
-        });
+        withMetricsLogger(metricsLogger ->
+            {
+                metricsLogger.putMetric(name, value, unit);
+                logger.accept(metricsLogger);
+            });
     }
 
     /**
@@ -92,22 +107,23 @@ public final class MetricsUtils {
      * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
      * capture xray_trace_id as property if tracing is enabled.
      *
-     * @param name the name of the metric
-     * @param value the value of the metric
-     * @param unit the unit type of the metric
+     * @param name      the name of the metric
+     * @param value     the value of the metric
+     * @param unit      the unit type of the metric
      * @param namespace the namespace associated with the metric
-     * @param logger the MetricsLogger
+     * @param logger    the MetricsLogger
      */
     public static void withSingleMetric(final String name,
                                         final double value,
                                         final Unit unit,
                                         final String namespace,
                                         final Consumer<MetricsLogger> logger) {
-        withMetricsLogger(metricsLogger -> {
-            metricsLogger.setNamespace(namespace);
-            metricsLogger.putMetric(name, value, unit);
-            logger.accept(metricsLogger);
-        });
+        withMetricsLogger(metricsLogger ->
+            {
+                metricsLogger.setNamespace(namespace);
+                metricsLogger.putMetric(name, value, unit);
+                logger.accept(metricsLogger);
+            });
     }
 
     /**
@@ -137,7 +153,6 @@ public final class MetricsUtils {
      * capture xray_trace_id as property if tracing is enabled.
      *
      * @param logger the MetricsLogger
-     *
      * @deprecated use {@link MetricsUtils#withMetricsLogger} instead
      */
     @Deprecated
@@ -164,7 +179,7 @@ public final class MetricsUtils {
     private static String defaultNameSpace() {
         MetricsContext context = MetricsLoggerHelper.metricsContext();
         return "aws-embedded-metrics".equals(context.getNamespace()) ?
-                SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE"): context.getNamespace();
+                SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE") : context.getNamespace();
     }
 
     private static Optional<String> awsRequestId() {

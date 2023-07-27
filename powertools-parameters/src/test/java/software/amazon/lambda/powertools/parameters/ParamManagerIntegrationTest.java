@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,8 +11,21 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
 
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,19 +44,6 @@ import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.services.ssm.model.Parameter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 public class ParamManagerIntegrationTest {
 
     @Mock
@@ -51,21 +51,16 @@ public class ParamManagerIntegrationTest {
 
     @Mock
     DynamoDbClient ddbClient;
-
-    @Mock
-    private AppConfigDataClient appConfigDataClient;
-
     @Captor
     ArgumentCaptor<GetParameterRequest> ssmParamCaptor;
-
     @Captor
     ArgumentCaptor<GetParametersByPathRequest> ssmParamByPathCaptor;
-
     @Mock
     SecretsManagerClient secretsManagerClient;
-
     @Captor
     ArgumentCaptor<GetSecretValueRequest> secretsCaptor;
+    @Mock
+    private AppConfigDataClient appConfigDataClient;
 
     @BeforeEach
     public void setup() throws IllegalAccessException {

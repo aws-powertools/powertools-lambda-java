@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,15 +11,16 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
 /**
  * Exception thrown when the item was not found in the persistence store.
  */
-public class IdempotencyItemNotFoundException extends RuntimeException{
+public class IdempotencyItemNotFoundException extends RuntimeException {
     private static final long serialVersionUID = 4818288566747993032L;
 
     public IdempotencyItemNotFoundException(String idempotencyKey) {
-        super("Item with idempotency key "+ idempotencyKey + " not found");
+        super("Item with idempotency key " + idempotencyKey + " not found");
     }
 }

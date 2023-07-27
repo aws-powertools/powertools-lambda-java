@@ -1,8 +1,33 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.cloudformation;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.http.ExecutableHttpRequest;
@@ -12,18 +37,6 @@ import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.utils.IoUtils;
 import software.amazon.awssdk.utils.StringInputStream;
 import software.amazon.lambda.powertools.cloudformation.CloudFormationResponse.ResponseBody;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class CloudFormationResponseTest {
 
@@ -44,16 +57,17 @@ public class CloudFormationResponseTest {
         SdkHttpClient client = mock(SdkHttpClient.class);
         ExecutableHttpRequest executableRequest = mock(ExecutableHttpRequest.class);
 
-        when(client.prepareRequest(any(HttpExecuteRequest.class))).thenAnswer(args -> {
-            HttpExecuteRequest request = args.getArgument(0, HttpExecuteRequest.class);
-            assertThat(request.contentStreamProvider()).isPresent();
+        when(client.prepareRequest(any(HttpExecuteRequest.class))).thenAnswer(args ->
+            {
+                HttpExecuteRequest request = args.getArgument(0, HttpExecuteRequest.class);
+                assertThat(request.contentStreamProvider()).isPresent();
 
-            InputStream inputStream = request.contentStreamProvider().get().newStream();
-            HttpExecuteResponse response = mock(HttpExecuteResponse.class);
-            when(response.responseBody()).thenReturn(Optional.of(AbortableInputStream.create(inputStream)));
-            when(executableRequest.call()).thenReturn(response);
-            return executableRequest;
-        });
+                InputStream inputStream = request.contentStreamProvider().get().newStream();
+                HttpExecuteResponse response = mock(HttpExecuteResponse.class);
+                when(response.responseBody()).thenReturn(Optional.of(AbortableInputStream.create(inputStream)));
+                when(executableRequest.call()).thenReturn(response);
+                return executableRequest;
+            });
 
         return new CloudFormationResponse(client);
     }
@@ -113,7 +127,8 @@ public class CloudFormationResponseTest {
 
         String customPhysicalResourceId = "Custom-Physical-Resource-ID";
         ResponseBody body = new ResponseBody(
-                event, Response.Status.SUCCESS, customPhysicalResourceId, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
+                event, Response.Status.SUCCESS, customPhysicalResourceId, false,
+                "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getPhysicalResourceId()).isEqualTo(customPhysicalResourceId);
     }
 
@@ -122,7 +137,8 @@ public class CloudFormationResponseTest {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         Context context = mock(Context.class);
 
-        ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
+        ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true,
+                "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         String actualJson = responseBody.toObjectNode(null).toString();
 
         String expectedJson = "{" +
@@ -146,7 +162,8 @@ public class CloudFormationResponseTest {
         dataNode.put("foo", "bar");
         dataNode.put("baz", 10);
 
-        ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
+        ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true,
+                "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         String actualJson = responseBody.toObjectNode(dataNode).toString();
 
         String expectedJson = "{" +
@@ -178,7 +195,8 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
 
         ResponseBody body = new ResponseBody(
-                event, Response.Status.FAILED, null, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
+                event, Response.Status.FAILED, null, false,
+                "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getStatus()).isEqualTo("FAILED");
     }
 
@@ -191,7 +209,8 @@ public class CloudFormationResponseTest {
         when(context.getLogStreamName()).thenReturn(logStreamName);
 
         ResponseBody body = new ResponseBody(
-                event, Response.Status.SUCCESS, null, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
+                event, Response.Status.SUCCESS, null, false,
+                "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
         assertThat(body.getReason()).contains(logStreamName);
     }
 
