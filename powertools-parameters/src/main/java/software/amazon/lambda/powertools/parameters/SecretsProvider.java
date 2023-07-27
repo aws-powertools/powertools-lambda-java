@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,8 +11,14 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.Map;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
@@ -24,12 +30,6 @@ import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
-
-import java.time.temporal.ChronoUnit;
-import java.util.Base64;
-import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * AWS Secrets Manager Parameter Provider<br/><br/>
@@ -62,7 +62,7 @@ public class SecretsProvider extends BaseProvider {
     /**
      * Constructor with custom {@link SecretsManagerClient}. <br/>
      * Use when you need to customize region or any other attribute of the client.<br/><br/>
-     *
+     * <p>
      * Use the {@link Builder} to create an instance of it.
      *
      * @param client custom client you would like to use.
@@ -74,12 +74,22 @@ public class SecretsProvider extends BaseProvider {
 
     /**
      * Constructor with only a CacheManager<br/>
-     *
+     * <p>
      * Used in {@link ParamManager#createProvider(Class)}
+     *
      * @param cacheManager handles the parameter caching
      */
     SecretsProvider(CacheManager cacheManager) {
         this(cacheManager, Builder.createClient());
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link SecretsProvider}.
+     *
+     * @return a new instance of {@link SecretsProvider.Builder}
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -94,13 +104,14 @@ public class SecretsProvider extends BaseProvider {
 
         String secretValue = client.getSecretValue(request).secretString();
         if (secretValue == null) {
-            secretValue = new String(Base64.getDecoder().decode(client.getSecretValue(request).secretBinary().asByteArray()), UTF_8);
+            secretValue =
+                    new String(Base64.getDecoder().decode(client.getSecretValue(request).secretBinary().asByteArray()),
+                            UTF_8);
         }
         return secretValue;
     }
 
     /**
-     *
      * @throws UnsupportedOperationException as it is not possible to get multiple values simultaneously from Secrets Manager
      */
     @Override
@@ -140,20 +151,19 @@ public class SecretsProvider extends BaseProvider {
         return client;
     }
 
-    /**
-     * Create a builder that can be used to configure and create a {@link SecretsProvider}.
-     *
-     * @return a new instance of {@link SecretsProvider.Builder}
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
     static class Builder {
 
         private SecretsManagerClient client;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
+
+        private static SecretsManagerClient createClient() {
+            return SecretsManagerClient.builder()
+                    .httpClientBuilder(UrlConnectionHttpClient.builder())
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .build();
+        }
 
         /**
          * Create a {@link SecretsProvider} instance.
@@ -187,14 +197,6 @@ public class SecretsProvider extends BaseProvider {
         public Builder withClient(SecretsManagerClient client) {
             this.client = client;
             return this;
-        }
-
-        private static SecretsManagerClient createClient() {
-            return SecretsManagerClient.builder()
-                    .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
-                    .build();
         }
 
         /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,16 +11,16 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.transform;
 
 public class ObjectToDeserialize {
 
-    public ObjectToDeserialize() {
-    }
-
     private String foo;
     private int bar;
     private long baz;
+    public ObjectToDeserialize() {
+    }
 
     public String getFoo() {
         return foo;

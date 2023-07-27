@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,7 +27,7 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 /**
  * Use this if you need to customize some part of the JSON Schema validation
  * (eg. specification version, Jackson ObjectMapper, or adding functions to JMESPath).
- *
+ * <p>
  * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
  * is just a wrapper of {@link JsonConfig}.
  */
@@ -62,7 +63,7 @@ public class ValidationConfig {
      * {@link Base64Function} and {@link Base64GZipFunction} are already built-in.
      *
      * @param function the function to add
-     * @param <T> Must extend {@link BaseFunction}
+     * @param <T>      Must extend {@link BaseFunction}
      */
     public <T extends BaseFunction> void addFunction(T function) {
         JsonConfig.get().addFunction(function);

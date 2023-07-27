@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,14 +11,15 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.cache;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
 
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class CacheManager {
     static final Duration DEFAULT_MAX_AGE_SECS = Duration.of(5, SECONDS);

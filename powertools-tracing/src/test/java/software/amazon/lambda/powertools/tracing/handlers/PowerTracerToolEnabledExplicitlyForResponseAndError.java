@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,13 +11,14 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.tracing.handlers;
+
+import static software.amazon.lambda.powertools.tracing.CaptureMode.RESPONSE_AND_ERROR;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.lambda.powertools.tracing.Tracing;
-
-import static software.amazon.lambda.powertools.tracing.CaptureMode.RESPONSE_AND_ERROR;
 
 public class PowerTracerToolEnabledExplicitlyForResponseAndError implements RequestHandler<Object, Object> {
 

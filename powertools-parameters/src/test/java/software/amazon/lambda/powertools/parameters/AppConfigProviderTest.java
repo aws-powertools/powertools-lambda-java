@@ -1,4 +1,23 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.parameters;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,23 +34,18 @@ import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSes
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 public class AppConfigProviderTest {
 
     private final String environmentName = "test";
     private final String applicationName = "fakeApp";
     private final String defaultTestKey = "key1";
-    
+
     @Mock
     AppConfigDataClient client;
-    
+
     @Captor
     ArgumentCaptor<StartConfigurationSessionRequest> startSessionRequestCaptor;
-    
+
     @Captor
     ArgumentCaptor<GetLatestConfigurationRequest> getLatestConfigurationRequestCaptor;
     private AppConfigProvider provider;
@@ -89,13 +103,17 @@ public class AppConfigProviderTest {
         // Assert
         assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
         assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
-        assertThat(returnedValue3).isEqualTo(secondResponse.configuration().asUtf8String()); // Third response is mocked to return null and should re-use previous value
+        assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
+                .asUtf8String()); // Third response is mocked to return null and should re-use previous value
         assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
         assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
         assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(firstSession.initialConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(firstResponse.nextPollConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(secondResponse.nextPollConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+                firstSession.initialConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+                firstResponse.nextPollConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(
+                secondResponse.nextPollConfigurationToken());
     }
 
     @Test
@@ -156,10 +174,14 @@ public class AppConfigProviderTest {
         // Assert
         assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
         assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
-        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(param1Key);
-        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(param2Key);
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(param1Session.initialConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(param2Session.initialConfigurationToken());
+        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(
+                param1Key);
+        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(
+                param2Key);
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+                param1Session.initialConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+                param2Session.initialConfigurationToken());
 
     }
 

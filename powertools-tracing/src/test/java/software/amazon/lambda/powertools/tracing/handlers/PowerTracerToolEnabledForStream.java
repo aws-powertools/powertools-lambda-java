@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,14 +11,14 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.tracing.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import software.amazon.lambda.powertools.tracing.Tracing;
-
 import java.io.InputStream;
 import java.io.OutputStream;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 public class PowerTracerToolEnabledForStream implements RequestStreamHandler {
 

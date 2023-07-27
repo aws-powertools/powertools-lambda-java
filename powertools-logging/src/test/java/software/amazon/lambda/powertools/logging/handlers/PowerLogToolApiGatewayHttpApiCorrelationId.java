@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,7 +11,10 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.handlers;
+
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_HTTP;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -19,8 +22,6 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
-
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_HTTP;
 
 public class PowerLogToolApiGatewayHttpApiCorrelationId implements RequestHandler<APIGatewayV2HTTPEvent, Object> {
     private final Logger LOG = LogManager.getLogger(PowerLogToolApiGatewayHttpApiCorrelationId.class);
