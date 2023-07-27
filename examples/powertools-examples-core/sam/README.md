@@ -15,7 +15,7 @@ It is made up of the following:
 ## Deploy the sample application
 
 This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
-started with SAM in [the examples directory](../README.md)
+started with SAM in [the examples directory](../../README.md)
 
 ## Test the application
 
