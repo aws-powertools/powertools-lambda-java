@@ -1,14 +1,28 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.core.internal;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 /**
  * Can be used to create a string that can server as a User-Agent suffix in requests made with the AWS SDK clients
@@ -23,8 +37,13 @@ public class UserAgentConfigurator {
     public static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurator.class);
     private static final String NO_OP = "no-op";
-    private static String PT_VERSION = getProjectVersion();
-    private static String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + PT_VERSION + " PTEnv/" + PT_EXEC_ENV_VARIABLE;
+    private static String ptVersion = getProjectVersion();
+    private static String userAgentPattern = "PT/" + PT_FEATURE_VARIABLE + "/" + ptVersion + " PTEnv/"
+            + PT_EXEC_ENV_VARIABLE;
+
+    private UserAgentConfigurator() {
+        throw new IllegalStateException("Utility class. Not meant to be instantiated");
+    }
 
     /**
      * Retrieves the project version from the version.properties file
@@ -80,7 +99,7 @@ public class UserAgentConfigurator {
 
         String awsExecutionEnv = getenv(AWS_EXECUTION_ENV);
         String ptExecEnv = awsExecutionEnv != null ? awsExecutionEnv : NA;
-        String userAgent = USER_AGENT_PATTERN.replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
+        String userAgent = userAgentPattern.replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
 
         if (ptFeature == null || ptFeature.isEmpty()) {
             ptFeature = NO_OP;
