@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,9 +11,11 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.tracing.handlers;
 
-import java.io.IOException;
+import static software.amazon.lambda.powertools.tracing.CaptureMode.RESPONSE;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -21,10 +23,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import java.io.IOException;
 import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
-
-import static software.amazon.lambda.powertools.tracing.CaptureMode.RESPONSE;
 
 public class PowerTracerToolEnabledForResponseWithCustomMapper implements RequestHandler<Object, Object> {
     static {
@@ -35,6 +36,7 @@ public class PowerTracerToolEnabledForResponseWithCustomMapper implements Reques
 
         TracingUtils.defaultObjectMapper(objectMapper);
     }
+
     @Override
     @Tracing(namespace = "lambdaHandler", captureMode = RESPONSE)
     public Object handleRequest(Object input, Context context) {
@@ -42,6 +44,25 @@ public class PowerTracerToolEnabledForResponseWithCustomMapper implements Reques
         ChildClass childClass = new ChildClass("child", parentClass);
         parentClass.setC(childClass);
         return parentClass;
+    }
+
+    public static class ChildSerializer extends StdSerializer<ChildClass> {
+
+        public ChildSerializer() {
+            this(null);
+        }
+
+        public ChildSerializer(Class<ChildClass> t) {
+            super(t);
+        }
+
+        @Override
+        public void serialize(ChildClass value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+            jgen.writeStartObject();
+            jgen.writeStringField("name", value.name);
+            jgen.writeStringField("p", value.p.name);
+            jgen.writeEndObject();
+        }
     }
 
     public class ParentClass {
@@ -64,25 +85,6 @@ public class PowerTracerToolEnabledForResponseWithCustomMapper implements Reques
         public ChildClass(String name, ParentClass p) {
             this.name = name;
             this.p = p;
-        }
-    }
-
-    public static class ChildSerializer extends StdSerializer<ChildClass> {
-
-        public ChildSerializer() {
-            this(null);
-        }
-
-        public ChildSerializer(Class<ChildClass> t) {
-            super(t);
-        }
-
-        @Override
-        public void serialize(ChildClass value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
-            jgen.writeStartObject();
-            jgen.writeStringField("name", value.name);
-            jgen.writeStringField("p", value.p.name);
-            jgen.writeEndObject();
         }
     }
 }

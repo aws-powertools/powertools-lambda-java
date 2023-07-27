@@ -1,15 +1,27 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package org.demo.parameters;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.parameters.ParamManager;
-import software.amazon.lambda.powertools.parameters.SSMProvider;
-import software.amazon.lambda.powertools.parameters.SecretsProvider;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -17,10 +29,11 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
-import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.powertools.parameters.ParamManager;
+import software.amazon.lambda.powertools.parameters.SSMProvider;
+import software.amazon.lambda.powertools.parameters.SecretsProvider;
 
 public class ParametersFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(ParametersFunction.class);
@@ -34,8 +47,10 @@ public class ParametersFunction implements RequestHandler<APIGatewayProxyRequest
     Map<String, String> allValues = ssmProvider.getMultiple("/powertools-java/sample");
     String b64value = ssmProvider.withTransformation(base64).get("/powertools-java/sample/keybase64");
 
-    Map<String, String> secretJson = secretsProvider.withTransformation(json).get("/powertools-java/userpwd", Map.class);
-    MyObject secretJsonObj = secretsProvider.withMaxAge(42, SECONDS).withTransformation(json).get("/powertools-java/secretcode", MyObject.class);
+    Map<String, String> secretJson =
+            secretsProvider.withTransformation(json).get("/powertools-java/userpwd", Map.class);
+    MyObject secretJsonObj = secretsProvider.withMaxAge(42, SECONDS).withTransformation(json)
+            .get("/powertools-java/secretcode", MyObject.class);
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
@@ -72,9 +87,9 @@ public class ParametersFunction implements RequestHandler<APIGatewayProxyRequest
         }
     }
 
-    private String getPageContents(String address) throws IOException{
+    private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
             return br.lines().collect(Collectors.joining(System.lineSeparator()));
         }
     }

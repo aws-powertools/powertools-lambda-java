@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,16 +11,8 @@
  * limitations under the License.
  *
  */
-package software.amazon.lambda.powertools.tracing.internal;
 
-import java.util.function.Supplier;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Subsegment;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.tracing.Tracing;
+package software.amazon.lambda.powertools.tracing.internal;
 
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
@@ -28,6 +20,15 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isSamLocal;
 import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.objectMapper;
+
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Subsegment;
+import java.util.function.Supplier;
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.powertools.tracing.Tracing;
 
 @Aspect
 public final class LambdaTracingAspect {
@@ -42,8 +43,8 @@ public final class LambdaTracingAspect {
         Object[] proceedArgs = pjp.getArgs();
 
         Subsegment segment = AWSXRay.beginSubsegment(
-            customSegmentNameOrDefault(tracing,
-                () -> "## " + pjp.getSignature().getName()));
+                customSegmentNameOrDefault(tracing,
+                        () -> "## " + pjp.getSignature().getName()));
         segment.setNamespace(namespace(tracing));
 
         if (isHandlerMethod(pjp)) {
@@ -57,7 +58,8 @@ public final class LambdaTracingAspect {
         try {
             Object methodReturn = pjp.proceed(proceedArgs);
             if (captureResponse) {
-                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response", null != objectMapper() ? objectMapper().writeValueAsString(methodReturn): methodReturn);
+                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " response",
+                        null != objectMapper() ? objectMapper().writeValueAsString(methodReturn) : methodReturn);
             }
 
             if (isHandlerMethod(pjp)) {
@@ -67,7 +69,8 @@ public final class LambdaTracingAspect {
             return methodReturn;
         } catch (Exception e) {
             if (captureError) {
-                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " error", null != objectMapper() ? objectMapper().writeValueAsString(e) : e);
+                segment.putMetadata(namespace(tracing), pjp.getSignature().getName() + " error",
+                        null != objectMapper() ? objectMapper().writeValueAsString(e) : e);
             }
             throw e;
         } finally {
@@ -81,7 +84,8 @@ public final class LambdaTracingAspect {
         switch (powerToolsTracing.captureMode()) {
             case ENVIRONMENT_VAR:
                 boolean captureResponse = environmentVariable("POWERTOOLS_TRACER_CAPTURE_RESPONSE");
-                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_RESPONSE") ? captureResponse : powerToolsTracing.captureResponse();
+                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_RESPONSE") ? captureResponse :
+                        powerToolsTracing.captureResponse();
             case RESPONSE:
             case RESPONSE_AND_ERROR:
                 return true;
@@ -95,7 +99,8 @@ public final class LambdaTracingAspect {
         switch (powerToolsTracing.captureMode()) {
             case ENVIRONMENT_VAR:
                 boolean captureError = environmentVariable("POWERTOOLS_TRACER_CAPTURE_ERROR");
-                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_ERROR") ? captureError : powerToolsTracing.captureError();
+                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_ERROR") ? captureError :
+                        powerToolsTracing.captureError();
             case ERROR:
             case RESPONSE_AND_ERROR:
                 return true;

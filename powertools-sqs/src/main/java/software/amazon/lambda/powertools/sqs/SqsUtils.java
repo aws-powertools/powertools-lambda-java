@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,30 +11,28 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.sqs;
 
-import java.lang.reflect.Constructor;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.lang.reflect.Constructor;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
-import software.amazon.payloadoffloading.PayloadS3Pointer;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
-
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect.processMessages;
+import software.amazon.payloadoffloading.PayloadS3Pointer;
 
 /**
  * A class of helper functions to add additional functionality to {@link SQSEvent} processing.
@@ -43,11 +41,10 @@ public final class SqsUtils {
     private static final Logger LOG = LoggerFactory.getLogger(SqsUtils.class);
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    private static SqsClient client;
-    private static S3Client s3Client;
-
     // The attribute on an SQS-FIFO message used to record the message group ID
     private static final String MESSAGE_GROUP_ID = "MessageGroupId";
+    private static SqsClient client;
+    private static S3Client s3Client;
 
     private SqsUtils() {
     }
@@ -186,23 +183,24 @@ public final class SqsUtils {
      * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
      * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
      * you can use nonRetryableExceptions parameter to configure such exceptions.
-     *
+     * <p>
      * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
      * sqs:SendMessageBatch permission for configured DLQ.
-     *
+     * <p>
      * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
      * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
      * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
      * for some reason the utility is unable to move the message to the DLQ. An example of this could be because the function
      * is missing the correct permissions.
      * </p>
-     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
-     * @param event   {@link SQSEvent} received by lambda function.
-     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     *
+     * @param event                  {@link SQSEvent} received by lambda function.
+     * @param handler                Class implementing {@link SqsMessageHandler} which will be called for each message in event.
      * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
      *                               to DLQ.
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing.
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
      */
     @SafeVarargs
     @Deprecated
@@ -284,26 +282,26 @@ public final class SqsUtils {
      * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
      * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
      * you can use nonRetryableExceptions parameter to configure such exceptions.
-     *
+     * <p>
      * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
      * sqs:SendMessageBatch permission for configured DLQ.
-     *
+     * <p>
      * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
      * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
      * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
      * for some reason the utility is unable to move the message to the DLQ. An example of this could be because the function
      * is missing the correct permissions.
      * </p>
-     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
      *
-     * @param event   {@link SQSEvent} received by lambda function.
-     * @param suppressException if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
-     *                          messages.
-     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     * @param event                  {@link SQSEvent} received by lambda function.
+     * @param suppressException      if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
+     *                               messages.
+     * @param handler                Class implementing {@link SqsMessageHandler} which will be called for each message in event.
      * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
      *                               to DLQ.
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing.
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
      */
     @SafeVarargs
     @Deprecated
@@ -350,28 +348,29 @@ public final class SqsUtils {
      * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
      * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
      * you can use nonRetryableExceptions parameter to configure such exceptions.
-     *
+     * <p>
      * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
      * sqs:SendMessageBatch permission for configured DLQ.
-     *
+     * <p>
      * If you want such messages to be deleted instead, set deleteNonRetryableMessageFromQueue to true.
-     *
+     * <p>
      * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
      * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
      * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
      * for some reason the utility is unable to move the message to the DLQ. An example of this could be because the function
      * is missing the correct permissions.
      * </p>
-     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
-     * @param event   {@link SQSEvent} received by lambda function.
-     * @param suppressException if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
-     *                          messages.
-     * @param handler Class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     *
+     * @param event                              {@link SQSEvent} received by lambda function.
+     * @param suppressException                  if this is set to true, No {@link SQSBatchProcessingException} is thrown even on failed
+     *                                           messages.
+     * @param handler                            Class implementing {@link SqsMessageHandler} which will be called for each message in event.
      * @param deleteNonRetryableMessageFromQueue If messages with nonRetryableExceptions are to be deleted from SQS queue.
-     * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
-     *                               to DLQ.
+     * @param nonRetryableExceptions             exception classes that are to be treated as permanent exceptions and to be moved
+     *                                           to DLQ.
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing.
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
      */
     @SafeVarargs
     @Deprecated
@@ -382,7 +381,8 @@ public final class SqsUtils {
                                              final Class<? extends Exception>... nonRetryableExceptions) {
 
         SqsMessageHandler<R> handlerInstance = instantiatedHandler(handler);
-        return batchProcessor(event, suppressException, handlerInstance, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
+        return batchProcessor(event, suppressException, handlerInstance, deleteNonRetryableMessageFromQueue,
+                nonRetryableExceptions);
     }
 
     /**
@@ -458,23 +458,24 @@ public final class SqsUtils {
      * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
      * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
      * you can use nonRetryableExceptions parameter to configure such exceptions.
-     *
+     * <p>
      * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
      * sqs:SendMessageBatch permission for configured DLQ.
-     *
+     * <p>
      * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
      * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
      * exceptions and the message will be moved back to source SQS queue for reprocessing.The same behaviour will occur if
      * for some reason the utility is unable to moved the message to the DLQ. An example of this could be because the function
      * is missing the correct permissions.
      * </p>
-     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
-     * @param event   {@link SQSEvent} received by lambda function.
-     * @param handler Instance of class implementing {@link SqsMessageHandler} which will be called for each message in event.
+     *
+     * @param event                  {@link SQSEvent} received by lambda function.
+     * @param handler                Instance of class implementing {@link SqsMessageHandler} which will be called for each message in event.
      * @param nonRetryableExceptions exception classes that are to be treated as permanent exceptions and to be moved
      *                               to DLQ.
      * @return List of values returned by {@link SqsMessageHandler#process(SQSMessage)} while processing each message.
      * @throws SQSBatchProcessingException if some messages fail during processing.
+     * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
      */
     @SafeVarargs
     @Deprecated
@@ -538,7 +539,7 @@ public final class SqsUtils {
                                              final Class<? extends Exception>... nonRetryableExceptions) {
         final List<R> handlerReturn = new ArrayList<>();
 
-        if(client == null) {
+        if (client == null) {
             client = SqsClient.create();
         }
 
@@ -568,7 +569,8 @@ public final class SqsUtils {
                 String messageGroupId = message.getAttributes() != null ?
                         message.getAttributes().get(MESSAGE_GROUP_ID) : null;
                 if (messageGroupId != null) {
-                    LOG.info("A message in a message batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
+                    LOG.info(
+                            "A message in a message batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
                             , messageGroupId, message.getMessageId());
                     failedBatch = true;
                 }
@@ -581,14 +583,16 @@ public final class SqsUtils {
         if (offset < event.getRecords().size()) {
             event.getRecords()
                     .subList(offset, event.getRecords().size())
-                    .forEach(message -> {
-                        LOG.info("Skipping message {} as another message with a message group failed in this batch",
-                                message.getMessageId());
-                        batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
-                    });
+                    .forEach(message ->
+                        {
+                            LOG.info("Skipping message {} as another message with a message group failed in this batch",
+                                    message.getMessageId());
+                            batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
+                        });
         }
 
-        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue, nonRetryableExceptions);
+        batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue,
+                nonRetryableExceptions);
         return handlerReturn;
     }
 
@@ -599,7 +603,8 @@ public final class SqsUtils {
                 return handler.getDeclaredConstructor().newInstance();
             }
 
-            final Constructor<? extends SqsMessageHandler<R>> constructor = handler.getDeclaredConstructor(handler.getDeclaringClass());
+            final Constructor<? extends SqsMessageHandler<R>> constructor =
+                    handler.getDeclaredConstructor(handler.getDeclaringClass());
             constructor.setAccessible(true);
             return constructor.newInstance(handler.getDeclaringClass().getDeclaredConstructor().newInstance());
         } catch (Exception e) {
@@ -623,7 +628,7 @@ public final class SqsUtils {
     }
 
     public static S3Client s3Client() {
-        if(null == s3Client) {
+        if (null == s3Client) {
             SqsUtils.s3Client = S3Client.create();
         }
 

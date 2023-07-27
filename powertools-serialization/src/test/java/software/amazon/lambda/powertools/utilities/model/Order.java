@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.utilities.model;
 
 import java.util.HashMap;

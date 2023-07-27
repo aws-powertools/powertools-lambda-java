@@ -11,19 +11,19 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.handlers;
+
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.EVENT_BRIDGE;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.logging.Logging;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.EVENT_BRIDGE;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowertoolsLogEventBridgeCorrelationId implements RequestStreamHandler {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.cache;
 
 import java.time.Instant;
@@ -27,21 +28,11 @@ public class DataStore {
         this.store = new ConcurrentHashMap<>();
     }
 
-    static class ValueNode {
-        public final Object value;
-        public final Instant time;
-
-        public ValueNode(Object value, Instant time){
-            this.value = value;
-            this.time = time;
-        }
-    }
-
-    public void put(String key, Object value, Instant time){
+    public void put(String key, Object value, Instant time) {
         store.put(key, new ValueNode(value, time));
     }
 
-    public void remove(String Key){
+    public void remove(String Key) {
         store.remove(Key);
     }
 
@@ -51,11 +42,21 @@ public class DataStore {
     }
 
     public boolean hasExpired(String key, Instant now) {
-        boolean hasExpired = !store.containsKey(key) ||  now.isAfter(store.get(key).time);
+        boolean hasExpired = !store.containsKey(key) || now.isAfter(store.get(key).time);
         // Auto-clean if the parameter has expired
         if (hasExpired) {
             remove(key);
         }
         return hasExpired;
+    }
+
+    static class ValueNode {
+        public final Object value;
+        public final Instant time;
+
+        public ValueNode(Object value, Instant time) {
+            this.value = value;
+            this.time = time;
+        }
     }
 }

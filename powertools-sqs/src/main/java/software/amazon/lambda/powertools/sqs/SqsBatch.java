@@ -1,13 +1,26 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.sqs;
 
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
 
 /**
  * @deprecated
@@ -26,7 +39,7 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
  * will take care of deleting all the successful messages from SQS. When one or more single message fails processing due
  * to exception thrown from {@link SqsMessageHandler#process(SQSMessage)}, Lambda execution will fail
  * with {@link SQSBatchProcessingException}.
- *
+ * <p>
  * If all the messages are successfully processes, No SQS messages are deleted explicitly but is rather delegated to
  * Lambda execution context for deletion.
  * </p>
@@ -39,14 +52,14 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
  * <p>
  * If you want certain exceptions to be treated as permanent failures, i.e. exceptions where the result of retrying will
  * always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue,
- *
+ * <p>
  * you can use {@link SqsBatch#nonRetryableExceptions()} to configure such exceptions.
  * Make sure function execution role has sqs:GetQueueAttributes permission on source SQS queue and sqs:SendMessage,
  * sqs:SendMessageBatch permission for configured DLQ.
- *
+ * <p>
  * If you want such messages to be deleted instead, set {@link SqsBatch#deleteNonRetryableMessageFromQueue()} to true.
  * By default its value is false.
- *
+ * <p>
  * If there is no DLQ configured on source SQS queue and {@link SqsBatch#nonRetryableExceptions()} attribute is set, if
  * nonRetryableExceptions occurs from {@link SqsMessageHandler}, such exceptions will still be treated as temporary
  * exceptions and the message will be moved back to source SQS queue for reprocessing. The same behaviour will occur if
@@ -73,6 +86,7 @@ import static com.amazonaws.services.lambda.runtime.events.SQSEvent.*;
  *
  *     ...
  * </pre>
+ *
  * @see <a href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-dead-letter-queues.html">Amazon SQS dead-letter queues</a>
  */
 @Retention(RetentionPolicy.RUNTIME)
