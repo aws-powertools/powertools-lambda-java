@@ -33,7 +33,7 @@ import software.amazon.payloadoffloading.S3Dao;
  * @param <T> any message type that support Large Messages with S3 pointers
  *            ({@link com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage} and {@link com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord} at the moment)
  */
-public abstract class LargeMessageProcessor<T> {
+abstract class LargeMessageProcessor<T> {
     protected static final String RESERVED_ATTRIBUTE_NAME = "ExtendedPayloadSize";
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageProcessor.class);
 

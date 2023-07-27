@@ -41,10 +41,20 @@ public class LargeMessageConfig {
     private LargeMessageConfig() {
     }
 
+    /**
+     * Retrieve the singleton instance (you generally don't need to use this one, used internally by the library)
+     *
+     * @return the singleton instance
+     */
     public static LargeMessageConfig get() {
         return INSTANCE;
     }
 
+    /**
+     * Initialize the singleton instance
+     *
+     * @return the singleton instance
+     */
     public static LargeMessageConfig init() {
         return INSTANCE;
     }
