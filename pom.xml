@@ -541,9 +541,9 @@
             </build>
         </profile>
         <profile>
-            <id>jdk11</id>
+            <id>notJava8</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <build>
                 <plugins>
@@ -571,10 +571,7 @@
                         <executions>
                             <execution>
                                 <goals>
-                                    <!-- Disabling this for now as I can't work out how
-                                    to get decent autoformatting working and it is breaking
-                                     the build of this PR -->
-                                    <!--<goal>check</goal>-->
+                                    <goal>check</goal>
                                 </goals>
                             </execution>
                         </executions>
