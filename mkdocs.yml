@@ -15,6 +15,7 @@ nav:
       - utilities/parameters.md
       - utilities/sqs_large_message_handling.md
       - utilities/batch.md
+      - utilities/sqs_batch.md
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
