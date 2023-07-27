@@ -37,6 +37,21 @@ public class KinesisBatchProcessorTest {
 
     @ParameterizedTest
     @Event(value = "kinesis_event.json", type = KinesisEvent.class)
+    public void batchProcessingSucceedsAndReturns(KinesisEvent event) {
+        // Arrange
+        BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+                .withKinesisBatchHandler()
+                .buildWithRawMessageHandler(this::processMessageSucceeds);
+
+        // Act
+        StreamsEventResponse kinesisBatchResponse = handler.processBatch(event, context);
+
+        // Assert
+        assertThat(kinesisBatchResponse.getBatchItemFailures()).hasSize(0);
+    }
+
+    @ParameterizedTest
+    @Event(value = "kinesis_event.json", type = KinesisEvent.class)
     public void shouldAddMessageToBatchFailure_whenException_withMessage(KinesisEvent event) {
         // Arrange
         BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()

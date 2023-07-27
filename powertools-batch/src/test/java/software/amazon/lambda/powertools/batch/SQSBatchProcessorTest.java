@@ -37,6 +37,22 @@ public class SQSBatchProcessorTest {
 
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
+    public void batchProcessingSucceedsAndReturns(SQSEvent event) {
+        // Arrange
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWithRawMessageHandler(this::processMessageSucceeds);
+
+        // Act
+        SQSBatchResponse sqsBatchResponse = handler.processBatch(event, context);
+
+        // Assert
+        assertThat(sqsBatchResponse.getBatchItemFailures()).hasSize(0);
+    }
+
+
+    @ParameterizedTest
+    @Event(value = "sqs_event.json", type = SQSEvent.class)
     public void shouldAddMessageToBatchFailure_whenException_withMessage(SQSEvent event) {
         // Arrange
         BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
