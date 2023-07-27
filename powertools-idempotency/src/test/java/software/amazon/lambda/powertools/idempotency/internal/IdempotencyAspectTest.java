@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,11 +11,26 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.internal;
+
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Instant;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
@@ -29,22 +44,18 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlrea
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.handlers.*;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyEnabledFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunctionInternalKey;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunctionInvalid;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyInternalFunctionVoid;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyStringFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyWithErrorFunction;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.time.Instant;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 public class IdempotencyAspectTest {
 
@@ -153,7 +164,8 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void secondCall_inProgress_shouldThrowIdempotencyAlreadyInProgressException() throws JsonProcessingException {
+    public void secondCall_inProgress_shouldThrowIdempotencyAlreadyInProgressException()
+            throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -166,7 +178,8 @@ public class IdempotencyAspectTest {
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
-        OptionalLong timestampInFuture = OptionalLong.of(Instant.now().toEpochMilli() + 1000); // timeout not expired (in 1sec)
+        OptionalLong timestampInFuture =
+                OptionalLong.of(Instant.now().toEpochMilli() + 1000); // timeout not expired (in 1sec)
         DataRecord record = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
@@ -178,11 +191,13 @@ public class IdempotencyAspectTest {
 
         // THEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
-        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(IdempotencyAlreadyInProgressException.class);
+        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(
+                IdempotencyAlreadyInProgressException.class);
     }
 
     @Test
-    public void secondCall_inProgress_lambdaTimeout_timeoutExpired_shouldThrowInconsistentState() throws JsonProcessingException {
+    public void secondCall_inProgress_lambdaTimeout_timeoutExpired_shouldThrowInconsistentState()
+            throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -195,7 +210,8 @@ public class IdempotencyAspectTest {
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
-        OptionalLong timestampInThePast = OptionalLong.of(Instant.now().toEpochMilli() - 100); // timeout expired 100ms ago
+        OptionalLong timestampInThePast =
+                OptionalLong.of(Instant.now().toEpochMilli() - 100); // timeout expired 100ms ago
         DataRecord record = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
@@ -207,7 +223,8 @@ public class IdempotencyAspectTest {
 
         // THEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
-        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(IdempotencyInconsistentStateException.class);
+        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(
+                IdempotencyInconsistentStateException.class);
     }
 
     @Test
@@ -278,7 +295,8 @@ public class IdempotencyAspectTest {
 
         ArgumentCaptor<Basket> resultCaptor = ArgumentCaptor.forClass(Basket.class);
         verify(store).saveSuccess(any(), resultCaptor.capture(), any());
-        assertThat(resultCaptor.getValue().getProducts()).contains(basket.getProducts().get(0), new Product(0, "fake", 0));
+        assertThat(resultCaptor.getValue().getProducts()).contains(basket.getProducts().get(0),
+                new Product(0, "fake", 0));
     }
 
     @Test
@@ -305,11 +323,13 @@ public class IdempotencyAspectTest {
 
         ArgumentCaptor<Basket> resultCaptor = ArgumentCaptor.forClass(Basket.class);
         verify(store).saveSuccess(any(), resultCaptor.capture(), any());
-        assertThat(resultCaptor.getValue().getProducts()).contains(basket.getProducts().get(0), new Product(0, "fake", 0));
+        assertThat(resultCaptor.getValue().getProducts()).contains(basket.getProducts().get(0),
+                new Product(0, "fake", 0));
     }
 
     @Test
-    public void idempotencyOnSubMethodAnnotated_secondCall_notExpired_shouldGetFromStore() throws JsonProcessingException {
+    public void idempotencyOnSubMethodAnnotated_secondCall_notExpired_shouldGetFromStore()
+            throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -354,7 +374,8 @@ public class IdempotencyAspectTest {
         ArgumentCaptor<DataRecord> recordCaptor = ArgumentCaptor.forClass(DataRecord.class);
         verify(persistenceStore).putRecord(recordCaptor.capture(), any());
         // a1d0c6e83f027327d8461063f4ac58a6 = MD5(42)
-        assertThat(recordCaptor.getValue().getIdempotencyKey()).isEqualTo("testFunction.createBasket#a1d0c6e83f027327d8461063f4ac58a6");
+        assertThat(recordCaptor.getValue().getIdempotencyKey()).isEqualTo(
+                "testFunction.createBasket#a1d0c6e83f027327d8461063f4ac58a6");
     }
 
     @Test
@@ -369,7 +390,8 @@ public class IdempotencyAspectTest {
         Product p = new Product(42, "fake product", 12);
 
         // THEN
-        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(IdempotencyConfigurationException.class);
+        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(
+                IdempotencyConfigurationException.class);
     }
 
     @Test
@@ -384,7 +406,8 @@ public class IdempotencyAspectTest {
         Product p = new Product(42, "fake product", 12);
 
         // THEN
-        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(IdempotencyConfigurationException.class);
+        assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(
+                IdempotencyConfigurationException.class);
     }
 
 }

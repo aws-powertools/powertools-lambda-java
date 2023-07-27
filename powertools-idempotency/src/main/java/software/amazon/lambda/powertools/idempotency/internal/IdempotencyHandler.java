@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,25 +11,31 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.internal;
+
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Instant;
+import java.util.OptionalInt;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
-import software.amazon.lambda.powertools.idempotency.exceptions.*;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlreadyInProgressException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyPersistenceLayerException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.time.Instant;
-import java.util.OptionalInt;
-
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
  * Internal class that will handle the Idempotency, and use the {@link software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore}
@@ -90,7 +96,9 @@ public class IdempotencyHandler {
         } catch (IdempotencyKeyException ike) {
             throw ike;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to save in progress record to idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException(
+                    "Failed to save in progress record to idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
+                    e);
         }
         return getFunctionResponse();
     }
@@ -121,11 +129,14 @@ public class IdempotencyHandler {
         } catch (IdempotencyItemNotFoundException e) {
             // This code path will only be triggered if the record is removed between saveInProgress and getRecord
             LOG.debug("An existing idempotency record was deleted before we could fetch it");
-            throw new IdempotencyInconsistentStateException("saveInProgress and getRecord return inconsistent results", e);
+            throw new IdempotencyInconsistentStateException("saveInProgress and getRecord return inconsistent results",
+                    e);
         } catch (IdempotencyValidationException | IdempotencyKeyException vke) {
             throw vke;
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to get record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException(
+                    "Failed to get record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
+                    e);
         }
     }
 
@@ -144,19 +155,24 @@ public class IdempotencyHandler {
         if (INPROGRESS.equals(record.getStatus())) {
             if (record.getInProgressExpiryTimestamp().isPresent()
                     && record.getInProgressExpiryTimestamp().getAsLong() < Instant.now().toEpochMilli()) {
-                throw new IdempotencyInconsistentStateException("Item should have been expired in-progress because it already time-outed.");
+                throw new IdempotencyInconsistentStateException(
+                        "Item should have been expired in-progress because it already time-outed.");
             }
-            throw new IdempotencyAlreadyInProgressException("Execution already in progress with idempotency key: " + record.getIdempotencyKey());
+            throw new IdempotencyAlreadyInProgressException(
+                    "Execution already in progress with idempotency key: " + record.getIdempotencyKey());
         }
 
         Class<?> returnType = ((MethodSignature) pjp.getSignature()).getReturnType();
         try {
-            LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function", record.getIdempotencyKey());
-            if (returnType.equals(String.class))
+            LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function",
+                    record.getIdempotencyKey());
+            if (returnType.equals(String.class)) {
                 return record.getResponseData();
+            }
             return JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(), returnType);
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Unable to get function response as " + returnType.getSimpleName(), e);
+            throw new IdempotencyPersistenceLayerException(
+                    "Unable to get function response as " + returnType.getSimpleName(), e);
         }
     }
 
@@ -172,7 +188,9 @@ public class IdempotencyHandler {
             } catch (IdempotencyKeyException ke) {
                 throw ke;
             } catch (Exception e) {
-                throw new IdempotencyPersistenceLayerException("Failed to delete record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
+                throw new IdempotencyPersistenceLayerException(
+                        "Failed to delete record from idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
+                        e);
             }
             throw handlerException;
         }
@@ -180,7 +198,9 @@ public class IdempotencyHandler {
         try {
             persistenceStore.saveSuccess(data, response, Instant.now());
         } catch (Exception e) {
-            throw new IdempotencyPersistenceLayerException("Failed to update record state to success in idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.", e);
+            throw new IdempotencyPersistenceLayerException(
+                    "Failed to update record state to success in idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
+                    e);
         }
         return response;
     }

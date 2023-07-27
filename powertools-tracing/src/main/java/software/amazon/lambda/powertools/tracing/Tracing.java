@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.tracing;
 
 import java.lang.annotation.ElementType;
@@ -39,7 +40,7 @@ import java.lang.annotation.Target;
  * to a sub segment named after the method.</p>
  *
  * <p>To disable this functionality you can specify {@code @Tracing( captureError = false)}</p>
- *e
+ * e
  * <p>All traces have a namespace set. If {@code @Tracing( namespace = "ExampleService")} is set
  * this takes precedent over any value set in the environment variable {@code POWER_TOOLS_SERVICE_NAME}.
  * If both are undefined then the value will default to {@code service_undefined}</p>
@@ -48,6 +49,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Tracing {
     String namespace() default "";
+
     /**
      * @deprecated As of release 1.2.0, replaced by captureMode()
      * in order to support different modes and support via
@@ -55,6 +57,7 @@ public @interface Tracing {
      */
     @Deprecated
     boolean captureResponse() default true;
+
     /**
      * @deprecated As of release 1.2.0, replaced by captureMode()
      * in order to support different modes and support via
@@ -62,6 +65,8 @@ public @interface Tracing {
      */
     @Deprecated
     boolean captureError() default true;
+
     String segmentName() default "";
+
     CaptureMode captureMode() default CaptureMode.ENVIRONMENT_VAR;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,20 +11,8 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
-import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
-import software.amazon.lambda.powertools.parameters.transform.Transformer;
-
-import java.time.Clock;
-import java.time.temporal.ChronoUnit;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 
 import static java.time.Clock.offset;
 import static java.time.Duration.of;
@@ -36,6 +24,18 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
+import java.time.Clock;
+import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+import software.amazon.lambda.powertools.parameters.transform.Transformer;
+
 public class BaseProviderTest {
 
     Clock clock;
@@ -44,33 +44,6 @@ public class BaseProviderTest {
     BasicProvider provider;
 
     boolean getFromStore = false;
-
-    class BasicProvider extends BaseProvider {
-
-        public BasicProvider(CacheManager cacheManager) {
-            super(cacheManager);
-        }
-
-        private String value = "valueFromStore";
-
-        public void setValue(String value) {
-            this.value = value;
-        }
-
-        @Override
-        protected String getValue(String key) {
-            getFromStore = true;
-            return value;
-        }
-
-        @Override
-        protected Map<String, String> getMultipleValues(String path) {
-            getFromStore = true;
-            Map<String, String> map = new HashMap<>();
-            map.put(path, value);
-            return map;
-        }
-    }
 
     @BeforeEach
     public void setup() {
@@ -224,10 +197,11 @@ public class BaseProviderTest {
     public void get_complexTransformation_shouldTransformInObject() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
-        ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        ObjectToDeserialize objectToDeserialize =
+                provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
 
         assertThat(objectToDeserialize).matches(
-                         o -> o.getFoo().equals("Foo")
+                o -> o.getFoo().equals("Foo")
                         && o.getBar() == 42
                         && o.getBaz() == 123456789);
     }
@@ -399,5 +373,32 @@ public class BaseProviderTest {
 
         assertThat(foob64).isEqualTo("base64encoded");
         assertThat(foostr).isEqualTo("string");
+    }
+
+    class BasicProvider extends BaseProvider {
+
+        private String value = "valueFromStore";
+
+        public BasicProvider(CacheManager cacheManager) {
+            super(cacheManager);
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
+
+        @Override
+        protected String getValue(String key) {
+            getFromStore = true;
+            return value;
+        }
+
+        @Override
+        protected Map<String, String> getMultipleValues(String path) {
+            getFromStore = true;
+            Map<String, String> map = new HashMap<>();
+            map.put(path, value);
+            return map;
+        }
     }
 }

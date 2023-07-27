@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,23 +11,15 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
+
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.burt.jmespath.Expression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
-import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
-import software.amazon.lambda.powertools.utilities.JsonConfig;
-
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -42,8 +34,16 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 /**
  * Persistence layer that will store the idempotency result.
@@ -53,7 +53,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LA
 public abstract class BasePersistenceStore implements PersistenceStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(BasePersistenceStore.class);
-
+    protected boolean payloadValidationEnabled = false;
     private String functionName = "";
     private boolean configured = false;
     private long expirationInSeconds = 60 * 60; // 1 hour default
@@ -61,7 +61,6 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     private LRUCache<String, DataRecord> cache;
     private String eventKeyJMESPath;
     private Expression<JsonNode> eventKeyCompiledJMESPath;
-    protected boolean payloadValidationEnabled = false;
     private Expression<JsonNode> validationKeyJMESPath;
     private boolean throwOnNoIdempotencyKey = false;
     private String hashFunctionName;
@@ -130,7 +129,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                     responseJson,
                     getHashedPayload(data)
             );
-            LOG.debug("Function successfully executed. Saving record to persistence store with idempotency key: {}", record.getIdempotencyKey());
+            LOG.debug("Function successfully executed. Saving record to persistence store with idempotency key: {}",
+                    record.getIdempotencyKey());
             updateRecord(record);
             saveToCache(record);
         } catch (JsonProcessingException e) {
@@ -145,7 +145,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param data Payload
      * @param now
      */
-    public void saveInProgress(JsonNode data, Instant now, OptionalInt remainingTimeInMs) throws IdempotencyItemAlreadyExistsException {
+    public void saveInProgress(JsonNode data, Instant now, OptionalInt remainingTimeInMs)
+            throws IdempotencyItemAlreadyExistsException {
         Optional<String> hashedIdempotencyKey = getHashedIdempotencyKey(data);
         if (!hashedIdempotencyKey.isPresent()) {
             // missing idempotency key => non-idempotent transaction, we do not store the data, simply return
@@ -159,7 +160,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
         OptionalLong inProgressExpirationMsTimestamp = OptionalLong.empty();
         if (remainingTimeInMs.isPresent()) {
-            inProgressExpirationMsTimestamp = OptionalLong.of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
+            inProgressExpirationMsTimestamp =
+                    OptionalLong.of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
         }
 
         DataRecord record = new DataRecord(
@@ -205,7 +207,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @throws IdempotencyValidationException   Payload doesn't match the stored record for the given idempotency key
      * @throws IdempotencyItemNotFoundException Exception thrown if no record exists in persistence store with the idempotency key
      */
-    public DataRecord getRecord(JsonNode data, Instant now) throws IdempotencyValidationException, IdempotencyItemNotFoundException {
+    public DataRecord getRecord(JsonNode data, Instant now)
+            throws IdempotencyValidationException, IdempotencyItemNotFoundException {
         Optional<String> hashedIdempotencyKey = getHashedIdempotencyKey(data);
         if (!hashedIdempotencyKey.isPresent()) {
             // missing idempotency key => non-idempotent transaction, we do not get the data, simply return nothing
@@ -255,7 +258,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
     private boolean isMissingIdemPotencyKey(JsonNode data) {
         if (data.isContainerNode()) {
-            Stream<Map.Entry<String, JsonNode>> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(), Spliterator.ORDERED), false);
+            Stream<Map.Entry<String, JsonNode>> stream =
+                    StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(), Spliterator.ORDERED),
+                            false);
             return stream.allMatch(e -> e.getValue().isNull());
         }
         return data.isNull();
@@ -302,7 +307,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             node = data.decimalValue();
         } else if (data.isBoolean()) {
             node = data.asBoolean();
-        } else node = data; // anything else
+        } else {
+            node = data; // anything else
+        }
 
         MessageDigest hashAlgorithm = getHashAlgorithm();
         byte[] digest = hashAlgorithm.digest(node.toString().getBytes(StandardCharsets.UTF_8));
@@ -356,17 +363,20 @@ public abstract class BasePersistenceStore implements PersistenceStore {
      * @param dataRecord DataRecord to save in cache
      */
     private void saveToCache(DataRecord dataRecord) {
-        if (!useLocalCache)
+        if (!useLocalCache) {
             return;
-        if (dataRecord.getStatus().equals(DataRecord.Status.INPROGRESS))
+        }
+        if (dataRecord.getStatus().equals(DataRecord.Status.INPROGRESS)) {
             return;
+        }
 
         cache.put(dataRecord.getIdempotencyKey(), dataRecord);
     }
 
     private DataRecord retrieveFromCache(String idempotencyKey, Instant now) {
-        if (!useLocalCache)
+        if (!useLocalCache) {
             return null;
+        }
 
         DataRecord record = cache.get(idempotencyKey);
         if (record != null) {
@@ -380,8 +390,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     }
 
     private void deleteFromCache(String idempotencyKey) {
-        if (!useLocalCache)
+        if (!useLocalCache) {
             return;
+        }
         cache.remove(idempotencyKey);
     }
 

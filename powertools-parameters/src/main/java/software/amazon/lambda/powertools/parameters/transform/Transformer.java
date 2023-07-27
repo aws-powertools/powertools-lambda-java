@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.transform;
 
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
@@ -34,7 +35,8 @@ public interface Transformer<T> {
 
     /**
      * Apply a transformation on the input value (String)
-     * @param value the parameter value to transform
+     *
+     * @param value       the parameter value to transform
      * @param targetClass class of the target object
      * @return a transformed parameter
      * @throws TransformationException when a transformation error occurs

@@ -1,14 +1,26 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.sqs;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.joining;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static java.util.Collections.*;
-import static java.util.stream.Collectors.joining;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -47,6 +59,7 @@ public class SQSBatchProcessingException extends RuntimeException {
 
     /**
      * Details for exceptions that occurred while processing messages in {@link SqsMessageHandler#process(SQSMessage)}
+     *
      * @return List of exceptions that occurred while processing messages
      */
     public List<Exception> getExceptions() {
@@ -55,6 +68,7 @@ public class SQSBatchProcessingException extends RuntimeException {
 
     /**
      * List of returns from {@link SqsMessageHandler#process(SQSMessage)} that were successfully processed.
+     *
      * @return List of returns from successfully processed messages
      */
     public List<Object> successMessageReturnValues() {
@@ -63,6 +77,7 @@ public class SQSBatchProcessingException extends RuntimeException {
 
     /**
      * Details of {@link SQSMessage} that failed in {@link SqsMessageHandler#process(SQSMessage)}
+     *
      * @return List of failed messages
      */
     public List<SQSMessage> getFailures() {
