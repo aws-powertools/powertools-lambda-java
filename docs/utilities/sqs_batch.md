@@ -3,7 +3,7 @@ title: SQS Batch Processing (Deprecated)
 description: Utility
 ---
 
-!!! warn "The SQS batch module is now deprecated and will be removed in v2. Use the batch module."
+!!! warn "The SQS batch module is now deprecated and will be removed in v2. Use the [batch module](batch.md)."
 
 The SQS batch processing utility provides a way to handle partial failures when processing batches of messages from SQS.
 The utility handles batch processing for both 
