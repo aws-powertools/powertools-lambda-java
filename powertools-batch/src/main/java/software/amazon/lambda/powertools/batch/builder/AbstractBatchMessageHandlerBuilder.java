@@ -1,17 +1,15 @@
 package software.amazon.lambda.powertools.batch.builder;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 
 /**
- *
  * An abstract class to capture common arguments used across all the message-binding-specific batch processing
  * builders. The builders provide a fluent interface to configure the batch processors. Any arguments specific
  * to a particular batch binding can be added to the child builder.
- *
+ * <p>
  * We capture types for the various messages involved, so that we can provide an interface that makes
  * sense for the concrete child.
  *
@@ -28,7 +26,7 @@ abstract class AbstractBatchMessageHandlerBuilder<T, C, E, R> {
      * Provides an (Optional!) success handler. A success handler is invoked
      * once for each message after it has been processed by the user-provided
      * handler.
-     *
+     * <p>
      * If the success handler throws, the item in the batch will be
      * marked failed.
      *
@@ -45,7 +43,7 @@ abstract class AbstractBatchMessageHandlerBuilder<T, C, E, R> {
      * user-provided handler. This gives the user's code a useful hook to do
      * anything else that might have to be done in response to a failure - for
      * instance, updating a metric, or writing a detailed log.
-     *
+     * <p>
      * Please note that this method has nothing to do with the partial batch
      * failure mechanism. Regardless of whether a failure handler is
      * specified, partial batch failures and responses to the Lambda environment
@@ -64,12 +62,12 @@ abstract class AbstractBatchMessageHandlerBuilder<T, C, E, R> {
      * takes a function that consumes a raw message and the Lambda context. This
      * is useful for handlers that need access to the entire message object, not
      * just the deserialized contents of the body.
-     *
+     * <p>
      * Note:  If you don't need the Lambda context, use the variant of this function
      * that does not require it.
      *
      * @param handler Takes a raw message - the underlying AWS Events Library event - to process.
-     *                  For instance for SQS this would be an SQSMessage.
+     *                For instance for SQS this would be an SQSMessage.
      * @return A BatchMessageHandler for processing the batch
      */
     public abstract BatchMessageHandler<E, R> buildWithRawMessageHandler(BiConsumer<T, Context> handler);
@@ -82,7 +80,7 @@ abstract class AbstractBatchMessageHandlerBuilder<T, C, E, R> {
      * just the deserialized contents of the body.
      *
      * @param handler Takes a raw message - the underlying AWS Events Library event - to process.
-     *                  For instance for SQS this would be an SQSMessage.
+     *                For instance for SQS this would be an SQSMessage.
      * @return A BatchMessageHandler for processing the batch
      */
     public BatchMessageHandler<E, R> buildWithRawMessageHandler(Consumer<T> handler) {
@@ -101,13 +99,14 @@ abstract class AbstractBatchMessageHandlerBuilder<T, C, E, R> {
      * @param handler Processes the deserialized body of the message
      * @return A BatchMessageHandler for processing the batch
      */
-    public abstract <M> BatchMessageHandler<E, R> buildWithMessageHandler(BiConsumer<M, Context> handler, Class<M> messageClass);
+    public abstract <M> BatchMessageHandler<E, R> buildWithMessageHandler(BiConsumer<M, Context> handler,
+                                                                          Class<M> messageClass);
 
     /**
      * Builds a BatchMessageHandler that can be used to process batches, given
      * a user-defined handler to process each item in the batch. This variant
      * takes a function that consumes the deserialized body of the given message
-     *  If deserialization fails, it will be treated as
+     * If deserialization fails, it will be treated as
      * failure of the processing of that item in the batch.
      * Note:  If you don't need the Lambda context, use the variant of this function
      * that does not require it.

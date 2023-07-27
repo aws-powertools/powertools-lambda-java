@@ -39,18 +39,18 @@ Resources:
           STREAM_NAME: !Ref DemoKinesisStream
       Policies:
         - Statement:
-          - Sid: WriteToKinesis
-            Effect: Allow
-            Action:
-              - kinesis:PutRecords
-              - kinesis:DescribeStream
-            Resource: !GetAtt DemoKinesisStream.Arn
+            - Sid: WriteToKinesis
+              Effect: Allow
+              Action:
+                - kinesis:PutRecords
+                - kinesis:DescribeStream
+              Resource: !GetAtt DemoKinesisStream.Arn
       Events:
         CWSchedule:
           Type: Schedule
           Properties:
             Schedule: 'rate(5 minutes)'
-            Name: !Join ["-", ["message-producer-schedule", !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]]]
+            Name: !Join [ "-", [ "message-producer-schedule", !Select [ 0, !Split [ -, !Select [ 2, !Split [ /, !Ref AWS::StackId ] ] ] ] ] ]
             Description: Produce message to Kinesis via a Lambda function
             Enabled: true
 

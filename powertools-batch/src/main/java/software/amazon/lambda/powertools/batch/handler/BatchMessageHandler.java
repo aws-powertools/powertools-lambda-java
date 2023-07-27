@@ -3,7 +3,6 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 
 /**
- *
  * The basic interface a batch message handler must meet.
  *
  * @param <E> The type of the Lambda batch event
@@ -16,7 +15,7 @@ public interface BatchMessageHandler<E, R> {
      * response indicating the success and failure of individual
      * messages within the batch.
      *
-     * @param event The Lambda event containing the batch to process
+     * @param event   The Lambda event containing the batch to process
      * @param context The lambda context
      * @return A partial batch response
      */

@@ -4,22 +4,22 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.lambda.powertools.utilities.EventDeserializer;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.utilities.EventDeserializer;
 
 /**
  * A batch message processor for Kinesis Streams batch processing.
- *
+ * <p>
  * Refer to <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting">Kinesis Batch failure reporting</a>
+ *
  * @param <M> The user-defined type of the Kinesis record payload
  */
-public class KinesisStreamsBatchMessageHandler <M> implements BatchMessageHandler<KinesisEvent, StreamsEventResponse> {
+public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler<KinesisEvent, StreamsEventResponse> {
     private final static Logger LOGGER = LoggerFactory.getLogger(KinesisStreamsBatchMessageHandler.class);
 
     private final BiConsumer<KinesisEvent.KinesisEventRecord, Context> rawMessageHandler;
@@ -29,9 +29,10 @@ public class KinesisStreamsBatchMessageHandler <M> implements BatchMessageHandle
     private final BiConsumer<KinesisEvent.KinesisEventRecord, Throwable> failureHandler;
 
     public KinesisStreamsBatchMessageHandler(BiConsumer<KinesisEvent.KinesisEventRecord, Context> rawMessageHandler,
-                                                 BiConsumer<M, Context> messageHandler,
-                                                 Class<M> messageClass, Consumer<KinesisEvent.KinesisEventRecord> successHandler,
-                                                 BiConsumer<KinesisEvent.KinesisEventRecord, Throwable> failureHandler) {
+                                             BiConsumer<M, Context> messageHandler,
+                                             Class<M> messageClass,
+                                             Consumer<KinesisEvent.KinesisEventRecord> successHandler,
+                                             BiConsumer<KinesisEvent.KinesisEventRecord, Throwable> failureHandler) {
 
         this.rawMessageHandler = rawMessageHandler;
         this.messageHandler = messageHandler;
@@ -65,8 +66,7 @@ public class KinesisStreamsBatchMessageHandler <M> implements BatchMessageHandle
                     // A failing failure handler is no reason to fail the batch
                     try {
                         this.failureHandler.accept(record, t);
-                    }
-                    catch (Throwable t2) {
+                    } catch (Throwable t2) {
                         LOGGER.warn("failureHandler threw handling failure", t2);
                     }
                 }

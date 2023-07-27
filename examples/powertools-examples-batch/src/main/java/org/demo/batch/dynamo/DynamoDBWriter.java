@@ -3,6 +3,9 @@ package org.demo.batch.dynamo;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
+import java.security.SecureRandom;
+import java.util.UUID;
+import java.util.stream.IntStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.demo.batch.model.DdbProduct;
@@ -13,10 +16,6 @@ import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteResult;
 import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-
-import java.security.SecureRandom;
-import java.util.UUID;
-import java.util.stream.IntStream;
 
 public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
 
@@ -54,9 +53,10 @@ public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
             productBuilder.addPutItem(product);
         });
 
-        BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest = BatchWriteItemEnhancedRequest.builder().writeBatches(
-                productBuilder.build())
-                .build();
+        BatchWriteItemEnhancedRequest batchWriteItemEnhancedRequest =
+                BatchWriteItemEnhancedRequest.builder().writeBatches(
+                                productBuilder.build())
+                        .build();
 
         BatchWriteResult batchWriteResult = enhancedClient.batchWriteItem(batchWriteItemEnhancedRequest);
 

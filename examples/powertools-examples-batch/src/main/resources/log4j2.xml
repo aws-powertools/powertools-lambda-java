@@ -2,7 +2,7 @@
 <Configuration>
     <Appenders>
         <Console name="JsonAppender" target="SYSTEM_OUT">
-            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json"/>
         </Console>
     </Appenders>
     <Loggers>

@@ -1,17 +1,16 @@
 package software.amazon.lambda.powertools.batch;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.model.Product;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class SQSBatchProcessorTest {
     @Mock
@@ -153,7 +152,6 @@ public class SQSBatchProcessorTest {
         SQSBatchResponse.BatchItemFailure batchItemFailure = sqsBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("e9144555-9a4f-4ec3-99a0-34ce359b4b54");
     }
-
 
 
 }

@@ -72,24 +72,24 @@ Resources:
           QUEUE_URL: !Ref DemoSqsQueue
       Policies:
         - Statement:
-          - Sid: SQSSendMessageBatch
-            Effect: Allow
-            Action:
-              - sqs:SendMessageBatch
-              - sqs:SendMessage
-            Resource: !GetAtt DemoSqsQueue.Arn
-          - Sid: SQSKMSKey
-            Effect: Allow
-            Action:
-              - kms:GenerateDataKey
-              - kms:Decrypt
-            Resource: !GetAtt CustomerKey.Arn
+            - Sid: SQSSendMessageBatch
+              Effect: Allow
+              Action:
+                - sqs:SendMessageBatch
+                - sqs:SendMessage
+              Resource: !GetAtt DemoSqsQueue.Arn
+            - Sid: SQSKMSKey
+              Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+                - kms:Decrypt
+              Resource: !GetAtt CustomerKey.Arn
       Events:
         CWSchedule:
           Type: Schedule
           Properties:
             Schedule: 'rate(5 minutes)'
-            Name: !Join ["-", ["message-producer-schedule", !Select [0, !Split [-, !Select [2, !Split [/, !Ref AWS::StackId ]]]]]]
+            Name: !Join [ "-", [ "message-producer-schedule", !Select [ 0, !Split [ -, !Select [ 2, !Split [ /, !Ref AWS::StackId ] ] ] ] ] ]
             Description: Produce message to SQS via a Lambda function
             Enabled: true
 

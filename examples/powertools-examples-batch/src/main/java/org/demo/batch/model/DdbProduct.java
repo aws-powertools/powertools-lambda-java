@@ -11,12 +11,12 @@
  * limitations under the License.
  *
  */
+
 package org.demo.batch.model;
 
+import java.util.Objects;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-
-import java.util.Objects;
 
 @DynamoDbBean
 public class DdbProduct {
@@ -62,8 +62,12 @@ public class DdbProduct {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         DdbProduct that = (DdbProduct) o;
         return Double.compare(that.price, price) == 0 && Objects.equals(id, that.id) && Objects.equals(name, that.name);
     }

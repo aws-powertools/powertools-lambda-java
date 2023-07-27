@@ -12,7 +12,6 @@
         "ApproximateFirstReceiveTimestamp": "1601975706499"
       },
       "messageAttributes": {
-
       },
       "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
       "eventSource": "aws:sqs",
@@ -31,7 +30,6 @@
         "ApproximateFirstReceiveTimestamp": "1601975706499"
       },
       "messageAttributes": {
-
       },
       "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
       "eventSource": "aws:sqs",
@@ -50,7 +48,6 @@
         "ApproximateFirstReceiveTimestamp": "1601975706499"
       },
       "messageAttributes": {
-
       },
       "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
       "eventSource": "aws:sqs",

@@ -1,17 +1,16 @@
 package software.amazon.lambda.powertools.batch;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.model.Product;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class KinesisBatchProcessorTest {
 
@@ -23,7 +22,8 @@ public class KinesisBatchProcessorTest {
     }
 
     private void processMessageFailsForFixedMessage(KinesisEvent.KinesisEventRecord record, Context context) {
-        if (record.getKinesis().getSequenceNumber().equals("49545115243490985018280067714973144582180062593244200961")) {
+        if (record.getKinesis().getSequenceNumber()
+                .equals("49545115243490985018280067714973144582180062593244200961")) {
             throw new RuntimeException("fake exception");
         }
     }
@@ -64,7 +64,8 @@ public class KinesisBatchProcessorTest {
         // Assert
         assertThat(kinesisBatchResponse.getBatchItemFailures()).hasSize(1);
         StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
-        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("49545115243490985018280067714973144582180062593244200961");
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo(
+                "49545115243490985018280067714973144582180062593244200961");
     }
 
     @ParameterizedTest
@@ -81,7 +82,8 @@ public class KinesisBatchProcessorTest {
         // Assert
         assertThat(kinesisBatchResponse.getBatchItemFailures()).hasSize(1);
         StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
-        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("49545115243490985018280067714973144582180062593244200961");
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo(
+                "49545115243490985018280067714973144582180062593244200961");
     }
 
     @ParameterizedTest
@@ -105,7 +107,8 @@ public class KinesisBatchProcessorTest {
         assertThat(kinesisBatchResponse.getBatchItemFailures().size()).isEqualTo(1);
         assertThat(wasCalled.get()).isTrue();
         StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
-        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("49545115243490985018280067714973144582180062593244200961");
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo(
+                "49545115243490985018280067714973144582180062593244200961");
     }
 
     @ParameterizedTest
@@ -116,7 +119,8 @@ public class KinesisBatchProcessorTest {
         BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
                 .withKinesisBatchHandler()
                 .withSuccessHandler((e) -> {
-                    if (e.getKinesis().getSequenceNumber().equals("49545115243490985018280067714973144582180062593244200961")) {
+                    if (e.getKinesis().getSequenceNumber()
+                            .equals("49545115243490985018280067714973144582180062593244200961")) {
                         wasCalledAndFailed.set(true);
                         throw new RuntimeException("Success handler throws");
                     }
@@ -131,7 +135,8 @@ public class KinesisBatchProcessorTest {
         assertThat(kinesisBatchResponse.getBatchItemFailures().size()).isEqualTo(1);
         assertThat(wasCalledAndFailed.get()).isTrue();
         StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
-        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("49545115243490985018280067714973144582180062593244200961");
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo(
+                "49545115243490985018280067714973144582180062593244200961");
     }
 
 }

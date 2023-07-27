@@ -1,6 +1,8 @@
 package software.amazon.lambda.powertools.batch;
 
-import software.amazon.lambda.powertools.batch.builder.*;
+import software.amazon.lambda.powertools.batch.builder.DynamoDbBatchMessageHandlerBuilder;
+import software.amazon.lambda.powertools.batch.builder.KinesisBatchMessageHandlerBuilder;
+import software.amazon.lambda.powertools.batch.builder.SqsBatchMessageHandlerBuilder;
 
 /**
  * A builder-style interface we can use to build batch processing handlers for SQS, Kinesis Streams,
