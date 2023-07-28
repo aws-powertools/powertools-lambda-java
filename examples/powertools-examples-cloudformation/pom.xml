@@ -16,7 +16,7 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <lambda.core.version>1.2.2</lambda.core.version>
         <lambda.events.version>3.11.2</lambda.events.version>
-        <aws.sdk.version>2.20.111</aws.sdk.version>
+        <aws.sdk.version>2.20.114</aws.sdk.version>
     </properties>
     <dependencyManagement>
         <dependencies>
