@@ -3,7 +3,7 @@
 This directory holds example projects demoing different components of the Powertools for AWS Lambda (Java).
 Each example can be copied from its subdirectory and used independently of the rest of this repository.
 
-## The Examples
+## Examples
 
 * [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules 
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
@@ -51,6 +51,17 @@ The first command will build the source of your application. The second command 
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
+
+### External examples
+
+You can find more examples in the https://github.com/aws/aws-sam-cli-app-templates project:
+
+* [Java 8 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java8/hello-pt-maven)
+* [Java 8 on Amazon Linux 2 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java8.al2/hello-pt-maven)
+* [Java 11 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java11/hello-pt-maven)
+* [Java 17 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java17/hello-pt-maven)
+* [Java 17 + Gradle](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java17/hello-pt-gradle)
+
 
 ### SAM - Other Tools 
 

@@ -18,6 +18,7 @@ public class AnotherObject {
 
     private String another;
     private int object;
+
     public AnotherObject() {
     }
 

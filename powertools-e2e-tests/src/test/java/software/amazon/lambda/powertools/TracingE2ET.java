@@ -33,7 +33,6 @@ import software.amazon.lambda.powertools.testutils.tracing.TraceFetcher;
 
 public class TracingE2ET {
     private static final String service = "TracingE2EService_" + UUID.randomUUID();
-            // "TracingE2EService_e479fb27-422b-4107-9f8c-086c62e1cd12";
 
     private static Infrastructure infrastructure;
     private static String functionName;
