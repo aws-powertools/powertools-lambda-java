@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,13 +11,21 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.tests.EventLoader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.OptionalInt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -28,14 +36,6 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValid
 import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.OptionalInt;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class BasePersistenceStoreTest {
 
@@ -53,7 +53,8 @@ public class BasePersistenceStoreTest {
             @Override
             public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
                 status = 0;
-                return new DataRecord(idempotencyKey, DataRecord.Status.INPROGRESS, Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond(), "Response", validationHash);
+                return new DataRecord(idempotencyKey, DataRecord.Status.INPROGRESS,
+                        Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond(), "Response", validationHash);
             }
 
             @Override
@@ -84,7 +85,8 @@ public class BasePersistenceStoreTest {
         persistenceStore.configure(IdempotencyConfig.builder().build(), null);
 
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                OptionalInt.empty());
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
@@ -101,13 +103,15 @@ public class BasePersistenceStoreTest {
 
         int lambdaTimeoutMs = 30000;
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.of(lambdaTimeoutMs));
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                OptionalInt.of(lambdaTimeoutMs));
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
         assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#7b40f56c086de5aa91dc467456329ed2");
         assertThat(dr.getPayloadHash()).isEqualTo("");
-        assertThat(dr.getInProgressExpiryTimestamp().orElse(-1)).isEqualTo(now.plus(lambdaTimeoutMs, ChronoUnit.MILLIS).toEpochMilli());
+        assertThat(dr.getInProgressExpiryTimestamp().orElse(-1)).isEqualTo(
+                now.plus(lambdaTimeoutMs, ChronoUnit.MILLIS).toEpochMilli());
         assertThat(status).isEqualTo(1);
     }
 
@@ -119,7 +123,8 @@ public class BasePersistenceStoreTest {
                 .build(), "myfunc");
 
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                OptionalInt.empty());
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
         assertThat(dr.getResponseData()).isNull();
@@ -136,7 +141,9 @@ public class BasePersistenceStoreTest {
                 .withThrowOnNoIdempotencyKey(true) // should throw
                 .build(), "");
         Instant now = Instant.now();
-        assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty()))
+        assertThatThrownBy(
+                () -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                        OptionalInt.empty()))
                 .isInstanceOf(IdempotencyKeyException.class)
                 .hasMessageContaining("No data found to create a hashed idempotency key");
         assertThat(status).isEqualTo(-1);
@@ -149,7 +156,8 @@ public class BasePersistenceStoreTest {
                 .withEventKeyJMESPath("unavailable")
                 .build(), "");
         Instant now = Instant.now();
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                OptionalInt.empty());
         assertThat(dr).isNull();
         assertThat(status).isEqualTo(-1);
     }
@@ -170,7 +178,9 @@ public class BasePersistenceStoreTest {
                         now.plus(3600, ChronoUnit.SECONDS).getEpochSecond(),
                         null, null)
         );
-        assertThatThrownBy(() -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty()))
+        assertThatThrownBy(
+                () -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                        OptionalInt.empty()))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
         assertThat(status).isEqualTo(-1);
     }
@@ -192,7 +202,8 @@ public class BasePersistenceStoreTest {
                         now.minus(3, ChronoUnit.SECONDS).getEpochSecond(),
                         null, null)
         );
-        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now, OptionalInt.empty());
+        persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
+                OptionalInt.empty());
         assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
         assertThat(cache).isEmpty();
         assertThat(status).isEqualTo(1);
@@ -250,7 +261,8 @@ public class BasePersistenceStoreTest {
     //<editor-fold desc="getRecord">
 
     @Test
-    public void getRecord_shouldReturnRecordFromPersistence() throws IdempotencyItemNotFoundException, IdempotencyValidationException {
+    public void getRecord_shouldReturnRecordFromPersistence()
+            throws IdempotencyItemNotFoundException, IdempotencyValidationException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
         persistenceStore.configure(IdempotencyConfig.builder().build(), "myfunc", cache);
@@ -264,7 +276,8 @@ public class BasePersistenceStoreTest {
     }
 
     @Test
-    public void getRecord_cacheEnabledNotExpired_shouldReturnRecordFromCache() throws IdempotencyItemNotFoundException, IdempotencyValidationException {
+    public void getRecord_cacheEnabledNotExpired_shouldReturnRecordFromCache()
+            throws IdempotencyItemNotFoundException, IdempotencyValidationException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
         persistenceStore.configure(IdempotencyConfig.builder()
@@ -287,7 +300,8 @@ public class BasePersistenceStoreTest {
     }
 
     @Test
-    public void getRecord_cacheEnabledExpired_shouldReturnRecordFromPersistence() throws IdempotencyItemNotFoundException, IdempotencyValidationException {
+    public void getRecord_cacheEnabledExpired_shouldReturnRecordFromPersistence()
+            throws IdempotencyItemNotFoundException, IdempotencyValidationException {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         LRUCache<String, DataRecord> cache = new LRUCache<>(2);
         persistenceStore.configure(IdempotencyConfig.builder()
@@ -314,14 +328,15 @@ public class BasePersistenceStoreTest {
     public void getRecord_invalidPayload_shouldThrowValidationException() {
         APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
         persistenceStore.configure(IdempotencyConfig.builder()
-                .withEventKeyJMESPath("powertools_json(body).id")
-                .withPayloadValidationJMESPath("powertools_json(body).message")
-                .build(),
+                        .withEventKeyJMESPath("powertools_json(body).id")
+                        .withPayloadValidationJMESPath("powertools_json(body).message")
+                        .build(),
                 "myfunc");
 
         this.validationHash = "different hash"; // "Lambda rocks" ==> 70c24d88041893f7fbab4105b76fd9e1
 
-        assertThatThrownBy(() -> persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), Instant.now()))
+        assertThatThrownBy(
+                () -> persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), Instant.now()))
                 .isInstanceOf(IdempotencyValidationException.class);
     }
 
@@ -348,7 +363,8 @@ public class BasePersistenceStoreTest {
                 .withUseLocalCache(true).build(), null, cache);
 
         cache.put("testFunction#7b40f56c086de5aa91dc467456329ed2",
-                new DataRecord("testFunction#7b40f56c086de5aa91dc467456329ed2", DataRecord.Status.COMPLETED, 123, null, null));
+                new DataRecord("testFunction#7b40f56c086de5aa91dc467456329ed2", DataRecord.Status.COMPLETED, 123, null,
+                        null));
         persistenceStore.deleteRecord(JsonConfig.get().getObjectMapper().valueToTree(event), new ArithmeticException());
         assertThat(status).isEqualTo(3);
         assertThat(cache).isEmpty();
@@ -385,7 +401,8 @@ public class BasePersistenceStoreTest {
     @Test
     public void generateHashString_withSha256Algorithm_shouldGenerateSha256ofString() {
         persistenceStore.configure(IdempotencyConfig.builder().withHashFunction("SHA-256").build(), null);
-        String expectedHash = "e6139efa88ef3337e901e826e6f327337f414860fb499d9f26eefcff21d719af"; // SHA-256(Lambda rocks)
+        String expectedHash =
+                "e6139efa88ef3337e901e826e6f327337f414860fb499d9f26eefcff21d719af"; // SHA-256(Lambda rocks)
         String generatedHash = persistenceStore.generateHash(new TextNode("Lambda rocks"));
         assertThat(generatedHash).isEqualTo(expectedHash);
     }

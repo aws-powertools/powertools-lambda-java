@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation.internal;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -18,15 +19,14 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2WebSocketResponse;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsInputPreprocessingResponse;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsProvider;
-
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsProvider;
 
 public class ResponseEventsArgumentsProvider implements ArgumentsProvider {
 
@@ -49,9 +49,11 @@ public class ResponseEventsArgumentsProvider implements ArgumentsProvider {
         KinesisAnalyticsInputPreprocessingResponse kaipResponse = new KinesisAnalyticsInputPreprocessingResponse();
         List records = new ArrayList<KinesisAnalyticsInputPreprocessingResponse.Record>();
         ByteBuffer buffer = ByteBuffer.wrap(body.getBytes(StandardCharsets.UTF_8));
-        records.add(new KinesisAnalyticsInputPreprocessingResponse.Record("1", KinesisAnalyticsInputPreprocessingResponse.Result.Ok, buffer));
+        records.add(new KinesisAnalyticsInputPreprocessingResponse.Record("1",
+                KinesisAnalyticsInputPreprocessingResponse.Result.Ok, buffer));
         kaipResponse.setRecords(records);
 
-        return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse, apiGWV2WebSocketResponse, albResponseEvent, kaipResponse).map(Arguments::of);
+        return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse, apiGWV2WebSocketResponse, albResponseEvent,
+                kaipResponse).map(Arguments::of);
     }
 }

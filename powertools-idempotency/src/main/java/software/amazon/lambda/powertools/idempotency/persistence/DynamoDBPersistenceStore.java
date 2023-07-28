@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,18 +11,12 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
-import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.idempotency.Constants;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 import java.time.Instant;
 import java.util.AbstractMap;
@@ -31,10 +25,22 @@ import java.util.Map;
 import java.util.OptionalLong;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.idempotency.Constants;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 
 /**
  * DynamoDB version of the {@link PersistenceStore}. Will store idempotency data in DynamoDB.<br>
@@ -83,7 +89,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             this.dynamoDbClient = client;
         } else {
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
-            if (idempotencyDisabledEnv == null || idempotencyDisabledEnv.equalsIgnoreCase("false")) {
+            if (idempotencyDisabledEnv == null || "false".equalsIgnoreCase(idempotencyDisabledEnv)) {
                 this.dynamoDbClient = DynamoDbClient.builder()
                         .httpClient(UrlConnectionHttpClient.builder().build())
                         .region(Region.of(System.getenv(AWS_REGION_ENV)))
@@ -94,6 +100,10 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 this.dynamoDbClient = null;
             }
         }
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @Override
@@ -133,7 +143,9 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         item.put(this.statusAttr, AttributeValue.builder().s(record.getStatus().toString()).build());
 
         if (record.getInProgressExpiryTimestamp().isPresent()) {
-            item.put(this.inProgressExpiryAttr, AttributeValue.builder().n(String.valueOf(record.getInProgressExpiryTimestamp().getAsLong())).build());
+            item.put(this.inProgressExpiryAttr,
+                    AttributeValue.builder().n(String.valueOf(record.getInProgressExpiryTimestamp().getAsLong()))
+                            .build());
         }
 
         if (this.payloadValidationEnabled) {
@@ -151,9 +163,12 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             Map<String, AttributeValue> expressionAttributeValues = Stream.of(
-                    new AbstractMap.SimpleEntry<>(":now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()),
-                    new AbstractMap.SimpleEntry<>(":now_milliseconds", AttributeValue.builder().n(String.valueOf(now.toEpochMilli())).build()),
-                    new AbstractMap.SimpleEntry<>(":inprogress", AttributeValue.builder().s(INPROGRESS.toString()).build())
+                    new AbstractMap.SimpleEntry<>(":now",
+                            AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build()),
+                    new AbstractMap.SimpleEntry<>(":now_milliseconds",
+                            AttributeValue.builder().n(String.valueOf(now.toEpochMilli())).build()),
+                    new AbstractMap.SimpleEntry<>(":inprogress",
+                            AttributeValue.builder().s(INPROGRESS.toString()).build())
             ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 
@@ -161,14 +176,16 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                     PutItemRequest.builder()
                             .tableName(tableName)
                             .item(item)
-                            .conditionExpression("attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_milliseconds AND #status = :inprogress)")
+                            .conditionExpression(
+                                    "attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_milliseconds AND #status = :inprogress)")
                             .expressionAttributeNames(expressionAttributeNames)
                             .expressionAttributeValues(expressionAttributeValues)
                             .build()
             );
         } catch (ConditionalCheckFailedException e) {
             LOG.debug("Failed to put record for already existing idempotency key: {}", record.getIdempotencyKey());
-            throw new IdempotencyItemAlreadyExistsException("Failed to put record for already existing idempotency key: " + record.getIdempotencyKey(), e);
+            throw new IdempotencyItemAlreadyExistsException(
+                    "Failed to put record for already existing idempotency key: " + record.getIdempotencyKey(), e);
         }
     }
 
@@ -184,15 +201,19 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         Map<String, AttributeValue> expressionAttributeValues = Stream.of(
-                        new AbstractMap.SimpleEntry<>(":response_data", AttributeValue.builder().s(record.getResponseData()).build()),
-                        new AbstractMap.SimpleEntry<>(":expiry", AttributeValue.builder().n(String.valueOf(record.getExpiryTimestamp())).build()),
-                        new AbstractMap.SimpleEntry<>(":status", AttributeValue.builder().s(record.getStatus().toString()).build()))
+                        new AbstractMap.SimpleEntry<>(":response_data",
+                                AttributeValue.builder().s(record.getResponseData()).build()),
+                        new AbstractMap.SimpleEntry<>(":expiry",
+                                AttributeValue.builder().n(String.valueOf(record.getExpiryTimestamp())).build()),
+                        new AbstractMap.SimpleEntry<>(":status",
+                                AttributeValue.builder().s(record.getStatus().toString()).build()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         if (payloadValidationEnabled) {
             updateExpression += ", #validation_key = :validation_key";
             expressionAttributeNames.put("#validation_key", this.validationAttr);
-            expressionAttributeValues.put(":validation_key", AttributeValue.builder().s(record.getPayloadHash()).build());
+            expressionAttributeValues.put(":validation_key",
+                    AttributeValue.builder().s(record.getPayloadHash()).build());
         }
 
         dynamoDbClient.updateItem(UpdateItemRequest.builder()
@@ -242,16 +263,14 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
         // data and validation payload may be null
         AttributeValue data = item.get(this.dataAttr);
         AttributeValue validation = item.get(this.validationAttr);
-        return new DataRecord(item.get(sortKeyAttr != null ? sortKeyAttr: keyAttr).s(),
+        return new DataRecord(item.get(sortKeyAttr != null ? sortKeyAttr : keyAttr).s(),
                 DataRecord.Status.valueOf(item.get(this.statusAttr).s()),
                 Long.parseLong(item.get(this.expiryAttr).n()),
                 data != null ? data.s() : null,
                 validation != null ? validation.s() : null,
-                item.get(this.inProgressExpiryAttr) != null ? OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n())) : OptionalLong.empty());
-    }
-
-    public static Builder builder() {
-        return new Builder();
+                item.get(this.inProgressExpiryAttr) != null ?
+                        OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr).n())) :
+                        OptionalLong.empty());
     }
 
     /**
@@ -288,7 +307,8 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             if (StringUtils.isEmpty(tableName)) {
                 throw new IllegalArgumentException("Table name is not specified");
             }
-            return new DynamoDBPersistenceStore(tableName, keyAttr, staticPkValue, sortKeyAttr, expiryAttr, inProgressExpiryAttr, statusAttr, dataAttr, validationAttr, dynamoDbClient);
+            return new DynamoDBPersistenceStore(tableName, keyAttr, staticPkValue, sortKeyAttr, expiryAttr,
+                    inProgressExpiryAttr, statusAttr, dataAttr, validationAttr, dynamoDbClient);
         }
 
         /**

@@ -1,29 +1,43 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.sqs;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.batchProcessor;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.tests.EventLoader;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoSession;
 import org.mockito.quality.Strictness;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchRequestEntry;
 import software.amazon.awssdk.services.sqs.model.DeleteMessageBatchResponse;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.sqs.SqsUtils.batchProcessor;
-import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
 
 public class SqsUtilsFifoBatchProcessorTest {
 
@@ -61,10 +75,11 @@ public class SqsUtilsFifoBatchProcessorTest {
     public void processWholeBatch() {
         // Act
         AtomicInteger processedCount = new AtomicInteger();
-        List<Object> results = batchProcessor(sqsBatchEvent, false, (message) -> {
-            processedCount.getAndIncrement();
-            return true;
-        });
+        List<Object> results = batchProcessor(sqsBatchEvent, false, (message) ->
+            {
+                processedCount.getAndIncrement();
+                return true;
+            });
 
         // Assert
         assertThat(processedCount.get()).isEqualTo(3);
@@ -80,31 +95,34 @@ public class SqsUtilsFifoBatchProcessorTest {
     @Test
     public void singleFailureInMiddleOfBatch() {
         // Arrange
-        Mockito.when(sqsClient.deleteMessageBatch(deleteMessageBatchCaptor.capture())).thenReturn(DeleteMessageBatchResponse
-                .builder().build());
+        Mockito.when(sqsClient.deleteMessageBatch(deleteMessageBatchCaptor.capture()))
+                .thenReturn(DeleteMessageBatchResponse
+                        .builder().build());
 
         // Act
         AtomicInteger processedCount = new AtomicInteger();
         assertThatExceptionOfType(SQSBatchProcessingException.class)
-                .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) -> {
-                    int value = processedCount.getAndIncrement();
-                    if (value == 1) {
-                        throw new RuntimeException("Whoops");
-                    }
-                    return true;
-                }))
+                .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) ->
+                    {
+                        int value = processedCount.getAndIncrement();
+                        if (value == 1) {
+                            throw new RuntimeException("Whoops");
+                        }
+                        return true;
+                    }))
 
-        // Assert
+                // Assert
                 .isInstanceOf(SQSBatchProcessingException.class)
-                .satisfies(e -> {
-                    List<SQSEvent.SQSMessage> failures = ((SQSBatchProcessingException)e).getFailures();
-                    assertThat(failures.size()).isEqualTo(2);
-                    List<String> failureIds = failures.stream()
-                            .map(SQSEvent.SQSMessage::getMessageId)
-                            .collect(Collectors.toList());
-                    assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(1).getMessageId());
-                    assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(2).getMessageId());
-                });
+                .satisfies(e ->
+                    {
+                        List<SQSEvent.SQSMessage> failures = ((SQSBatchProcessingException) e).getFailures();
+                        assertThat(failures.size()).isEqualTo(2);
+                        List<String> failureIds = failures.stream()
+                                .map(SQSEvent.SQSMessage::getMessageId)
+                                .collect(Collectors.toList());
+                        assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(1).getMessageId());
+                        assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(2).getMessageId());
+                    });
 
         DeleteMessageBatchRequest deleteRequest = deleteMessageBatchCaptor.getValue();
         List<String> messageIds = deleteRequest.entries().stream()
@@ -119,20 +137,22 @@ public class SqsUtilsFifoBatchProcessorTest {
     public void singleFailureAtEndOfBatch() {
 
         // Arrange
-        Mockito.when(sqsClient.deleteMessageBatch(deleteMessageBatchCaptor.capture())).thenReturn(DeleteMessageBatchResponse
-                .builder().build());
+        Mockito.when(sqsClient.deleteMessageBatch(deleteMessageBatchCaptor.capture()))
+                .thenReturn(DeleteMessageBatchResponse
+                        .builder().build());
 
 
         // Act
         AtomicInteger processedCount = new AtomicInteger();
         assertThatExceptionOfType(SQSBatchProcessingException.class)
-                .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) -> {
-                    int value = processedCount.getAndIncrement();
-                    if (value == 2) {
-                        throw new RuntimeException("Whoops");
-                    }
-                    return true;
-        }));
+                .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) ->
+                    {
+                        int value = processedCount.getAndIncrement();
+                        if (value == 2) {
+                            throw new RuntimeException("Whoops");
+                        }
+                        return true;
+                    }));
 
         // Assert
         DeleteMessageBatchRequest deleteRequest = deleteMessageBatchCaptor.getValue();
@@ -150,17 +170,19 @@ public class SqsUtilsFifoBatchProcessorTest {
         String groupToFail = sqsBatchEvent.getRecords().get(0).getAttributes().get("MessageGroupId");
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
-                .isThrownBy(() -> batchProcessor(sqsBatchEvent, (message) -> {
-                    String groupId = message.getAttributes().get("MessageGroupId");
-                    if (groupId.equals(groupToFail)) {
-                        throw new RuntimeException("Failed processing");
-                    }
-                    return groupId;
-                }))
-            .satisfies(e -> {
-                assertThat(e.successMessageReturnValues().size()).isEqualTo(0);
-                assertThat(e.successMessageReturnValues().contains(groupToFail)).isFalse();
-            });
+                .isThrownBy(() -> batchProcessor(sqsBatchEvent, (message) ->
+                    {
+                        String groupId = message.getAttributes().get("MessageGroupId");
+                        if (groupId.equals(groupToFail)) {
+                            throw new RuntimeException("Failed processing");
+                        }
+                        return groupId;
+                    }))
+                .satisfies(e ->
+                    {
+                        assertThat(e.successMessageReturnValues().size()).isEqualTo(0);
+                        assertThat(e.successMessageReturnValues().contains(groupToFail)).isFalse();
+                    });
     }
 
 }
