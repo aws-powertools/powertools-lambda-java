@@ -1,0 +1,19 @@
+name: Docs
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch: {}
+
+jobs:
+  release-docs:
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    secrets: inherit
+    uses: ./.github/workflows/reusable-publish-docs.yml
+    with:
+      version: main
+      alias: stage

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,8 +11,12 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
 
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -24,10 +28,6 @@ import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
-
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * AWS System Manager Parameter Store Provider <br/><br/>
@@ -88,12 +88,22 @@ public class SSMProvider extends BaseProvider {
 
     /**
      * Constructor with only a CacheManager<br/>
-     *
+     * <p>
      * Used in {@link ParamManager#createProvider(Class)}
+     *
      * @param cacheManager handles the parameter caching
      */
     SSMProvider(CacheManager cacheManager) {
         this(cacheManager, Builder.createClient());
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link SSMProvider}.
+     *
+     * @return a new instance of {@link SSMProvider.Builder}
+     */
+    public static SSMProvider.Builder builder() {
+        return new SSMProvider.Builder();
     }
 
     /**
@@ -194,19 +204,20 @@ public class SSMProvider extends BaseProvider {
         // not using the client.getParametersByPathPaginator() as hardly testable
         GetParametersByPathResponse res = client.getParametersByPath(request);
         if (res.hasParameters()) {
-            res.parameters().forEach(parameter -> {
+            res.parameters().forEach(parameter ->
+                {
                 /* Standardize the parameter name
                    The parameter name returned by SSM will contained the full path.
                    However, for readability, we should return only the part after
                    the path.
                  */
-                String name = parameter.name();
-                if (name.startsWith(path)) {
-                    name = name.replaceFirst(path, "");
-                }
-                name = name.replaceFirst("/", "");
-                params.put(name, parameter.value());
-            });
+                    String name = parameter.name();
+                    if (name.startsWith(path)) {
+                        name = name.replaceFirst(path, "");
+                    }
+                    name = name.replaceFirst("/", "");
+                    params.put(name, parameter.value());
+                });
         }
 
         if (!StringUtils.isEmpty(res.nextToken())) {
@@ -228,20 +239,17 @@ public class SSMProvider extends BaseProvider {
         return client;
     }
 
-    /**
-     * Create a builder that can be used to configure and create a {@link SSMProvider}.
-     *
-     * @return a new instance of {@link SSMProvider.Builder}
-     */
-    public static SSMProvider.Builder builder() {
-        return new SSMProvider.Builder();
-    }
-
-
     static class Builder {
         private SsmClient client;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
+
+        private static SsmClient createClient() {
+            return SsmClient.builder()
+                    .httpClientBuilder(UrlConnectionHttpClient.builder())
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                    .build();
+        }
 
         /**
          * Create a {@link SSMProvider} instance.
@@ -275,13 +283,6 @@ public class SSMProvider extends BaseProvider {
         public SSMProvider.Builder withClient(SsmClient client) {
             this.client = client;
             return this;
-        }
-
-        private static SsmClient createClient() {
-            return SsmClient.builder()
-                    .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .build();
         }
 
         /**

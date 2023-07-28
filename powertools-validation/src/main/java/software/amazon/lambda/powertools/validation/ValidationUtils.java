@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation;
 
 import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
@@ -22,8 +23,6 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.ValidationMessage;
 import io.burt.jmespath.Expression;
-import software.amazon.lambda.powertools.validation.internal.ValidationAspect;
-
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.util.Collections;
@@ -31,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import software.amazon.lambda.powertools.validation.internal.ValidationAspect;
 
 /**
  * Validation utility, used to manually validate Json against Json Schema
@@ -68,7 +68,8 @@ public class ValidationUtils {
         }
         JsonNode subNode;
         try {
-            PojoSerializer pojoSerializer = LambdaEventSerializers.serializerFor(obj.getClass(), ClassLoader.getSystemClassLoader());
+            PojoSerializer pojoSerializer =
+                    LambdaEventSerializers.serializerFor(obj.getClass(), ClassLoader.getSystemClassLoader());
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             pojoSerializer.toJson(obj, out);
             JsonNode jsonNode = ValidationConfig.get().getObjectMapper().readTree(out.toString("UTF-8"));
@@ -89,7 +90,8 @@ public class ValidationUtils {
             try {
                 validate(subNode.asText(), jsonSchema);
             } catch (ValidationException e) {
-                throw new ValidationException("Invalid format for '" + envelope + "': 'STRING' and no JSON found in it.");
+                throw new ValidationException(
+                        "Invalid format for '" + envelope + "': 'STRING' and no JSON found in it.");
             }
         } else {
             throw new ValidationException("Invalid format for '" + envelope + "': '" + subNode.getNodeType() + "'");
@@ -208,9 +210,11 @@ public class ValidationUtils {
         if (!validationMessages.isEmpty()) {
             String message;
             try {
-                message = ValidationConfig.get().getObjectMapper().writeValueAsString(new ValidationErrors(validationMessages));
+                message = ValidationConfig.get().getObjectMapper()
+                        .writeValueAsString(new ValidationErrors(validationMessages));
             } catch (JsonProcessingException e) {
-                message = validationMessages.stream().map(ValidationMessage::getMessage).collect(Collectors.joining(", "));
+                message = validationMessages.stream().map(ValidationMessage::getMessage)
+                        .collect(Collectors.joining(", "));
             }
             throw new ValidationException(message);
         }
@@ -255,7 +259,8 @@ public class ValidationUtils {
 
                 jsonSchema = ValidationConfig.get().getFactory().getSchema(schemaStream);
             } catch (Exception e) {
-                throw new IllegalArgumentException("'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
+                throw new IllegalArgumentException(
+                        "'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
             }
         } else {
             jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
@@ -270,7 +275,8 @@ public class ValidationUtils {
             validate(jsonSchema.getSchemaNode(),
                     getJsonSchema("classpath:/schemas/meta_schema_" + version));
         } catch (ValidationException ve) {
-            throw new IllegalArgumentException("The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
+            throw new IllegalArgumentException(
+                    "The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
         }
     }
 

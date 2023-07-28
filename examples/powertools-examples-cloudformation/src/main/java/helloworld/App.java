@@ -41,7 +41,8 @@ public class App extends AbstractCustomResourceHandler {
     protected Response create(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         // Validate the CloudFormation Custom Resource event
         Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"), "BucketName cannot be null.");
+        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"),
+                "BucketName cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
         String bucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName");
@@ -70,7 +71,8 @@ public class App extends AbstractCustomResourceHandler {
     protected Response update(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         // Validate the CloudFormation Custom Resource event
         Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"), "BucketName cannot be null.");
+        Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"),
+                "BucketName cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
         // Get the physicalResourceId. physicalResourceId is the value returned to CloudFormation in the Create request, and passed in on subsequent requests (e.g. UPDATE or DELETE)
@@ -112,7 +114,8 @@ public class App extends AbstractCustomResourceHandler {
     protected Response delete(CloudFormationCustomResourceEvent cloudFormationCustomResourceEvent, Context context) {
         // Validate the CloudFormation Custom Resource event
         Objects.requireNonNull(cloudFormationCustomResourceEvent, "cloudFormationCustomResourceEvent cannot be null.");
-        Objects.requireNonNull(cloudFormationCustomResourceEvent.getPhysicalResourceId(), "PhysicalResourceId cannot be null.");
+        Objects.requireNonNull(cloudFormationCustomResourceEvent.getPhysicalResourceId(),
+                "PhysicalResourceId cannot be null.");
 
         log.info(cloudFormationCustomResourceEvent);
         // Get the physicalResourceId. physicalResourceId is the value provided to CloudFormation in the Create request.
@@ -142,7 +145,8 @@ public class App extends AbstractCustomResourceHandler {
 
     private boolean bucketExists(String bucketName) {
         try {
-            HeadBucketResponse headBucketResponse = s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            HeadBucketResponse headBucketResponse =
+                    s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
             if (headBucketResponse.sdkHttpResponse().isSuccessful()) {
                 return true;
             }
@@ -157,7 +161,8 @@ public class App extends AbstractCustomResourceHandler {
         S3Waiter waiter = s3Client.waiter();
         CreateBucketRequest createBucketRequest = CreateBucketRequest.builder().bucket(bucketName).build();
         s3Client.createBucket(createBucketRequest);
-        WaiterResponse<HeadBucketResponse> waiterResponse = waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(bucketName).build());
+        WaiterResponse<HeadBucketResponse> waiterResponse =
+                waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(bucketName).build());
         waiterResponse.matched().response().ifPresent(log::info);
         log.info("Bucket Created {}", bucketName);
     }

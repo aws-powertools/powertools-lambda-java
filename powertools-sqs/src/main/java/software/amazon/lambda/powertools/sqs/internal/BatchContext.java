@@ -1,5 +1,26 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.sqs.internal;
 
+import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static java.util.stream.Collectors.toList;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -9,8 +30,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.SdkBytes;
@@ -27,11 +46,6 @@ import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 import software.amazon.lambda.powertools.sqs.SQSBatchProcessingException;
 import software.amazon.lambda.powertools.sqs.SqsUtils;
-
-import static com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toList;
 
 public final class BatchContext {
     private static final Logger LOG = LoggerFactory.getLogger(BatchContext.class);
@@ -69,16 +83,17 @@ public final class BatchContext {
                 exceptions.addAll(messageToException.values());
                 failedMessages.addAll(messageToException.keySet());
             } else {
-                messageToException.forEach((sqsMessage, exception) -> {
-                    boolean nonRetryableException = isNonRetryableException(exception, nonRetryableExceptions);
+                messageToException.forEach((sqsMessage, exception) ->
+                    {
+                        boolean nonRetryableException = isNonRetryableException(exception, nonRetryableExceptions);
 
-                    if (nonRetryableException) {
-                        nonRetryableMessageToException.put(sqsMessage, exception);
-                    } else {
-                        exceptions.add(exception);
-                        failedMessages.add(sqsMessage);
-                    }
-                });
+                        if (nonRetryableException) {
+                            nonRetryableMessageToException.put(sqsMessage, exception);
+                        } else {
+                            exceptions.add(exception);
+                            failedMessages.add(sqsMessage);
+                        }
+                    });
             }
 
             List<SQSMessage> messagesToBeDeleted = new ArrayList<>(success);
@@ -126,7 +141,8 @@ public final class BatchContext {
                 .anyMatch(aClass -> aClass.isInstance(exception));
     }
 
-    private boolean moveNonRetryableMessagesToDlqIfConfigured(Map<SQSMessage, Exception> nonRetryableMessageToException) {
+    private boolean moveNonRetryableMessagesToDlqIfConfigured(
+            Map<SQSMessage, Exception> nonRetryableMessageToException) {
         Optional<String> dlqUrl = fetchDlqUrl(nonRetryableMessageToException);
 
         if (!dlqUrl.isPresent()) {
@@ -134,76 +150,88 @@ public final class BatchContext {
         }
 
         List<SendMessageBatchRequestEntry> dlqMessages = nonRetryableMessageToException.keySet().stream()
-                .map(sqsMessage -> {
-                    Map<String, MessageAttributeValue> messageAttributesMap = new HashMap<>();
+                .map(sqsMessage ->
+                    {
+                        Map<String, MessageAttributeValue> messageAttributesMap = new HashMap<>();
 
-                    sqsMessage.getMessageAttributes().forEach((s, messageAttribute) -> {
-                        MessageAttributeValue.Builder builder = MessageAttributeValue.builder();
+                        sqsMessage.getMessageAttributes().forEach((s, messageAttribute) ->
+                            {
+                                MessageAttributeValue.Builder builder = MessageAttributeValue.builder();
 
-                        builder
-                                .dataType(messageAttribute.getDataType())
-                                .stringValue(messageAttribute.getStringValue());
+                                builder
+                                        .dataType(messageAttribute.getDataType())
+                                        .stringValue(messageAttribute.getStringValue());
 
-                        if (null != messageAttribute.getBinaryValue()) {
-                            builder.binaryValue(SdkBytes.fromByteBuffer(messageAttribute.getBinaryValue()));
-                        }
+                                if (null != messageAttribute.getBinaryValue()) {
+                                    builder.binaryValue(SdkBytes.fromByteBuffer(messageAttribute.getBinaryValue()));
+                                }
 
-                        messageAttributesMap.put(s, builder.build());
-                    });
+                                messageAttributesMap.put(s, builder.build());
+                            });
 
-                    return SendMessageBatchRequestEntry.builder()
-                            .messageBody(sqsMessage.getBody())
-                            .id(sqsMessage.getMessageId())
-                            .messageAttributes(messageAttributesMap)
-                            .build();
-                })
+                        return SendMessageBatchRequestEntry.builder()
+                                .messageBody(sqsMessage.getBody())
+                                .id(sqsMessage.getMessageId())
+                                .messageAttributes(messageAttributesMap)
+                                .build();
+                    })
                 .collect(toList());
 
-        List<SendMessageBatchResponse> sendMessageBatchResponses = batchRequest(dlqMessages, 10, entriesToSend -> {
+        List<SendMessageBatchResponse> sendMessageBatchResponses = batchRequest(dlqMessages, 10, entriesToSend ->
+            {
 
-            SendMessageBatchResponse sendMessageBatchResponse = client.sendMessageBatch(SendMessageBatchRequest.builder()
-                    .entries(entriesToSend)
-                    .queueUrl(dlqUrl.get())
-                    .build());
+                SendMessageBatchResponse sendMessageBatchResponse =
+                        client.sendMessageBatch(SendMessageBatchRequest.builder()
+                                .entries(entriesToSend)
+                                .queueUrl(dlqUrl.get())
+                                .build());
 
 
-            LOG.debug("Response from send batch message to DLQ request {}", sendMessageBatchResponse);
+                LOG.debug("Response from send batch message to DLQ request {}", sendMessageBatchResponse);
 
-            return sendMessageBatchResponse;
-        });
+                return sendMessageBatchResponse;
+            });
 
         return sendMessageBatchResponses.stream()
                 .filter(response -> null != response && response.hasFailed())
-                .peek(sendMessageBatchResponse -> LOG.error("Failed sending message to the DLQ. Entire batch will be re processed. Check if needed permissions are configured for the function. Response: {}", sendMessageBatchResponse))
-                .count()  == 0;
+                .peek(sendMessageBatchResponse -> LOG.error(
+                        "Failed sending message to the DLQ. Entire batch will be re processed. Check if needed permissions are configured for the function. Response: {}",
+                        sendMessageBatchResponse))
+                .count() == 0;
     }
 
 
     private Optional<String> fetchDlqUrl(Map<SQSMessage, Exception> nonRetryableMessageToException) {
         return nonRetryableMessageToException.keySet().stream()
                 .findFirst()
-                .map(sqsMessage -> QUEUE_ARN_TO_DLQ_URL_MAPPING.computeIfAbsent(sqsMessage.getEventSourceArn(), sourceArn -> {
-                    String queueUrl = url(sourceArn);
+                .map(sqsMessage -> QUEUE_ARN_TO_DLQ_URL_MAPPING.computeIfAbsent(sqsMessage.getEventSourceArn(),
+                        sourceArn ->
+                            {
+                                String queueUrl = url(sourceArn);
 
-                    GetQueueAttributesResponse queueAttributes = client.getQueueAttributes(GetQueueAttributesRequest.builder()
-                            .attributeNames(QueueAttributeName.REDRIVE_POLICY)
-                            .queueUrl(queueUrl)
-                            .build());
+                                GetQueueAttributesResponse queueAttributes =
+                                        client.getQueueAttributes(GetQueueAttributesRequest.builder()
+                                                .attributeNames(QueueAttributeName.REDRIVE_POLICY)
+                                                .queueUrl(queueUrl)
+                                                .build());
 
-                    return ofNullable(queueAttributes.attributes().get(QueueAttributeName.REDRIVE_POLICY))
-                            .map(policy -> {
-                                try {
-                                    return SqsUtils.objectMapper().readTree(policy);
-                                } catch (JsonProcessingException e) {
-                                    LOG.debug("Unable to parse Re drive policy for queue {}. Even if DLQ exists, failed messages will be send back to main queue.", queueUrl, e);
-                                    return null;
-                                }
-                            })
-                            .map(node -> node.get("deadLetterTargetArn"))
-                            .map(JsonNode::asText)
-                            .map(this::url)
-                            .orElse(null);
-                }));
+                                return ofNullable(queueAttributes.attributes().get(QueueAttributeName.REDRIVE_POLICY))
+                                        .map(policy ->
+                                            {
+                                                try {
+                                                    return SqsUtils.objectMapper().readTree(policy);
+                                                } catch (JsonProcessingException e) {
+                                                    LOG.debug(
+                                                            "Unable to parse Re drive policy for queue {}. Even if DLQ exists, failed messages will be send back to main queue.",
+                                                            queueUrl, e);
+                                                    return null;
+                                                }
+                                            })
+                                        .map(node -> node.get("deadLetterTargetArn"))
+                                        .map(JsonNode::asText)
+                                        .map(this::url)
+                                        .orElse(null);
+                            }));
     }
 
     private boolean hasFailures() {
@@ -213,23 +241,25 @@ public final class BatchContext {
     private void deleteMessagesFromQueue(final List<SQSMessage> messages) {
         if (!messages.isEmpty()) {
 
-            List<DeleteMessageBatchRequestEntry> entries = messages.stream().map(m -> DeleteMessageBatchRequestEntry.builder()
-                    .id(m.getMessageId())
-                    .receiptHandle(m.getReceiptHandle())
-                    .build()).collect(toList());
+            List<DeleteMessageBatchRequestEntry> entries =
+                    messages.stream().map(m -> DeleteMessageBatchRequestEntry.builder()
+                            .id(m.getMessageId())
+                            .receiptHandle(m.getReceiptHandle())
+                            .build()).collect(toList());
 
-            batchRequest(entries, 10, entriesToDelete -> {
-                DeleteMessageBatchRequest request = DeleteMessageBatchRequest.builder()
-                        .queueUrl(url(messages.get(0).getEventSourceArn()))
-                        .entries(entriesToDelete)
-                        .build();
+            batchRequest(entries, 10, entriesToDelete ->
+                {
+                    DeleteMessageBatchRequest request = DeleteMessageBatchRequest.builder()
+                            .queueUrl(url(messages.get(0).getEventSourceArn()))
+                            .entries(entriesToDelete)
+                            .build();
 
-                DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
+                    DeleteMessageBatchResponse deleteMessageBatchResponse = client.deleteMessageBatch(request);
 
-                LOG.debug("Response from delete request {}", deleteMessageBatchResponse);
+                    LOG.debug("Response from delete request {}", deleteMessageBatchResponse);
 
-                return deleteMessageBatchResponse;
-            });
+                    return deleteMessageBatchResponse;
+                });
         }
     }
 

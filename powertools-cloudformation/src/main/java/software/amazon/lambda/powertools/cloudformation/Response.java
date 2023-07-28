@@ -1,8 +1,21 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.cloudformation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -12,6 +25,146 @@ import java.util.stream.Collectors;
  * encapsulates the data and the means to serialize it.
  */
 public class Response {
+
+    private final JsonNode jsonNode;
+    private final Status status;
+    private final String physicalResourceId;
+    private final boolean noEcho;
+
+    private Response(JsonNode jsonNode, Status status, String physicalResourceId, boolean noEcho) {
+        this.jsonNode = jsonNode;
+        this.status = status;
+        this.physicalResourceId = physicalResourceId;
+        this.noEcho = noEcho;
+    }
+
+    /**
+     * Creates a builder for constructing a Response wrapping the provided value.
+     *
+     * @return a builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
+     * Creates a failed Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
+     * Lambda LogStreamName
+     * <p>
+     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
+     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
+     * the update as a replacement and sends a delete request to the old resource. For more information,
+     * see AWS::CloudFormation::CustomResource.
+     *
+     * @return a failed Response with no value.
+     * @deprecated this method is not safe. Provide a physicalResourceId.
+     */
+    @Deprecated
+    public static Response failed() {
+        return new Response(null, Status.FAILED, null, false);
+    }
+
+    /**
+     * Creates a failed Response with a given physicalResourceId.
+     *
+     * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
+     *                           same resource.
+     *                           The value returned for a PhysicalResourceId can change custom resource update
+     *                           operations. If the value returned is the same, it is considered a normal update. If the
+     *                           value returned is different, AWS CloudFormation recognizes the update as a replacement
+     *                           and sends a delete request to the old resource. For more information,
+     *                           see AWS::CloudFormation::CustomResource.
+     * @return a failed Response with physicalResourceId
+     */
+    public static Response failed(String physicalResourceId) {
+        return new Response(null, Status.FAILED, physicalResourceId, false);
+    }
+
+    /**
+     * Creates a successful Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
+     * Lambda LogStreamName
+     * <p>
+     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
+     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
+     * the update as a replacement and sends a delete request to the old resource. For more information,
+     * see AWS::CloudFormation::CustomResource.
+     *
+     * @return a success Response with no physicalResourceId value.
+     * @deprecated this method is not safe. Provide a physicalResourceId.
+     */
+    @Deprecated
+    public static Response success() {
+        return new Response(null, Status.SUCCESS, null, false);
+    }
+
+    /**
+     * Creates a successful Response with a given physicalResourceId.
+     *
+     * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
+     *                           same resource.
+     *                           The value returned for a PhysicalResourceId can change custom resource update
+     *                           operations. If the value returned is the same, it is considered a normal update. If the
+     *                           value returned is different, AWS CloudFormation recognizes the update as a replacement
+     *                           and sends a delete request to the old resource. For more information,
+     *                           see AWS::CloudFormation::CustomResource.
+     * @return a success Response with physicalResourceId
+     */
+    public static Response success(String physicalResourceId) {
+        return new Response(null, Status.SUCCESS, physicalResourceId, false);
+    }
+
+    /**
+     * Returns a JsonNode representation of the Response.
+     *
+     * @return a non-null JsonNode representation
+     */
+    JsonNode getJsonNode() {
+        return jsonNode;
+    }
+
+    /**
+     * The success/failed status of the Response.
+     *
+     * @return a non-null Status
+     */
+    public Status getStatus() {
+        return status;
+    }
+
+    /**
+     * The physical resource ID. If null, the default physical resource ID will be provided to the custom resource.
+     *
+     * @return a potentially null physical resource ID
+     */
+    public String getPhysicalResourceId() {
+        return physicalResourceId;
+    }
+
+    /**
+     * Whether to mask custom resource output (true) or not (false).
+     *
+     * @return true if custom resource output is to be masked, false otherwise
+     */
+    public boolean isNoEcho() {
+        return noEcho;
+    }
+
+    /**
+     * Includes all Response attributes, including its value in JSON format
+     *
+     * @return a full description of the Response
+     */
+    @Override
+    public String toString() {
+        Map<String, Object> attributes = new HashMap<>();
+        attributes.put("JSON", jsonNode == null ? null : jsonNode.toString());
+        attributes.put("Status", status);
+        attributes.put("PhysicalResourceId", physicalResourceId);
+        attributes.put("NoEcho", noEcho);
+        return attributes.entrySet().stream()
+                .map(entry -> entry.getKey() + " = " + entry.getValue())
+                .collect(Collectors.joining(",", "[", "]"));
+    }
 
     /**
      * Indicates whether a response is a success or failure.
@@ -126,145 +279,5 @@ public class Response {
             Status responseStatus = this.status != null ? this.status : Status.SUCCESS;
             return new Response(node, responseStatus, physicalResourceId, noEcho);
         }
-    }
-
-    /**
-     * Creates a builder for constructing a Response wrapping the provided value.
-     *
-     * @return a builder
-     */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    /**
-     * Creates a failed Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
-     * Lambda LogStreamName
-     *
-     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
-     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
-     * the update as a replacement and sends a delete request to the old resource. For more information,
-     * see AWS::CloudFormation::CustomResource.
-     *
-     * @deprecated this method is not safe. Provide a physicalResourceId.
-     * @return a failed Response with no value.
-     */
-    @Deprecated
-    public static Response failed() {
-        return new Response(null, Status.FAILED, null, false);
-    }
-
-    /**
-     * Creates a failed Response with a given physicalResourceId.
-     *
-     * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
-     *                           same resource.
-     *                           The value returned for a PhysicalResourceId can change custom resource update
-     *                           operations. If the value returned is the same, it is considered a normal update. If the
-     *                           value returned is different, AWS CloudFormation recognizes the update as a replacement
-     *                           and sends a delete request to the old resource. For more information,
-     *                           see AWS::CloudFormation::CustomResource.
-     * @return a failed Response with physicalResourceId
-     */
-    public static Response failed(String physicalResourceId) {
-        return new Response(null, Status.FAILED, physicalResourceId, false);
-    }
-
-    /**
-     * Creates a successful Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
-     * Lambda LogStreamName
-     *
-     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
-     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
-     * the update as a replacement and sends a delete request to the old resource. For more information,
-     * see AWS::CloudFormation::CustomResource.
-     *
-     * @deprecated this method is not safe. Provide a physicalResourceId.
-     * @return a success Response with no physicalResourceId value.
-     */
-    @Deprecated
-    public static Response success() {
-        return new Response(null, Status.SUCCESS, null, false);
-    }
-
-    /**
-     * Creates a successful Response with a given physicalResourceId.
-     *
-     * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
-     *                           same resource.
-     *                           The value returned for a PhysicalResourceId can change custom resource update
-     *                           operations. If the value returned is the same, it is considered a normal update. If the
-     *                           value returned is different, AWS CloudFormation recognizes the update as a replacement
-     *                           and sends a delete request to the old resource. For more information,
-     *                           see AWS::CloudFormation::CustomResource.
-     * @return a success Response with physicalResourceId
-     */
-    public static Response success(String physicalResourceId) {
-        return new Response(null, Status.SUCCESS, physicalResourceId, false);
-    }
-
-    private final JsonNode jsonNode;
-    private final Status status;
-    private final String physicalResourceId;
-    private final boolean noEcho;
-
-    private Response(JsonNode jsonNode, Status status, String physicalResourceId, boolean noEcho) {
-        this.jsonNode = jsonNode;
-        this.status = status;
-        this.physicalResourceId = physicalResourceId;
-        this.noEcho = noEcho;
-    }
-
-    /**
-     * Returns a JsonNode representation of the Response.
-     *
-     * @return a non-null JsonNode representation
-     */
-    JsonNode getJsonNode() {
-        return jsonNode;
-    }
-
-    /**
-     * The success/failed status of the Response.
-     *
-     * @return a non-null Status
-     */
-    public Status getStatus() {
-        return status;
-    }
-
-    /**
-     * The physical resource ID. If null, the default physical resource ID will be provided to the custom resource.
-     *
-     * @return a potentially null physical resource ID
-     */
-    public String getPhysicalResourceId() {
-        return physicalResourceId;
-    }
-
-    /**
-     * Whether to mask custom resource output (true) or not (false).
-     *
-     * @return true if custom resource output is to be masked, false otherwise
-     */
-    public boolean isNoEcho() {
-        return noEcho;
-    }
-
-    /**
-     * Includes all Response attributes, including its value in JSON format
-     *
-     * @return a full description of the Response
-     */
-    @Override
-    public String toString() {
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put("JSON", jsonNode == null ? null : jsonNode.toString());
-        attributes.put("Status", status);
-        attributes.put("PhysicalResourceId", physicalResourceId);
-        attributes.put("NoEcho", noEcho);
-        return attributes.entrySet().stream()
-                .map(entry -> entry.getKey() + " = " + entry.getValue())
-                .collect(Collectors.joining(",", "[", "]"));
     }
 }
