@@ -99,7 +99,7 @@ modules that require code-weaving, you will need to configure that also. Batch d
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-batch:{{ powertools.version }}'
+            implementation 'software.amazon.lambda:powertools-batch:{{ powertools.version }}'
         }
     ```
 ## Getting Started
