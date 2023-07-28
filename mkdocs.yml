@@ -82,6 +82,9 @@ extra_javascript:
   - javascript/extra.js
 
 extra:
+  version:
+    provider: mike
+    default: latest
   powertools:
     version: 1.16.1 # to update after each release (we do not want snapshot version here)
 
