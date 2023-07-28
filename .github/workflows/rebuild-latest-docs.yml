@@ -30,7 +30,7 @@ jobs:
   release-docs:
     permissions:
       contents: write  # push to gh-pages
-      pages: write     # deploy gh-pages website
+      pages: write     # deploy gh-pages webs
       id-token: write  # trade JWT token for AWS credentials in AWS Docs account
     secrets: inherit
     uses: ./.github/workflows/reusable-publish-docs.yml
