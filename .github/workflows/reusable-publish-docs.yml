@@ -78,27 +78,26 @@ jobs:
         run: |
           cp -r api site/
           
-## Uncomment to deploy to s3
-#      - name: Deploy Docs (Version)
-#        env:
-#          VERSION: ${{ inputs.version }}
-#          ALIAS: ${{ inputs.alias }}
-#        run: |
-#          aws s3 sync \
-#            site/ \
-#            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ env.VERSION }}/
-#      - name: Deploy Docs (Alias)
-#        env:
-#          VERSION: ${{ inputs.version }}
-#          ALIAS: ${{ inputs.alias }}
-#        run: |
-#          aws s3 sync \
-#            site/ \
-#            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ env.ALIAS }}/
-#      - name: Deploy Docs (Version JSON)
-#        env:
-#          VERSION: ${{ inputs.version }}
-#          ALIAS: ${{ inputs.alias }}
+      - name: Deploy Docs (Version)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+        run: |
+          aws s3 sync \
+            site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ env.VERSION }}/
+      - name: Deploy Docs (Alias)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
+        run: |
+          aws s3 sync \
+            site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ env.ALIAS }}/
+      - name: Deploy Docs (Version JSON)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: ${{ inputs.alias }}
 
 
         # We originally used "mike" from PyPi to manage versions for us, but since we moved to S3, we can't use it to manage versions any more.
@@ -114,13 +113,12 @@ jobs:
         #      - if it's a new version number, we add it at position 0 in the array.
         #   4. Once done, we'll upload it back to S3.
 
-## Uncomment to deploy to s3
-#        run: |
-#          aws s3 cp \
-#            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/versions.json \
-#            versions_old.json
-#          jq 'del(.[].aliases[] | select(. == "${{ env.ALIAS }}"))' < versions_old.json > versions_proc.json
-#          jq '. as $o | [{"title": "${{ env.VERSION }}", "version": "${{ env.VERSION }}", "aliases": ["${{env.ALIAS}}"] }] as $n | $n | if .[0].title | test("[a-z]+") or any($o[].title == "${{ env.VERSION }}";.) then $o else $n + $o end' < versions_proc.json > versions.json
-#          aws s3 cp \
-#            versions.json \
-#            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/versions.json
+        run: |
+          aws s3 cp \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/versions.json \
+            versions_old.json
+          jq 'del(.[].aliases[] | select(. == "${{ env.ALIAS }}"))' < versions_old.json > versions_proc.json
+          jq '. as $o | [{"title": "${{ env.VERSION }}", "version": "${{ env.VERSION }}", "aliases": ["${{env.ALIAS}}"] }] as $n | $n | if .[0].title | test("[a-z]+") or any($o[].title == "${{ env.VERSION }}";.) then $o else $n + $o end' < versions_proc.json > versions.json
+          aws s3 cp \
+            versions.json \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/versions.json
