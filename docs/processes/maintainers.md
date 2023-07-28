@@ -102,7 +102,7 @@ Provide code reviews and guidance on incoming pull requests.
 PRs are [labeled](#labels) based on file changes and semantic title. Pay attention to whether labels reflect the current
 state of the PR and correct accordingly.
 
-Use and enforce [semantic versioning](https://semver.org/) pull request titles, as these will be used for
+Use and enforce [semantic versioning](https://semver.org/){target="_blank" rel="nofollow"} pull request titles, as these will be used for
 [CHANGELOG](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CHANGELOG.md){target="_blank"}
 and [Release notes](https://github.com/aws-powertools/powertools-lambda-java/releases) - make sure they communicate their 
 intent at the human level.
@@ -123,7 +123,7 @@ Make sure issues are assigned to our [board of activities](https://github.com/or
 Use our [labels](#labels) to signal good first issues to new community members, and to set expectation that this might 
 need additional feedback from the author, other customers, experienced community members and/or maintainers.
 
-Be aware of [casual contributors](https://opensource.com/article/17/10/managing-casual-contributors) and recurring contributors. 
+Be aware of [casual contributors](https://opensource.com/article/17/10/managing-casual-contributors){target="_blank" rel="nofollow"} and recurring contributors. 
 Provide the experience and attention you wish you had if you were starting in open source.
 
 See [Common scenarios](#common-scenarios) section for additional guidance.
