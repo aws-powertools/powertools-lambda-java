@@ -19,6 +19,7 @@ public class ObjectToDeserialize {
     private String foo;
     private int bar;
     private long baz;
+
     public ObjectToDeserialize() {
     }
 

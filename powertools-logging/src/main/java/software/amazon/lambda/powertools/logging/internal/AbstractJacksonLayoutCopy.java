@@ -56,6 +56,7 @@ abstract class AbstractJacksonLayoutCopy extends AbstractStringLayout {
     protected final boolean complete;
     protected final boolean includeNullDelimiter;
     protected final ResolvableKeyValuePair[] additionalFields;
+
     @Deprecated
     protected AbstractJacksonLayoutCopy(final Configuration config, final ObjectWriter objectWriter,
                                         final Charset charset,
