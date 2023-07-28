@@ -307,7 +307,7 @@ using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 ob
     }
     ```
 
-!!! tip
+!!! tip "Use together with batch module"
     This utility works perfectly together with the batch module (`powertools-batch`), especially for SQS:
 
     ```java hl_lines="2 5-7 12 15 16" title="Combining batch and large message modules"
@@ -327,6 +327,45 @@ using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 ob
 
         @LargeMessage
         private void processMessage(SQSEvent.SQSMessage sqsMessage) {
+            // do something with the message
+        }
+    }
+    ```
+
+!!! tip "Use together with idempotency module"
+    This utility also works together with the idempotency module (`powertools-idempotency`). 
+    You can add both the `@LargeMessage` and `@Idempotent` annotations to the same method. 
+    The `@Idempotent` takes precedence over the `@LargeMessage` annotation. 
+    It means Idempotency module will use the initial raw message (containing the S3 pointer) and not the large message.
+    Using the large message would end up with potential issues when inserting the data in DynamoDB, where items
+    are limited to 400 KB (while large messages can be up to 2 GB).
+
+    ```java hl_lines="6 23-25" title="Combining idempotency and large message modules"
+    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+    
+        public SqsBatchHandler() {
+            Idempotency.config().withConfig(
+                        IdempotencyConfig.builder()
+                                .withEventKeyJMESPath("body") // get the body of the message for the idempotency key
+                                .build())
+                .withPersistenceStore(
+                        DynamoDBPersistenceStore.builder()
+                                .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                                .build()
+                ).configure();
+        }
+
+        @Override
+        public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+            for (SQSMessage message: event.getRecords()) {
+                processRawMessage(message, context);
+            }
+            return SQSBatchResponse.builder().build();
+        }
+
+        @Idempotent
+        @LargeMessage
+        private String processRawMessage(@IdempotencyKey SQSEvent.SQSMessage sqsMessage, Context context) {
             // do something with the message
         }
     }
