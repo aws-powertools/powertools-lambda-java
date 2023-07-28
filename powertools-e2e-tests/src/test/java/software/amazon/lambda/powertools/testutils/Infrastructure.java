@@ -59,6 +59,7 @@ import software.amazon.awscdk.services.logs.RetentionDays;
 import software.amazon.awscdk.services.s3.Bucket;
 import software.amazon.awscdk.services.s3.LifecycleRule;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
+import software.amazon.awscdk.services.sqs.DeadLetterQueue;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.SdkHttpClient;
@@ -261,6 +262,7 @@ public class Infrastructure {
                     .tableName(idempotencyTable)
                     .timeToLiveAttribute("expiration")
                     .build();
+            function.addEnvironment("IDEMPOTENCY_TABLE", idempotencyTable);
 
             table.grantReadWriteData(function);
         }
@@ -270,9 +272,14 @@ public class Infrastructure {
                     .create(stack, "SQSQueue")
                     .queueName(queue)
                     .visibilityTimeout(Duration.seconds(timeout * 6))
+                    .retentionPeriod(Duration.seconds(timeout * 6))
+                    .build();
+            DeadLetterQueue.builder()
+                    .queue(sqsQueue)
+                    .maxReceiveCount(1) // do not retry in case of error
                     .build();
             sqsQueue.grantConsumeMessages(function);
-            SqsEventSource sqsEventSource = SqsEventSource.Builder.create(sqsQueue).enabled(true).build();
+            SqsEventSource sqsEventSource = SqsEventSource.Builder.create(sqsQueue).enabled(true).batchSize(1).build();
             function.addEventSource(sqsEventSource);
             CfnOutput.Builder
                     .create(stack, "QueueURL")
