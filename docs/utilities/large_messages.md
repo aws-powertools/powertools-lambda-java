@@ -7,10 +7,10 @@ The large message utility handles SQS and SNS messages which have had their payl
 offloaded to S3 if they are larger than the maximum allowed size (256 KB).
 
 !!! Notice
-The large message utility (available in the `powertools-batch` module with v1.16.1 or lower) is now deprecated
-and replaced by the `powertools-large-messages` described in this page.
-You can still get the documentation [here](sqs_large_message_handling.md)
-and the migration guide [here](#migration-from-the-sqs-large-message-utility).
+    The large message utility (available in the `powertools-batch` module with v1.16.1 or lower) is now deprecated
+    and replaced by the `powertools-large-messages` described in this page.
+    You can still get the documentation [here](sqs_large_message_handling.md)
+    and the migration guide [here](#migration-from-the-sqs-large-message-utility).
 
 ## Features
 
@@ -19,6 +19,64 @@ and the migration guide [here](#migration-from-the-sqs-large-message-utility).
 - Compatible with the batch module (with SQS).
 
 ## Background
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    Function : Lambda Function
+    
+    state Application {
+        direction TB
+        sendMsg: sendMessage(QueueUrl, MessageBody)
+        extendLib: extended-client-lib
+        [*] --> sendMsg
+        sendMsg --> extendLib
+        state extendLib {
+            state if_big <<choice>>
+            bigMsg: MessageBody > 256KB ?
+            putObject: putObject(S3Bucket, S3Key, Body)
+            updateMsg: Update MessageBody<br>with a pointer to S3<br>and add a message attribute
+            bigMsg --> if_big
+            if_big --> [*]: size(body) <= 256kb
+            if_big --> putObject: size(body) > 256kb
+            putObject --> updateMsg
+            updateMsg --> [*]
+        }
+    }
+    
+    state Function {
+        direction TB
+        iterateMsgs: Iterate over messages
+        ptLargeMsg: powertools-large-messages
+        [*] --> Handler
+        Handler --> iterateMsgs
+        iterateMsgs --> ptLargeMsg
+        state ptLargeMsg {
+            state if_pointer <<choice>>
+            pointer: Message attribute <br>for large message ?
+            normalMsg: Small message,<br>body left unchanged
+            getObject: getObject(S3Pointer)
+            deleteObject: deleteObject(S3Pointer)
+            updateBody: Update message body<br>with content from S3 object<br>and remove message attribute
+            updateMD5: Update MD5 of the body<br>and attributes (SQS only)
+            yourcode: <b>YOUR CODE HERE!</b>
+            pointer --> if_pointer
+            if_pointer --> normalMsg : False
+            normalMsg --> [*]
+            if_pointer --> getObject : True
+            getObject --> updateBody
+            updateBody --> updateMD5
+            updateMD5 --> yourcode
+            yourcode --> deleteObject
+            deleteObject --> [*]
+        }
+    }
+
+    [*] --> Application
+    Application --> Function : Lambda Invocation
+    Function --> [*]
+    
+```
 
 SQS and SNS message payload is limited to 256KB. If you wish to send larger message payload, you can leverage the
 [amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-java-extended-client-lib)
@@ -242,15 +300,15 @@ After your code is invoked and returns without error, the object is deleted from
 using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 objects with the following configuration:
 
 === "Don't delete S3 Objects"
-```java
-@LargeMessage(deleteS3Object = false)
-private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
-// do something with the message
-}
-```
+    ```java
+    @LargeMessage(deleteS3Object = false)
+    private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
+        // do something with the message
+    }
+    ```
 
 !!! tip
-This utility works perfectly together with the batch module (`powertools-batch`), especially for SQS:
+    This utility works perfectly together with the batch module (`powertools-batch`), especially for SQS:
 
     ```java hl_lines="2 5-7 12 15 16" title="Combining batch and large message modules"
     public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
@@ -279,18 +337,18 @@ This utility works perfectly together with the batch module (`powertools-batch`)
 To interact with S3, the utility creates a default S3 Client :
 
 === "Default S3 Client"
-```java
-S3Client client = S3Client.builder()
-.httpClient(UrlConnectionHttpClient.builder().build())
-.region(Region.of(System.getenv(AWS_REGION_ENV)))
-.build();
-```
+    ```java
+    S3Client client = S3Client.builder()
+                        .httpClient(UrlConnectionHttpClient.builder().build())
+                        .region(Region.of(System.getenv(AWS_REGION_ENV)))
+                        .build();
+    ```
 
 If you need to customize this `S3Client`, you can leverage the `LargeMessageConfig` singleton:
 
 === "Custom S3 Client"
-```java hl_lines="6"
-import software.amazon.lambda.powertools.largemessages.LargeMessage;
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.largemessages.LargeMessage;
 
     public class SnsRecordHandler implements RequestHandler<SNSEvent, String> {
         
