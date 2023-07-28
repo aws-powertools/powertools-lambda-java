@@ -15,7 +15,7 @@ offloaded to S3 if they are larger than the maximum allowed size (256 KB).
 ## Features
 
 - Automatically retrieve the content of S3 objects when SQS or SNS messages have been offloaded to S3.
-- Automatically delete the S3 Objects after processing is OK.
+- Automatically delete the S3 Objects after processing succeeds.
 - Compatible with the batch module (with SQS).
 
 ## Background
@@ -78,7 +78,7 @@ stateDiagram-v2
     
 ```
 
-SQS and SNS message payload is limited to 256KB. If you wish to send larger message payload, you can leverage the
+SQS and SNS message payload is limited to 256KB. If you wish to send messages with a larger payload, you can leverage the
 [amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-java-extended-client-lib)
 or [amazon-sns-java-extended-client-lib](https://github.com/awslabs/amazon-sns-java-extended-client-lib) which
 offload the message to Amazon S3. See documentation
@@ -89,8 +89,8 @@ When offloaded to S3, the message contains a specific message attribute and the 
 S3 object (bucket and object key).
 
 This utility automatically retrieves messages which have been offloaded to S3 using the
-extended client libraries. Once the message payloads have been processed successful, the
-utility also delete the message payloads from S3.
+extended client libraries. Once a message's payload has been processed successfully, the
+utility deletes the payload from S3.
 
 This utility is compatible with
 versions *[1.1.0+](https://github.com/awslabs/amazon-sqs-java-extended-client-lib/releases/tag/1.1.0)*
@@ -378,3 +378,5 @@ If you need to customize this `S3Client`, you can leverage the `LargeMessageConf
 - The annotation now handles a single message, contrary to the previous version that was handling the complete batch.
   It gives more control, especially when dealing with partial failures with SQS (see the batch module).
 - The new module only provides an annotation, the `SqsUtils` is not available anymore in this new version.
+
+Also, if you are still using the `powertools-sqs` library for batch processing, consider moving to `powertools-batch` at the same time to remove the dependency on this library completely; it has been deprecated and will be removed in v2.

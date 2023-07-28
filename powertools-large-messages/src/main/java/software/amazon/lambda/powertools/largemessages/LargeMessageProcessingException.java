@@ -14,6 +14,9 @@
 
 package software.amazon.lambda.powertools.largemessages;
 
+/**
+ * Exception that occurs when the utility fails to retrieve the content from S3
+ */
 public class LargeMessageProcessingException extends RuntimeException {
     public LargeMessageProcessingException(String message, Throwable cause) {
         super(message, cause);
