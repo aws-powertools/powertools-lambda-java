@@ -1,5 +1,5 @@
 ---
-title: Maintainers
+title: Maintainers playbook
 description: Process
 ---
 
