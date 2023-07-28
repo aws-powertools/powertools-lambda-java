@@ -10,15 +10,15 @@ description: Process
 !!! note "Please treat this content as a living document."
 
 This is document explains who the maintainers are, their responsibilities, and how they should be doing it. If you're interested in contributing,
- see [CONTRIBUTING](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CONTRIBUTING.md){target="_blank" rel="nofollow"}.
+ see [CONTRIBUTING](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CONTRIBUTING.md){target="_blank"}.
 
 ## Current Maintainers
 
 | Maintainer            | GitHub ID                                                                       | Affiliation |
 |-----------------------|---------------------------------------------------------------------------------| ----------- |
-| Jerome Van Der Linden | [sthulb](https://github.com/jeromevdl){target="_blank" rel="nofollow"}          | Amazon      |
-| Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="_blank" rel="nofollow"}           | Amazon      |
-| Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="_blank" rel="nofollow"} | Amazon      |
+| Jerome Van Der Linden | [sthulb](https://github.com/jeromevdl){target="_blank"}          | Amazon      |
+| Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="_blank"}           | Amazon      |
+| Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="_blank"} | Amazon      |
 
 ## Emeritus
 
@@ -26,8 +26,8 @@ Previous active maintainers who contributed to this project.
 
 | Maintainer     | GitHub ID                                                                               | Affiliation   |
 |----------------|-----------------------------------------------------------------------------------------|---------------|
-| Mark Sailes    | [msailes](https://github.com/msailes){target="_blank" rel="nofollow"}                   | Amazon        |
-| Pankaj Agrawal | [ pankajagrawal16 ](https://github.com/pankajagrawal16){target="_blank" rel="nofollow"} | Former Amazon |
+| Mark Sailes    | [msailes](https://github.com/msailes){target="_blank"}                   | Amazon        |
+| Pankaj Agrawal | [ pankajagrawal16 ](https://github.com/pankajagrawal16){target="_blank"} | Former Amazon |
 | Steve Houel    | [stevehouel](https://github.com/stevehouel)                                             | Amazon        |
 
 ## Labels
@@ -70,7 +70,7 @@ These are the most common labels used by maintainers to triage issues, pull requ
 ## Maintainer Responsibilities
 
 Maintainers are active and visible members of the community, and have 
-[maintain-level permissions on a repository](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization){target="_blank" rel="nofollow"}. 
+[maintain-level permissions on a repository](https://docs.github.com/en/organizations/managing-access-to-your-organizations-repositories/repository-permission-levels-for-an-organization){target="_blank"}. 
 Use those privileges to serve the community and evolve code as follows.
 
 Be aware of recurring ambiguous situations and [document them](#common-scenarios) to help your fellow maintainers.
@@ -79,9 +79,9 @@ Be aware of recurring ambiguous situations and [document them](#common-scenarios
 
 <!-- markdownlint-disable-next-line MD013 -->
 Model the behavior set forward by the
-[Code of Conduct](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CODE_OF_CONDUCT.md){target="_blank" rel="nofollow"}
+[Code of Conduct](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CODE_OF_CONDUCT.md){target="_blank"}
 and raise any violations to other maintainers and admins. There could be unusual circumstances where inappropriate 
-behavior does not immediately fall within the [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CODE_OF_CONDUCT.md){target="_blank" rel="nofollow"}.
+behavior does not immediately fall within the [Code of Conduct](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CODE_OF_CONDUCT.md){target="_blank"}.
 
 These might be nuanced and should be handled with extra care - when in doubt, do not engage and reach out to other maintainers 
 and admins.
@@ -92,7 +92,7 @@ Security is your number one priority. Maintainer's Github keys must be password 
 security vulnerabilities are addressed before features or bugs.
 
 Note that this repository is monitored and supported 24/7 by Amazon Security, see
-[Security disclosures](https://github.com/aws-powertools/powertools-lambda-java/){target="_blank" rel="nofollow"} for details.
+[Security disclosures](https://github.com/aws-powertools/powertools-lambda-java/){target="_blank"} for details.
 
 ### Review Pull Requests
 
@@ -103,7 +103,7 @@ PRs are [labeled](#labels) based on file changes and semantic title. Pay attenti
 state of the PR and correct accordingly.
 
 Use and enforce [semantic versioning](https://semver.org/) pull request titles, as these will be used for
-[CHANGELOG](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CHANGELOG.md){target="_blank" rel="nofollow"}
+[CHANGELOG](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CHANGELOG.md){target="_blank"}
 and [Release notes](https://github.com/aws-powertools/powertools-lambda-java/releases) - make sure they communicate their 
 intent at the human level.
 
@@ -196,7 +196,7 @@ Continuously revisit areas of improvement to reduce operational burden in all pa
 <!-- markdownlint-disable-next-line MD013 -->
 Actions that negatively impact the project will be handled by the admins, in coordination with other maintainers, 
 in balance with the urgency of the issue. Examples would be
-[Code of Conduct](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CODE_OF_CONDUCT.md){target="_blank" rel="nofollow"}
+[Code of Conduct](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CODE_OF_CONDUCT.md){target="_blank"}
 violations, deliberate harmful or malicious actions, spam, monopolization, and security risks.
 
 ## Common scenarios
@@ -223,7 +223,7 @@ When in doubt, use the `need-more-information` label to signal more context and 
 
 ### Crediting contributions
 
-We credit all contributions as part of each [release note](https://github.com/aws-powertools/powertools-lambda-java/releases){target="_blank" rel="nofollow"}
+We credit all contributions as part of each [release note](https://github.com/aws-powertools/powertools-lambda-java/releases){target="_blank"}
 as an automated process. If you find  contributors are missing from the release note you're producing, please add them manually.
 
 ### Is that a bug?
