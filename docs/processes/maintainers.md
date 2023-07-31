@@ -175,7 +175,8 @@ Kickoff the `Prepare for maven central release` workflow with the intended rekea
 draft a Pull Request named something like `chore: Prep release 1.19.0`. the PR will **(1)** roll all of the POM versions
 forward to the new release version and **(2)** release notes. 
 
-Once this is done, check out the branch and clean up the release notes. These will be used both in the release notes
+Once this is done, check out the branch and clean up the release notes. These will be used both in the
+[CHANGELOG.md file](https://github.com/aws-powertools/powertools-lambda-java/blob/main/CHANGELOG.md)
 file and the [published github release information](https://github.com/aws-powertools/powertools-lambda-java/releases),
 and you can use the existing release notes to see how changes are summarized.
 
