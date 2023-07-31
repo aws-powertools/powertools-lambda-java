@@ -149,7 +149,7 @@ before implementation begins.
 Make sure you ask these questions in mind when reviewing:
 
 - Does it use our [RFC template](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=RFC%2C+triage&projects=&template=rfc.md&title=RFC%3A+)?
-- Does the match our [Tenets](https://docs.powertools.aws.dev/lambda/java/latest/#tenets)?
+- Does it match our [Tenets](https://docs.powertools.aws.dev/lambda/java/latest/#tenets)?
 - Does the proposal address the use case? If so, is the recommended usage explicit?
 - Does it focus on the mechanics to solve the use case over fine-grained implementation details?
 - Can anyone familiar with the code base implement it?
