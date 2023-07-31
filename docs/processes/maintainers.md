@@ -185,7 +185,7 @@ tagged release from the Github UI, using the same release notes.
 
 Next, run the `Publish package to the Maven Central Repository` action to release the library.
 
-Finally, by hand, create a PR rolling all of the POMs onto the next snapshot version. 
+Finally, by hand, create a PR rolling all of the POMs onto the next snapshot version (e.g. `1.20.0-SNAPSHOT`). 
 
 
 ### Add Continuous Integration Checks
