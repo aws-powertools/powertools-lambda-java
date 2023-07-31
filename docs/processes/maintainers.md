@@ -179,7 +179,7 @@ Once this is done, check out the branch and clean up the release notes. These wi
 file and the [published github release information](https://github.com/aws-powertools/powertools-lambda-java/releases),
 and you can use the existing release notes to see how changes are summarized.
 
-Next, commit and push, wait for the build to complete, and merge to main. Once main has built successfully, create a 
+Next, commit and push, wait for the build to complete, and merge to main. Once main has built successfully (i.e. build, tests and end-to-end tests should pass), create a 
 tagged release from the Github UI, using the same release notes.
 
 Next, run the `Publish package to the Maven Central Repository` action to release the library.
