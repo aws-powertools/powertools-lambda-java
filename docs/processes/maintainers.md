@@ -27,7 +27,7 @@ Previous active maintainers who contributed to this project.
 | Maintainer     | GitHub ID                                                                               | Affiliation   |
 |----------------|-----------------------------------------------------------------------------------------|---------------|
 | Mark Sailes    | [msailes](https://github.com/msailes){target="_blank"}                   | Amazon        |
-| Pankaj Agrawal | [ pankajagrawal16 ](https://github.com/pankajagrawal16){target="_blank"} | Former Amazon |
+| Pankaj Agrawal | [pankajagrawal16](https://github.com/pankajagrawal16){target="_blank"} | Former Amazon |
 | Steve Houel    | [stevehouel](https://github.com/stevehouel)                                             | Amazon        |
 
 ## Labels
