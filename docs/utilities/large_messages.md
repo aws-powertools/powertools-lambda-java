@@ -7,7 +7,7 @@ The large message utility handles SQS and SNS messages which have had their payl
 offloaded to S3 if they are larger than the maximum allowed size (256 KB).
 
 !!! Notice
-    The large message utility (available in the `powertools-batch` module with v1.16.1 or lower) is now deprecated
+    The large message utility (available in the `powertools-sqs` module with v1.16.1 or lower) is now deprecated
     and replaced by the `powertools-large-messages` described in this page.
     You can still get the documentation [here](sqs_large_message_handling.md)
     and the migration guide [here](#migration-from-the-sqs-large-message-utility).
@@ -416,6 +416,6 @@ If you need to customize this `S3Client`, you can leverage the `LargeMessageConf
   or `SNSEvent.SNSRecord` as first parameter.
 - The annotation now handles a single message, contrary to the previous version that was handling the complete batch.
   It gives more control, especially when dealing with partial failures with SQS (see the batch module).
-- The new module only provides an annotation, the `SqsUtils` is not available anymore in this new version.
+- The new module only provides an annotation, an equivalent to the `SqsUtils` class is not available anymore in this new version.
 
-Also, if you are still using the `powertools-sqs` library for batch processing, consider moving to `powertools-batch` at the same time to remove the dependency on this library completely; it has been deprecated and will be removed in v2.
+Finally, if you are still using the `powertools-sqs` library for batch processing, consider moving to `powertools-batch` at the same time to remove the dependency on this library completely; it has been deprecated and will be removed in v2.
