@@ -149,7 +149,7 @@ before implementation begins.
 Make sure you ask these questions in mind when reviewing:
 
 - Does it use our [RFC template](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=RFC%2C+triage&projects=&template=rfc.md&title=RFC%3A+)?
-- Does the match our [Tenets](https://docs.powertools.aws.dev/lambda/java/latest/#tenets)?
+- Does it match our [Tenets](https://docs.powertools.aws.dev/lambda/java/latest/#tenets)?
 - Does the proposal address the use case? If so, is the recommended usage explicit?
 - Does it focus on the mechanics to solve the use case over fine-grained implementation details?
 - Can anyone familiar with the code base implement it?
@@ -180,7 +180,7 @@ Once this is done, check out the branch and clean up the release notes. These wi
 file and the [published github release information](https://github.com/aws-powertools/powertools-lambda-java/releases),
 and you can use the existing release notes to see how changes are summarized.
 
-Next, commit and push, wait for the build to complete, and merge to main. Once main has built successfully, create a 
+Next, commit and push, wait for the build to complete, and merge to main. Once main has built successfully (i.e. build, tests and end-to-end tests should pass), create a 
 tagged release from the Github UI, using the same release notes.
 
 Next, run the `Publish package to the Maven Central Repository` action to release the library.
