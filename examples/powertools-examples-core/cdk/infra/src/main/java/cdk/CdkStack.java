@@ -15,7 +15,9 @@ import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.constructs.Construct;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CdkStack extends Stack {
     public CdkStack(final Construct scope, final String id) {
@@ -47,6 +49,12 @@ public class CdkStack extends Stack {
                                 .build())
                         .build()))
                 .handler("helloworld.App")
+                .environment(new HashMap<String, String>() {{
+                    put("POWERTOOLS_LOG_LEVEL", "0.1");
+                    put("POWERTOOLS_LOGGER_SAMPLE_RATE", "INFO");
+                    put("POWERTOOLS_LOGGER_LOG_EVENT", "true");
+                    put("POWERTOOLS_METRICS_NAMESPACE", "Coreutilities");
+                }})
                 .build();
 
         RestApi reastApi = RestApi.Builder.create(this, "HelloWorldApi")
