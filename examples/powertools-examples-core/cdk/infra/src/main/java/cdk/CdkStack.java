@@ -1,28 +1,21 @@
 package cdk;
 
 
-import software.amazon.awscdk.services.lambda.Code;
-import software.amazon.awscdk.services.lambda.Function;
-import software.constructs.Construct;
-import software.amazon.awscdk.Stack;
-import software.amazon.awscdk.StackProps;
-// import software.amazon.awscdk.Duration;
-// import software.amazon.awscdk.services.sqs.Queue;
-import software.amazon.awscdk.App;
 import software.amazon.awscdk.BundlingOptions;
-import software.amazon.awscdk.CfnOutput;
-import software.amazon.awscdk.CfnOutputProps;
-import software.constructs.Construct;
-import software.amazon.awscdk.DockerVolume;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.Stack;
 import software.amazon.awscdk.StackProps;
+import software.amazon.awscdk.services.apigateway.LambdaIntegration;
+import software.amazon.awscdk.services.apigateway.RestApi;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
-import software.amazon.awscdk.services.lambda.FunctionProps;
 import software.amazon.awscdk.services.lambda.Runtime;
-import software.amazon.awscdk.services.logs.RetentionDays;
+import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
+import software.constructs.Construct;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class CdkStack extends Stack {
     public CdkStack(final Construct scope, final String id) {
@@ -34,11 +27,35 @@ public class CdkStack extends Stack {
 
         // The code that defines your stack goes here
 
-        final Function hello = Function.Builder.create(this, "HelloWorldFunction")
+        // CDK will use this command to package your Java Lambda
+        List<String> functionPackageInstructions = Arrays.asList(
+                "/bin/sh",
+                "-c",
+                "mvn package " +
+                        "&& cp /asset-input/target/powertools-examples-core-cdk-1.16.1.jar /asset-output/"
+        );
+
+        final Function helloWorldFunction = Function.Builder.create(this, "HelloWorldFunction")
                 .runtime(Runtime.JAVA_11)    // execution environment
-                .code(Code.fromAsset("../helloworld/", AssetOptions.builder()
-                        .build()))  // code loaded from the "lambda" directory
-                .handler("helloworld.App::handleRequest")        // file is "hello", function is "handler"
+                .memorySize(512)
+                .timeout(Duration.seconds(20))
+                .tracing(Tracing.ACTIVE)
+                .code(Code.fromAsset("../app/", AssetOptions.builder()
+                        .bundling(BundlingOptions.builder()
+                                .image(Runtime.JAVA_11.getBundlingImage())
+                                .command(functionPackageInstructions)
+                                .build())
+                        .build()))
+                .handler("helloworld.App")
                 .build();
+
+        RestApi reastApi = RestApi.Builder.create(this, "HelloWorldApi")
+                .description("API Gateway endpoint URL for Prod stage for Hello World function")
+                .build();
+
+        reastApi.getRoot().resourceForPath("/hello")
+                .addMethod("GET", LambdaIntegration.Builder.create(helloWorldFunction)
+                        .build());
+
     }
 }

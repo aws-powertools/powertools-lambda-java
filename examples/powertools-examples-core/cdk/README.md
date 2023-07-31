@@ -21,7 +21,7 @@ It is a [Maven](https://maven.apache.org/) based project, so you can open this p
 
 The minimum to deploy the app should be
 ```bash 
-cdk bootstrap && mvn package && cdk deploy
+cdk bootstrap && cdk deploy
 ```
 
 ## Useful commands
