@@ -16,7 +16,7 @@ This is document explains who the maintainers are, their responsibilities, and h
 
 | Maintainer            | GitHub ID                                                                       | Affiliation |
 |-----------------------|---------------------------------------------------------------------------------| ----------- |
-| Jerome Van Der Linden | [sthulb](https://github.com/jeromevdl){target="_blank"}          | Amazon      |
+| Jerome Van Der Linden | [jeromevdl](https://github.com/jeromevdl){target="_blank"}          | Amazon      |
 | Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="_blank"}           | Amazon      |
 | Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="_blank"} | Amazon      |
 
