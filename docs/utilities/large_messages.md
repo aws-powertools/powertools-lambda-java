@@ -334,8 +334,8 @@ using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 ob
 
 !!! tip "Use together with idempotency module"
     This utility also works together with the idempotency module (`powertools-idempotency`). 
-    You can add both the `@LargeMessage` and `@Idempotent` annotations to the same method. 
-    The `@Idempotent` takes precedence over the `@LargeMessage` annotation. 
+    You can add both the `@LargeMessage` and `@Idempotent` annotations, in any order, to the same method. 
+    The `@Idempotent` takes precedence over the `@LargeMessage` annotation.
     It means Idempotency module will use the initial raw message (containing the S3 pointer) and not the large message.
     Using the large message would end up with potential issues when inserting the data in DynamoDB, where items
     are limited to 400 KB (while large messages can be up to 2 GB).

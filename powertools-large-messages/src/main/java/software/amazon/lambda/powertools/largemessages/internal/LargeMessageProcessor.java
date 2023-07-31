@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.largemessages.internal;
 
 import static java.lang.String.format;
 
+import java.nio.charset.StandardCharsets;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,11 +58,16 @@ abstract class LargeMessageProcessor<T> {
         // legacy attribute (sqs only)
         payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer", "software.amazon.payloadoffloading.PayloadS3Pointer");
 
-        LOG.info("Large message [{}]: retrieving content from S3", getMessageId(message));
+        if (LOG.isInfoEnabled()) {
+            LOG.info("Large message [{}]: retrieving content from S3", getMessageId(message));
+        }
 
         String s3ObjectContent = getS3ObjectContent(payloadPointer);
 
-        LOG.debug("Large message [{}]: {}", getMessageId(message), s3ObjectContent);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Large message [{}] retrieved in S3 [{}]: {}KB", getMessageId(message), payloadPointer,
+                    s3ObjectContent.getBytes(StandardCharsets.UTF_8).length / 1024);
+        }
 
         updateMessageContent(message, s3ObjectContent);
         removeLargeMessageAttributes(message);
@@ -69,7 +75,9 @@ abstract class LargeMessageProcessor<T> {
         Object response = pjp.proceed(proceedArgs);
 
         if (deleteS3Object) {
-            LOG.info("Large message [{}]: deleting object from S3", getMessageId(message));
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Large message [{}]: deleting object from S3", getMessageId(message));
+            }
             deleteS3Object(payloadPointer);
         }
 
@@ -127,7 +135,6 @@ abstract class LargeMessageProcessor<T> {
         try {
             payloadStore.deleteOriginalPayload(payloadPointer);
         } catch (SdkException e) {
-            // TODO: should we actually throw an exception if deletion failed ?
             throw new LargeMessageProcessingException(format("Failed deleting S3 record [%s]", payloadPointer), e);
         }
     }
