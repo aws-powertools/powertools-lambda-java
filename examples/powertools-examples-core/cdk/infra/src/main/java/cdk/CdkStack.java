@@ -1,6 +1,5 @@
 package cdk;
 
-
 import software.amazon.awscdk.BundlingOptions;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.Stack;
@@ -17,7 +16,14 @@ import software.constructs.Construct;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Defines a stack that consists of a single Java Lambda function and an API Gateway
+ */
 public class CdkStack extends Stack {
+    private static final String SHELL_COMMAND = "/bin/sh";
+    private static final String MAVEN_PACKAGE = "mvn package";
+    private static final String COPY_OUTPUT = "cp /asset-input/target/powertools-examples-core-cdk-1.16.1.jar /asset-output/";
+
     public CdkStack(final Construct scope, final String id) {
         this(scope, id, null);
     }
@@ -25,24 +31,26 @@ public class CdkStack extends Stack {
     public CdkStack(final Construct scope, final String id, final StackProps props) {
         super(scope, id, props);
 
-        // The code that defines your stack goes here
+        Function helloWorldFunction = createHelloWorldFunction();
+        RestApi restApi = createHelloWorldApi();
 
-        // CDK will use this command to package your Java Lambda
-        var functionPackageInstructions = List.of(
-                "/bin/sh",
-                "-c",
-                "mvn package " +
-                        "&& cp /asset-input/target/powertools-examples-core-cdk-1.16.1.jar /asset-output/"
-        );
+        restApi.getRoot().resourceForPath("/hello")
+                .addMethod("GET", LambdaIntegration.Builder.create(helloWorldFunction)
+                        .build());
+    }
 
-        final Function helloWorldFunction = Function.Builder.create(this, "HelloWorldFunction")
-                .runtime(Runtime.JAVA_11)    // execution environment
+    // Method to create the Lambda function
+    private Function createHelloWorldFunction() {
+        List<String> functionPackageInstructions = createFunctionPackageInstructions();
+
+        return Function.Builder.create(this, "HelloWorldFunction")
+                .runtime(Runtime.JAVA_11)
                 .memorySize(512)
                 .timeout(Duration.seconds(20))
                 .tracing(Tracing.ACTIVE)
                 .code(Code.fromAsset("../app/", AssetOptions.builder()
                         .bundling(BundlingOptions.builder()
-                                .image(Runtime.JAVA_11.getBundlingImage()) // Build image environment
+                                .image(Runtime.JAVA_11.getBundlingImage())
                                 .command(functionPackageInstructions)
                                 .build())
                         .build()))
@@ -53,13 +61,22 @@ public class CdkStack extends Stack {
                         "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities"
                 ))
                 .build();
+    }
 
-        RestApi restApi = RestApi.Builder.create(this, "HelloWorldApi")
+    // Method to create the REST API
+    private RestApi createHelloWorldApi() {
+        return RestApi.Builder.create(this, "HelloWorldApi")
                 .description("API Gateway endpoint URL for Prod stage for Hello World function")
                 .build();
+    }
 
-        restApi.getRoot().resourceForPath("/hello")
-                .addMethod("GET", LambdaIntegration.Builder.create(helloWorldFunction)
-                        .build());
+    private static List<String> createFunctionPackageInstructions() {
+        // CDK will use this command to package your Java Lambda
+        return List.of(
+                SHELL_COMMAND,
+                "-c",
+                MAVEN_PACKAGE + " && " +
+                        COPY_OUTPUT
+        );
     }
 }
