@@ -14,24 +14,10 @@
 
 package helloworld;
 
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
-import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
-import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
-
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Entity;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
@@ -42,6 +28,18 @@ import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.tracing.CaptureMode;
 import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
+import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
+import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
 
 /**
  * Handler for requests to Lambda function.
@@ -61,10 +59,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
 
         withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) ->
-            {
-                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-                metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
-            });
+        {
+            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+        });
 
         LoggingUtils.appendKey("test", "willBeLogged");
 
@@ -77,42 +75,21 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
             TracingUtils.withSubsegment("loggingResponse", subsegment ->
-                {
-                    String sampled = "log something out";
-                    log.info(sampled);
-                    log.info(output);
-                });
-
-            threadOption1();
-
-            threadOption2();
+            {
+                String sampled = "log something out";
+                log.info(sampled);
+                log.info(output);
+            });
 
             log.info("After output");
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (IOException | InterruptedException e) {
+        } catch (RuntimeException | IOException e) {
             return response
                     .withBody("{}")
                     .withStatusCode(500);
         }
-    }
-
-    private void threadOption1() throws InterruptedException {
-        final Entity traceEntity = AWSXRay.getTraceEntity();
-        assert traceEntity != null;
-        traceEntity.run(new Thread(this::log));
-    }
-
-    private void threadOption2() throws InterruptedException {
-        Entity traceEntity = AWSXRay.getTraceEntity();
-        Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment ->
-            {
-                String var = "somethingToProcess";
-                log.info("inside threaded logging inline {}", var);
-            }));
-        anotherThread.start();
-        anotherThread.join();
     }
 
     @Tracing
