@@ -14,8 +14,6 @@ import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.constructs.Construct;
 
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,7 +28,7 @@ public class CdkStack extends Stack {
         // The code that defines your stack goes here
 
         // CDK will use this command to package your Java Lambda
-        List<String> functionPackageInstructions = Arrays.asList(
+        var functionPackageInstructions = List.of(
                 "/bin/sh",
                 "-c",
                 "mvn package " +
@@ -44,26 +42,24 @@ public class CdkStack extends Stack {
                 .tracing(Tracing.ACTIVE)
                 .code(Code.fromAsset("../app/", AssetOptions.builder()
                         .bundling(BundlingOptions.builder()
-                                .image(Runtime.JAVA_11.getBundlingImage())
+                                .image(Runtime.JAVA_11.getBundlingImage()) // Build image environment
                                 .command(functionPackageInstructions)
                                 .build())
                         .build()))
                 .handler("helloworld.App")
-                .environment(new HashMap<String, String>() {{
-                    put("POWERTOOLS_LOG_LEVEL", "0.1");
-                    put("POWERTOOLS_LOGGER_SAMPLE_RATE", "INFO");
-                    put("POWERTOOLS_LOGGER_LOG_EVENT", "true");
-                    put("POWERTOOLS_METRICS_NAMESPACE", "Coreutilities");
-                }})
+                .environment(Map.of("POWERTOOLS_LOG_LEVEL", "0.1",
+                        "POWERTOOLS_LOGGER_SAMPLE_RATE", "INFO",
+                        "POWERTOOLS_LOGGER_LOG_EVENT", "true",
+                        "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities"
+                ))
                 .build();
 
-        RestApi reastApi = RestApi.Builder.create(this, "HelloWorldApi")
+        RestApi restApi = RestApi.Builder.create(this, "HelloWorldApi")
                 .description("API Gateway endpoint URL for Prod stage for Hello World function")
                 .build();
 
-        reastApi.getRoot().resourceForPath("/hello")
+        restApi.getRoot().resourceForPath("/hello")
                 .addMethod("GET", LambdaIntegration.Builder.create(helloWorldFunction)
                         .build());
-
     }
 }
