@@ -34,6 +34,18 @@ public class CdkStack extends Stack {
         restApi.getRoot().resourceForPath("/hello")
                 .addMethod("GET", LambdaIntegration.Builder.create(helloWorldFunction)
                         .build());
+
+        outputApiUrl(restApi);
+    }
+
+    /**
+     * Adds URL to the lambda to the outputs
+     * @param restApi
+     */
+    private void outputApiUrl(RestApi restApi) {
+        CfnOutput.Builder.create(this, "HelloWorldApiUrl")
+                .description("API Gateway endpoint URL for Prod stage for Hello World function")
+                .value(restApi.getUrl() + "hello").build();
     }
 
     // Method to create the Lambda function
