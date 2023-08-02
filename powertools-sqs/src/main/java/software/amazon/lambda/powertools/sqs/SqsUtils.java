@@ -27,8 +27,11 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.sqs.exception.SkippedMessageDueToFailedBatchException;
 import software.amazon.lambda.powertools.sqs.internal.BatchContext;
 import software.amazon.lambda.powertools.sqs.internal.SqsLargeMessageAspect;
@@ -42,10 +45,10 @@ import software.amazon.payloadoffloading.PayloadS3Pointer;
  */
 @Deprecated
 public final class SqsUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(SqsUtils.class);
 
+    public static final String SQS = "sqs";
+    private static final Logger LOG = LoggerFactory.getLogger(SqsUtils.class);
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    // The attribute on an SQS-FIFO message used to record the message group ID
     private static final String MESSAGE_GROUP_ID = "MessageGroupId";
     private static SqsClient client;
     private static S3Client s3Client;
@@ -497,7 +500,11 @@ public final class SqsUtils {
         final List<R> handlerReturn = new ArrayList<>();
 
         if (client == null) {
-            client = SqsClient.create();
+            client = (SqsClient) SqsClient.builder()
+                    .overrideConfiguration(ClientOverrideConfiguration.builder()
+                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
+                                    UserAgentConfigurator.getUserAgent(SQS))
+                            .build());
         }
 
         BatchContext batchContext = new BatchContext(client);
@@ -586,6 +593,11 @@ public final class SqsUtils {
 
     public static S3Client s3Client() {
         if (null == s3Client) {
+            s3Client = (S3Client) S3Client.builder()
+                    .overrideConfiguration(ClientOverrideConfiguration.builder()
+                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
+                                    UserAgentConfigurator.getUserAgent(SQS))
+                            .build());
             SqsUtils.s3Client = S3Client.create();
         }
 
