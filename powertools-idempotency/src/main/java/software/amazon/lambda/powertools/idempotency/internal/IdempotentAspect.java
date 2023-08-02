@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import software.amazon.lambda.powertools.idempotency.Constants;
@@ -37,6 +38,8 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  * It uses the {@link IdempotencyHandler} to actually do the job.
  */
 @Aspect
+// Idempotency annotation should come first before large message
+@DeclarePrecedence("software.amazon.lambda.powertools.idempotency.internal.IdempotentAspect, *")
 public class IdempotentAspect {
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(idempotent)")

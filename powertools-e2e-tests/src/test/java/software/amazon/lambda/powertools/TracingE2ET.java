@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 import java.util.Collections;
@@ -46,7 +47,8 @@ public class TracingE2ET {
                 .tracing(true)
                 .environmentVariables(Collections.singletonMap("POWERTOOLS_SERVICE_NAME", service))
                 .build();
-        functionName = infrastructure.deploy();
+        Map<String, String> outputs = infrastructure.deploy();
+        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
     @AfterAll
