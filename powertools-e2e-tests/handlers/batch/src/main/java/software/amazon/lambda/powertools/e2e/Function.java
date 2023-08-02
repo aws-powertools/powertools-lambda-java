@@ -33,7 +33,7 @@ import software.amazon.lambda.powertools.e2e.model.Product;
 import software.amazon.lambda.powertools.logging.Logging;
 
 
-public class Function implements RequestHandler<SQSEvent, Object> {
+public class Function implements RequestHandler<Object, Object> {
 
     private final static Logger LOGGER = LogManager.getLogger(Function.class);
 
@@ -56,15 +56,21 @@ public class Function implements RequestHandler<SQSEvent, Object> {
                 .withDynamoDbBatchHandler()
                 .buildWithRawMessageHandler(this::processDdbMessage);
 
-        this.ddbOutputTable = System.getenv("BATCH_OUTPUT_TABLE");
+        this.ddbOutputTable = System.getenv("TABLE_FOR_ASYNC_TESTS");
     }
 
     @Logging(logEvent = true)
-    public Object handleRequest(SQSEvent input, Context context) {
-        // TODO - this should work for all the different types, by working
-        // TODO out what we can deserialize to. Making it work _just for_ SQS for
-        // TODO now to test the E2E framework.
-        return sqsHandler.processBatch(input, context);
+    public Object handleRequest(Object input, Context context) {
+
+        if(input instanceof KinesisEvent){
+            return kinesisHandler.processBatch((KinesisEvent) input, context);
+        } else if (input instanceof SQSEvent) {
+            return sqsHandler.processBatch((SQSEvent) input, context);
+        } else if (input instanceof DynamodbEvent) {
+            return ddbHandler.processBatch((DynamodbEvent) input, context);
+        } else {
+            throw new RuntimeException("Whoops! Expected to find sqs/kinesis/dynamo in input but found " + input.getClass());
+        }
     }
 
     private void processProductMessage(Product p, Context c) {
