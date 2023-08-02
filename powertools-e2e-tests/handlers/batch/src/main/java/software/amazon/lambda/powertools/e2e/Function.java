@@ -51,23 +51,21 @@ public class Function implements RequestHandler<Object, Object> {
                 .withDynamoDbBatchHandler()
                 .buildWithRawMessageHandler(this::processDdbMessage);
 
-        this.ddbOutputTable = System.getenv("BATCH_OUTPUT_TABLE");
+        this.ddbOutputTable = System.getenv("TABLE_FOR_ASYNC_TESTS");
     }
 
     @Logging(logEvent = true)
     public Object handleRequest(Object input, Context context) {
-        // TODO - make this work by working out whether or not we can convert the input
-        // TODO to each of the different types. Doing it with the ENV thing will make it hard with the E2E framework.
-        String streamType = System.getenv("STREAM_TYPE");
-        switch (streamType) {
-            case "sqs":
-                return sqsHandler.processBatch((SQSEvent) input, context);
-            case "kinesis":
-                return kinesisHandler.processBatch((KinesisEvent) input, context);
-            case "dynamo":
-                return ddbHandler.processBatch((DynamodbEvent) input, context);
+
+        if(input instanceof KinesisEvent){
+            return kinesisHandler.processBatch((KinesisEvent) input, context);
+        } else if (input instanceof SQSEvent) {
+            return sqsHandler.processBatch((SQSEvent) input, context);
+        } else if (input instanceof DynamodbEvent) {
+            return ddbHandler.processBatch((DynamodbEvent) input, context);
+        } else {
+            throw new RuntimeException("Whoops! Expected to find sqs/kinesis/dynamo in input but found " + input.getClass());
         }
-        throw new RuntimeException("Whoops! Expected to find sqs/kinesis/dynamo in env var STREAM_TYPE but found " + streamType);
     }
 
     private void processProductMessage(Product p, Context c) {
