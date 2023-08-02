@@ -337,8 +337,6 @@ using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 ob
     You can add both the `@LargeMessage` and `@Idempotent` annotations, in any order, to the same method. 
     The `@Idempotent` takes precedence over the `@LargeMessage` annotation.
     It means Idempotency module will use the initial raw message (containing the S3 pointer) and not the large message.
-    Using the large message would end up with potential issues when inserting the data in DynamoDB, where items
-    are limited to 400 KB (while large messages can be up to 2 GB).
 
     ```java hl_lines="6 23-25" title="Combining idempotency and large message modules"
     public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
