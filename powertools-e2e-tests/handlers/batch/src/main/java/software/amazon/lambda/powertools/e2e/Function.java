@@ -128,12 +128,14 @@ public class Function implements RequestStreamHandler {
         // TODO now to test the E2E framework.
         ObjectMapper obj = JsonConfig.get().getObjectMapper();
 
+        LOGGER.info(input);
+
         try {
             SQSEvent event = obj.readValue(input, SQSEvent.class);
             SQSBatchResponse result = sqsHandler.processBatch(event, context);
             return obj.writeValueAsString(result);
         } catch (Exception e) {
-            LOGGER.warn("Wasn't SQS");
+            LOGGER.warn("Wasn't SQS", e);
         }
 
         try {
@@ -141,7 +143,7 @@ public class Function implements RequestStreamHandler {
             StreamsEventResponse result = kinesisHandler.processBatch(event, context);
             return obj.writeValueAsString(result);
         } catch (Exception e) {
-            LOGGER.warn("Wasn't Kinesis");
+            LOGGER.warn("Wasn't Kinesis", e);
         }
 
         try {
