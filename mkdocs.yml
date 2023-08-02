@@ -18,6 +18,8 @@ nav:
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
+  - Processes:
+      - processes/maintainers.md
 
 theme:
   name: material
