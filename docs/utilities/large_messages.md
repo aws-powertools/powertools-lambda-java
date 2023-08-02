@@ -7,7 +7,7 @@ The large message utility handles SQS and SNS messages which have had their payl
 offloaded to S3 if they are larger than the maximum allowed size (256 KB).
 
 !!! Notice
-    The large message utility (available in the `powertools-sqs` module with v1.16.1 or lower) is now deprecated
+    The large message utility (available in the `powertools-sqs` module for versions v1.16.1 and earlier) is now deprecated
     and replaced by the `powertools-large-messages` described in this page.
     You can still get the documentation [here](sqs_large_message_handling.md)
     and the migration guide [here](#migration-from-the-sqs-large-message-utility).
