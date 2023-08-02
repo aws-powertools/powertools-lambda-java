@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -107,7 +108,17 @@ public class BatchE2ET {
                 .tableName(outputTable)
                 .build());
 
-        for (Map<String, AttributeValue> key :items.items()) {
+        for (Map<String, AttributeValue> item :items.items()) {
+            HashMap<String, AttributeValue> key = new HashMap<String, AttributeValue>() {
+                {
+                    put("functionName", AttributeValue.builder()
+                            .s(item.get("functionName").s())
+                            .build());
+                    put("id", AttributeValue.builder()
+                            .s(item.get("id").s())
+                            .build());
+                }};
+
             ddbClient.deleteItem(DeleteItemRequest.builder()
                             .tableName(outputTable)
                             .key(key)
