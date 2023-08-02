@@ -125,8 +125,9 @@ public class BatchE2ET {
 
     @AfterAll
     public static void tearDown() {
+        // TODO bring this back after testing
         if (infrastructure != null) {
-            infrastructure.destroy();
+            // infrastructure.destroy();
         }
     }
 
