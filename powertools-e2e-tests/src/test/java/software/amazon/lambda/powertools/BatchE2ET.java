@@ -36,6 +36,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -45,6 +46,9 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
+import software.amazon.awssdk.services.kinesis.KinesisClient;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
@@ -60,10 +64,13 @@ public class BatchE2ET {
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
     private static String queueUrl;
+    private static String kinesisStreamName;
+
     private static ObjectMapper objectMapper;
     private static String outputTable;
     private static DynamoDbClient ddbClient;
     private static SqsClient sqsClient;
+    private static KinesisClient kinesisClient;
     private final List<Product> testProducts;
 
     @BeforeAll
@@ -71,7 +78,7 @@ public class BatchE2ET {
     public static void setup() {
         String random = UUID.randomUUID().toString().substring(0, 6);
         String queueName = "batchqueue" + random;
-        String kinesisStreamName = "batchstream" + random;
+        kinesisStreamName = "batchstream" + random;
         objectMapper = JsonConfig.get().getObjectMapper();
 
         infrastructure = Infrastructure.builder()
@@ -98,7 +105,10 @@ public class BatchE2ET {
                 .httpClient(httpClient)
                 .region(region)
                 .build();
-                
+        kinesisClient = KinesisClient.builder()
+                .httpClient(httpClient)
+                .region(region)
+                .build();
     }
 
     @AfterEach
@@ -161,6 +171,35 @@ public class BatchE2ET {
         sqsClient.sendMessageBatch(SendMessageBatchRequest.builder()
                 .entries(entries)
                 .queueUrl(queueUrl)
+                .build());
+        Thread.sleep(30000); // wait for function to be executed
+
+        // THEN
+        ScanResponse items = ddbClient.scan(ScanRequest.builder()
+                .tableName(outputTable)
+                .build());
+        validateAllItemsHandled(items);
+    }
+
+    @Test
+    public void kinesisBatchProcessingSucceeds() throws InterruptedException {
+        List<PutRecordsRequestEntry> entries = testProducts.stream()
+                .map(p -> {
+                    try {
+                        return PutRecordsRequestEntry.builder()
+                                .partitionKey("1")
+                                .data(SdkBytes.fromUtf8String(objectMapper.writeValueAsString(p)))
+                                .build();
+                    } catch (JsonProcessingException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        // WHEN
+        kinesisClient.putRecords(PutRecordsRequest.builder()
+                .streamName(kinesisStreamName)
+                .records(entries)
                 .build());
         Thread.sleep(30000); // wait for function to be executed
 
