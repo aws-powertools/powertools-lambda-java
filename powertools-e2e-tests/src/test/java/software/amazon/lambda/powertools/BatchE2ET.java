@@ -164,7 +164,7 @@ public class BatchE2ET {
         for (Product p : testProducts) {
             boolean foundIt = false;
             for (Map<String, AttributeValue> a : items.items()) {
-                if (a.get("id").equals(Long.toString(p.id))) {
+                if (a.get("id").s().equals(Long.toString(p.id))) {
                     foundIt = true;
                 }
             }
