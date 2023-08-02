@@ -21,15 +21,19 @@ import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.e2e.model.Product;
 import software.amazon.lambda.powertools.logging.Logging;
 
 
-public class Function implements RequestHandler<Object, Object> {
+public class Function implements RequestHandler<SQSEvent, Object> {
 
     private final static Logger LOGGER = LogManager.getLogger(Function.class);
 
@@ -37,6 +41,7 @@ public class Function implements RequestHandler<Object, Object> {
     private final BatchMessageHandler<KinesisEvent, StreamsEventResponse> kinesisHandler;
     private final BatchMessageHandler<DynamodbEvent, StreamsEventResponse> ddbHandler;
     private final String ddbOutputTable;
+    private DynamoDbClient ddbClient;
 
     public Function() {
         sqsHandler = new BatchMessageHandlerBuilder()
@@ -55,25 +60,34 @@ public class Function implements RequestHandler<Object, Object> {
     }
 
     @Logging(logEvent = true)
-    public Object handleRequest(Object input, Context context) {
-        // TODO - make this work by working out whether or not we can convert the input
-        // TODO to each of the different types. Doing it with the ENV thing will make it hard with the E2E framework.
-        String streamType = System.getenv("STREAM_TYPE");
-        switch (streamType) {
-            case "sqs":
-                return sqsHandler.processBatch((SQSEvent) input, context);
-            case "kinesis":
-                return kinesisHandler.processBatch((KinesisEvent) input, context);
-            case "dynamo":
-                return ddbHandler.processBatch((DynamodbEvent) input, context);
-        }
-        throw new RuntimeException("Whoops! Expected to find sqs/kinesis/dynamo in env var STREAM_TYPE but found " + streamType);
+    public Object handleRequest(SQSEvent input, Context context) {
+        // TODO - this should work for all the different types, by working
+        // TODO out what we can deserialize to. Making it work _just for_ SQS for
+        // TODO now to test the E2E framework.
+        return sqsHandler.processBatch(input, context);
     }
 
     private void processProductMessage(Product p, Context c) {
         LOGGER.info("Processing product " + p);
 
         // TODO - write product details to output table
+        ddbClient = DynamoDbClient.builder()
+                .build();
+        ddbClient.putItem(PutItemRequest.builder()
+                        .tableName(ddbOutputTable)
+                        .item(new HashMap<String, AttributeValue>() {
+                            {
+                                put("id", AttributeValue.builder()
+                                        .s(Long.toString(p.getId()))
+                                        .build());
+                                put("name", AttributeValue.builder()
+                                        .s(p.getName())
+                                        .build());
+                                put("price", AttributeValue.builder()
+                                        .n(Double.toString(p.getPrice()))
+                                        .build());
+                            }})
+                .build());
     }
 
     private void processDdbMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
