@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.testutils;
 
 import static java.util.Collections.singletonList;
 
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.io.IOException;
@@ -49,10 +50,14 @@ import software.amazon.awscdk.services.dynamodb.Attribute;
 import software.amazon.awscdk.services.dynamodb.AttributeType;
 import software.amazon.awscdk.services.dynamodb.BillingMode;
 import software.amazon.awscdk.services.dynamodb.Table;
+import software.amazon.awscdk.services.events.targets.KinesisStream;
 import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.kinesis.Stream;
+import software.amazon.awscdk.services.kinesis.StreamMode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Tracing;
+import software.amazon.awscdk.services.lambda.eventsources.KinesisEventSource;
 import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
@@ -110,6 +115,7 @@ public class Infrastructure {
     private final AppConfig appConfig;
     private final SdkHttpClient httpClient;
     private final String queue;
+    private final String kinesisStream;
     private final String largeMessagesBucket;
 
     private String functionName;
@@ -126,6 +132,7 @@ public class Infrastructure {
         this.idempotencyTable = builder.idemPotencyTable;
         this.appConfig = builder.appConfig;
         this.queue = builder.queue;
+        this.kinesisStream = builder.kinesisStream;
         this.largeMessagesBucket = builder.largeMessagesBucket;
 
         this.app = new App();
@@ -286,6 +293,22 @@ public class Infrastructure {
                     .value(sqsQueue.getQueueUrl())
                     .build();
             createTableForAsyncTests = true;
+        }
+        if (!StringUtils.isEmpty(kinesisStream)) {
+            Stream stream = Stream.Builder
+                    .create(stack, "KinesisStream")
+                    .streamMode(StreamMode.ON_DEMAND)
+                    .streamName(kinesisStream)
+                    .shardCount(1)
+                    .build();
+
+            stream.grantRead(function);
+            KinesisEventSource kinesisEventSource = KinesisEventSource.Builder.create(stream).enabled(true).batchSize(3).build();
+            function.addEventSource(kinesisEventSource);
+            CfnOutput.Builder
+                    .create(stack, "KinesisStreamName")
+                    .value(stream.getStreamName())
+                    .build();
         }
 
         if (!StringUtils.isEmpty(largeMessagesBucket)) {
@@ -451,6 +474,7 @@ public class Infrastructure {
         private Map<String, String> environmentVariables = new HashMap<>();
         private String idemPotencyTable;
         private String queue;
+        private String kinesisStream;
 
         private Builder() {
             getJavaRuntime();
@@ -523,6 +547,11 @@ public class Infrastructure {
 
         public Builder queue(String queue) {
             this.queue = queue;
+            return this;
+        }
+
+        public Builder kinesisStream(String stream) {
+            this.kinesisStream = stream;
             return this;
         }
 

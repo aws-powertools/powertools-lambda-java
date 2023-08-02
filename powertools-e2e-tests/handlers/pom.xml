@@ -73,6 +73,11 @@
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-batch</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-core</artifactId>
                 <version>${lambda.java.core}</version>
