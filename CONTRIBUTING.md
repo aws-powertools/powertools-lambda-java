@@ -62,7 +62,7 @@ We strongly recommend installing the CheckStyle-IDEA plugin and apply the provid
 ![](docs/media/intellij_checkstyle_3.png)
 
 #### License headers
-All the java files should contain the licence/copyright header. You can copy past it from the [license-header](license-header) file.
+All the java files should contain the licence/copyright header. You can copy paste it from the [license-header](license-header) file.
 
 ### Creating the pull request
 
