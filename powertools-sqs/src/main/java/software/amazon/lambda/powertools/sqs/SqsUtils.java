@@ -39,7 +39,11 @@ import software.amazon.payloadoffloading.PayloadS3Pointer;
 
 /**
  * A class of helper functions to add additional functionality to {@link SQSEvent} processing.
+ *
+ * @deprecated Batch processing is now handled in <b>powertools-batch</b> and large messages in <b>powertools-large-messages</b>.
+ * This class will no longer be available in version 2.
  */
+@Deprecated
 public final class SqsUtils {
 
     public static final String SQS = "sqs";
