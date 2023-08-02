@@ -13,7 +13,7 @@ nav:
   - Utilities:
       - utilities/idempotency.md
       - utilities/parameters.md
-      - utilities/sqs_large_message_handling.md
+      - utilities/large_messages.md
       - utilities/batch.md
       - utilities/validation.md
       - utilities/custom_resources.md

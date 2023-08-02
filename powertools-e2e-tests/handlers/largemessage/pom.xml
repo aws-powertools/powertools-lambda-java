@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>software.amazon.lambda</groupId>
+        <artifactId>e2e-test-handlers-parent</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>e2e-test-handler-largemessage</artifactId>
+    <packaging>jar</packaging>
+    <name>A Lambda function using Powertools for AWS Lambda (Java) large message</name>
+
+    <dependencies>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-large-messages</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>dev.aspectj</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <complianceLevel>${maven.compiler.target}</complianceLevel>
+                    <aspectLibraries>
+                        <aspectLibrary>
+                            <groupId>software.amazon.lambda</groupId>
+                            <artifactId>powertools-large-messages</artifactId>
+                        </aspectLibrary>
+                        <aspectLibrary>
+                            <groupId>software.amazon.lambda</groupId>
+                            <artifactId>powertools-logging</artifactId>
+                        </aspectLibrary>
+                    </aspectLibraries>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+</project>

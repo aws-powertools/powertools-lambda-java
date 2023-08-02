@@ -33,6 +33,7 @@ import org.yaml.snakeyaml.Yaml;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.BundlingOptions;
 import software.amazon.awscdk.BundlingOutput;
+import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.DockerVolume;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
@@ -52,9 +53,14 @@ import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.Tracing;
+import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
+import software.amazon.awscdk.services.s3.Bucket;
+import software.amazon.awscdk.services.s3.LifecycleRule;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
+import software.amazon.awscdk.services.sqs.DeadLetterQueue;
+import software.amazon.awscdk.services.sqs.Queue;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -85,6 +91,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  * and the CloudFormation stack is created (with the SDK `createStack`)
  */
 public class Infrastructure {
+    public static final String FUNCTION_NAME_OUTPUT = "functionName";
     private static final Logger LOG = LoggerFactory.getLogger(Infrastructure.class);
 
     private final String stackName;
@@ -102,6 +109,9 @@ public class Infrastructure {
     private final String idempotencyTable;
     private final AppConfig appConfig;
     private final SdkHttpClient httpClient;
+    private final String queue;
+    private final String largeMessagesBucket;
+
     private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
@@ -115,6 +125,8 @@ public class Infrastructure {
         this.pathToFunction = builder.pathToFunction;
         this.idempotencyTable = builder.idemPotencyTable;
         this.appConfig = builder.appConfig;
+        this.queue = builder.queue;
+        this.largeMessagesBucket = builder.largeMessagesBucket;
 
         this.app = new App();
         this.stack = createStackWithLambda();
@@ -147,7 +159,7 @@ public class Infrastructure {
      *
      * @return the name of the function deployed part of the stack
      */
-    public String deploy() {
+    public Map<String, String> deploy() {
         uploadAssets();
         LOG.info("Deploying '" + stackName + "' on account " + account);
         cfn.createStack(CreateStackRequest.builder()
@@ -160,12 +172,14 @@ public class Infrastructure {
         WaiterResponse<DescribeStacksResponse> waiterResponse =
                 cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
         if (waiterResponse.matched().response().isPresent()) {
-            LOG.info("Stack " + waiterResponse.matched().response().get().stacks().get(0).stackName() +
-                    " successfully deployed");
+            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack = waiterResponse.matched().response().get().stacks().get(0);
+            LOG.info("Stack " + deployedStack.stackName() + " successfully deployed");
+            Map<String, String> outputs = new HashMap<>();
+            deployedStack.outputs().forEach(output -> outputs.put(output.outputKey(), output.outputValue()));
+            return outputs;
         } else {
             throw new RuntimeException("Failed to create stack");
         }
-        return functionName;
     }
 
     /**
@@ -182,6 +196,7 @@ public class Infrastructure {
      * @return the CDK stack
      */
     private Stack createStackWithLambda() {
+        boolean createTableForAsyncTests = false;
         Stack stack = new Stack(app, stackName);
         List<String> packagingInstruction = Arrays.asList(
                 "/bin/sh",
@@ -209,6 +224,9 @@ public class Infrastructure {
                 .outputType(BundlingOutput.ARCHIVED);
 
         functionName = stackName + "-function";
+        CfnOutput.Builder.create(stack, FUNCTION_NAME_OUTPUT)
+                        .value(functionName)
+                        .build();
 
         LOG.debug("Building Lambda function with command " +
                 packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
@@ -244,8 +262,41 @@ public class Infrastructure {
                     .tableName(idempotencyTable)
                     .timeToLiveAttribute("expiration")
                     .build();
+            function.addEnvironment("IDEMPOTENCY_TABLE", idempotencyTable);
 
             table.grantReadWriteData(function);
+        }
+
+        if (!StringUtils.isEmpty(queue)) {
+            Queue sqsQueue = Queue.Builder
+                    .create(stack, "SQSQueue")
+                    .queueName(queue)
+                    .visibilityTimeout(Duration.seconds(timeout * 6))
+                    .retentionPeriod(Duration.seconds(timeout * 6))
+                    .build();
+            DeadLetterQueue.builder()
+                    .queue(sqsQueue)
+                    .maxReceiveCount(1) // do not retry in case of error
+                    .build();
+            sqsQueue.grantConsumeMessages(function);
+            SqsEventSource sqsEventSource = SqsEventSource.Builder.create(sqsQueue).enabled(true).batchSize(1).build();
+            function.addEventSource(sqsEventSource);
+            CfnOutput.Builder
+                    .create(stack, "QueueURL")
+                    .value(sqsQueue.getQueueUrl())
+                    .build();
+            createTableForAsyncTests = true;
+        }
+
+        if (!StringUtils.isEmpty(largeMessagesBucket)) {
+            Bucket offloadBucket = Bucket.Builder
+                    .create(stack, "LargeMessagesOffloadBucket")
+                    .removalPolicy(RemovalPolicy.RETAIN) // autodelete does not work without cdk deploy
+                    .bucketName(largeMessagesBucket)
+                    .build();
+            // instead of autodelete, have a lifecycle rule to delete files after a day
+            LifecycleRule.builder().expiration(Duration.days(1)).enabled(true).build();
+            offloadBucket.grantReadWrite(function);
         }
 
         if (appConfig != null) {
@@ -260,7 +311,7 @@ public class Infrastructure {
                     .name(appConfig.getEnvironment())
                     .build();
 
-            // Create a fast deployment strategy so we don't have to wait ages
+            // Create a fast deployment strategy, so we don't have to wait ages
             CfnDeploymentStrategy fastDeployment = CfnDeploymentStrategy.Builder
                     .create(stack, "AppConfigDeployment")
                     .name("FastDeploymentStrategy")
@@ -306,11 +357,25 @@ public class Infrastructure {
 
                 // We need to chain the deployments to keep CFN happy
                 if (previousDeployment != null) {
-                    deployment.addDependsOn(previousDeployment);
+                    deployment.addDependency(previousDeployment);
                 }
                 previousDeployment = deployment;
             }
         }
+        if (createTableForAsyncTests) {
+            Table table = Table.Builder
+                    .create(stack, "TableForAsyncTests")
+                    .billingMode(BillingMode.PAY_PER_REQUEST)
+                    .removalPolicy(RemovalPolicy.DESTROY)
+                    .partitionKey(Attribute.builder().name("functionName").type(AttributeType.STRING).build())
+                    .sortKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
+                    .build();
+
+            table.grantReadWriteData(function);
+            function.addEnvironment("TABLE_FOR_ASYNC_TESTS", table.getTableName());
+            CfnOutput.Builder.create(stack, "TableNameForAsyncTests").value(table.getTableName()).build();
+        }
+
         return stack;
     }
 
@@ -379,11 +444,13 @@ public class Infrastructure {
         public String pathToFunction;
         public String testName;
         public AppConfig appConfig;
+        private String largeMessagesBucket;
         private String stackName;
         private boolean tracing = false;
         private JavaRuntime runtime;
         private Map<String, String> environmentVariables = new HashMap<>();
         private String idemPotencyTable;
+        private String queue;
 
         private Builder() {
             getJavaRuntime();
@@ -451,6 +518,16 @@ public class Infrastructure {
 
         public Builder timeoutInSeconds(long timeoutInSeconds) {
             this.timeoutInSeconds = timeoutInSeconds;
+            return this;
+        }
+
+        public Builder queue(String queue) {
+            this.queue = queue;
+            return this;
+        }
+
+        public Builder largeMessagesBucket(String largeMessagesBucket) {
+            this.largeMessagesBucket = largeMessagesBucket;
             return this;
         }
     }

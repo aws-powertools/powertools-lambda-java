@@ -20,6 +20,8 @@
         <maven.shade.version>3.5.0</maven.shade.version>
         <aspectj.plugin.version>1.13.1</aspectj.plugin.version>
         <maven.compiler.version>3.11.0</maven.compiler.version>
+        <aws.sdk.version>2.20.108</aws.sdk.version>
+        <log4j.version>2.20.0</log4j.version>
     </properties>
 
     <modules>
@@ -32,6 +34,14 @@
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>software.amazon.awssdk</groupId>
+                <artifactId>bom</artifactId>
+                <version>${aws.sdk.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-logging</artifactId>
@@ -58,6 +68,11 @@
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-large-messages</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-core</artifactId>
                 <version>${lambda.java.core}</version>
@@ -66,6 +81,11 @@
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-events</artifactId>
                 <version>${lambda.java.events}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j2-impl</artifactId>
+                <version>${log4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

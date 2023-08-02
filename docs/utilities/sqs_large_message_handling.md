@@ -3,6 +3,10 @@ title: SQS Large Message Handling
 description: Utility
 ---
 
+!!! warning
+This module is now deprecated and will be removed in version 2.
+See [Large Message Handling](large_messages.md) for the new module (`powertools-large-messages`) documentation.
+
 The large message handling utility handles SQS messages which have had their payloads
 offloaded to S3 due to them being larger than the SQS maximum.
 
@@ -11,16 +15,19 @@ The utility automatically retrieves messages which have been offloaded to S3 usi
 client library. Once the message payloads have been processed successful the
 utility can delete the message payloads from S3.
 
-This utility is compatible with versions *[1.1.0+](https://github.com/awslabs/amazon-sqs-java-extended-client-lib)* of amazon-sqs-java-extended-client-lib.
+This utility is compatible with versions *[1.1.0+](https://github.com/awslabs/amazon-sqs-java-extended-client-lib)* of
+amazon-sqs-java-extended-client-lib.
 
 === "Maven"
-    ```xml
-    <dependency>
-        <groupId>com.amazonaws</groupId>
-        <artifactId>amazon-sqs-java-extended-client-lib</artifactId>
-        <version>1.1.0</version>
-    </dependency>
-    ```
+
+```xml
+
+<dependency>
+    <groupId>com.amazonaws</groupId>
+    <artifactId>amazon-sqs-java-extended-client-lib</artifactId>
+    <version>1.1.0</version>
+</dependency>
+```
 === "Gradle"
 
     ```groovy
@@ -33,48 +40,49 @@ This utility is compatible with versions *[1.1.0+](https://github.com/awslabs/am
 Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
 
 === "Maven Java 11+"
-    ```xml hl_lines="3-7 16 18 24-27"
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-sqs</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>dev.aspectj</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
-                 <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-sqs</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
+
+```xml hl_lines="3-7 16 18 24-27"
+<dependencies>
+...
+<dependency>
+<groupId>software.amazon.lambda</groupId>
+<artifactId>powertools-sqs</artifactId>
+<version>{{ powertools.version }}</version>
+</dependency>
+...
+</dependencies>
+...
+<!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+<build>
+<plugins>
+...
+<plugin>
+<groupId>dev.aspectj</groupId>
+<artifactId>aspectj-maven-plugin</artifactId>
+<version>1.13.1</version>
+<configuration>
+<source>11</source> <!-- or higher -->
+<target>11</target> <!-- or higher -->
+<complianceLevel>11</complianceLevel> <!-- or higher -->
+<aspectLibraries>
+<aspectLibrary>
+<groupId>software.amazon.lambda</groupId>
+<artifactId>powertools-sqs</artifactId>
+</aspectLibrary>
+</aspectLibraries>
+</configuration>
+<executions>
+<execution>
+<goals>
+<goal>compile</goal>
+</goals>
+</execution>
+</executions>
+</plugin>
+...
+</plugins>
+</build>
+```
 
 === "Maven Java 1.8"
 
@@ -186,12 +194,13 @@ which implements `com.amazonaws.services.lambda.runtime.RequestHandler` with
 
 `@SqsLargeMessage` creates a default S3 Client `AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient()`.
 
-!!! tip 
-    When the Lambda function is invoked with an event from SQS, each received record
-    in the SQSEvent is checked to see to validate if it is offloaded to S3.
-    If it does then `getObject(bucket, key)` will be called, and the payload retrieved. 
-    If there is an error during this process then the function will fail with a `FailedProcessingLargePayloadException` exception.
-    
+!!! tip
+When the Lambda function is invoked with an event from SQS, each received record
+in the SQSEvent is checked to see to validate if it is offloaded to S3.
+If it does then `getObject(bucket, key)` will be called, and the payload retrieved.
+If there is an error during this process then the function will fail with a `FailedProcessingLargePayloadException`
+exception.
+
     If the request handler method returns without error then each payload will be
     deleted from S3 using `deleteObject(bucket, key)`
 
