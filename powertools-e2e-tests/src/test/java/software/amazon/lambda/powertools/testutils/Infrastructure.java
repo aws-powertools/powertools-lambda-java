@@ -56,6 +56,7 @@ import software.amazon.awscdk.services.kinesis.Stream;
 import software.amazon.awscdk.services.kinesis.StreamMode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.lambda.StartingPosition;
 import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.lambda.eventsources.KinesisEventSource;
 import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
@@ -299,11 +300,15 @@ public class Infrastructure {
                     .create(stack, "KinesisStream")
                     .streamMode(StreamMode.ON_DEMAND)
                     .streamName(kinesisStream)
-                    .shardCount(1)
                     .build();
 
             stream.grantRead(function);
-            KinesisEventSource kinesisEventSource = KinesisEventSource.Builder.create(stream).enabled(true).batchSize(3).build();
+            KinesisEventSource kinesisEventSource = KinesisEventSource.Builder
+                    .create(stream)
+                    .enabled(true)
+                    .batchSize(3)
+                    .startingPosition(StartingPosition.LATEST)
+                    .build();
             function.addEventSource(kinesisEventSource);
             CfnOutput.Builder
                     .create(stack, "KinesisStreamName")

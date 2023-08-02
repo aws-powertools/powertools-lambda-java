@@ -43,10 +43,6 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-large-messages</artifactId>
-                        </aspectLibrary>
-                        <aspectLibrary>
-                            <groupId>software.amazon.lambda</groupId>
                             <artifactId>powertools-logging</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
