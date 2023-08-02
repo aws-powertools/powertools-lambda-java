@@ -20,14 +20,13 @@ public class DynamoDBStreamBatchHandler implements RequestHandler<DynamodbEvent,
                 .buildWithRawMessageHandler(this::processMessage);
     }
 
-    private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
-        LOGGER.info("Processing DynamoDB Stream Record" + dynamodbStreamRecord);
-    }
-
     @Override
     public StreamsEventResponse handleRequest(DynamodbEvent ddbEvent, Context context) {
         return handler.processBatch(ddbEvent, context);
     }
 
+    private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
+        LOGGER.info("Processing DynamoDB Stream Record" + dynamodbStreamRecord);
+    }
 
 }
