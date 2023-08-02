@@ -53,6 +53,13 @@
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
+            <artifactId>dynamodb</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
             <artifactId>cloudwatch</artifactId>
             <version>${aws.sdk.version}</version>
             <scope>test</scope>
@@ -67,6 +74,20 @@
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sqs</artifactId>
+            <version>${aws.sdk.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>amazon-sqs-java-extended-client-lib</artifactId>
+            <version>2.0.3</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
             <scope>test</scope>
         </dependency>
@@ -75,6 +96,12 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.11.0</version>
         </dependency>
 
         <dependency>
@@ -182,6 +209,7 @@
                             </execution>
                         </executions>
                         <configuration>
+                            <skipAfterFailureCount>1</skipAfterFailureCount> <!-- no need to continue / deploy more resources and lose time -->
                             <includes>
                                 <include>**/*E2ET.java</include>
                             </includes>

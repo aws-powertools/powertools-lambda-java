@@ -28,6 +28,7 @@ import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
+import software.amazon.lambda.powertools.logging.Logging;
 
 
 public class Function implements RequestHandler<Input, String> {
@@ -53,6 +54,7 @@ public class Function implements RequestHandler<Input, String> {
                 ).configure();
     }
 
+    @Logging(logEvent = true)
     @Idempotent
     public String handleRequest(Input input, Context context) {
         DateTimeFormatter dtf = DateTimeFormatter.ISO_DATE_TIME.withZone(TimeZone.getTimeZone("UTC").toZoneId());

@@ -14,10 +14,11 @@
 
 package software.amazon.lambda.powertools;
 
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 import java.time.Year;
-import java.util.Collections;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
@@ -40,9 +41,9 @@ public class IdempotencyE2ET {
                 .testName(IdempotencyE2ET.class.getSimpleName())
                 .pathToFunction("idempotency")
                 .idempotencyTable("idempo" + random)
-                .environmentVariables(Collections.singletonMap("IDEMPOTENCY_TABLE", "idempo" + random))
                 .build();
-        functionName = infrastructure.deploy();
+        Map<String, String> outputs = infrastructure.deploy();
+        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
     @AfterAll

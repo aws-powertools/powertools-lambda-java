@@ -52,6 +52,7 @@
         <module>powertools-test-suite</module>
         <module>powertools-cloudformation</module>
         <module>powertools-idempotency</module>
+        <module>powertools-large-messages</module>
         <module>powertools-e2e-tests</module>
         <module>examples</module>
     </modules>
@@ -89,7 +90,7 @@
         <maven-javadoc-plugin.version>3.5.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
-        <junit-jupiter.version>5.9.3</junit-jupiter.version>
+        <junit.version>5.10.0</junit.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.5.1</jmespath.version>
     </properties>
@@ -243,21 +244,16 @@
 
             <!-- Test dependencies -->
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-api</artifactId>
-                <version>${junit-jupiter.version}</version>
-                <scope>test</scope>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>${junit-jupiter.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-params</artifactId>
-                <version>${junit-jupiter.version}</version>
+                <groupId>org.junit-pioneer</groupId>
+                <artifactId>junit-pioneer</artifactId>
+                <version>1.9.1</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -540,9 +536,9 @@
             </build>
         </profile>
         <profile>
-            <id>jdk11</id>
+            <id>newerThanJdk8</id>
             <activation>
-                <jdk>11</jdk>
+                <jdk>[9,)</jdk>
             </activation>
             <build>
                 <plugins>

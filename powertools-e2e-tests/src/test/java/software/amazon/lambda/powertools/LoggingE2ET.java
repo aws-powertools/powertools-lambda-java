@@ -15,12 +15,14 @@
 package software.amazon.lambda.powertools;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 import static software.amazon.lambda.powertools.testutils.logging.InvocationLogs.Level.INFO;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -52,7 +54,8 @@ public class LoggingE2ET {
                                 })
                                 .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
-        functionName = infrastructure.deploy();
+        Map<String, String> outputs = infrastructure.deploy();
+        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
     @AfterAll
