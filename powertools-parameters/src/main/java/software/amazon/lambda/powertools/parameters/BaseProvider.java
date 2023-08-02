@@ -31,6 +31,7 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
  */
 @NotThreadSafe
 public abstract class BaseProvider implements ParamProvider {
+    public static final String PARAMETERS = "parameters";
 
     protected final CacheManager cacheManager;
     private TransformationManager transformationManager;
