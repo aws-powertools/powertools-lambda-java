@@ -134,7 +134,8 @@ public class Function implements RequestHandler<InputStream, Object> {
 
         LOGGER.info(input);
 
-        PojoSerializer<SQSEvent> serializer = LambdaEventSerializers.serializerFor(SQSEvent.class, this.getClass().getClassLoader());
+        PojoSerializer<SQSEvent> serializer =
+                LambdaEventSerializers.serializerFor(SQSEvent.class, this.getClass().getClassLoader());
         SQSEvent event = serializer.fromJson(input);
         if (event.getRecords().get(0).getEventSource().equals("aws:sqs")) {
             LOGGER.info("Running for SQS");
@@ -142,7 +143,8 @@ public class Function implements RequestHandler<InputStream, Object> {
             return sqsHandler.processBatch(event, context);
         }
 
-        PojoSerializer<KinesisEvent> kinesisSerializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, this.getClass().getClassLoader());
+        PojoSerializer<KinesisEvent> kinesisSerializer =
+                LambdaEventSerializers.serializerFor(KinesisEvent.class, this.getClass().getClassLoader());
         KinesisEvent kinesisEvent = kinesisSerializer.fromJson(input);
         if (kinesisEvent.getRecords().get(0).getEventSource().equals("aws:kinesis")) {
             LOGGER.info("Running for Kinesis");
@@ -150,7 +152,8 @@ public class Function implements RequestHandler<InputStream, Object> {
         }
 
         // Well, let's try dynamo
-        PojoSerializer<DynamodbEvent> ddbSerializer = LambdaEventSerializers.serializerFor(DynamodbEvent.class, this.getClass().getClassLoader());
+        PojoSerializer<DynamodbEvent> ddbSerializer =
+                LambdaEventSerializers.serializerFor(DynamodbEvent.class, this.getClass().getClassLoader());
         LOGGER.info("Running for DynamoDB");
         DynamodbEvent ddbEvent = ddbSerializer.fromJson(input);
         return ddbHandler.processBatch(ddbEvent, context);
