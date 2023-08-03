@@ -14,18 +14,18 @@
 
 package software.amazon.lambda.powertools.e2e;
 
+import com.amazonaws.lambda.thirdparty.com.fasterxml.jackson.databind.ObjectMapper;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -38,6 +38,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.util.IOUtils;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -48,7 +49,7 @@ import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 
-public class Function implements RequestStreamHandler {
+public class Function implements RequestHandler<InputStream, Object> {
 
     private final static Logger LOGGER = LogManager.getLogger(Function.class);
 
@@ -73,7 +74,6 @@ public class Function implements RequestStreamHandler {
 
         this.ddbOutputTable = System.getenv("TABLE_FOR_ASYNC_TESTS");
     }
-
 
     private void processProductMessage(Product p, Context c) {
         LOGGER.info("Processing product " + p);
@@ -107,49 +107,32 @@ public class Function implements RequestStreamHandler {
         // TODO write DDB change details to batch output table
     }
 
-    @Override
-    @Logging(logEvent = true)
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        String input = new BufferedReader(
-                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
-
-        String ret = createResult(input, context);
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(outputStream));
-        writer.write(ret);
-        writer.flush();
-    }
-
-    private String createResult(String input, Context context) {
+    private Object createResult(String input, Context context) {
 
         // TODO - this should work for all the different types, by working
         // TODO out what we can deserialize to. Making it work _just for_ SQS for
         // TODO now to test the E2E framework.
-        ObjectMapper obj = JsonConfig.get().getObjectMapper();
+        ObjectMapper mapper = JacksonFactory.getInstance().getMapper();
 
         LOGGER.info(input);
 
         try {
-            SQSEvent event = obj.readValue(input, SQSEvent.class);
-            SQSBatchResponse result = sqsHandler.processBatch(event, context);
-            return obj.writeValueAsString(result);
+            SQSEvent event = mapper.readValue(input, SQSEvent.class);
+            return sqsHandler.processBatch(event, context);
         } catch (Exception e) {
             LOGGER.warn("Wasn't SQS", e);
         }
 
         try {
-            KinesisEvent event = obj.readValue(input, KinesisEvent.class);
-            StreamsEventResponse result = kinesisHandler.processBatch(event, context);
-            return obj.writeValueAsString(result);
+            KinesisEvent event = mapper.readValue(input, KinesisEvent.class);
+            return kinesisHandler.processBatch(event, context);
         } catch (Exception e) {
             LOGGER.warn("Wasn't Kinesis", e);
         }
 
         try {
-            DynamodbEvent event = obj.readValue(input, DynamodbEvent.class);
-            StreamsEventResponse result = ddbHandler.processBatch(event, context);
-            return obj.writeValueAsString(result);
+            DynamodbEvent event = mapper.readValue(input, DynamodbEvent.class);
+            return ddbHandler.processBatch(event, context);
         } catch (Exception e) {
             LOGGER.warn("Wasn't DynamoDB");
         }
@@ -158,4 +141,14 @@ public class Function implements RequestStreamHandler {
 
     }
 
+    @Override
+    public Object handleRequest(InputStream inputStream, Context context) {
+
+        String input = new BufferedReader(
+                new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                .lines()
+                .collect(Collectors.joining("\n"));
+
+        return createResult(input, context);
+    }
 }
