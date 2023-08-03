@@ -307,7 +307,8 @@ public class Infrastructure {
                     .create(stream)
                     .enabled(true)
                     .batchSize(3)
-                    .startingPosition(StartingPosition.LATEST)
+                    .startingPosition(StartingPosition.TRIM_HORIZON)
+                    .maxBatchingWindow(Duration.seconds(1))
                     .build();
             function.addEventSource(kinesisEventSource);
             CfnOutput.Builder

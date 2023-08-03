@@ -109,36 +109,30 @@ public class Function implements RequestHandler<InputStream, Object> {
         // TODO write DDB change details to batch output table
     }
 
-    private Object createResult(String input, Context context) {
+    public Object createResult(String input, Context context) {
 
         LOGGER.info(input);
 
-        try {
-            PojoSerializer<SQSEvent> serializer = LambdaEventSerializers.serializerFor(SQSEvent.class, this.getClass().getClassLoader());
-            SQSEvent event = serializer.fromJson(input);
+        PojoSerializer<SQSEvent> serializer = LambdaEventSerializers.serializerFor(SQSEvent.class, this.getClass().getClassLoader());
+        SQSEvent event = serializer.fromJson(input);
+        if (event.getRecords().get(0).getEventSource().equals("aws:sqs")) {
+            LOGGER.info("Running for SQS");
+            LOGGER.info(event);
             return sqsHandler.processBatch(event, context);
-        } catch (Exception e) {
-            LOGGER.warn("Wasn't SQS", e);
         }
 
-        try {
-            PojoSerializer<KinesisEvent> serializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, this.getClass().getClassLoader());
-            KinesisEvent event = serializer.fromJson(input);
-            return kinesisHandler.processBatch(event, context);
-        } catch (Exception e) {
-            LOGGER.warn("Wasn't Kinesis", e);
+        PojoSerializer<KinesisEvent> kinesisSerializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, this.getClass().getClassLoader());
+        KinesisEvent kinesisEvent = kinesisSerializer.fromJson(input);
+        if (kinesisEvent.getRecords().get(0).getEventSource().equals("aws:kinesis")) {
+            LOGGER.info("Running for Kinesis");
+            return kinesisHandler.processBatch(kinesisEvent, context);
         }
 
-        try {
-            PojoSerializer<DynamodbEvent> serializer = LambdaEventSerializers.serializerFor(DynamodbEvent.class, this.getClass().getClassLoader());
-            DynamodbEvent event = serializer.fromJson(input);
-            return ddbHandler.processBatch(event, context);
-        } catch (Exception e) {
-            LOGGER.warn("Wasn't DynamoDB");
-        }
-
-        throw new RuntimeException("Couldn't deserialize an event we understood. Giving up!");
-
+        // Well, let's try dynamo
+        PojoSerializer<DynamodbEvent> ddbSerializer = LambdaEventSerializers.serializerFor(DynamodbEvent.class, this.getClass().getClassLoader());
+        LOGGER.info("Running for DynamoDB");
+        DynamodbEvent ddbEvent = ddbSerializer.fromJson(input);
+        return ddbHandler.processBatch(ddbEvent, context);
     }
 
     @Override

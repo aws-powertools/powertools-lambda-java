@@ -49,6 +49,7 @@ import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
+import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
@@ -197,7 +198,7 @@ public class BatchE2ET {
                 .collect(Collectors.toList());
 
         // WHEN
-        kinesisClient.putRecords(PutRecordsRequest.builder()
+        PutRecordsResponse result = kinesisClient.putRecords(PutRecordsRequest.builder()
                 .streamName(kinesisStreamName)
                 .records(entries)
                 .build());
