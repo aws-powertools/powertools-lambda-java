@@ -12,7 +12,7 @@ CDK uses the following project structure:
   - [CdkApp](./infra/src/main/java/cdk/CdkApp.java) - bootstraps your stack, taking AWS `account` and `region` as input
   - [CdkStack](./infra/src/main/java/cdk/CdkStack.java) - defines the Lambda function to be deployed as well as API Gateway for it.
 
-It is a [Maven](https://maven.apache.org/) based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
+It is a [Maven](https://maven.apache.org/)-based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
 
 
 ## Deploy the sample application
