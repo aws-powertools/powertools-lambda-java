@@ -108,14 +108,14 @@ public class LoggingOrderTest {
         assertThat(Files.lines(Paths.get("target/logfile.json")))
                 .hasSize(2)
                 .satisfies(line ->
-                    {
-                        Map<String, Object> actual = parseToMap(line.get(0));
+                {
+                    Map<String, Object> actual = parseToMap(line.get(0));
 
-                        String message = actual.get("message").toString();
+                    String message = actual.get("message").toString();
 
-                        assertThat(message)
-                                .contains("A big message");
-                    });
+                    assertThat(message)
+                            .contains("A big message");
+                });
     }
 
     @Test

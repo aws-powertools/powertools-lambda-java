@@ -2,6 +2,7 @@ package helloworld;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
@@ -9,12 +10,14 @@ import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.apache.ApacheHttpClient;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketRequest;
+import software.amazon.awssdk.services.s3.model.HeadBucketResponse;
+import software.amazon.awssdk.services.s3.model.NoSuchBucketException;
 import software.amazon.awssdk.services.s3.waiters.S3Waiter;
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
 import software.amazon.lambda.powertools.cloudformation.Response;
-
-import java.util.Objects;
 
 /**
  * Handler for requests to Lambda function.

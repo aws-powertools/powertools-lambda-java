@@ -58,16 +58,16 @@ public class SqsLargeMessageAspect {
                                         sqsMessage.getBody())));
 
                 ResponseInputStream<GetObjectResponse> s3Object = callS3Gracefully(s3Pointer, pointer ->
-                    {
-                        ResponseInputStream<GetObjectResponse> response =
-                                s3Client().getObject(GetObjectRequest.builder()
-                                        .bucket(pointer.getS3BucketName())
-                                        .key(pointer.getS3Key())
-                                        .build());
+                {
+                    ResponseInputStream<GetObjectResponse> response =
+                            s3Client().getObject(GetObjectRequest.builder()
+                                    .bucket(pointer.getS3BucketName())
+                                    .key(pointer.getS3Key())
+                                    .build());
 
-                        LOG.debug("Object downloaded with key: " + s3Pointer.getS3Key());
-                        return response;
-                    });
+                    LOG.debug("Object downloaded with key: " + s3Pointer.getS3Key());
+                    return response;
+                });
 
                 sqsMessage.setBody(readStringFromS3Object(s3Object, s3Pointer));
                 s3Pointers.add(s3Pointer);
@@ -95,14 +95,14 @@ public class SqsLargeMessageAspect {
 
     public static void deleteMessage(PayloadS3Pointer s3Pointer) {
         callS3Gracefully(s3Pointer, pointer ->
-            {
-                s3Client().deleteObject(DeleteObjectRequest.builder()
-                        .bucket(pointer.getS3BucketName())
-                        .key(pointer.getS3Key())
-                        .build());
-                LOG.info("Message deleted from S3: " + s3Pointer.toJson());
-                return null;
-            });
+        {
+            s3Client().deleteObject(DeleteObjectRequest.builder()
+                    .bucket(pointer.getS3BucketName())
+                    .key(pointer.getS3Key())
+                    .build());
+            LOG.info("Message deleted from S3: " + s3Pointer.toJson());
+            return null;
+        });
     }
 
     private static <R> R callS3Gracefully(final PayloadS3Pointer pointer,

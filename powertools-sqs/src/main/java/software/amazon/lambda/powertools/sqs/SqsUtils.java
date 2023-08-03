@@ -548,11 +548,11 @@ public final class SqsUtils {
             event.getRecords()
                     .subList(offset, event.getRecords().size())
                     .forEach(message ->
-                        {
-                            LOG.info("Skipping message {} as another message with a message group failed in this batch",
-                                    message.getMessageId());
-                            batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
-                        });
+                    {
+                        LOG.info("Skipping message {} as another message with a message group failed in this batch",
+                                message.getMessageId());
+                        batchContext.addFailure(message, new SkippedMessageDueToFailedBatchException());
+                    });
         }
 
         batchContext.processSuccessAndHandleFailed(handlerReturn, suppressException, deleteNonRetryableMessageFromQueue,

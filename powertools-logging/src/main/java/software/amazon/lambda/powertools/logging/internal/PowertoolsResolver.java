@@ -40,12 +40,12 @@ final class PowertoolsResolver implements EventResolver {
                 // Inject all the context information.
                 ReadOnlyStringMap contextData = logEvent.getContextData();
                 contextData.forEach((key, value) ->
-                    {
-                        jsonWriter.writeSeparator();
-                        jsonWriter.writeString(key);
-                        stringBuilder.append(':');
-                        jsonWriter.writeValue(value);
-                    });
+                {
+                    jsonWriter.writeSeparator();
+                    jsonWriter.writeString(key);
+                    stringBuilder.append(':');
+                    jsonWriter.writeValue(value);
+                });
             }
         };
     }

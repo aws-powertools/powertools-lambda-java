@@ -101,13 +101,13 @@ public class SqsLargeMessageAspectTest {
 
         Assertions.assertThat(delete.getValue())
                 .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
-                    {
-                        assertThat(deleteObjectRequest.bucket())
-                                .isEqualTo(BUCKET_NAME);
+                {
+                    assertThat(deleteObjectRequest.bucket())
+                            .isEqualTo(BUCKET_NAME);
 
-                        assertThat(deleteObjectRequest.key())
-                                .isEqualTo(BUCKET_KEY);
-                    });
+                    assertThat(deleteObjectRequest.key())
+                            .isEqualTo(BUCKET_KEY);
+                });
     }
 
     @Test

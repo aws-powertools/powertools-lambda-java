@@ -38,8 +38,8 @@ public class PowertoolsMetricsEnabledDefaultDimensionHandler implements RequestH
         metricsLogger.putMetric("Metric1", 1, Unit.BYTES);
 
         withSingleMetric("Metric2", 1, Unit.COUNT, log ->
-            {
-            });
+        {
+        });
 
         return null;
     }

@@ -157,7 +157,8 @@ public class AppConfigProvider extends BaseProvider {
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                         .overrideConfiguration(ClientOverrideConfiguration.builder()
-                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
+                                        UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
                         .build();
             }
 

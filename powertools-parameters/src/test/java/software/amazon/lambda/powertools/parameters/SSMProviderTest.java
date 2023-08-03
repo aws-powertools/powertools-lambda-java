@@ -186,11 +186,11 @@ public class SSMProviderTest {
         GetParametersByPathRequest request2 = requestParams.get(1);
 
         assertThat(asList(request1, request2)).allSatisfy(req ->
-            {
-                assertThat(req.path()).isEqualTo("/prod/app1");
-                assertThat(req.withDecryption()).isFalse();
-                assertThat(req.recursive()).isFalse();
-            });
+        {
+            assertThat(req.path()).isEqualTo("/prod/app1");
+            assertThat(req.withDecryption()).isFalse();
+            assertThat(req.recursive()).isFalse();
+        });
 
         assertThat(request1.nextToken()).isNull();
         assertThat(request2.nextToken()).isEqualTo("123abc");

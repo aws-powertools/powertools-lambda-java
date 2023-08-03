@@ -19,6 +19,9 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
@@ -28,10 +31,6 @@ import software.amazon.awssdk.utils.BinaryUtils;
 import software.amazon.awssdk.utils.Md5Utils;
 import software.amazon.lambda.powertools.largemessages.LargeMessage;
 import software.amazon.lambda.powertools.logging.Logging;
-
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
@@ -49,7 +48,7 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
     @Logging(logEvent = true)
     public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
-        for (SQSMessage message: event.getRecords()) {
+        for (SQSMessage message : event.getRecords()) {
             processRawMessage(message, context);
         }
         return SQSBatchResponse.builder().build();
@@ -59,14 +58,18 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
     private void processRawMessage(SQSMessage sqsMessage, Context context) {
         String bodyMD5 = md5(sqsMessage.getBody());
         if (!sqsMessage.getMd5OfBody().equals(bodyMD5)) {
-            throw new SecurityException(String.format("message digest does not match, expected %s, got %s", sqsMessage.getMd5OfBody(), bodyMD5));
+            throw new SecurityException(
+                    String.format("message digest does not match, expected %s, got %s", sqsMessage.getMd5OfBody(),
+                            bodyMD5));
         }
 
         Map<String, AttributeValue> item = new HashMap<>();
         item.put("functionName", AttributeValue.builder().s(context.getFunctionName()).build());
         item.put("id", AttributeValue.builder().s(sqsMessage.getMessageId()).build());
         item.put("bodyMD5", AttributeValue.builder().s(bodyMD5).build());
-        item.put("bodySize", AttributeValue.builder().n(String.valueOf(sqsMessage.getBody().getBytes(StandardCharsets.UTF_8).length)).build());
+        item.put("bodySize",
+                AttributeValue.builder().n(String.valueOf(sqsMessage.getBody().getBytes(StandardCharsets.UTF_8).length))
+                        .build());
 
         client.putItem(PutItemRequest.builder().tableName(TABLE_FOR_ASYNC_TESTS).item(item).build());
     }

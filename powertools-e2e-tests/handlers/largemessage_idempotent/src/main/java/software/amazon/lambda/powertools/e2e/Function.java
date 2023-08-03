@@ -71,7 +71,7 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
     @Logging(logEvent = true)
     public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
-        for (SQSEvent.SQSMessage message: event.getRecords()) {
+        for (SQSEvent.SQSMessage message : event.getRecords()) {
             processRawMessage(message, context);
         }
         return SQSBatchResponse.builder().build();
@@ -82,7 +82,9 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
     private String processRawMessage(@IdempotencyKey SQSEvent.SQSMessage sqsMessage, Context context) {
         String bodyMD5 = md5(sqsMessage.getBody());
         if (!sqsMessage.getMd5OfBody().equals(bodyMD5)) {
-            throw new SecurityException(String.format("message digest does not match, expected %s, got %s", sqsMessage.getMd5OfBody(), bodyMD5));
+            throw new SecurityException(
+                    String.format("message digest does not match, expected %s, got %s", sqsMessage.getMd5OfBody(),
+                            bodyMD5));
         }
 
         Instant now = Instant.now();
@@ -91,7 +93,9 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
         item.put("id", AttributeValue.builder().s(sqsMessage.getMessageId()).build());
         item.put("bodyMD5", AttributeValue.builder().s(bodyMD5).build());
         item.put("now", AttributeValue.builder().n(String.valueOf(now.getEpochSecond())).build());
-        item.put("bodySize", AttributeValue.builder().n(String.valueOf(sqsMessage.getBody().getBytes(StandardCharsets.UTF_8).length)).build());
+        item.put("bodySize",
+                AttributeValue.builder().n(String.valueOf(sqsMessage.getBody().getBytes(StandardCharsets.UTF_8).length))
+                        .build());
 
         client.putItem(PutItemRequest.builder().tableName(TABLE_FOR_ASYNC_TESTS).item(item).build());
 

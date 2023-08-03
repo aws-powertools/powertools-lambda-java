@@ -129,15 +129,15 @@ public abstract class BaseProvider implements ParamProvider {
         String pathWithoutTrailingSlash = path.replaceAll("\\/+$", "");
         try {
             return (Map<String, String>) cacheManager.getIfNotExpired(pathWithoutTrailingSlash, now()).orElseGet(() ->
-                {
-                    Map<String, String> params = getMultipleValues(pathWithoutTrailingSlash);
+            {
+                Map<String, String> params = getMultipleValues(pathWithoutTrailingSlash);
 
-                    cacheManager.putInCache(pathWithoutTrailingSlash, params);
+                cacheManager.putInCache(pathWithoutTrailingSlash, params);
 
-                    params.forEach((k, v) -> cacheManager.putInCache(pathWithoutTrailingSlash + "/" + k, v));
+                params.forEach((k, v) -> cacheManager.putInCache(pathWithoutTrailingSlash + "/" + k, v));
 
-                    return params;
-                });
+                return params;
+            });
         } finally {
             resetToDefaults();
         }
@@ -158,18 +158,18 @@ public abstract class BaseProvider implements ParamProvider {
     public String get(final String key) {
         try {
             return (String) cacheManager.getIfNotExpired(key, now()).orElseGet(() ->
-                {
-                    String value = getValue(key);
+            {
+                String value = getValue(key);
 
-                    String transformedValue = value;
-                    if (transformationManager != null && transformationManager.shouldTransform()) {
-                        transformedValue = transformationManager.performBasicTransformation(value);
-                    }
+                String transformedValue = value;
+                if (transformationManager != null && transformationManager.shouldTransform()) {
+                    transformedValue = transformationManager.performBasicTransformation(value);
+                }
 
-                    cacheManager.putInCache(key, transformedValue);
+                cacheManager.putInCache(key, transformedValue);
 
-                    return transformedValue;
-                });
+                return transformedValue;
+            });
         } finally {
             // in all case, we reset options to default, for next call
             resetToDefaults();
@@ -192,19 +192,19 @@ public abstract class BaseProvider implements ParamProvider {
     public <T> T get(final String key, final Class<T> targetClass) {
         try {
             return (T) cacheManager.getIfNotExpired(key, now()).orElseGet(() ->
-                {
-                    String value = getValue(key);
+            {
+                String value = getValue(key);
 
-                    if (transformationManager == null) {
-                        throw new IllegalStateException(
-                                "Trying to transform value while no TransformationManager has been provided.");
-                    }
-                    T transformedValue = transformationManager.performComplexTransformation(value, targetClass);
+                if (transformationManager == null) {
+                    throw new IllegalStateException(
+                            "Trying to transform value while no TransformationManager has been provided.");
+                }
+                T transformedValue = transformationManager.performComplexTransformation(value, targetClass);
 
-                    cacheManager.putInCache(key, transformedValue);
+                cacheManager.putInCache(key, transformedValue);
 
-                    return transformedValue;
-                });
+                return transformedValue;
+            });
         } finally {
             // in all case, we reset options to default, for next call
             resetToDefaults();
