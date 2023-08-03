@@ -64,8 +64,8 @@ public class CdkStack extends Stack {
                                 .build())
                         .build()))
                 .handler("helloworld.App")
-                .environment(Map.of("POWERTOOLS_LOG_LEVEL", "0.1",
-                        "POWERTOOLS_LOGGER_SAMPLE_RATE", "INFO",
+                .environment(Map.of("POWERTOOLS_LOG_LEVEL", "INFO",
+                        "POWERTOOLS_LOGGER_SAMPLE_RATE", "0.1",
                         "POWERTOOLS_LOGGER_LOG_EVENT", "true",
                         "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities"
                 ))
