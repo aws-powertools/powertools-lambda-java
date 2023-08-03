@@ -17,12 +17,15 @@ package software.amazon.lambda.powertools.parameters;
 import java.util.HashMap;
 import java.util.Map;
 import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -153,6 +156,8 @@ public class AppConfigProvider extends BaseProvider {
                 client = AppConfigDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                        .overrideConfiguration(ClientOverrideConfiguration.builder()
+                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
                         .build();
             }
 
