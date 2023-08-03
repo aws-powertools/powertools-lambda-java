@@ -5,7 +5,7 @@ This project demonstrates the Lambda for Powertools Java module - including
 [tracing](https://docs.powertools.aws.dev/lambda/java/core/tracing/), and
 [metrics](https://docs.powertools.aws.dev/lambda/java/core/metrics/).
 
-We provide examples for the following architectures:
+We provide examples for the following tools:
 * [SAM](sam/) 
 * [CDK](cdk/)
 
