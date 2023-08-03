@@ -7,7 +7,7 @@ This project demonstrates the Lambda for Powertools Java module - including
 
 We provide examples for the following tools:
 * [AWS SAM](sam/) 
-* [CDK](cdk/)
+* [AWS CDK](cdk/)
 
 For all the tools, the example application is the same, and consists of the following files:
 
