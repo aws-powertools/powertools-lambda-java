@@ -22,6 +22,8 @@ import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
+import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
 import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -109,29 +111,27 @@ public class Function implements RequestHandler<InputStream, Object> {
 
     private Object createResult(String input, Context context) {
 
-        // TODO - this should work for all the different types, by working
-        // TODO out what we can deserialize to. Making it work _just for_ SQS for
-        // TODO now to test the E2E framework.
-        ObjectMapper mapper = JacksonFactory.getInstance().getMapper();
-
         LOGGER.info(input);
 
         try {
-            SQSEvent event = mapper.readValue(input, SQSEvent.class);
+            PojoSerializer<SQSEvent> serializer = LambdaEventSerializers.serializerFor(SQSEvent.class, this.getClass().getClassLoader());
+            SQSEvent event = serializer.fromJson(input);
             return sqsHandler.processBatch(event, context);
         } catch (Exception e) {
             LOGGER.warn("Wasn't SQS", e);
         }
 
         try {
-            KinesisEvent event = mapper.readValue(input, KinesisEvent.class);
+            PojoSerializer<KinesisEvent> serializer = LambdaEventSerializers.serializerFor(KinesisEvent.class, this.getClass().getClassLoader());
+            KinesisEvent event = serializer.fromJson(input);
             return kinesisHandler.processBatch(event, context);
         } catch (Exception e) {
             LOGGER.warn("Wasn't Kinesis", e);
         }
 
         try {
-            DynamodbEvent event = mapper.readValue(input, DynamodbEvent.class);
+            PojoSerializer<DynamodbEvent> serializer = LambdaEventSerializers.serializerFor(DynamodbEvent.class, this.getClass().getClassLoader());
+            DynamodbEvent event = serializer.fromJson(input);
             return ddbHandler.processBatch(event, context);
         } catch (Exception e) {
             LOGGER.warn("Wasn't DynamoDB");
