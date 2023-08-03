@@ -6,7 +6,7 @@ This project demonstrates the Lambda for Powertools Java module - including
 [metrics](https://docs.powertools.aws.dev/lambda/java/core/metrics/).
 
 We provide examples for the following tools:
-* [SAM](sam/) 
+* [AWS SAM](sam/) 
 * [CDK](cdk/)
 
 For all the tools, the example application is the same, and consists of the following files:
