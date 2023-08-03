@@ -9,13 +9,13 @@ We provide examples for the following tools:
 * [SAM](sam/) 
 * [CDK](cdk/)
 
-For all the architectures, the example application is the same, and consists of the following files:
+For all the tools, the example application is the same, and consists of the following files:
 
 - [App.java](sam/src/main/java/helloworld/App.java) - Code for the application's Lambda function.
 - [AppTests.java](sam/src/test/java/helloworld/AppTest.java) - Unit tests for the application code.
 - [events](events) - Invocation events that you can use to invoke the function.
 
-Configuration files and deployment process for each architecture are described in corresponding README files.
+Configuration files and deployment process for each tool are described in corresponding README files.
 
 ## Test the application
 

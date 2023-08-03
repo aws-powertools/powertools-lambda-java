@@ -2,7 +2,7 @@
 
 This project demonstrates the Lambda for Powertools Java module deployed using [Serverless Application Model](https://aws.amazon.com/serverless/sam/).
 
-For general information on project structure similar to all architectures, you can refer to the parent [README](../README.md)
+For general information on project structure similar to all tools, you can refer to the parent [README](../README.md)
 
 ## Configuration
 SAM uses [template.yaml](template.yaml) to define the application's AWS resources.
