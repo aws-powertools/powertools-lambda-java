@@ -7,7 +7,7 @@ import software.amazon.awscdk.assertions.Template;
 import java.io.IOException;
 import java.util.Map;
 
-public class InfraStackTest {
+public class CdkStackTest {
 
     @Test
     public void testStack() throws IOException {

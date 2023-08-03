@@ -1,6 +1,12 @@
 package cdk;
 
-import software.amazon.awscdk.*;
+import java.util.List;
+import java.util.Map;
+import software.amazon.awscdk.BundlingOptions;
+import software.amazon.awscdk.CfnOutput;
+import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.services.apigateway.LambdaIntegration;
 import software.amazon.awscdk.services.apigateway.RestApi;
 import software.amazon.awscdk.services.lambda.Code;
@@ -10,16 +16,13 @@ import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.s3.assets.AssetOptions;
 import software.constructs.Construct;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  * Defines a stack that consists of a single Java Lambda function and an API Gateway
  */
 public class CdkStack extends Stack {
     private static final String SHELL_COMMAND = "/bin/sh";
     private static final String MAVEN_PACKAGE = "mvn package";
-    private static final String COPY_OUTPUT = "cp /asset-input/target/powertools-examples-core-cdk-1.16.1.jar /asset-output/";
+    private static final String COPY_OUTPUT = "cp /asset-input/target/helloworld-lambda.jar /asset-output/";
 
     public CdkStack(final Construct scope, final String id) {
         this(scope, id, null);
@@ -38,8 +41,19 @@ public class CdkStack extends Stack {
         outputApiUrl(restApi);
     }
 
+    private static List<String> createFunctionPackageInstructions() {
+        // CDK will use this command to package your Java Lambda
+        return List.of(
+                SHELL_COMMAND,
+                "-c",
+                MAVEN_PACKAGE + " && " +
+                        COPY_OUTPUT
+        );
+    }
+
     /**
      * Adds URL to the lambda to the outputs
+     *
      * @param restApi
      */
     private void outputApiUrl(RestApi restApi) {
@@ -77,15 +91,5 @@ public class CdkStack extends Stack {
         return RestApi.Builder.create(this, "HelloWorldApi")
                 .description("API Gateway endpoint URL for Prod stage for Hello World function")
                 .build();
-    }
-
-    private static List<String> createFunctionPackageInstructions() {
-        // CDK will use this command to package your Java Lambda
-        return List.of(
-                SHELL_COMMAND,
-                "-c",
-                MAVEN_PACKAGE + " && " +
-                        COPY_OUTPUT
-        );
     }
 }
