@@ -37,6 +37,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +50,8 @@ import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.e2e.model.Product;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
+
+import javax.management.Attribute;
 
 
 public class Function implements RequestHandler<InputStream, Object> {
@@ -83,30 +86,46 @@ public class Function implements RequestHandler<InputStream, Object> {
         // TODO - write product details to output table
         ddbClient = DynamoDbClient.builder()
                 .build();
+        Map<String, AttributeValue> results = new HashMap<>();
+        results.put("functionName", AttributeValue.builder()
+                .s(c.getFunctionName())
+                .build());
+        results.put("id", AttributeValue.builder()
+            .s(Long.toString(p.getId()))
+            .build());
+        results.put("name", AttributeValue.builder()
+                .s(p.getName())
+                .build());
+        results.put("price", AttributeValue.builder()
+                .n(Double.toString(p.getPrice()))
+                .build());
         ddbClient.putItem(PutItemRequest.builder()
                         .tableName(ddbOutputTable)
-                        .item(new HashMap<String, AttributeValue>() {
-                            {
-                                put("functionName", AttributeValue.builder()
-                                        .s(c.getFunctionName())
-                                        .build());
-                                put("id", AttributeValue.builder()
-                                        .s(Long.toString(p.getId()))
-                                        .build());
-                                put("name", AttributeValue.builder()
-                                        .s(p.getName())
-                                        .build());
-                                put("price", AttributeValue.builder()
-                                        .n(Double.toString(p.getPrice()))
-                                        .build());
-                            }})
+                        .item(results)
                 .build());
     }
 
     private void processDdbMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
         LOGGER.info("Processing DynamoDB Stream Record" + dynamodbStreamRecord);
 
-        // TODO write DDB change details to batch output table
+        ddbClient = DynamoDbClient.builder()
+                .build();
+
+        String id = dynamodbStreamRecord.getDynamodb().getKeys().get("id").getS();
+        LOGGER.info("Incoming ID is " + id);
+
+        Map<String, AttributeValue> results = new HashMap<>();
+        results.put("functionName", AttributeValue.builder()
+                .s(context.getFunctionName())
+                .build());
+        results.put("id", AttributeValue.builder()
+                .s(id)
+                .build());
+
+        ddbClient.putItem(PutItemRequest.builder()
+                .tableName(ddbOutputTable)
+                .item(results)
+                .build());
     }
 
     public Object createResult(String input, Context context) {

@@ -73,6 +73,11 @@ public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler
                     this.successHandler.accept(record);
                 }
             } catch (Throwable t) {
+                String sequenceNumber = record.getEventID();
+                LOGGER.error("Error while processing record with eventID {}: {}, adding it to batch item failures",
+                        sequenceNumber, t.getMessage());
+                LOGGER.error("Error was", t);
+
                 batchFailures.add(new StreamsEventResponse.BatchItemFailure(record.getKinesis().getSequenceNumber()));
 
                 // Report failure if we have a handler

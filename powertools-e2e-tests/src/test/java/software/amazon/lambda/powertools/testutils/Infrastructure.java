@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.testutils;
 
 import static java.util.Collections.singletonList;
 
-import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.io.IOException;
@@ -46,11 +45,7 @@ import software.amazon.awscdk.services.appconfig.CfnDeployment;
 import software.amazon.awscdk.services.appconfig.CfnDeploymentStrategy;
 import software.amazon.awscdk.services.appconfig.CfnEnvironment;
 import software.amazon.awscdk.services.appconfig.CfnHostedConfigurationVersion;
-import software.amazon.awscdk.services.dynamodb.Attribute;
-import software.amazon.awscdk.services.dynamodb.AttributeType;
-import software.amazon.awscdk.services.dynamodb.BillingMode;
-import software.amazon.awscdk.services.dynamodb.Table;
-import software.amazon.awscdk.services.events.targets.KinesisStream;
+import software.amazon.awscdk.services.dynamodb.*;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.kinesis.Stream;
 import software.amazon.awscdk.services.kinesis.StreamMode;
@@ -58,6 +53,7 @@ import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
 import software.amazon.awscdk.services.lambda.StartingPosition;
 import software.amazon.awscdk.services.lambda.Tracing;
+import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSource;
 import software.amazon.awscdk.services.lambda.eventsources.KinesisEventSource;
 import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.logs.LogGroup;
@@ -118,6 +114,7 @@ public class Infrastructure {
     private final String queue;
     private final String kinesisStream;
     private final String largeMessagesBucket;
+    private String ddbStreamsTableName;
 
     private String functionName;
     private Object cfnTemplate;
@@ -135,6 +132,7 @@ public class Infrastructure {
         this.queue = builder.queue;
         this.kinesisStream = builder.kinesisStream;
         this.largeMessagesBucket = builder.largeMessagesBucket;
+        this.ddbStreamsTableName = builder.ddbStreamsTableName;
 
         this.app = new App();
         this.stack = createStackWithLambda();
@@ -317,6 +315,23 @@ public class Infrastructure {
                     .build();
         }
 
+        if (!StringUtils.isEmpty(ddbStreamsTableName)) {
+            Table ddbStreamsTable = Table.Builder.create(stack, "DDBStreamsTable")
+                    .tableName(ddbStreamsTableName)
+                    .stream(StreamViewType.KEYS_ONLY)
+                    .removalPolicy(RemovalPolicy.DESTROY)
+                    .partitionKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
+                    .build();
+
+            DynamoEventSource ddbEventSource = DynamoEventSource.Builder.create(ddbStreamsTable)
+                    .batchSize(1)
+                    .startingPosition(StartingPosition.TRIM_HORIZON)
+                    .maxBatchingWindow(Duration.seconds(1))
+                    .build();
+            function.addEventSource(ddbEventSource);
+            CfnOutput.Builder.create(stack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();
+        }
+
         if (!StringUtils.isEmpty(largeMessagesBucket)) {
             Bucket offloadBucket = Bucket.Builder
                     .create(stack, "LargeMessagesOffloadBucket")
@@ -481,6 +496,7 @@ public class Infrastructure {
         private String idemPotencyTable;
         private String queue;
         private String kinesisStream;
+        private String ddbStreamsTableName;
 
         private Builder() {
             getJavaRuntime();
@@ -558,6 +574,11 @@ public class Infrastructure {
 
         public Builder kinesisStream(String stream) {
             this.kinesisStream = stream;
+            return this;
+        }
+
+        public Builder ddbStreamsTableName(String tableName) {
+            this.ddbStreamsTableName = tableName;
             return this;
         }
 

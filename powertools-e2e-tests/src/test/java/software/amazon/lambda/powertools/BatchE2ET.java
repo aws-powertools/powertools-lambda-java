@@ -42,10 +42,7 @@ import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
-import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
+import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
@@ -72,6 +69,7 @@ public class BatchE2ET {
     private static DynamoDbClient ddbClient;
     private static SqsClient sqsClient;
     private static KinesisClient kinesisClient;
+    private static String ddbStreamsTestTable;
     private final List<Product> testProducts;
 
     @BeforeAll
@@ -80,6 +78,8 @@ public class BatchE2ET {
         String random = UUID.randomUUID().toString().substring(0, 6);
         String queueName = "batchqueue" + random;
         kinesisStreamName = "batchstream" + random;
+        ddbStreamsTestTable = "ddbstreams" + random;
+
         objectMapper = JsonConfig.get().getObjectMapper();
 
         infrastructure = Infrastructure.builder()
@@ -87,6 +87,7 @@ public class BatchE2ET {
                 .pathToFunction("batch")
                 .idempotencyTable("idempo" + random)
                 .queue(queueName)
+                .ddbStreamsTableName(ddbStreamsTestTable)
                 .kinesisStream(kinesisStreamName)
                 .build();
 
@@ -95,6 +96,7 @@ public class BatchE2ET {
         queueUrl = outputs.get("QueueURL");
         kinesisStreamName = outputs.get("KinesisStreamName");
         outputTable = outputs.get("TableNameForAsyncTests");
+        ddbStreamsTestTable = outputs.get("DdbStreamsTestTable");
         
         ddbClient = DynamoDbClient.builder()
                 .region(region)
@@ -209,6 +211,32 @@ public class BatchE2ET {
                 .tableName(outputTable)
                 .build());
         validateAllItemsHandled(items);
+    }
+
+    @Test
+    public void ddbStreamsBatchProcessingSucceeds() throws InterruptedException {
+        // GIVEN
+        String theId = "my-test-id";
+
+        // WHEN
+       ddbClient.putItem(PutItemRequest.builder()
+               .tableName(ddbStreamsTestTable)
+               .item(new HashMap<String, AttributeValue>() {
+                   {
+                       put("id", AttributeValue.builder()
+                               .s(theId)
+                               .build());
+                   }})
+               .build());
+        Thread.sleep(90000); // wait for function to be executed
+
+        // THEN
+        ScanResponse items = ddbClient.scan(ScanRequest.builder()
+                .tableName(outputTable)
+                .build());
+
+        assertThat(items.count()).isEqualTo(1);
+        assertThat(items.items().get(0).get("id").s()).isEqualTo(theId);
     }
 
     private void validateAllItemsHandled(ScanResponse items) {

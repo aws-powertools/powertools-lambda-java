@@ -60,6 +60,7 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
                 String sequenceNumber = record.getDynamodb().getSequenceNumber();
                 LOGGER.error("Error while processing record with id {}: {}, adding it to batch item failures",
                         sequenceNumber, t.getMessage());
+                LOGGER.error("Error was", t);
                 batchFailures.add(new StreamsEventResponse.BatchItemFailure(sequenceNumber));
 
                 // Report failure if we have a handler

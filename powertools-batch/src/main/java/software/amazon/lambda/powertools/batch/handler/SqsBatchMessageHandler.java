@@ -86,6 +86,8 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
             } catch (Throwable t) {
                 LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures",
                         message.getMessageId(), t.getMessage());
+                LOGGER.error("Error was", t);
+
                 response.getBatchItemFailures()
                         .add(SQSBatchResponse.BatchItemFailure.builder().withItemIdentifier(message.getMessageId())
                                 .build());
