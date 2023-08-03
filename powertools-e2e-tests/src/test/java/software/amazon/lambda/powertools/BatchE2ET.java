@@ -14,34 +14,14 @@
 
 package software.amazon.lambda.powertools;
 
-import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
-import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.Year;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClientBuilder;
 import software.amazon.awssdk.services.dynamodb.model.*;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
@@ -50,17 +30,21 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
-import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
+
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 
 public class BatchE2ET {
-    private static Infrastructure infrastructure;
-    private static String functionName;
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
+    private static Infrastructure infrastructure;
+    private static String functionName;
     private static String queueUrl;
     private static String kinesisStreamName;
 
@@ -71,6 +55,14 @@ public class BatchE2ET {
     private static KinesisClient kinesisClient;
     private static String ddbStreamsTestTable;
     private final List<Product> testProducts;
+
+    public BatchE2ET() {
+        testProducts = Arrays.asList(
+                new Product(1, "product1", 1.23),
+                new Product(2, "product2", 4.56),
+                new Product(3, "product3", 6.78)
+        );
+    }
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
@@ -97,7 +89,7 @@ public class BatchE2ET {
         kinesisStreamName = outputs.get("KinesisStreamName");
         outputTable = outputs.get("TableNameForAsyncTests");
         ddbStreamsTestTable = outputs.get("DdbStreamsTestTable");
-        
+
         ddbClient = DynamoDbClient.builder()
                 .region(region)
                 .httpClient(httpClient)
@@ -114,6 +106,14 @@ public class BatchE2ET {
                 .build();
     }
 
+    @AfterAll
+    public static void tearDown() {
+        // TODO bring this back after testing
+        if (infrastructure != null) {
+            // infrastructure.destroy();
+        }
+    }
+
     @AfterEach
     public void cleanUpTest() {
         // Delete everything in the output table
@@ -121,7 +121,7 @@ public class BatchE2ET {
                 .tableName(outputTable)
                 .build());
 
-        for (Map<String, AttributeValue> item :items.items()) {
+        for (Map<String, AttributeValue> item : items.items()) {
             HashMap<String, AttributeValue> key = new HashMap<String, AttributeValue>() {
                 {
                     put("functionName", AttributeValue.builder()
@@ -130,28 +130,13 @@ public class BatchE2ET {
                     put("id", AttributeValue.builder()
                             .s(item.get("id").s())
                             .build());
-                }};
+                }
+            };
 
             ddbClient.deleteItem(DeleteItemRequest.builder()
-                            .tableName(outputTable)
-                            .key(key)
-                            .build());
-        }
-    }
-
-    public BatchE2ET() {
-        testProducts = Arrays.asList(
-                new Product(1, "product1", 1.23),
-                new Product(2, "product2", 4.56),
-                new Product(3, "product3", 6.78)
-        );
-    }
-
-    @AfterAll
-    public static void tearDown() {
-        // TODO bring this back after testing
-        if (infrastructure != null) {
-            // infrastructure.destroy();
+                    .tableName(outputTable)
+                    .key(key)
+                    .build());
         }
     }
 
@@ -219,15 +204,16 @@ public class BatchE2ET {
         String theId = "my-test-id";
 
         // WHEN
-       ddbClient.putItem(PutItemRequest.builder()
-               .tableName(ddbStreamsTestTable)
-               .item(new HashMap<String, AttributeValue>() {
-                   {
-                       put("id", AttributeValue.builder()
-                               .s(theId)
-                               .build());
-                   }})
-               .build());
+        ddbClient.putItem(PutItemRequest.builder()
+                .tableName(ddbStreamsTestTable)
+                .item(new HashMap<String, AttributeValue>() {
+                    {
+                        put("id", AttributeValue.builder()
+                                .s(theId)
+                                .build());
+                    }
+                })
+                .build());
         Thread.sleep(90000); // wait for function to be executed
 
         // THEN
