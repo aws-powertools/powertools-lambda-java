@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,6 +11,7 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,24 +27,24 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 /**
  * Use this if you need to customize some part of the JSON Schema validation
  * (eg. specification version, Jackson ObjectMapper, or adding functions to JMESPath).
- *
+ * <p>
  * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
  * is just a wrapper of {@link JsonConfig}.
  */
 public class ValidationConfig {
-    private ValidationConfig() {
-    }
+    private SpecVersion.VersionFlag jsonSchemaVersion = SpecVersion.VersionFlag.V7;
+    private JsonSchemaFactory factory = JsonSchemaFactory.getInstance(jsonSchemaVersion);
 
-    private static class ConfigHolder {
-        private final static ValidationConfig instance = new ValidationConfig();
+    private ValidationConfig() {
     }
 
     public static ValidationConfig get() {
         return ConfigHolder.instance;
     }
 
-    private SpecVersion.VersionFlag jsonSchemaVersion = SpecVersion.VersionFlag.V7;
-    private JsonSchemaFactory factory = JsonSchemaFactory.getInstance(jsonSchemaVersion);
+    public SpecVersion.VersionFlag getSchemaVersion() {
+        return jsonSchemaVersion;
+    }
 
     /**
      * Set the version of the json schema specifications (default is V7)
@@ -57,16 +58,12 @@ public class ValidationConfig {
         }
     }
 
-    public SpecVersion.VersionFlag getSchemaVersion() {
-        return jsonSchemaVersion;
-    }
-
     /**
      * Add a custom {@link io.burt.jmespath.function.Function} to JMESPath
      * {@link Base64Function} and {@link Base64GZipFunction} are already built-in.
      *
      * @param function the function to add
-     * @param <T> Must extends {@link BaseFunction}
+     * @param <T>      Must extend {@link BaseFunction}
      */
     public <T extends BaseFunction> void addFunction(T function) {
         JsonConfig.get().addFunction(function);
@@ -97,5 +94,9 @@ public class ValidationConfig {
      */
     public ObjectMapper getObjectMapper() {
         return JsonConfig.get().getObjectMapper();
+    }
+
+    private static class ConfigHolder {
+        private final static ValidationConfig instance = new ValidationConfig();
     }
 }

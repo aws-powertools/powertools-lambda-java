@@ -11,6 +11,141 @@ Logging provides an opinionated logger with output structured as JSON.
 * Log Lambda event when instructed, disabled by default, can be enabled explicitly via annotation param
 * Append additional keys to structured log at any point in time
 
+## Install
+
+Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
+
+=== "Maven Java 11+"
+
+    ```xml hl_lines="3-7 16 18 24-27"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>dev.aspectj</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.13.1</version>
+                 <configuration>
+                     <source>11</source> <!-- or higher -->
+                     <target>11</target> <!-- or higher -->
+                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-logging</artifactId>
+                         </aspectLibrary>
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
+
+=== "Maven Java 1.8"
+
+    ```xml hl_lines="3-7 16 18 24-27"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.14.0</version>
+                 <configuration>
+                     <source>1.8</source>
+                     <target>1.8</target>
+                     <complianceLevel>1.8</complianceLevel>
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-logging</artifactId>
+                         </aspectLibrary>
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
+
+=== "Gradle Java 11+"
+
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11
+        targetCompatibility = 11
+    ```
+
+=== "Gradle Java 1.8"
+
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    ```
+
+
 ## Initialization
 
 Powertools for AWS Lambda (Java) extends the functionality of Log4J. Below is an example `#!xml log4j2.xml` file, with the `JsonTemplateLayout` using `#!json LambdaJsonLayout.json` configured. 
@@ -104,7 +239,7 @@ to customise what is logged.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -121,7 +256,7 @@ to customise what is logged.
      */
     public class AppLogEvent implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(AppLogEvent.class);
         
         @Logging(logEvent = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -180,7 +315,7 @@ You can set a Correlation ID using `correlationIdPath` attribute by passing a [J
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(correlationIdPath = "/headers/my_request_id_header")
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -229,7 +364,7 @@ for known event sources, where either a request ID or X-Ray Trace ID are present
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(correlationIdPath = CorrelationIdPathConstants.API_GATEWAY_REST)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -282,7 +417,7 @@ You can append your own keys to your existing logs via `appendKey`.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(logEvent = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -314,7 +449,7 @@ You can remove any additional key from entry using `LoggingUtils.removeKeys()`.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(logEvent = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -349,7 +484,7 @@ this means that custom keys can be persisted across invocations. If you want all
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(clearState = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -410,7 +545,7 @@ specific fields from received event due to security.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
 
         static {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -440,7 +575,7 @@ via `samplingRate` attribute on annotation.
      */
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        Logger log = LogManager.getLogger();
+        Logger log = LogManager.getLogger(App.class);
     
         @Logging(samplingRate = 0.5)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {

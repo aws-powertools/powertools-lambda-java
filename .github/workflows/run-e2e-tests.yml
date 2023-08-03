@@ -14,8 +14,15 @@ on:
       - 'powertools-idempotency/**'
       - 'powertools-parameters/**'
       - 'powertools-metrics/**'
+      - 'powertools-large-messages/**'
       - 'pom.xml'
       - '.github/workflows/**'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'powertools-e2e-tests/**'
 
 jobs:
   e2e:

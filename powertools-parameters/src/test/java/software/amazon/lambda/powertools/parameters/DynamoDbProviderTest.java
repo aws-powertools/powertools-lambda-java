@@ -1,5 +1,26 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.parameters;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -8,31 +29,27 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.MockitoAnnotations.openMocks;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 public class DynamoDbProviderTest {
 
+    private final String tableName = "ddb-test-table";
     @Mock
     DynamoDbClient client;
-
+    @Mock
+    TransformationManager transformationManager;
     @Captor
     ArgumentCaptor<GetItemRequest> getItemValueCaptor;
-
     @Captor
     ArgumentCaptor<QueryRequest> queryRequestCaptor;
-
-
     private DynamoDbProvider provider;
-    private final String tableName = "ddb-test-table";
 
     @BeforeEach
     public void init() {
@@ -67,10 +84,24 @@ public class DynamoDbProviderTest {
 
 
     @Test
-    public void getValueWithoutResultsReturnsNull() {
+    public void getValueWithNullResultsReturnsNull() {
         // Arrange
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
                 .item(null)
+                .build());
+
+        // Act
+        String value = provider.getValue("key");
+
+        // Assert
+        assertThat(value).isEqualTo(null);
+    }
+
+    @Test
+    public void getValueWithoutResultsReturnsNull() {
+        // Arrange
+        Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
+                .item(new HashMap<>())
                 .build());
 
         // Act
@@ -91,9 +122,10 @@ public class DynamoDbProviderTest {
                 .item(responseData)
                 .build());
         // Act
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            String value = provider.getValue(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                provider.getValue(key);
+            });
     }
 
 
@@ -145,6 +177,26 @@ public class DynamoDbProviderTest {
     }
 
     @Test
+    public void getMultipleValuesMissingSortKey_throwsException() {
+        // Arrange
+        String key = "Key1";
+        HashMap<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+        item.put("id", AttributeValue.fromS(key));
+        item.put("value", AttributeValue.fromS("somevalue"));
+        QueryResponse response = QueryResponse.builder()
+                .items(item)
+                .build();
+        Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
+
+        // Assert
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                // Act
+                provider.getMultipleValues(key);
+            });
+    }
+
+    @Test
     public void getValuesWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
@@ -158,11 +210,29 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
-            // Act
-            Map<String, String> values = provider.getMultipleValues(key);
-        });
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
+            {
+                // Act
+                provider.getMultipleValues(key);
+            });
     }
 
+    @Test
+    public void testDynamoDBBuilderMissingCacheManager_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> DynamoDbProvider.builder()
+                .withTable("table")
+                .build());
+    }
+
+    @Test
+    public void testDynamoDBBuilderMissingTable_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> DynamoDbProvider.builder()
+                .withCacheManager(new CacheManager())
+                .build());
+    }
 
 }

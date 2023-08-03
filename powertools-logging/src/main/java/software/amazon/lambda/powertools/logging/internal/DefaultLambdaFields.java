@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,10 +11,10 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.internal;
 
 import com.amazonaws.services.lambda.runtime.Context;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,10 +31,6 @@ enum DefaultLambdaFields {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
     static Map<String, String> values(Context context) {
         Map<String, String> hashMap = new HashMap<>();
 
@@ -45,5 +41,9 @@ enum DefaultLambdaFields {
         hashMap.put(FUNCTION_REQUEST_ID.name, String.valueOf(context.getAwsRequestId()));
 
         return hashMap;
+    }
+
+    public String getName() {
+        return name;
     }
 }

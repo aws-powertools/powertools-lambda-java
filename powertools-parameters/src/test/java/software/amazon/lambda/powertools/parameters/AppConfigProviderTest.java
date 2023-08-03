@@ -1,4 +1,23 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.parameters;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -7,7 +26,6 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
@@ -16,35 +34,26 @@ import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSes
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.Duration;
-import java.util.Optional;
-
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 public class AppConfigProviderTest {
+
+    private final String environmentName = "test";
+    private final String applicationName = "fakeApp";
+    private final String defaultTestKey = "key1";
 
     @Mock
     AppConfigDataClient client;
-
-    private AppConfigProvider provider;
 
     @Captor
     ArgumentCaptor<StartConfigurationSessionRequest> startSessionRequestCaptor;
 
     @Captor
     ArgumentCaptor<GetLatestConfigurationRequest> getLatestConfigurationRequestCaptor;
-    private final String environmentName = "test";
-
-    private final String applicationName = "fakeApp";
-
-    private final String defaultTestKey = "key1";
+    private AppConfigProvider provider;
 
     @BeforeEach
     public void init() {
         openMocks(this);
+
         provider = AppConfigProvider.builder()
                 .withClient(client)
                 .withApplication(applicationName)
@@ -69,18 +78,18 @@ public class AppConfigProviderTest {
                 .build();
         // first response returns 'value1'
         GetLatestConfigurationResponse firstResponse = GetLatestConfigurationResponse.builder()
-                        .nextPollConfigurationToken("token2")
-                        .configuration(SdkBytes.fromUtf8String("value1"))
-                        .build();
+                .nextPollConfigurationToken("token2")
+                .configuration(SdkBytes.fromUtf8String("value1"))
+                .build();
         // Second response returns 'value2'
         GetLatestConfigurationResponse secondResponse = GetLatestConfigurationResponse.builder()
-                        .nextPollConfigurationToken("token3")
-                                .configuration(SdkBytes.fromUtf8String("value2"))
-                                .build();
+                .nextPollConfigurationToken("token3")
+                .configuration(SdkBytes.fromUtf8String("value2"))
+                .build();
         // Third response returns nothing, which means the provider should yield the previous value again
         GetLatestConfigurationResponse thirdResponse = GetLatestConfigurationResponse.builder()
-                        .nextPollConfigurationToken("token4")
-                                .build();
+                .nextPollConfigurationToken("token4")
+                .build();
         Mockito.when(client.startConfigurationSession(startSessionRequestCaptor.capture()))
                 .thenReturn(firstSession);
         Mockito.when(client.getLatestConfiguration(getLatestConfigurationRequestCaptor.capture()))
@@ -94,13 +103,40 @@ public class AppConfigProviderTest {
         // Assert
         assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
         assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
-        assertThat(returnedValue3).isEqualTo(secondResponse.configuration().asUtf8String()); // Third response is mocked to return null and should re-use previous value
+        assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
+                .asUtf8String()); // Third response is mocked to return null and should re-use previous value
         assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
         assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
         assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(firstSession.initialConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(firstResponse.nextPollConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(secondResponse.nextPollConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+                firstSession.initialConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+                firstResponse.nextPollConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(
+                secondResponse.nextPollConfigurationToken());
+    }
+
+    @Test
+    public void getValueNoValueExists() {
+
+        // Arrange
+        StartConfigurationSessionResponse session = StartConfigurationSessionResponse.builder()
+                .initialConfigurationToken("token1")
+                .build();
+        GetLatestConfigurationResponse response = GetLatestConfigurationResponse.builder()
+                .nextPollConfigurationToken("token2")
+                .build();
+        Mockito.when(client.startConfigurationSession(startSessionRequestCaptor.capture()))
+                .thenReturn(session);
+        Mockito.when(client.getLatestConfiguration(getLatestConfigurationRequestCaptor.capture()))
+                .thenReturn(response);
+
+        // Act
+        String returnedValue = provider.getValue(defaultTestKey);
+
+
+        // Assert
+        assertThat(returnedValue).isEqualTo(null);
     }
 
     /**
@@ -138,11 +174,58 @@ public class AppConfigProviderTest {
         // Assert
         assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
         assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
-        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(param1Key);
-        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(param2Key);
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(param1Session.initialConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(param2Session.initialConfigurationToken());
+        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(
+                param1Key);
+        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(
+                param2Key);
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+                param1Session.initialConfigurationToken());
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+                param2Session.initialConfigurationToken());
 
     }
 
+    @Test
+    public void getMultipleValuesThrowsException() {
+
+        // Act & Assert
+        assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
+                .withMessage("Retrieving multiple parameter values is not supported with the AWS App Config Provider");
+    }
+
+    @Test
+    public void testAppConfigProviderBuilderMissingCacheManager_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+                        .withEnvironment(environmentName)
+                        .withApplication(applicationName)
+                        .withClient(client)
+                        .build())
+                .withMessage("No CacheManager provided; please provide one");
+    }
+
+    @Test
+    public void testAppConfigProviderBuilderMissingEnvironment_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+                        .withCacheManager(new CacheManager())
+                        .withApplication(applicationName)
+                        .withClient(client)
+                        .build())
+                .withMessage("No environment provided; please provide one");
+    }
+
+    @Test
+    public void testAppConfigProviderBuilderMissingApplication_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+                        .withCacheManager(new CacheManager())
+                        .withEnvironment(environmentName)
+                        .withClient(client)
+                        .build())
+                .withMessage("No application provided; please provide one");
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,22 +11,36 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.utilities;
-
-import com.amazonaws.services.lambda.runtime.events.*;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectReader;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
+
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.ActiveMQEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.amazonaws.services.lambda.runtime.events.CloudWatchLogsEvent;
+import com.amazonaws.services.lambda.runtime.events.KafkaEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsFirehoseInputPreprocessingEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsStreamsInputPreprocessingEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisFirehoseEvent;
+import com.amazonaws.services.lambda.runtime.events.RabbitMQEvent;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectReader;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class that can be used to extract the meaningful part of an event and deserialize it into a Java object.<br/>
@@ -122,12 +136,14 @@ public class EventDeserializer {
                     .map(r -> decode(r.getData()))
                     .collect(Collectors.toList()));
         } else if (object instanceof KinesisAnalyticsFirehoseInputPreprocessingEvent) {
-            KinesisAnalyticsFirehoseInputPreprocessingEvent event = (KinesisAnalyticsFirehoseInputPreprocessingEvent) object;
+            KinesisAnalyticsFirehoseInputPreprocessingEvent event =
+                    (KinesisAnalyticsFirehoseInputPreprocessingEvent) object;
             return new EventPart(event.getRecords().stream()
                     .map(r -> decode(r.getData()))
                     .collect(Collectors.toList()));
         } else if (object instanceof KinesisAnalyticsStreamsInputPreprocessingEvent) {
-            KinesisAnalyticsStreamsInputPreprocessingEvent event = (KinesisAnalyticsStreamsInputPreprocessingEvent) object;
+            KinesisAnalyticsStreamsInputPreprocessingEvent event =
+                    (KinesisAnalyticsStreamsInputPreprocessingEvent) object;
             return new EventPart(event.getRecords().stream()
                     .map(r -> decode(r.getData()))
                     .collect(Collectors.toList()));
@@ -167,8 +183,9 @@ public class EventDeserializer {
 
         /**
          * Deserialize this part of event from JSON to an object of type T
+         *
          * @param clazz the target type for deserialization
-         * @param <T> type of object to return
+         * @param <T>   type of object to return
          * @return an Object of type T (deserialized from the content)
          */
         public <T> T as(Class<T> clazz) {
@@ -187,7 +204,8 @@ public class EventDeserializer {
                     return (T) contentObject;
                 }
                 if (contentList != null) {
-                    throw new EventDeserializationException("The content of this event is a list, consider using 'asListOf' instead");
+                    throw new EventDeserializationException(
+                            "The content of this event is a list, consider using 'asListOf' instead");
                 }
                 // should not occur, except if the event is malformed (missing fields)
                 throw new IllegalStateException("Event content is null: the event may be malformed (missing fields)");
@@ -198,14 +216,16 @@ public class EventDeserializer {
 
         /**
          * Deserialize this part of event from JSON to a list of objects of type T
+         *
          * @param clazz the target type for deserialization
-         * @param <T> type of object to return
+         * @param <T>   type of object to return
          * @return a list of objects of type T (deserialized from the content)
          */
         public <T> List<T> asListOf(Class<T> clazz) {
             if (contentList == null && content == null) {
                 if (contentMap != null || contentObject != null) {
-                    throw new EventDeserializationException("The content of this event is not a list, consider using 'as' instead");
+                    throw new EventDeserializationException(
+                            "The content of this event is not a list, consider using 'as' instead");
                 }
                 // should not occur, except if the event is really malformed
                 throw new IllegalStateException("Event content is null: the event may be malformed (missing fields)");
@@ -215,16 +235,20 @@ public class EventDeserializer {
                 try {
                     return reader.readValue(content);
                 } catch (JsonProcessingException e) {
-                    throw new EventDeserializationException("Cannot load the event as a list of " + clazz.getSimpleName() + ", consider using 'as' instead", e);
+                    throw new EventDeserializationException(
+                            "Cannot load the event as a list of " + clazz.getSimpleName() +
+                                    ", consider using 'as' instead", e);
                 }
             } else {
-                return contentList.stream().map(s -> {
-                    try {
-                        return s == null ? null : JsonConfig.get().getObjectMapper().reader().readValue(s, clazz);
-                    } catch (IOException e) {
-                        throw new EventDeserializationException("Cannot load the event as a list of " + clazz.getSimpleName(), e);
-                    }
-                }).collect(Collectors.toList());
+                return contentList.stream().map(s ->
+                    {
+                        try {
+                            return s == null ? null : JsonConfig.get().getObjectMapper().reader().readValue(s, clazz);
+                        } catch (IOException e) {
+                            throw new EventDeserializationException(
+                                    "Cannot load the event as a list of " + clazz.getSimpleName(), e);
+                        }
+                    }).collect(Collectors.toList());
             }
         }
     }

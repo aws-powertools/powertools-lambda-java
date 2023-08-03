@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,27 +11,38 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.idempotency.persistence;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
-import software.amazon.awssdk.services.dynamodb.model.*;
-import software.amazon.lambda.powertools.idempotency.Constants;
-import software.amazon.lambda.powertools.idempotency.DynamoDBConfig;
-import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.BillingMode;
+import software.amazon.awssdk.services.dynamodb.model.CreateTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.DeleteTableRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.KeySchemaElement;
+import software.amazon.awssdk.services.dynamodb.model.KeyType;
+import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
+import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
+import software.amazon.lambda.powertools.idempotency.Constants;
+import software.amazon.lambda.powertools.idempotency.DynamoDBConfig;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 
 /**
  * These test are using DynamoDBLocal and sqlite, see https://nickolasfisher.com/blog/Configuring-an-In-Memory-DynamoDB-instance-with-Java-for-Integration-Testing
@@ -51,7 +62,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         dynamoDBPersistenceStore.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
 
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
-        Map<String, AttributeValue> item = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> item =
+                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(item).isNotNull();
         assertThat(item.get("status").s()).isEqualTo("COMPLETED");
         assertThat(item.get("expiration").n()).isEqualTo(String.valueOf(expiry));
@@ -81,7 +93,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                 ), now);
 
         // THEN: an item is inserted
-        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb =
+                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry2));
@@ -95,7 +108,7 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
-        long progressExpiry = now.minus(30, ChronoUnit.SECONDS).getEpochSecond();
+        long progressExpiry = now.minus(30, ChronoUnit.SECONDS).toEpochMilli();
         item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
         item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
         item.put("data", AttributeValue.builder().s("Fake Data").build());
@@ -113,7 +126,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                 ), now);
 
         // THEN: an item is inserted
-        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb =
+                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry2));
@@ -144,7 +158,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         ).isInstanceOf(IdempotencyItemAlreadyExistsException.class);
 
         // THEN: item was not updated, retrieve the initial one
-        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb =
+                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("COMPLETED");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
@@ -152,14 +167,14 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
     }
 
     @Test
-    public void putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExistAndProgressNotExpiredAfterLambdaTimedOut() {
+    public void putRecord_shouldBlockUpdate_IfRecordAlreadyExistAndProgressNotExpiredAfterLambdaTimedOut() {
         key = Collections.singletonMap("id", AttributeValue.builder().s("key").build());
 
         // GIVEN: Insert a fake item with same id
         Map<String, AttributeValue> item = new HashMap<>(key);
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond(); // not expired
-        long progressExpiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond(); // not expired
+        long progressExpiry = now.plus(30, ChronoUnit.SECONDS).toEpochMilli(); // not expired
         item.put("expiration", AttributeValue.builder().n(String.valueOf(expiry)).build());
         item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
         item.put("data", AttributeValue.builder().s("Fake Data").build());
@@ -172,13 +187,14 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                 new DataRecord("key",
                         DataRecord.Status.INPROGRESS,
                         expiry2,
-                        null,
+                        "Fake Data 2",
                         null
-                ), now)
-        ).isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+                ), now))
+                .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
 
         // THEN: item was not updated, retrieve the initial one
-        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb =
+                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
@@ -217,7 +233,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
 
     @Test
     public void getRecord_shouldThrowException_whenRecordIsAbsent() {
-        assertThatThrownBy(() -> dynamoDBPersistenceStore.getRecord("key")).isInstanceOf(IdempotencyItemNotFoundException.class);
+        assertThatThrownBy(() -> dynamoDBPersistenceStore.getRecord("key")).isInstanceOf(
+                IdempotencyItemNotFoundException.class);
     }
 
     //</editor-fold>
@@ -237,7 +254,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         item.put("status", AttributeValue.builder().s(DataRecord.Status.INPROGRESS.toString()).build());
         client.putItem(PutItemRequest.builder().tableName(TABLE_NAME).item(item).build());
         // enable payload validation
-        dynamoDBPersistenceStore.configure(IdempotencyConfig.builder().withPayloadValidationJMESPath("path").build(), null);
+        dynamoDBPersistenceStore.configure(IdempotencyConfig.builder().withPayloadValidationJMESPath("path").build(),
+                null);
 
         // WHEN
         expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
@@ -245,7 +263,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
         dynamoDBPersistenceStore.updateRecord(record);
 
         // THEN
-        Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb =
+                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb.get("status").s()).isEqualTo("COMPLETED");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
         assertThat(itemInDb.get("data").s()).isEqualTo("Fake result");
@@ -290,8 +309,10 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                             KeySchemaElement.builder().keyType(KeyType.RANGE).attributeName("sortkey").build()
                     )
                     .attributeDefinitions(
-                            AttributeDefinition.builder().attributeName("key").attributeType(ScalarAttributeType.S).build(),
-                            AttributeDefinition.builder().attributeName("sortkey").attributeType(ScalarAttributeType.S).build()
+                            AttributeDefinition.builder().attributeName("key").attributeType(ScalarAttributeType.S)
+                                    .build(),
+                            AttributeDefinition.builder().attributeName("sortkey").attributeType(ScalarAttributeType.S)
+                                    .build()
                     )
                     .billingMode(BillingMode.PAY_PER_REQUEST)
                     .build());
@@ -323,7 +344,8 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
             customKey.put("key", AttributeValue.builder().s("pk").build());
             customKey.put("sortkey", AttributeValue.builder().s("mykey").build());
 
-            Map<String, AttributeValue> itemInDb = client.getItem(GetItemRequest.builder().tableName(TABLE_NAME_CUSTOM).key(customKey).build()).item();
+            Map<String, AttributeValue> itemInDb =
+                    client.getItem(GetItemRequest.builder().tableName(TABLE_NAME_CUSTOM).key(customKey).build()).item();
 
             // GET
             DataRecord recordInDb = persistenceStore.getRecord("mykey");

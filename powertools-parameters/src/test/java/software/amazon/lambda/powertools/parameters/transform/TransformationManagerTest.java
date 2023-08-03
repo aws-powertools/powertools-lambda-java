@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,21 +11,25 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters.transform;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.Base64;
-
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
+import java.util.Base64;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import software.amazon.lambda.powertools.parameters.exception.TransformationException;
+
 public class TransformationManagerTest {
 
     TransformationManager manager;
+
+    Class<BasicTransformer> basicTransformer = BasicTransformer.class;
 
     @BeforeEach
     public void setup() {
@@ -59,6 +63,14 @@ public class TransformationManagerTest {
     }
 
     @Test
+    public void performBasicTransformation_abstractTransformer_throwsTransformationException() {
+        manager.setTransformer(basicTransformer);
+
+        assertThatExceptionOfType(TransformationException.class)
+                .isThrownBy(() -> manager.performBasicTransformation("value"));
+    }
+
+    @Test
     public void performBasicTransformation_shouldPerformTransformation() {
         manager.setTransformer(base64);
 
@@ -78,8 +90,18 @@ public class TransformationManagerTest {
     public void performComplexTransformation_shouldPerformTransformation() {
         manager.setTransformer(json);
 
-        ObjectToDeserialize object = manager.performComplexTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}", ObjectToDeserialize.class);
+        ObjectToDeserialize object =
+                manager.performComplexTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}",
+                        ObjectToDeserialize.class);
 
         assertThat(object).isNotNull();
+    }
+
+    @Test
+    public void performComplexTransformation_throwsTransformationException() {
+        manager.setTransformer(basicTransformer);
+
+        assertThatExceptionOfType(TransformationException.class)
+                .isThrownBy(() -> manager.performComplexTransformation("value", ObjectToDeserialize.class));
     }
 }

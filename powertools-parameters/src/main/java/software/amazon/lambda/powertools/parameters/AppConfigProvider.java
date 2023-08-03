@@ -1,31 +1,40 @@
-package software.amazon.lambda.powertools.parameters;
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
-import software.amazon.awssdk.core.SdkSystemSetting;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
-import software.amazon.awssdk.services.appconfigdata.AppConfigDataClientBuilder;
-import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
-import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
-import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
-import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.SsmClientBuilder;
-import software.amazon.lambda.powertools.core.internal.LambdaConstants;
-import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+package software.amazon.lambda.powertools.parameters;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE;
+import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
+import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
+import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 /**
  * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
  * a mechanism to retrieve and update configuration of applications over time.
  * AppConfig requires the user to create an application, environment, and configuration profile.
  * The configuration profile's value can then be retrieved, by key name, through this provider.
- *
+ * <p>
  * Because AppConfig is designed to handle rollouts of configuration over time, we must first
  * establish a session for each key we wish to retrieve, and then poll the session for the latest
  * value when the user re-requests it. This means we must hold a keyed set of session tokens
@@ -34,24 +43,11 @@ import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AW
  * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/parameters/">Parameters provider documentation</a>
  * @see <a href="https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-working.html">AppConfig documentation</a>
  */
-public class AppConfigProvider extends BaseProvider{
-
-    private static class EstablishedSession {
-        private final String nextSessionToken;
-        private final String lastConfigurationValue;
-
-        private EstablishedSession(String nextSessionToken, String value) {
-            this.nextSessionToken = nextSessionToken;
-            this.lastConfigurationValue = value;
-        }
-    }
+public class AppConfigProvider extends BaseProvider {
 
     private final AppConfigDataClient client;
-
     private final String application;
-
     private final String environment;
-
     private final HashMap<String, EstablishedSession> establishedSessions = new HashMap<>();
 
     AppConfigProvider(CacheManager cacheManager, AppConfigDataClient client, String environment, String application) {
@@ -61,6 +57,14 @@ public class AppConfigProvider extends BaseProvider{
         this.environment = environment;
     }
 
+    /**
+     * Create a builder that can be used to configure and create a {@link AppConfigProvider}.
+     *
+     * @return a new instance of {@link AppConfigProvider.Builder}
+     */
+    public static AppConfigProvider.Builder builder() {
+        return new AppConfigProvider.Builder();
+    }
 
     /**
      * Retrieve the parameter value from the AppConfig parameter store.<br />
@@ -74,18 +78,18 @@ public class AppConfigProvider extends BaseProvider{
         // so that we can the initial token. If we already have a session, we can take
         // the next request token from there.
         EstablishedSession establishedSession = establishedSessions.getOrDefault(key, null);
-        String sessionToken = establishedSession != null?
+        String sessionToken = establishedSession != null ?
                 establishedSession.nextSessionToken :
                 client.startConfigurationSession(StartConfigurationSessionRequest.builder()
-                            .applicationIdentifier(this.application)
-                            .environmentIdentifier(this.environment)
-                            .configurationProfileIdentifier(key)
-                            .build())
-                    .initialConfigurationToken();
+                                .applicationIdentifier(this.application)
+                                .environmentIdentifier(this.environment)
+                                .configurationProfileIdentifier(key)
+                                .build())
+                        .initialConfigurationToken();
 
         // Get the configuration using the token
         GetLatestConfigurationResponse response = client.getLatestConfiguration(GetLatestConfigurationRequest.builder()
-                        .configurationToken(sessionToken)
+                .configurationToken(sessionToken)
                 .build());
 
         // Get the next session token we'll use next time we are asked for this key
@@ -94,11 +98,12 @@ public class AppConfigProvider extends BaseProvider{
         // Get the value of the key. Note that AppConfig will return null if the value
         // has not changed since we last asked for it in this session - in this case
         // we return the value we stashed at last request.
-        String value = response.configuration() != null?
+        String value = response.configuration() != null ?
                 response.configuration().asUtf8String() : // if we have a new value, use it
-                    establishedSession != null?
-                            establishedSession.lastConfigurationValue : // if we don't but we have a previous value, use that
-                            null; // otherwise we've got no value
+                establishedSession != null ?
+                        establishedSession.lastConfigurationValue :
+                        // if we don't but we have a previous value, use that
+                        null; // otherwise we've got no value
 
         // Update the cache so we can get the next value later
         establishedSessions.put(key, new EstablishedSession(nextSessionToken, value));
@@ -109,16 +114,18 @@ public class AppConfigProvider extends BaseProvider{
     @Override
     protected Map<String, String> getMultipleValues(String path) {
         // Retrieving multiple values is not supported with the AppConfig provider.
-        throw new RuntimeException("Retrieving multiple parameter values is not supported with the AWS App Config Provider");
+        throw new RuntimeException(
+                "Retrieving multiple parameter values is not supported with the AWS App Config Provider");
     }
 
-    /**
-     * Create a builder that can be used to configure and create a {@link AppConfigProvider}.
-     *
-     * @return a new instance of {@link AppConfigProvider.Builder}
-     */
-    public static AppConfigProvider.Builder builder() {
-        return new AppConfigProvider.Builder();
+    private static class EstablishedSession {
+        private final String nextSessionToken;
+        private final String lastConfigurationValue;
+
+        private EstablishedSession(String nextSessionToken, String value) {
+            this.nextSessionToken = nextSessionToken;
+            this.lastConfigurationValue = value;
+        }
     }
 
     static class Builder {
@@ -146,19 +153,12 @@ public class AppConfigProvider extends BaseProvider{
 
             // Create a AppConfigDataClient if we haven't been given one
             if (client == null) {
-                AppConfigDataClientBuilder appConfigDataClientBuilder = AppConfigDataClient.builder()
+                client = AppConfigDataClient.builder()
                         .httpClientBuilder(UrlConnectionHttpClient.builder())
-                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())));
-
-                // AWS_LAMBDA_INITIALIZATION_TYPE has two values on-demand and snap-start
-                // when using snap-start mode, the env var creds provider isn't used and causes a fatal error if set
-                // fall back to the default provider chain if the mode is anything other than on-demand.
-                String initializationType = System.getenv().get(AWS_LAMBDA_INITIALIZATION_TYPE);
-                if (initializationType  != null && initializationType.equals(LambdaConstants.ON_DEMAND)) {
-                    appConfigDataClientBuilder.credentialsProvider(EnvironmentVariableCredentialsProvider.create());
-                }
-
-                client = appConfigDataClientBuilder.build();
+                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                        .overrideConfiguration(ClientOverrideConfiguration.builder()
+                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                        .build();
             }
 
             AppConfigProvider provider = new AppConfigProvider(cacheManager, client, environment, application);

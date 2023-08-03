@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,8 +11,20 @@
  * limitations under the License.
  *
  */
+
 package org.apache.logging.log4j.core.layout;
 
+import static java.util.Collections.emptyMap;
+import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -21,11 +33,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,13 +40,6 @@ import org.mockito.Mock;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolSamplingEnabled;
 import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
-
-import static java.util.Collections.emptyMap;
-import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 class LambdaJsonLayoutTest {
 
@@ -74,22 +74,24 @@ class LambdaJsonLayoutTest {
     }
 
     @Test
-    void shouldModifyLogLevelBasedOnEnvVariable() throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
+    void shouldModifyLogLevelBasedOnEnvVariable()
+            throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
         resetLogLevel(Level.DEBUG);
 
         handler.handleRequest("test", context);
 
         assertThat(Files.lines(Paths.get("target/logfile.json")))
                 .hasSize(2)
-                .satisfies(line -> {
-                    assertThat(parseToMap(line.get(0)))
-                            .containsEntry("level", "INFO")
-                            .containsEntry("message", "Test event");
+                .satisfies(line ->
+                    {
+                        assertThat(parseToMap(line.get(0)))
+                                .containsEntry("level", "INFO")
+                                .containsEntry("message", "Test event");
 
-                    assertThat(parseToMap(line.get(1)))
-                            .containsEntry("level", "DEBUG")
-                            .containsEntry("message", "Test debug event");
-                });
+                        assertThat(parseToMap(line.get(1)))
+                                .containsEntry("level", "DEBUG")
+                                .containsEntry("message", "Test debug event");
+                    });
     }
 
     @Test
@@ -100,22 +102,24 @@ class LambdaJsonLayoutTest {
 
         assertThat(Files.lines(Paths.get("target/logfile.json")))
                 .hasSize(3)
-                .satisfies(line -> {
-                    assertThat(parseToMap(line.get(0)))
-                            .containsEntry("level", "DEBUG")
-                            .containsEntry("loggerName", LambdaLoggingAspect.class.getCanonicalName());
+                .satisfies(line ->
+                    {
+                        assertThat(parseToMap(line.get(0)))
+                                .containsEntry("level", "DEBUG")
+                                .containsEntry("loggerName", LambdaLoggingAspect.class.getCanonicalName());
 
-                    assertThat(parseToMap(line.get(1)))
-                            .containsEntry("level", "INFO")
-                            .containsEntry("message", "Test event");
+                        assertThat(parseToMap(line.get(1)))
+                                .containsEntry("level", "INFO")
+                                .containsEntry("message", "Test event");
 
-                    assertThat(parseToMap(line.get(2)))
-                            .containsEntry("level", "DEBUG")
-                            .containsEntry("message", "Test debug event");
-                });
+                        assertThat(parseToMap(line.get(2)))
+                                .containsEntry("level", "DEBUG")
+                                .containsEntry("message", "Test debug event");
+                    });
     }
 
-    private void resetLogLevel(Level level) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private void resetLogLevel(Level level)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels", Level.class);
         resetLogLevels.setAccessible(true);
         resetLogLevels.invoke(null, level);

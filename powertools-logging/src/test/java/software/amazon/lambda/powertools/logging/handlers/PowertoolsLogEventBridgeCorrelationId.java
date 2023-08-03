@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,26 +11,27 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.handlers;
 
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.EVENT_BRIDGE;
+
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 
-public class PowerLogToolEnabledWithClearState implements RequestHandler<Object, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolEnabledWithClearState.class);
-    public static int COUNT = 1;
+public class PowertoolsLogEventBridgeCorrelationId implements RequestStreamHandler {
+
+    private final Logger LOG = LogManager.getLogger(PowertoolsLogEventBridgeCorrelationId.class);
+
     @Override
-    @Logging(clearState = true)
-    public Object handleRequest(Object input, Context context) {
-        if(COUNT == 1) {
-            LoggingUtils.appendKey("TestKey", "TestValue");
-        }
+    @Logging(correlationIdPath = EVENT_BRIDGE)
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         LOG.info("Test event");
-        COUNT++;
-        return null;
     }
 }

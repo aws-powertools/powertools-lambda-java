@@ -1,12 +1,38 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.sqs.internal;
 
-import java.io.IOException;
-import java.util.HashMap;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.HashMap;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,27 +53,13 @@ import software.amazon.lambda.powertools.sqs.handlers.PartialBatchSuccessHandler
 import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandlerWithNonRetryableHandler;
 import software.amazon.lambda.powertools.sqs.handlers.SqsMessageHandlerWithNonRetryableHandlerWithDelete;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-import static software.amazon.lambda.powertools.sqs.SqsUtils.overrideSqsClient;
-
 public class SqsMessageBatchProcessorAspectTest {
     public static final SqsClient interactionClient = mock(SqsClient.class);
     private static final SqsClient sqsClient = mock(SqsClient.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
-
+    private final Context context = mock(Context.class);
     private SQSEvent event;
     private RequestHandler<SQSEvent, String> requestHandler;
-
-    private final Context context = mock(Context.class);
 
     @BeforeEach
     void setUp() throws IOException {
@@ -73,21 +85,22 @@ public class SqsMessageBatchProcessorAspectTest {
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
-                .satisfies(e -> {
-                    assertThat(e.getExceptions())
-                            .hasSize(1)
-                            .extracting("message")
-                            .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
+                .satisfies(e ->
+                    {
+                        assertThat(e.getExceptions())
+                                .hasSize(1)
+                                .extracting("message")
+                                .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
 
-                    assertThat(e.getFailures())
-                            .hasSize(1)
-                            .extracting("messageId")
-                            .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
+                        assertThat(e.getFailures())
+                                .hasSize(1)
+                                .extracting("messageId")
+                                .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
 
-                    assertThat(e.successMessageReturnValues())
-                            .hasSize(1)
-                            .contains("Success");
-                });
+                        assertThat(e.successMessageReturnValues())
+                                .hasSize(1)
+                                .contains("Success");
+                    });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -124,9 +137,10 @@ public class SqsMessageBatchProcessorAspectTest {
                 "  \"maxReceiveCount\": 2\n" +
                 "}");
 
-        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
-                .attributes(attributes)
-                .build());
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(
+                GetQueueAttributesResponse.builder()
+                        .attributes(attributes)
+                        .build());
 
         requestHandler.handleRequest(event, context);
 
@@ -140,13 +154,14 @@ public class SqsMessageBatchProcessorAspectTest {
         requestHandler = new SqsMessageHandlerWithNonRetryableHandler();
         event.getRecords().get(0).setMessageId("");
 
-        when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenReturn(SendMessageBatchResponse.builder()
+        when(sqsClient.sendMessageBatch(any(SendMessageBatchRequest.class))).thenReturn(
+                SendMessageBatchResponse.builder()
                         .failed(BatchResultErrorEntry.builder()
                                 .message("Permission Error")
                                 .code("KMS.AccessDeniedException")
                                 .senderFault(true)
                                 .build())
-                .build());
+                        .build());
 
         HashMap<QueueAttributeName, String> attributes = new HashMap<>();
 
@@ -155,9 +170,10 @@ public class SqsMessageBatchProcessorAspectTest {
                 "  \"maxReceiveCount\": 2\n" +
                 "}");
 
-        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
-                .attributes(attributes)
-                .build());
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(
+                GetQueueAttributesResponse.builder()
+                        .attributes(attributes)
+                        .build());
 
         Assertions.assertThatExceptionOfType(SQSBatchProcessingException.class).
                 isThrownBy(() -> requestHandler.handleRequest(event, context));
@@ -192,28 +208,31 @@ public class SqsMessageBatchProcessorAspectTest {
         requestHandler = new SqsMessageHandlerWithNonRetryableHandler();
 
         event.getRecords().get(0).setMessageId("");
-        event.getRecords().forEach(sqsMessage -> sqsMessage.setEventSourceArn(sqsMessage.getEventSourceArn() + "-temp"));
+        event.getRecords()
+                .forEach(sqsMessage -> sqsMessage.setEventSourceArn(sqsMessage.getEventSourceArn() + "-temp"));
 
-        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
-                .build());
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(
+                GetQueueAttributesResponse.builder()
+                        .build());
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
-                .satisfies(e -> {
-                    assertThat(e.getExceptions())
-                            .hasSize(1)
-                            .extracting("message")
-                            .containsExactly("Invalid message and was moved to DLQ");
+                .satisfies(e ->
+                    {
+                        assertThat(e.getExceptions())
+                                .hasSize(1)
+                                .extracting("message")
+                                .containsExactly("Invalid message and was moved to DLQ");
 
-                    assertThat(e.getFailures())
-                            .hasSize(1)
-                            .extracting("messageId")
-                            .containsExactly("");
+                        assertThat(e.getFailures())
+                                .hasSize(1)
+                                .extracting("messageId")
+                                .containsExactly("");
 
-                    assertThat(e.successMessageReturnValues())
-                            .hasSize(1)
-                            .contains("Success");
-                });
+                        assertThat(e.successMessageReturnValues())
+                                .hasSize(1)
+                                .contains("Success");
+                    });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -224,33 +243,36 @@ public class SqsMessageBatchProcessorAspectTest {
     void shouldBatchProcessAndFailWithExceptionForNonRetryableExceptionWhenFailedParsingPolicy() {
         requestHandler = new SqsMessageHandlerWithNonRetryableHandler();
         event.getRecords().get(0).setMessageId("");
-        event.getRecords().forEach(sqsMessage -> sqsMessage.setEventSourceArn(sqsMessage.getEventSourceArn() + "-temp-queue"));
+        event.getRecords()
+                .forEach(sqsMessage -> sqsMessage.setEventSourceArn(sqsMessage.getEventSourceArn() + "-temp-queue"));
 
         HashMap<QueueAttributeName, String> attributes = new HashMap<>();
 
         attributes.put(QueueAttributeName.REDRIVE_POLICY, "MalFormedRedrivePolicy");
 
-        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
-                .attributes(attributes)
-                .build());
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(
+                GetQueueAttributesResponse.builder()
+                        .attributes(attributes)
+                        .build());
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
-                .satisfies(e -> {
-                    assertThat(e.getExceptions())
-                            .hasSize(1)
-                            .extracting("message")
-                            .containsExactly("Invalid message and was moved to DLQ");
+                .satisfies(e ->
+                    {
+                        assertThat(e.getExceptions())
+                                .hasSize(1)
+                                .extracting("message")
+                                .containsExactly("Invalid message and was moved to DLQ");
 
-                    assertThat(e.getFailures())
-                            .hasSize(1)
-                            .extracting("messageId")
-                            .containsExactly("");
+                        assertThat(e.getFailures())
+                                .hasSize(1)
+                                .extracting("messageId")
+                                .containsExactly("");
 
-                    assertThat(e.successMessageReturnValues())
-                            .hasSize(1)
-                            .contains("Success");
-                });
+                        assertThat(e.successMessageReturnValues())
+                                .hasSize(1)
+                                .contains("Success");
+                    });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -271,27 +293,29 @@ public class SqsMessageBatchProcessorAspectTest {
                 "  \"maxReceiveCount\": 2\n" +
                 "}");
 
-        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(GetQueueAttributesResponse.builder()
-                .attributes(attributes)
-                .build());
+        when(sqsClient.getQueueAttributes(any(GetQueueAttributesRequest.class))).thenReturn(
+                GetQueueAttributesResponse.builder()
+                        .attributes(attributes)
+                        .build());
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
-                .satisfies(e -> {
-                    assertThat(e.getExceptions())
-                            .hasSize(1)
-                            .extracting("message")
-                            .containsExactly("Invalid message and should be reprocessed");
+                .satisfies(e ->
+                    {
+                        assertThat(e.getExceptions())
+                                .hasSize(1)
+                                .extracting("message")
+                                .containsExactly("Invalid message and should be reprocessed");
 
-                    assertThat(e.getFailures())
-                            .hasSize(1)
-                            .extracting("messageId")
-                            .containsExactly("2e1424d4-f796-459a-9696-9c92662ba5da");
+                        assertThat(e.getFailures())
+                                .hasSize(1)
+                                .extracting("messageId")
+                                .containsExactly("2e1424d4-f796-459a-9696-9c92662ba5da");
 
-                    assertThat(e.successMessageReturnValues())
-                            .hasSize(1)
-                            .contains("Success");
-                });
+                        assertThat(e.successMessageReturnValues())
+                                .hasSize(1)
+                                .contains("Success");
+                    });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));

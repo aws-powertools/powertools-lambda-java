@@ -1,46 +1,66 @@
-package software.amazon.lambda.powertools.parameters;
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
-import software.amazon.awssdk.core.SdkSystemSetting;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.*;
-import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
-import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+package software.amazon.lambda.powertools.parameters;
 
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
+import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
+import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
+import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
+import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
+import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
+import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
+import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.exception.DynamoDbProviderSchemaException;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 /**
  * Implements a {@link ParamProvider} on top of DynamoDB. The schema of the table
  * is described in the Powertools for AWS Lambda (Java) documentation.
  *
  * @see <a href="https://docs.powertools.aws.dev/lambda-java/utilities/parameters">Parameters provider documentation</a>
- *
  */
 public class DynamoDbProvider extends BaseProvider {
 
     private final DynamoDbClient client;
     private final String tableName;
 
-    public DynamoDbProvider(CacheManager cacheManager, String tableName) {
-        this(cacheManager, DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-                .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                .build(),
-                tableName
-        );
-
-    }
-
     DynamoDbProvider(CacheManager cacheManager, DynamoDbClient client, String tableName) {
         super(cacheManager);
         this.client = client;
         this.tableName = tableName;
+    }
+
+    DynamoDbProvider(CacheManager cacheManager, String tableName) {
+        this(cacheManager, Builder.createClient(), tableName);
+    }
+
+    /**
+     * Create a builder that can be used to configure and create a {@link DynamoDbProvider}.
+     *
+     * @return a new instance of {@link DynamoDbProvider.Builder}
+     */
+    public static DynamoDbProvider.Builder builder() {
+        return new DynamoDbProvider.Builder();
     }
 
     /**
@@ -86,9 +106,10 @@ public class DynamoDbProvider extends BaseProvider {
                 .build());
 
         return resp
-                    .items()
-                    .stream()
-                    .peek((i) -> {
+                .items()
+                .stream()
+                .peek((i) ->
+                    {
                         if (!i.containsKey("sk")) {
                             throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
                         }
@@ -96,21 +117,12 @@ public class DynamoDbProvider extends BaseProvider {
                             throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
                         }
                     })
-                    .collect(
-                            Collectors.toMap(
-                                    (i) -> i.get("sk").s(),
-                                    (i) -> i.get("value").s()));
+                .collect(
+                        Collectors.toMap(
+                                (i) -> i.get("sk").s(),
+                                (i) -> i.get("value").s()));
 
 
-    }
-
-    /**
-     * Create a builder that can be used to configure and create a {@link DynamoDbProvider}.
-     *
-     * @return a new instance of {@link DynamoDbProvider.Builder}
-     */
-    public static DynamoDbProvider.Builder builder() {
-        return new DynamoDbProvider.Builder();
     }
 
     static class Builder {
@@ -118,6 +130,14 @@ public class DynamoDbProvider extends BaseProvider {
         private String table;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
+
+        private static DynamoDbClient createClient() {
+            return DynamoDbClient.builder()
+                    .httpClientBuilder(UrlConnectionHttpClient.builder())
+                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .build();
+        }
 
         /**
          * Create a {@link DynamoDbProvider} instance.
@@ -132,11 +152,11 @@ public class DynamoDbProvider extends BaseProvider {
                 throw new IllegalStateException("No DynamoDB table name provided; please provide one");
             }
             DynamoDbProvider provider;
-            if (client != null) {
-                provider = new DynamoDbProvider(cacheManager, client, table);
-            } else {
-                provider = new DynamoDbProvider(cacheManager, table);
+            if (client == null) {
+                client = createClient();
             }
+            provider = new DynamoDbProvider(cacheManager, client, table);
+
             if (transformationManager != null) {
                 provider.setTransformationManager(transformationManager);
             }

@@ -4,6 +4,9 @@ description: Utility
 ---
 
 The SQS batch processing utility provides a way to handle partial failures when processing batches of messages from SQS.
+The utility handles batch processing for both 
+[standard](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html) and 
+[FIFO](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html) SQS queues. 
 
 **Key Features**
 
@@ -23,10 +26,11 @@ are returned to the queue.
 
 ## Install
 
-To install this utility, add the following dependency to your project.
+Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
 
-=== "Maven"
-    ```xml hl_lines="3 4 5 6 7 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36"
+=== "Maven Java 11+"
+
+    ```xml hl_lines="3-7 16 18 24-27""
     <dependencies>
         ...
         <dependency>
@@ -36,6 +40,7 @@ To install this utility, add the following dependency to your project.
         </dependency>
         ...
     </dependencies>
+    ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
     <build>
         <plugins>
@@ -44,6 +49,51 @@ To install this utility, add the following dependency to your project.
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.13.1</version>
+                 <configuration>
+                     <source>11</source> <!-- or higher -->
+                     <target>11</target> <!-- or higher -->
+                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <aspectLibraries>
+                         <aspectLibrary>
+                             <groupId>software.amazon.lambda</groupId>
+                             <artifactId>powertools-sqs</artifactId>
+                         </aspectLibrary>
+                     </aspectLibraries>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+            </plugin>
+            ...
+        </plugins>
+    </build>
+    ```
+
+=== "Maven Java 1.8"
+
+    ```xml hl_lines="3-7 16 18 24-27"
+    <dependencies>
+        ...
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-sqs</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
+        ...
+    </dependencies>
+    ...
+    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <build>
+        <plugins>
+            ...
+            <plugin>
+                 <groupId>org.codehaus.mojo</groupId>
+                 <artifactId>aspectj-maven-plugin</artifactId>
+                 <version>1.14.0</version>
                  <configuration>
                      <source>1.8</source>
                      <target>1.8</target>
@@ -68,24 +118,44 @@ To install this utility, add the following dependency to your project.
     </build>
     ```
 
-=== "Gradle"
+=== "Gradle Java 11+"
 
-    ```groovy
-    plugins{
-        id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
-    }
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 11 // or higher
+        targetCompatibility = 11 // or higher
+    ```
 
-    repositories {
-        mavenCentral()
-    }
+=== "Gradle Java 1.8"
 
-    dependencies {
-        ...
-        aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
-//      This dependency is needed for Java17+, please uncomment it if you are using Java17+
-//      implementation 'org.aspectj:aspectjrt:1.9.19'
-    }
+    ```groovy hl_lines="3 11"
+        plugins {
+            id 'java'
+            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
+        }
+        
+        repositories {
+            mavenCentral()
+        }
+        
+        dependencies {
+            aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+        }
+        
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
     ```
 
 ## IAM Permissions
@@ -110,8 +180,11 @@ Both have nearly the same behaviour when it comes to processing messages from th
 * **Entire batch has been successfully processed**, where your Lambda handler returned successfully, we will let SQS delete the batch to optimize your cost
 * **Entire Batch has been partially processed successfully**, where exceptions were raised within your `SqsMessageHandler` interface implementation, we will:
     - **1)** Delete successfully processed messages from the queue by directly calling `sqs:DeleteMessageBatch`
-    - **2)** if, non retryable exceptions occur, messages resulting in configured exceptions during processing will be immediately moved to the dead letter queue associated to the source SQS queue or deleted from the source SQS queue if `deleteNonRetryableMessageFromQueue` is set to `true`.
-    - **3)** Raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
+    - **2)** If a message with a [message group ID](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html) fails, 
+             the processing of the batch will be stopped and the remainder of the messages will be returned to SQS. 
+             This behaviour [is required to handle SQS FIFO queues](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting).   
+    - **3)** if non retryable exceptions occur, messages resulting in configured exceptions during processing will be immediately moved to the dead letter queue associated to the source SQS queue or deleted from the source SQS queue if `deleteNonRetryableMessageFromQueue` is set to `true`.
+    - **4)** Raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
 
 The only difference is that **SqsUtils Utility API** will give you access to return from the processed messages if you need. Exception `SQSBatchProcessingException` thrown from the
 utility will have access to both successful and failed messaged along with failure exceptions.

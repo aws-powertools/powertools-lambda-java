@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,21 +11,20 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.logging.handlers;
+
+import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import software.amazon.lambda.powertools.logging.CorrelationIdPathConstants;
 import software.amazon.lambda.powertools.logging.Logging;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_REST;
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
-
-public class PowerLogToolAlbCorrelationId implements RequestHandler<ApplicationLoadBalancerRequestEvent, Object> {
-    private final Logger LOG = LogManager.getLogger(PowerLogToolAlbCorrelationId.class);
+public class PowertoolsLogAlbCorrelationId implements RequestHandler<ApplicationLoadBalancerRequestEvent, Object> {
+    private final Logger LOG = LogManager.getLogger(PowertoolsLogAlbCorrelationId.class);
 
     @Override
     @Logging(correlationIdPath = APPLICATION_LOAD_BALANCER)

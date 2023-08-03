@@ -1,5 +1,26 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools;
 
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
+import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
+
+import java.time.Year;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -7,13 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
-
-import java.time.Year;
-import java.util.Collections;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 public class IdempotencyE2ET {
     private static Infrastructure infrastructure;
@@ -27,15 +41,16 @@ public class IdempotencyE2ET {
                 .testName(IdempotencyE2ET.class.getSimpleName())
                 .pathToFunction("idempotency")
                 .idempotencyTable("idempo" + random)
-                .environmentVariables(Collections.singletonMap("IDEMPOTENCY_TABLE", "idempo" + random))
                 .build();
-        functionName = infrastructure.deploy();
+        Map<String, String> outputs = infrastructure.deploy();
+        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
     @AfterAll
     public static void tearDown() {
-        if (infrastructure != null)
+        if (infrastructure != null) {
             infrastructure.destroy();
+        }
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Amazon.com, Inc. or its affiliates.
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -11,8 +11,22 @@
  * limitations under the License.
  *
  */
+
 package software.amazon.lambda.powertools.parameters;
 
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.openMocks;
+
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,22 +34,21 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import software.amazon.awssdk.services.ssm.SsmClient;
-import software.amazon.awssdk.services.ssm.model.*;
+import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
+import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
+import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
+import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
+import software.amazon.awssdk.services.ssm.model.Parameter;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.openMocks;
+import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 public class SSMProviderTest {
 
     @Mock
     SsmClient client;
+
+    @Mock
+    TransformationManager transformationManager;
 
     @Captor
     ArgumentCaptor<GetParameterRequest> paramCaptor;
@@ -152,7 +165,8 @@ public class SSMProviderTest {
         List<Parameter> parameters1 = new ArrayList<>();
         parameters1.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
         parameters1.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
-        GetParametersByPathResponse response1 = GetParametersByPathResponse.builder().parameters(parameters1).nextToken("123abc").build();
+        GetParametersByPathResponse response1 =
+                GetParametersByPathResponse.builder().parameters(parameters1).nextToken("123abc").build();
 
         List<Parameter> parameters2 = new ArrayList<>();
         parameters2.add(Parameter.builder().name("/prod/app1/key3").value("foo3").build());
@@ -171,20 +185,35 @@ public class SSMProviderTest {
         GetParametersByPathRequest request1 = requestParams.get(0);
         GetParametersByPathRequest request2 = requestParams.get(1);
 
-        assertThat(asList(request1, request2)).allSatisfy(req -> {
-            assertThat(req.path()).isEqualTo("/prod/app1");
-            assertThat(req.withDecryption()).isFalse();
-            assertThat(req.recursive()).isFalse();
-        });
+        assertThat(asList(request1, request2)).allSatisfy(req ->
+            {
+                assertThat(req.path()).isEqualTo("/prod/app1");
+                assertThat(req.withDecryption()).isFalse();
+                assertThat(req.recursive()).isFalse();
+            });
 
         assertThat(request1.nextToken()).isNull();
         assertThat(request2.nextToken()).isEqualTo("123abc");
+    }
+
+    @Test
+    public void testSecretsProviderBuilderMissingCacheManager_throwsException() {
+
+        // Act & Assert
+        assertThatIllegalStateException().isThrownBy(() -> SSMProvider.builder()
+                        .withClient(client)
+                        .withTransformationManager(transformationManager)
+                        .build())
+                .withMessage("No CacheManager provided, please provide one");
     }
 
     private void initMock(String expectedValue) {
         Parameter parameter = Parameter.builder().value(expectedValue).build();
         GetParameterResponse result = GetParameterResponse.builder().parameter(parameter).build();
         when(client.getParameter(paramCaptor.capture())).thenReturn(result);
+        provider.defaultMaxAge(1, ChronoUnit.DAYS);
+        provider.withMaxAge(2, ChronoUnit.DAYS);
+        provider.recursive();
     }
 
 }
