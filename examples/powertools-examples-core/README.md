@@ -13,7 +13,7 @@ For each of the tools, the example application is the same, and consists of the 
 
 - [App.java](sam/src/main/java/helloworld/App.java) - Code for the application's Lambda function.
 - [AppTests.java](sam/src/test/java/helloworld/AppTest.java) - Unit tests for the application code.
-- [events](events) - Invocation events that you can use to invoke the function.
+- [events](sam/events/event.json) - Invocation events that you can use to invoke the function.
 
 Configuration files and deployment process for each tool are described in corresponding README files.
 
