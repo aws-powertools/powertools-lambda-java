@@ -97,9 +97,9 @@ public class LambdaParametersAspectTest {
     public void testWithComplexTransformWrongTargetClass_ShouldThrowException() {
         assertThatExceptionOfType(TransformationException.class)
                 .isThrownBy(() ->
-                    {
-                        AnotherObject obj = wrongTransform;
-                    });
+                {
+                    AnotherObject obj = wrongTransform;
+                });
     }
 
 }

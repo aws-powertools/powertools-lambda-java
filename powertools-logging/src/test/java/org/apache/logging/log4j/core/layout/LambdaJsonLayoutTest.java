@@ -83,15 +83,15 @@ class LambdaJsonLayoutTest {
         assertThat(Files.lines(Paths.get("target/logfile.json")))
                 .hasSize(2)
                 .satisfies(line ->
-                    {
-                        assertThat(parseToMap(line.get(0)))
-                                .containsEntry("level", "INFO")
-                                .containsEntry("message", "Test event");
+                {
+                    assertThat(parseToMap(line.get(0)))
+                            .containsEntry("level", "INFO")
+                            .containsEntry("message", "Test event");
 
-                        assertThat(parseToMap(line.get(1)))
-                                .containsEntry("level", "DEBUG")
-                                .containsEntry("message", "Test debug event");
-                    });
+                    assertThat(parseToMap(line.get(1)))
+                            .containsEntry("level", "DEBUG")
+                            .containsEntry("message", "Test debug event");
+                });
     }
 
     @Test
@@ -103,19 +103,19 @@ class LambdaJsonLayoutTest {
         assertThat(Files.lines(Paths.get("target/logfile.json")))
                 .hasSize(3)
                 .satisfies(line ->
-                    {
-                        assertThat(parseToMap(line.get(0)))
-                                .containsEntry("level", "DEBUG")
-                                .containsEntry("loggerName", LambdaLoggingAspect.class.getCanonicalName());
+                {
+                    assertThat(parseToMap(line.get(0)))
+                            .containsEntry("level", "DEBUG")
+                            .containsEntry("loggerName", LambdaLoggingAspect.class.getCanonicalName());
 
-                        assertThat(parseToMap(line.get(1)))
-                                .containsEntry("level", "INFO")
-                                .containsEntry("message", "Test event");
+                    assertThat(parseToMap(line.get(1)))
+                            .containsEntry("level", "INFO")
+                            .containsEntry("message", "Test event");
 
-                        assertThat(parseToMap(line.get(2)))
-                                .containsEntry("level", "DEBUG")
-                                .containsEntry("message", "Test debug event");
-                    });
+                    assertThat(parseToMap(line.get(2)))
+                            .containsEntry("level", "DEBUG")
+                            .containsEntry("message", "Test debug event");
+                });
     }
 
     private void resetLogLevel(Level level)

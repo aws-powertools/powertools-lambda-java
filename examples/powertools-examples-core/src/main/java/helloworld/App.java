@@ -61,10 +61,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
 
         withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) ->
-            {
-                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-                metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
-            });
+        {
+            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+        });
 
         LoggingUtils.appendKey("test", "willBeLogged");
 
@@ -77,11 +77,11 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
             TracingUtils.withSubsegment("loggingResponse", subsegment ->
-                {
-                    String sampled = "log something out";
-                    log.info(sampled);
-                    log.info(output);
-                });
+            {
+                String sampled = "log something out";
+                log.info(sampled);
+                log.info(output);
+            });
 
             threadOption1();
 
@@ -107,10 +107,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     private void threadOption2() throws InterruptedException {
         Entity traceEntity = AWSXRay.getTraceEntity();
         Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment ->
-            {
-                String var = "somethingToProcess";
-                log.info("inside threaded logging inline {}", var);
-            }));
+        {
+            String var = "somethingToProcess";
+            log.info("inside threaded logging inline {}", var);
+        }));
         anotherThread.start();
         anotherThread.join();
     }

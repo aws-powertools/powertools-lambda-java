@@ -110,9 +110,9 @@ public class ValidationAspectTest {
         when(validation.outboundSchema()).thenReturn("classpath:/schema_v7.json");
 
         assertThatExceptionOfType(ValidationException.class).isThrownBy(() ->
-            {
-                validationAspect.around(pjp, validation);
-            });
+        {
+            validationAspect.around(pjp, validation);
+        });
     }
 
     @Test

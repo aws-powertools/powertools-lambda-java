@@ -40,40 +40,6 @@ class LargeSQSMessageProcessor extends LargeMessageProcessor<SQSMessage> {
     private static final byte STRING_LIST_TYPE_FIELD_INDEX = 3;
     private static final byte BINARY_LIST_TYPE_FIELD_INDEX = 4;
 
-    @Override
-    protected String getMessageId(SQSMessage message) {
-        return message.getMessageId();
-    }
-
-    @Override
-    protected String getMessageContent(SQSMessage message) {
-        return message.getBody();
-    }
-
-    @Override
-    protected void updateMessageContent(SQSMessage message, String messageContent) {
-        message.setBody(messageContent);
-        // we update the MD5 digest so it doesn't look tempered
-        message.setMd5OfBody(calculateMessageBodyMd5(messageContent).orElse(message.getMd5OfBody()));
-    }
-
-    @Override
-    protected boolean isLargeMessage(SQSMessage message) {
-        Map<String, MessageAttribute> msgAttributes = message.getMessageAttributes();
-        return msgAttributes != null && (msgAttributes.containsKey(RESERVED_ATTRIBUTE_NAME) || msgAttributes.containsKey(LEGACY_RESERVED_ATTRIBUTE_NAME));
-    }
-
-    @Override
-    protected void removeLargeMessageAttributes(SQSMessage message) {
-        // message.getMessageAttributes() does not support remove operation, copy to new map
-        Map<String, MessageAttribute> newAttributes = new HashMap<>(message.getMessageAttributes());
-        newAttributes.remove(RESERVED_ATTRIBUTE_NAME);
-        newAttributes.remove(LEGACY_RESERVED_ATTRIBUTE_NAME);
-        message.setMessageAttributes(newAttributes);
-        // we update the MD5 digest so it doesn't look tempered
-        message.setMd5OfMessageAttributes(calculateMessageAttributesMd5(newAttributes).orElse(message.getMd5OfMessageAttributes()));
-    }
-
     /**
      * Compute the MD5 of the message body.<br/>
      * Inspired from {@code software.amazon.awssdk.services.sqs.internal.MessageMD5ChecksumInterceptor}.<br/>
@@ -169,5 +135,41 @@ class LargeSQSMessageProcessor extends LargeMessageProcessor<SQSMessage> {
         ByteBuffer lengthBytes = ByteBuffer.allocate(INTEGER_SIZE_IN_BYTES).putInt(size);
         digest.update(lengthBytes.array());
         digest.update(readOnlyBuffer);
+    }
+
+    @Override
+    protected String getMessageId(SQSMessage message) {
+        return message.getMessageId();
+    }
+
+    @Override
+    protected String getMessageContent(SQSMessage message) {
+        return message.getBody();
+    }
+
+    @Override
+    protected void updateMessageContent(SQSMessage message, String messageContent) {
+        message.setBody(messageContent);
+        // we update the MD5 digest so it doesn't look tempered
+        message.setMd5OfBody(calculateMessageBodyMd5(messageContent).orElse(message.getMd5OfBody()));
+    }
+
+    @Override
+    protected boolean isLargeMessage(SQSMessage message) {
+        Map<String, MessageAttribute> msgAttributes = message.getMessageAttributes();
+        return msgAttributes != null && (msgAttributes.containsKey(RESERVED_ATTRIBUTE_NAME) ||
+                msgAttributes.containsKey(LEGACY_RESERVED_ATTRIBUTE_NAME));
+    }
+
+    @Override
+    protected void removeLargeMessageAttributes(SQSMessage message) {
+        // message.getMessageAttributes() does not support remove operation, copy to new map
+        Map<String, MessageAttribute> newAttributes = new HashMap<>(message.getMessageAttributes());
+        newAttributes.remove(RESERVED_ATTRIBUTE_NAME);
+        newAttributes.remove(LEGACY_RESERVED_ATTRIBUTE_NAME);
+        message.setMessageAttributes(newAttributes);
+        // we update the MD5 digest so it doesn't look tempered
+        message.setMd5OfMessageAttributes(
+                calculateMessageAttributesMd5(newAttributes).orElse(message.getMd5OfMessageAttributes()));
     }
 }

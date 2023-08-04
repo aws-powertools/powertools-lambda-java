@@ -89,10 +89,10 @@ public class TraceFetcher {
      */
     public Trace fetchTrace() {
         Callable<Trace> callable = () ->
-            {
-                List<String> traceIds = getTraceIds();
-                return getTrace(traceIds);
-            };
+        {
+            List<String> traceIds = getTraceIds();
+            return getTrace(traceIds);
+        };
 
         RetryConfig retryConfig = new RetryConfigBuilder()
                 .withMaxNumberOfTries(10)
@@ -103,9 +103,9 @@ public class TraceFetcher {
         CallExecutor<Trace> callExecutor = new CallExecutorBuilder<Trace>()
                 .config(retryConfig)
                 .afterFailedTryListener(s ->
-                    {
-                        LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
-                    })
+                {
+                    LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
+                })
                 .build();
         Status<Trace> status = callExecutor.execute(callable);
         return status.getResult();
@@ -126,43 +126,43 @@ public class TraceFetcher {
         }
         Trace traceRes = new Trace();
         tracesResponse.traces().forEach(trace ->
-            {
-                if (trace.hasSegments()) {
-                    trace.segments().forEach(segment ->
-                        {
-                            try {
-                                SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
-                                if (document.getOrigin().equals("AWS::Lambda::Function")) {
-                                    if (document.hasSubsegments()) {
-                                        getNestedSubSegments(document.getSubsegments(), traceRes,
-                                                Collections.emptyList());
-                                    }
-                                }
-                            } catch (JsonProcessingException e) {
-                                LOG.error("Failed to parse segment document: " + e.getMessage());
-                                throw new RuntimeException(e);
+        {
+            if (trace.hasSegments()) {
+                trace.segments().forEach(segment ->
+                {
+                    try {
+                        SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
+                        if (document.getOrigin().equals("AWS::Lambda::Function")) {
+                            if (document.hasSubsegments()) {
+                                getNestedSubSegments(document.getSubsegments(), traceRes,
+                                        Collections.emptyList());
                             }
-                        });
-                }
-            });
+                        }
+                    } catch (JsonProcessingException e) {
+                        LOG.error("Failed to parse segment document: " + e.getMessage());
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
+        });
         return traceRes;
     }
 
     private void getNestedSubSegments(List<SubSegment> subsegments, Trace traceRes, List<String> idsToIgnore) {
         subsegments.forEach(subsegment ->
-            {
-                List<String> subSegmentIdsToIgnore = Collections.emptyList();
-                if (!excludedSegments.contains(subsegment.getName()) && !idsToIgnore.contains(subsegment.getId())) {
-                    traceRes.addSubSegment(subsegment);
-                    if (subsegment.hasSubsegments()) {
-                        subSegmentIdsToIgnore = subsegment.getSubsegments().stream().map(SubSegment::getId)
-                                .collect(Collectors.toList());
-                    }
-                }
+        {
+            List<String> subSegmentIdsToIgnore = Collections.emptyList();
+            if (!excludedSegments.contains(subsegment.getName()) && !idsToIgnore.contains(subsegment.getId())) {
+                traceRes.addSubSegment(subsegment);
                 if (subsegment.hasSubsegments()) {
-                    getNestedSubSegments(subsegment.getSubsegments(), traceRes, subSegmentIdsToIgnore);
+                    subSegmentIdsToIgnore = subsegment.getSubsegments().stream().map(SubSegment::getId)
+                            .collect(Collectors.toList());
                 }
-            });
+            }
+            if (subsegment.hasSubsegments()) {
+                getNestedSubSegments(subsegment.getSubsegments(), traceRes, subSegmentIdsToIgnore);
+            }
+        });
     }
 
     /**

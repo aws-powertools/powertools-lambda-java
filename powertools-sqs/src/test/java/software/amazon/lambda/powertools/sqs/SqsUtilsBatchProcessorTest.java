@@ -61,10 +61,10 @@ class SqsUtilsBatchProcessorTest {
     @Test
     void shouldBatchProcessAndNotDeleteMessagesWhenAllSuccess() {
         List<String> returnValues = batchProcessor(event, false, (message) ->
-            {
-                interactionClient.listQueues();
-                return "Success";
-            });
+        {
+            interactionClient.listQueues();
+            return "Success";
+        });
 
         assertThat(returnValues)
                 .hasSize(2)
@@ -92,34 +92,34 @@ class SqsUtilsBatchProcessorTest {
         String failedId = "2e1424d4-f796-459a-8184-9c92662be6da";
 
         SqsMessageHandler<String> failedHandler = (message) ->
-            {
-                if (failedId.equals(message.getMessageId())) {
-                    throw new RuntimeException("Failed processing");
-                }
+        {
+            if (failedId.equals(message.getMessageId())) {
+                throw new RuntimeException("Failed processing");
+            }
 
-                interactionClient.listQueues();
-                return "Success";
-            };
+            interactionClient.listQueues();
+            return "Success";
+        };
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(event, failedHandler))
                 .satisfies(e ->
-                    {
+                {
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(1)
-                                .contains("Success");
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(1)
+                            .contains("Success");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .contains(failedId);
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .contains(failedId);
 
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("detailMessage")
-                                .contains("Failed processing");
-                    });
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("detailMessage")
+                            .contains("Failed processing");
+                });
 
         verify(interactionClient).listQueues();
 
@@ -133,30 +133,30 @@ class SqsUtilsBatchProcessorTest {
     @Test
     void shouldBatchProcessAndFullFailuresInBatch() {
         SqsMessageHandler<String> failedHandler = (message) ->
-            {
-                throw new RuntimeException(message.getMessageId());
-            };
+        {
+            throw new RuntimeException(message.getMessageId());
+        };
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(event, failedHandler))
                 .satisfies(e ->
-                    {
+                {
 
-                        assertThat(e.successMessageReturnValues())
-                                .isEmpty();
+                    assertThat(e.successMessageReturnValues())
+                            .isEmpty();
 
-                        assertThat(e.getFailures())
-                                .hasSize(2)
-                                .extracting("messageId")
-                                .containsExactly("059f36b4-87a3-44ab-83d2-661975830a7d",
-                                        "2e1424d4-f796-459a-8184-9c92662be6da");
+                    assertThat(e.getFailures())
+                            .hasSize(2)
+                            .extracting("messageId")
+                            .containsExactly("059f36b4-87a3-44ab-83d2-661975830a7d",
+                                    "2e1424d4-f796-459a-8184-9c92662be6da");
 
-                        assertThat(e.getExceptions())
-                                .hasSize(2)
-                                .extracting("detailMessage")
-                                .containsExactly("059f36b4-87a3-44ab-83d2-661975830a7d",
-                                        "2e1424d4-f796-459a-8184-9c92662be6da");
-                    });
+                    assertThat(e.getExceptions())
+                            .hasSize(2)
+                            .extracting("detailMessage")
+                            .containsExactly("059f36b4-87a3-44ab-83d2-661975830a7d",
+                                    "2e1424d4-f796-459a-8184-9c92662be6da");
+                });
 
         verifyNoInteractions(sqsClient);
     }
@@ -166,22 +166,22 @@ class SqsUtilsBatchProcessorTest {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(event, FailureSampleInnerSqsHandler.class))
                 .satisfies(e ->
-                    {
+                {
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(1)
-                                .contains("Success");
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(1)
+                            .contains("Success");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .contains("2e1424d4-f796-459a-8184-9c92662be6da");
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .contains("2e1424d4-f796-459a-8184-9c92662be6da");
 
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("detailMessage")
-                                .contains("Failed processing");
-                    });
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("detailMessage")
+                            .contains("Failed processing");
+                });
 
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
     }
@@ -192,14 +192,14 @@ class SqsUtilsBatchProcessorTest {
         String failedId = "2e1424d4-f796-459a-8184-9c92662be6da";
 
         SqsMessageHandler<String> failedHandler = (message) ->
-            {
-                if (failedId.equals(message.getMessageId())) {
-                    throw new RuntimeException("Failed processing");
-                }
+        {
+            if (failedId.equals(message.getMessageId())) {
+                throw new RuntimeException("Failed processing");
+            }
 
-                interactionClient.listQueues();
-                return "Success";
-            };
+            interactionClient.listQueues();
+            return "Success";
+        };
 
         List<String> returnValues = batchProcessor(event, true, failedHandler);
 
@@ -239,14 +239,14 @@ class SqsUtilsBatchProcessorTest {
                         .build());
 
         List<String> batchProcessor = batchProcessor(event, (message) ->
-            {
-                if (failedId.equals(message.getMessageId())) {
-                    throw new IllegalStateException("Failed processing");
-                }
+        {
+            if (failedId.equals(message.getMessageId())) {
+                throw new IllegalStateException("Failed processing");
+            }
 
-                interactionClient.listQueues();
-                return "Success";
-            }, IllegalStateException.class, IllegalArgumentException.class);
+            interactionClient.listQueues();
+            return "Success";
+        }, IllegalStateException.class, IllegalArgumentException.class);
 
         assertThat(batchProcessor)
                 .hasSize(1);
@@ -270,14 +270,14 @@ class SqsUtilsBatchProcessorTest {
                         .build());
 
         List<String> batchProcessor = batchProcessor(event, false, (message) ->
-            {
-                if (failedId.equals(message.getMessageId())) {
-                    throw new IllegalStateException("Failed processing");
-                }
+        {
+            if (failedId.equals(message.getMessageId())) {
+                throw new IllegalStateException("Failed processing");
+            }
 
-                interactionClient.listQueues();
-                return "Success";
-            }, true, IllegalStateException.class, IllegalArgumentException.class);
+            interactionClient.listQueues();
+            return "Success";
+        }, true, IllegalStateException.class, IllegalArgumentException.class);
 
         assertThat(batchProcessor)
                 .hasSize(1);
@@ -294,22 +294,22 @@ class SqsUtilsBatchProcessorTest {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(batch25Message, FailureSampleInnerSqsHandler.class))
                 .satisfies(e ->
-                    {
+                {
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(24)
-                                .contains("Success");
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(24)
+                            .contains("Success");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .contains("2e1424d4-f796-459a-8184-9c92662be6da");
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .contains("2e1424d4-f796-459a-8184-9c92662be6da");
 
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("detailMessage")
-                                .contains("Failed processing");
-                    });
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("detailMessage")
+                            .contains("Failed processing");
+                });
 
         ArgumentCaptor<DeleteMessageBatchRequest> captor = ArgumentCaptor.forClass(DeleteMessageBatchRequest.class);
 
@@ -339,14 +339,14 @@ class SqsUtilsBatchProcessorTest {
                         .build());
 
         List<String> batchProcessor = batchProcessor(batch25Message, (message) ->
-            {
-                if ("2e1424d4-f796-459a-8184-9c92662be6da".equals(message.getMessageId())) {
-                    interactionClient.listQueues();
-                    return "Success";
-                }
+        {
+            if ("2e1424d4-f796-459a-8184-9c92662be6da".equals(message.getMessageId())) {
+                interactionClient.listQueues();
+                return "Success";
+            }
 
-                throw new IllegalStateException("Failed processing");
-            }, IllegalStateException.class, IllegalArgumentException.class);
+            throw new IllegalStateException("Failed processing");
+        }, IllegalStateException.class, IllegalArgumentException.class);
 
         assertThat(batchProcessor)
                 .hasSize(1);

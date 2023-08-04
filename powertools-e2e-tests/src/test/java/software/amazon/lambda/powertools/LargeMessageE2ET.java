@@ -1,7 +1,19 @@
 package software.amazon.lambda.powertools;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
+
 import com.amazon.sqs.javamessaging.AmazonSQSExtendedClient;
 import com.amazon.sqs.javamessaging.ExtendedClientConfiguration;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -22,19 +34,6 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 
 public class LargeMessageE2ET {
 
@@ -81,6 +80,13 @@ public class LargeMessageE2ET {
         LOG.info("Testing '" + LargeMessageE2ET.class.getSimpleName() + "'");
     }
 
+    @AfterAll
+    public static void tearDown() {
+        if (infrastructure != null) {
+            infrastructure.destroy();
+        }
+    }
+
     @AfterEach
     public void reset() {
         if (messageId != null) {
@@ -92,19 +98,14 @@ public class LargeMessageE2ET {
         }
     }
 
-    @AfterAll
-    public static void tearDown() {
-        if (infrastructure != null)
-            infrastructure.destroy();
-    }
-
     @Test
     public void bigSQSMessageOffloadedToS3_shouldLoadFromS3() throws IOException, InterruptedException {
         // given
         final ExtendedClientConfiguration extendedClientConfig =
                 new ExtendedClientConfiguration()
                         .withPayloadSupportEnabled(s3Client, bucketName);
-        AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(SqsClient.builder().httpClient(httpClient).build(), extendedClientConfig);
+        AmazonSQSExtendedClient client =
+                new AmazonSQSExtendedClient(SqsClient.builder().httpClient(httpClient).build(), extendedClientConfig);
         InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
         String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
@@ -122,7 +123,8 @@ public class LargeMessageE2ET {
                 .builder()
                 .tableName(tableName)
                 .keyConditionExpression("functionName = :func")
-                .expressionAttributeValues(Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
+                .expressionAttributeValues(
+                        Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
                 .build();
         QueryResponse response = dynamoDbClient.query(request);
         List<Map<String, AttributeValue>> items = response.items();
@@ -138,7 +140,8 @@ public class LargeMessageE2ET {
         final ExtendedClientConfiguration extendedClientConfig =
                 new ExtendedClientConfiguration()
                         .withPayloadSupportEnabled(s3Client, bucketName);
-        AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(SqsClient.builder().httpClient(httpClient).build(), extendedClientConfig);
+        AmazonSQSExtendedClient client =
+                new AmazonSQSExtendedClient(SqsClient.builder().httpClient(httpClient).build(), extendedClientConfig);
         String message = "Hello World";
 
         // when
@@ -155,13 +158,15 @@ public class LargeMessageE2ET {
                 .builder()
                 .tableName(tableName)
                 .keyConditionExpression("functionName = :func")
-                .expressionAttributeValues(Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
+                .expressionAttributeValues(
+                        Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
                 .build();
         QueryResponse response = dynamoDbClient.query(request);
         List<Map<String, AttributeValue>> items = response.items();
         assertThat(items).hasSize(1);
         messageId = items.get(0).get("id").s();
-        assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(message.getBytes(StandardCharsets.UTF_8).length);
+        assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(
+                message.getBytes(StandardCharsets.UTF_8).length);
         assertThat(items.get(0).get("bodyMD5").s()).isEqualTo("b10a8db164e0754105b7a99be72e3fe5");
     }
 }
