@@ -1,11 +1,13 @@
 ---
-title: SQS Large Message Handling
+title: SQS Large Message Handling (Deprecated)
 description: Utility
 ---
 
 !!! warning
-This module is now deprecated and will be removed in version 2.
-See [Large Message Handling](large_messages.md) for the new module (`powertools-large-messages`) documentation.
+    This module is now deprecated and will be removed in version 2.
+    See [Large Message Handling](large_messages.md) and 
+    [the migration guide](http://localhost:8000/lambda-java/utilities/large_messages/#migration-from-the-sqs-large-message-utility)
+    for the new module (`powertools-large-messages`) documentation
 
 The large message handling utility handles SQS messages which have had their payloads
 offloaded to S3 due to them being larger than the SQS maximum.

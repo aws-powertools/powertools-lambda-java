@@ -15,10 +15,12 @@ nav:
       - utilities/parameters.md
       - utilities/large_messages.md
       - utilities/batch.md
-      - utilities/sqs_batch.md
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
+  - Deprecated:
+      - utilities/sqs_large_message_handling.md
+      - utilities/sqs_batch.md
   - Processes:
       - processes/maintainers.md
 
