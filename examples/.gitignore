@@ -1,4 +1,4 @@
 dependency-reduced-pom.xml
 .aws-sam
-/powertools-examples-core/cdk/infra/cdk.out/
+cdk.out
 /powertools-examples-core/cdk/app/?/.m2/repository/
