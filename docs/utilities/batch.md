@@ -65,7 +65,7 @@ and return its response from the handler's `processMessage` implementation. Exce
 internally and an appropriate partial response for the message source is returned to Lambda for you.
 
 !!! warning
-    While this utility lowers the chance of processing messages more than once, but it is not guaranteed. 
+    While this utility lowers the chance of processing messages more than once, it is still not guaranteed. 
     We recommend implementing processing logic in an idempotent manner wherever possible, for instance,
     by taking advantage of [the idempotency module](idempotency.md).
     More details on how Lambda works with SQS can be found in the [AWS documentation](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html)
