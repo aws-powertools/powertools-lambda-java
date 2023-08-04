@@ -115,7 +115,6 @@ public class Infrastructure {
     private final String kinesisStream;
     private final String largeMessagesBucket;
     private String ddbStreamsTableName;
-
     private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
@@ -285,7 +284,12 @@ public class Infrastructure {
                     .maxReceiveCount(1) // do not retry in case of error
                     .build();
             sqsQueue.grantConsumeMessages(function);
-            SqsEventSource sqsEventSource = SqsEventSource.Builder.create(sqsQueue).enabled(true).batchSize(1).build();
+            SqsEventSource sqsEventSource = SqsEventSource.Builder
+                    .create(sqsQueue)
+                    .enabled(true)
+                    .reportBatchItemFailures(true)
+                    .batchSize(1)
+                    .build();
             function.addEventSource(sqsEventSource);
             CfnOutput.Builder
                     .create(stack, "QueueURL")
@@ -305,6 +309,7 @@ public class Infrastructure {
                     .create(stream)
                     .enabled(true)
                     .batchSize(3)
+                    .reportBatchItemFailures(true)
                     .startingPosition(StartingPosition.TRIM_HORIZON)
                     .maxBatchingWindow(Duration.seconds(1))
                     .build();
@@ -327,6 +332,7 @@ public class Infrastructure {
                     .batchSize(1)
                     .startingPosition(StartingPosition.TRIM_HORIZON)
                     .maxBatchingWindow(Duration.seconds(1))
+                    .reportBatchItemFailures(true)
                     .build();
             function.addEventSource(ddbEventSource);
             CfnOutput.Builder.create(stack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();

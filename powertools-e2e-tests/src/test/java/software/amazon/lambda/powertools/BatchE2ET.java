@@ -88,7 +88,6 @@ public class BatchE2ET {
         infrastructure = Infrastructure.builder()
                 .testName(BatchE2ET.class.getSimpleName())
                 .pathToFunction("batch")
-                .idempotencyTable("idempo" + random)
                 .queue(queueName)
                 .ddbStreamsTableName(ddbStreamsTestTable)
                 .kinesisStream(kinesisStreamName)
@@ -119,9 +118,8 @@ public class BatchE2ET {
 
     @AfterAll
     public static void tearDown() {
-        // TODO bring this back after testing
         if (infrastructure != null) {
-            // infrastructure.destroy();
+            infrastructure.destroy();
         }
     }
 
