@@ -9,6 +9,18 @@
         <version>1.17.0-SNAPSHOT</version>
     </parent>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>dev.aspectj</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <artifactId>powertools-batch</artifactId>
     <dependencies>
         <dependency>
@@ -23,11 +35,6 @@
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-serialization</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <scope>compile</scope>
         </dependency>
 
         <!-- Test dependencies -->
