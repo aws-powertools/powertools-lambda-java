@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  DynamoDB Streams batch processing demo
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_LOGGER_SAMPLE_RATE: 1.0
+        POWERTOOLS_LOGGER_LOG_EVENT: true
+
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+
+  DemoDynamoDBWriter:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../..
+      Handler: org.demo.batch.dynamo.DynamoDBWriter::handleRequest
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: ddbstreams-demo
+          TABLE_NAME: !Ref DynamoDBTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTable
+      Events:
+        CWSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: 'rate(1 minute)'
+            Name: !Join [ "-", [ "ddb-writer-schedule", !Select [ 0, !Split [ -, !Select [ 2, !Split [ /, !Ref AWS::StackId ] ] ] ] ] ]
+            Description: Write records to DynamoDB via a Lambda function
+            Enabled: true
+
+  DemoDynamoDBStreamsConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../..
+      Handler: org.demo.batch.dynamo.DynamoDBStreamBatchHandler::handleRequest
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: ddbstreams-batch-demo
+      Policies: AWSLambdaDynamoDBExecutionRole
+      Events:
+        Stream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt DynamoDBTable.StreamArn
+            BatchSize: 100
+            StartingPosition: TRIM_HORIZON
+
