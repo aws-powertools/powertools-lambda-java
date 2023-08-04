@@ -483,7 +483,8 @@ You must provide either a raw message handler, or a deserialized message handler
 the envelope record type relevant for the particular event source - for instance, the SQS event source provides
 [SQSMessage](https://javadoc.io/doc/com.amazonaws/aws-lambda-java-events/2.2.2/com/amazonaws/services/lambda/runtime/events/SQSEvent.html)
 instances. The deserialized message handler extracts the body from this envelope, and deserializes it to a user-defined
-type. 
+type. Note that deserialized message handlers are not relevant for the DynamoDB provider, as the format of the inner 
+message is fixed by DynamoDB.
 
 In general, the deserialized message handler should be used unless you need access to information on the envelope.
 
@@ -520,7 +521,10 @@ In general, the deserialized message handler should be used unless you need acce
 ### Success and failure handlers
 
 You can register a success or failure handler which will be invoked as each message is processed by the batch
-module.
+module. This may be useful for reporting - for instance, writing metrics or logging failures. 
+
+These handlers are optional. Batch failures are handled by the module regardless of whether or not you 
+provide a custom failure handler. 
 
 Handlers can be provided when building the batch processor and are available for all event sources.
 For instance for DynamoDB:
@@ -534,7 +538,7 @@ BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMess
                     m.getDynamodb().getSequenceNumber());
             })
             .withFailureHandler((m, e) -> {
-                // Failure handler receives the raw message and the exception thrown
+                // Failure handler receives the raw message and the exception thrown.
                 LOGGER.info("Message with sequenceNumber {} failed to be processed: {}"
                 , e.getDynamodb().getSequenceNumber(), e);
             })
