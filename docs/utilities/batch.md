@@ -57,7 +57,7 @@ This behavior changes when you enable Report Batch Item Failures feature in your
 * [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
 * [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams).
 Single reported failure will use its sequence number as the stream checkpoint. 
-Multiple  reported failures will use the lowest sequence number as checkpoint.
+Multiple reported failures will use the lowest sequence number as checkpoint.
 
 With this utility, batch records are processed individually – only messages that failed to be processed 
 return to the queue or stream for a further retry. You simply build a `BatchProcessor` in your handler,
