@@ -512,7 +512,7 @@ In general, the deserialized message handler should be used unless you need acce
     }
 
     private void processMessage(Product product) {
-        // Do something with the raw message
+        // Do something with the deserialized message
     }
     
     ```
