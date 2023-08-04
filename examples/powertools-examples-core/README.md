@@ -9,7 +9,7 @@ We provide examples for the following infrastructure-as-code tools:
 * [AWS SAM](sam/) 
 * [AWS CDK](cdk/)
 
-For all the tools, the example application is the same, and consists of the following files:
+For each of the tools, the example application is the same, and consists of the following files:
 
 - [App.java](sam/src/main/java/helloworld/App.java) - Code for the application's Lambda function.
 - [AppTests.java](sam/src/test/java/helloworld/AppTest.java) - Unit tests for the application code.
