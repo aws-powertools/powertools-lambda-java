@@ -15,10 +15,9 @@
 package software.amazon.lambda.powertools.batch.builder;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
-
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 
 /**
  * An abstract class to capture common arguments used across all the message-binding-specific batch processing

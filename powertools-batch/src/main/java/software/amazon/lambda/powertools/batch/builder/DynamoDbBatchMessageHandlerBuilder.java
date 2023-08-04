@@ -17,11 +17,10 @@ package software.amazon.lambda.powertools.batch.builder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import java.util.function.BiConsumer;
 import software.amazon.lambda.powertools.batch.exception.DeserializationNotSupportedException;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.handler.DynamoDbBatchMessageHandler;
-
-import java.util.function.BiConsumer;
 
 /**
  * Builds a batch processor for processing DynamoDB Streams batch events

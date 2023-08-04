@@ -17,10 +17,9 @@ package software.amazon.lambda.powertools.batch.builder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import java.util.function.BiConsumer;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.handler.SqsBatchMessageHandler;
-
-import java.util.function.BiConsumer;
 
 /**
  * Builds a batch processor for the SQS event source.

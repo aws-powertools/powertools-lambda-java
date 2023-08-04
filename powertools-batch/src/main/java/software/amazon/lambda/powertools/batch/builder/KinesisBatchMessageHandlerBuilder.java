@@ -17,10 +17,9 @@ package software.amazon.lambda.powertools.batch.builder;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import java.util.function.BiConsumer;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.handler.KinesisStreamsBatchMessageHandler;
-
-import java.util.function.BiConsumer;
 
 /**
  * Builds a batch processor for processing Kinesis Streams batch events
