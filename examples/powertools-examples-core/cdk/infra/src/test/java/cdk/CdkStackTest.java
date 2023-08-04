@@ -16,13 +16,16 @@ public class CdkStackTest {
 
         Template template = Template.fromStack(stack);
 
-        // The Lambda function should exist
-        template.resourceCountIs("AWS::Lambda::Function", 1);
+        // There should be 2 lambda functions, one to handle regular input, and another for streaming
+        template.resourceCountIs("AWS::Lambda::Function", 2);
 
         // API Gateway should exist
         template.resourceCountIs("AWS::ApiGateway::RestApi", 1);
 
-        // API Gateway should have a path pointing to the Lambda
+        // API Gateway should have a path pointing to the regular Lambda
         template.hasResourceProperties("AWS::ApiGateway::Resource", Map.of("PathPart", "hello"));
+
+        // API Gateway should have a path pointing to the streaming Lambda
+        template.hasResourceProperties("AWS::ApiGateway::Resource", Map.of("PathPart", "hellostream"));
     }
 }

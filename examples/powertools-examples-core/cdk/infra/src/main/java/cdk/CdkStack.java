@@ -32,10 +32,15 @@ public class CdkStack extends Stack {
         super(scope, id, props);
 
         Function helloWorldFunction = createHelloWorldFunction();
+        Function helloWorldStreamFunction = createHelloWorldStreamFunction();
         RestApi restApi = createHelloWorldApi();
 
         restApi.getRoot().resourceForPath("/hello")
                 .addMethod("GET", LambdaIntegration.Builder.create(helloWorldFunction)
+                        .build());
+
+        restApi.getRoot().resourceForPath("/hellostream")
+                .addMethod("GET", LambdaIntegration.Builder.create(helloWorldStreamFunction)
                         .build());
 
         outputApiUrl(restApi);
@@ -82,6 +87,30 @@ public class CdkStack extends Stack {
                         "POWERTOOLS_LOGGER_SAMPLE_RATE", "0.1",
                         "POWERTOOLS_LOGGER_LOG_EVENT", "true",
                         "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities"
+                ))
+                .build();
+    }
+
+    private Function createHelloWorldStreamFunction() {
+        List<String> functionPackageInstructions = createFunctionPackageInstructions();
+
+        return Function.Builder.create(this, "HelloWorldStreamFunction")
+                .runtime(Runtime.JAVA_11)
+                .memorySize(512)
+                .timeout(Duration.seconds(20))
+                .tracing(Tracing.ACTIVE)
+                .code(Code.fromAsset("../app/", AssetOptions.builder()
+                        .bundling(BundlingOptions.builder()
+                                .image(Runtime.JAVA_11.getBundlingImage())
+                                .command(functionPackageInstructions)
+                                .build())
+                        .build()))
+                .handler("helloworld.AppStream")
+                .environment(Map.of("POWERTOOLS_LOG_LEVEL", "INFO",
+                        "POWERTOOLS_LOGGER_SAMPLE_RATE", "0.7",
+                        "POWERTOOLS_LOGGER_LOG_EVENT", "true",
+                        "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities",
+                        "POWERTOOLS_SERVICE_NAME", "hello"
                 ))
                 .build();
     }
