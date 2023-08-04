@@ -6,12 +6,6 @@ description: Utility
 The large message utility handles SQS and SNS messages which have had their payloads
 offloaded to S3 if they are larger than the maximum allowed size (256 KB).
 
-!!! Notice
-    The large message utility (available in the `powertools-sqs` module for versions v1.16.1 and earlier) is now deprecated
-    and replaced by the `powertools-large-messages` described in this page.
-    You can still get the documentation [here](sqs_large_message_handling.md)
-    and the migration guide [here](#migration-from-the-sqs-large-message-utility).
-
 ## Features
 
 - Automatically retrieve the content of S3 objects when SQS or SNS messages have been offloaded to S3.
