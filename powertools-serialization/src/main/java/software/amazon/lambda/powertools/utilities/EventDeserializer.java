@@ -33,7 +33,9 @@ import com.amazonaws.services.lambda.runtime.events.RabbitMQEvent;
 import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectReader;
 import java.io.IOException;
 import java.util.List;
@@ -96,6 +98,8 @@ public class EventDeserializer {
             return new EventPart(event.getRecords().stream()
                     .map(SQSEvent.SQSMessage::getBody)
                     .collect(Collectors.toList()));
+        } else if (object instanceof SQSEvent.SQSMessage) {
+            return new EventPart(((SQSEvent.SQSMessage) object).getBody());
         } else if (object instanceof ScheduledEvent) {
             ScheduledEvent event = (ScheduledEvent) object;
             return new EventPart(event.getDetail());
@@ -113,6 +117,8 @@ public class EventDeserializer {
             return new EventPart(event.getRecords().stream()
                     .map(r -> decode(r.getKinesis().getData()))
                     .collect(Collectors.toList()));
+        } else if (object instanceof KinesisEvent.KinesisEventRecord) {
+            return new EventPart(decode(((KinesisEvent.KinesisEventRecord)object).getKinesis().getData()));
         } else if (object instanceof KinesisFirehoseEvent) {
             KinesisFirehoseEvent event = (KinesisFirehoseEvent) object;
             return new EventPart(event.getRecords().stream()
@@ -213,6 +219,17 @@ public class EventDeserializer {
                 throw new EventDeserializationException("Cannot load the event as " + clazz.getSimpleName(), e);
             }
         }
+
+        public <M> M as() {
+            TypeReference<M> typeRef = new TypeReference<M>() {};
+
+            try {
+                JsonParser parser = JsonConfig.get().getObjectMapper().createParser(content);
+                return JsonConfig.get().getObjectMapper().reader().readValue(parser, typeRef);
+            } catch (IOException e) {
+                throw new EventDeserializationException("Cannot load the event as " + typeRef, e);
+            }
+        };
 
         /**
          * Deserialize this part of event from JSON to a list of objects of type T

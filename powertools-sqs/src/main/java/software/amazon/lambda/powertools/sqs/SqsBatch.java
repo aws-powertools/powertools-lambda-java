@@ -23,6 +23,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * @deprecated
+ * @see software.amazon.lambda.powertools.batch in powertools-batch module.
+ * Will be removed in V2.
+ *
  * {@link SqsBatch} is used to process batch messages in {@link SQSEvent}
  *
  * <p>
@@ -87,6 +91,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
+@Deprecated
 public @interface SqsBatch {
 
     Class<? extends SqsMessageHandler<Object>> value();

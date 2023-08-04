@@ -1,460 +1,571 @@
 ---
-title: SQS Batch Processing
+title: Batch Processing
 description: Utility
 ---
 
-The SQS batch processing utility provides a way to handle partial failures when processing batches of messages from SQS.
-The utility handles batch processing for both 
-[standard](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/standard-queues.html) and 
-[FIFO](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/FIFO-queues.html) SQS queues. 
+The batch processing utility provides a way to handle partial failures when processing batches of messages from SQS queues,
+SQS FIFO queues, Kinesis Streams, or DynamoDB Streams.
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    BatchSource: Amazon SQS <br/><br/> Amazon Kinesis Data Streams <br/><br/> Amazon DynamoDB Streams <br/><br/>
+    LambdaInit: Lambda invocation
+    BatchProcessor: Batch Processor
+    RecordHandler: Record Handler function
+    YourLogic: Your logic to process each batch item
+    LambdaResponse: Lambda response
+    BatchSource --> LambdaInit
+    LambdaInit --> BatchProcessor
+    BatchProcessor --> RecordHandler
+    state BatchProcessor {
+        [*] --> RecordHandler: Your function
+        RecordHandler --> YourLogic
+    }
+    RecordHandler --> BatchProcessor: Collect results
+    BatchProcessor --> LambdaResponse: Report items that failed processing
+```
 
 **Key Features**
 
-* Prevent successfully processed messages from being returned to SQS
-* A simple interface for individually processing messages from a batch
+* Reports batch item failures to reduce number of retries for a record upon errors
+* Simple interface to process each batch record
+* Integrates with Java Events library and the deserialization module 
+* Build your own batch processor by extending primitives
 
 **Background**
 
-When using SQS as a Lambda event source mapping, Lambda functions can be triggered with a batch of messages from SQS. 
-If your function fails to process any message from the batch, the entire batch returns to your SQS queue, and your 
-Lambda function will be triggered with the same batch again. With this utility, messages within a batch will be handled individually - only messages that were not successfully processed
-are returned to the queue.
+When using SQS, Kinesis Data Streams, or DynamoDB Streams as a Lambda event source, your Lambda functions are 
+triggered with a batch of messages.
+If your function fails to process any message from the batch, the entire batch returns to your queue or stream.
+This same batch is then retried until either condition happens first:
+**a)** your Lambda function returns a successful response, 
+**b)** record reaches maximum retry attempts, or 
+**c)** records expire.
+
+```mermaid
+journey
+  section Conditions
+    Successful response: 5: Success
+    Maximum retries: 3: Failure
+    Records expired: 1: Failure
+```
+
+This behavior changes when you enable Report Batch Item Failures feature in your Lambda function event source configuration:
+
+<!-- markdownlint-disable MD013 -->
+* [**SQS queues**](#sqs-standard). Only messages reported as failure will return to the queue for a retry, while successful ones will be deleted.
+* [**Kinesis data streams**](#kinesis-and-dynamodb-streams) and [**DynamoDB streams**](#kinesis-and-dynamodb-streams).
+Single reported failure will use its sequence number as the stream checkpoint. 
+Multiple reported failures will use the lowest sequence number as checkpoint.
+
+With this utility, batch records are processed individually – only messages that failed to be processed 
+return to the queue or stream for a further retry. You simply build a `BatchProcessor` in your handler,
+and return its response from the handler's `processMessage` implementation. Exceptions are handled 
+internally and an appropriate partial response for the message source is returned to Lambda for you.
 
 !!! warning
-    While this utility lowers the chance of processing messages more than once, it is not guaranteed. We recommend implementing processing logic in an idempotent manner wherever possible.
+    While this utility lowers the chance of processing messages more than once, it is still not guaranteed. 
+    We recommend implementing processing logic in an idempotent manner wherever possible, for instance,
+    by taking advantage of [the idempotency module](idempotency.md).
     More details on how Lambda works with SQS can be found in the [AWS documentation](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html)
 
 ## Install
 
-Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
+We simply add `powertools-batch` to our build dependencies. Note - if you are using other Powertools
+modules that require code-weaving, such as `powertools-core`, you will need to configure that also.
 
-=== "Maven Java 11+"
+=== "Maven"
 
-    ```xml hl_lines="3-7 16 18 24-27""
+    ```xml
     <dependencies>
         ...
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-sqs</artifactId>
+            <artifactId>powertools-batch</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
         ...
     </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>dev.aspectj</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
-                 <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-sqs</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
     ```
 
-=== "Maven Java 1.8"
+=== "Gradle"
 
-    ```xml hl_lines="3-7 16 18 24-27"
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-sqs</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
-                 <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-sqs</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-
-=== "Gradle Java 11+"
-
-    ```groovy hl_lines="3 11"
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
-        }
+    ```groovy
         
         repositories {
             mavenCentral()
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
+            implementation 'software.amazon.lambda:powertools-batch:{{ powertools.version }}'
+        }
+    ```
+## Getting Started
+
+For this feature to work, you need to **(1)** configure your Lambda function event source to use `ReportBatchItemFailures`,
+and **(2)** return a specific response to report which records failed to be processed. 
+
+You can use your preferred deployment framework to set the correct configuration while this utility,
+while the `powertools-batch` module handles generating the response, which simply needs to be returned as the result of
+your Lambda handler.
+
+A complete [Serverless Application Model](https://aws.amazon.com/serverless/sam/) example can be found
+[here](https://github.com/aws-powertools/powertools-lambda-java/tree/main/examples/powertools-examples-batch) covering
+all of the batch sources.
+
+For more information on configuring `ReportBatchItemFailures`, 
+see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting), 
+[Kinesis](https://docs.aws.amazon.com/lambda/latest/dg/with-kinesis.html#services-kinesis-batchfailurereporting),and
+[DynamoDB Streams](https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-batchfailurereporting). 
+
+
+
+
+!!! note "You do not need any additional IAM permissions to use this utility, except for what each event source requires."
+
+### Processing messages from SQS
+
+=== "SQSBatchHandler" 
+    
+    ```java hl_lines="10 13-15 20 25"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
+    import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+    import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
+    import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
+    
+    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+
+        private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+    
+        public SqsBatchHandler() {
+            handler = new BatchMessageHandlerBuilder()
+                    .withSqsBatchHandler()
+                    .buildWithMessageHandler(this::processMessage, Product.class);
+        }
+    
+        @Override
+        public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+            return handler.processBatch(sqsEvent, context);
+        }
+    
+    
+        private void processMessage(Product p, Context c) {
+            // Process the product
+        }
+    
+    }
+    ```
+
+=== "SQS Product"
+    
+    ```java
+    public class Product {
+        private long id;
+    
+        private String name;
+    
+        private double price;
+    
+        public Product() {
+        }
+    
+        public Product(long id, String name, double price) {
+            this.id = id;
+            this.name = name;
+            this.price = price;
+        }
+    
+        public long getId() {
+            return id;
+        }
+    
+        public void setId(long id) {
+            this.id = id;
+        }
+    
+        public String getName() {
+            return name;
+        }
+    
+        public void setName(String name) {
+            this.name = name;
+        }
+    
+        public double getPrice() {
+            return price;
+        }
+    
+        public void setPrice(double price) {
+            this.price = price;
+        }
+    }
+    ``` 
+
+=== "SQS Example Event"
+
+    ```json
+        {
+            "Records": [
+            {
+                "messageId": "d9144555-9a4f-4ec3-99a0-34ce359b4b54",
+                "receiptHandle": "13e7f7851d2eaa5c01f208ebadbf1e72==",
+                "body": "{\n  \"id\": 1234,\n  \"name\": \"product\",\n  \"price\": 42\n}",
+                "attributes": {
+                    "ApproximateReceiveCount": "1",
+                    "SentTimestamp": "1601975706495",
+                    "SenderId": "AROAIFU437PVZ5L2J53F5",
+                    "ApproximateFirstReceiveTimestamp": "1601975706499"
+                },
+                "messageAttributes": {
+                },
+                "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
+                "eventSource": "aws:sqs",
+                "eventSourceARN": "arn:aws:sqs:eu-central-1:123456789012:TestLambda",
+                "awsRegion": "eu-central-1"
+            },
+            {
+                "messageId": "e9144555-9a4f-4ec3-99a0-34ce359b4b54",
+                "receiptHandle": "13e7f7851d2eaa5c01f208ebadbf1e72==",
+                "body": "{\n  \"id\": 12345,\n  \"name\": \"product5\",\n  \"price\": 45\n}",
+                "attributes": {
+                    "ApproximateReceiveCount": "1",
+                    "SentTimestamp": "1601975706495",
+                    "SenderId": "AROAIFU437PVZ5L2J53F5",
+                    "ApproximateFirstReceiveTimestamp": "1601975706499"
+                },
+                "messageAttributes": {
+                },
+                "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
+                "eventSource": "aws:sqs",
+                "eventSourceARN": "arn:aws:sqs:eu-central-1:123456789012:TestLambda",
+                "awsRegion": "eu-central-1"
+            }]
+        }
+    ```
+
+### Processing messages from Kinesis Streams
+
+=== "KinesisBatchHandler"
+    
+    ```java  hl_lines="10 13-15 20 24"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+    import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+    import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
+    import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
+    
+    public class KinesisBatchHandler implements RequestHandler<KinesisEvent, StreamsEventResponse> {
+    
+        private final BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler;
+    
+        public KinesisBatchHandler() {
+            handler = new BatchMessageHandlerBuilder()
+                    .withKinesisBatchHandler()
+                    .buildWithMessageHandler(this::processMessage, Product.class);
+        }
+    
+        @Override
+        public StreamsEventResponse handleRequest(KinesisEvent kinesisEvent, Context context) {
+            return handler.processBatch(kinesisEvent, context);
+        }
+    
+        private void processMessage(Product p, Context c) {
+            // process the product
+        }
+    
+    }
+    ```
+
+=== "Kinesis Product"
+    
+    ```java
+    public class Product {
+        private long id;
+    
+        private String name;
+    
+        private double price;
+    
+        public Product() {
+        }
+    
+        public Product(long id, String name, double price) {
+            this.id = id;
+            this.name = name;
+            this.price = price;
+        }
+    
+        public long getId() {
+            return id;
+        }
+    
+        public void setId(long id) {
+            this.id = id;
+        }
+    
+        public String getName() {
+            return name;
+        }
+    
+        public void setName(String name) {
+            this.name = name;
+        }
+    
+        public double getPrice() {
+            return price;
+        }
+    
+        public void setPrice(double price) {
+            this.price = price;
+        }
+    }
+    ``` 
+
+=== "Kinesis Example Event"
+
+    ```json 
+        {
+          "Records": [
+            {
+              "kinesis": {
+                "partitionKey": "partitionKey-03",
+                "kinesisSchemaVersion": "1.0",
+                "data": "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=",
+                "sequenceNumber": "49545115243490985018280067714973144582180062593244200961",
+                "approximateArrivalTimestamp": 1428537600,
+                "encryptionType": "NONE"
+              },
+              "eventSource": "aws:kinesis",
+              "eventID": "shardId-000000000000:49545115243490985018280067714973144582180062593244200961",
+              "invokeIdentityArn": "arn:aws:iam::EXAMPLE",
+              "eventVersion": "1.0",
+              "eventName": "aws:kinesis:record",
+              "eventSourceARN": "arn:aws:kinesis:EXAMPLE",
+              "awsRegion": "eu-central-1"
+            },
+            {
+              "kinesis": {
+                "partitionKey": "partitionKey-03",
+                "kinesisSchemaVersion": "1.0",
+                "data": "eyJpZCI6MTIzNDUsICJuYW1lIjoicHJvZHVjdDUiLCAicHJpY2UiOjQ1fQ==",
+                "sequenceNumber": "49545115243490985018280067714973144582180062593244200962",
+                "approximateArrivalTimestamp": 1428537600,
+                "encryptionType": "NONE"
+              },
+              "eventSource": "aws:kinesis",
+              "eventID": "shardId-000000000000:49545115243490985018280067714973144582180062593244200961",
+              "invokeIdentityArn": "arn:aws:iam::EXAMPLE",
+              "eventVersion": "1.0",
+              "eventName": "aws:kinesis:record",
+              "eventSourceARN": "arn:aws:kinesis:EXAMPLE",
+              "awsRegion": "eu-central-1"
+            }
+          ]
+        }
+    ```
+### Processing messages from DynamoDB Streams
+
+=== "DynamoDBStreamBatchHandler"
+    
+    ```java  hl_lines="10 13-15 20 24"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
+    import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+    import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
+    import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
+    
+    public class DynamoDBStreamBatchHandler implements RequestHandler<DynamodbEvent, StreamsEventResponse> {
+    
+        private final BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler;
+    
+        public DynamoDBStreamBatchHandler() {
+            handler = new BatchMessageHandlerBuilder()
+                    .withDynamoDbBatchHandler()
+                    .buildWithRawMessageHandler(this::processMessage);
         }
         
-        sourceCompatibility = 11 // or higher
-        targetCompatibility = 11 // or higher
-    ```
-
-=== "Gradle Java 1.8"
-
-    ```groovy hl_lines="3 11"
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-        
-        repositories {
-            mavenCentral()
-        }
-        
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-sqs:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    ```
-
-## IAM Permissions
-
-This utility requires additional permissions to work as expected. Lambda functions using this utility require the `sqs:DeleteMessageBatch` permission.
-
-If you are also using [nonRetryableExceptions](#move-non-retryable-messages-to-a-dead-letter-queue) attribute, utility will need additional permission of `sqs:GetQueueAttributes` on source SQS. 
-It also needs `sqs:SendMessage` and `sqs:SendMessageBatch` on configured dead letter queue.  
-
-If source or dead letter queue is configured to use encryption at rest using [AWS Key Management Service (KMS)](https://aws.amazon.com/kms/), function will need additional permissions of 
-`kms:GenerateDataKey` and `kms:Decrypt` on the KMS key being used for encryption. Refer [docs](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/sqs-key-management.html#compatibility-with-aws-services) for more details.
-
-Refer [example project](https://github.com/aws-samples/aws-lambda-powertools-examples/blob/main/java/SqsBatchProcessing/template.yaml#L105) for policy details example.
-
-
-## Processing messages from SQS
-
-You can use either **[SqsBatch annotation](#sqsbatch-annotation)**, or **[SqsUtils Utility API](#sqsutils-utility-api)** as a fluent API.
-
-Both have nearly the same behaviour when it comes to processing messages from the batch:
-
-* **Entire batch has been successfully processed**, where your Lambda handler returned successfully, we will let SQS delete the batch to optimize your cost
-* **Entire Batch has been partially processed successfully**, where exceptions were raised within your `SqsMessageHandler` interface implementation, we will:
-    - **1)** Delete successfully processed messages from the queue by directly calling `sqs:DeleteMessageBatch`
-    - **2)** If a message with a [message group ID](https://docs.aws.amazon.com/AWSSimpleQueueService/latest/SQSDeveloperGuide/using-messagegroupid-property.html) fails, 
-             the processing of the batch will be stopped and the remainder of the messages will be returned to SQS. 
-             This behaviour [is required to handle SQS FIFO queues](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting).   
-    - **3)** if non retryable exceptions occur, messages resulting in configured exceptions during processing will be immediately moved to the dead letter queue associated to the source SQS queue or deleted from the source SQS queue if `deleteNonRetryableMessageFromQueue` is set to `true`.
-    - **4)** Raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue
-
-The only difference is that **SqsUtils Utility API** will give you access to return from the processed messages if you need. Exception `SQSBatchProcessingException` thrown from the
-utility will have access to both successful and failed messaged along with failure exceptions.
-
-## Functional Interface SqsMessageHandler
-
-Both [annotation](#sqsbatch-annotation) and [SqsUtils Utility API](#sqsutils-utility-api) requires an implementation of functional interface `SqsMessageHandler`.
-
-This implementation is responsible for processing each individual message from the batch, and to raise an exception if unable to process any of the messages sent.
-
-**Any non-exception/successful return from your record handler function** will instruct utility to queue up each individual message for deletion.
-
-### SqsBatch annotation
-
-When using this annotation, you need provide a class implementation of `SqsMessageHandler` that will process individual messages from the batch - It should raise an exception if it is unable to process the record.
-
-All records in the batch will be passed to this handler for processing, even if exceptions are thrown - Here's the behaviour after completing the batch:
-
-* **Any successfully processed messages**, we will delete them from the queue via `sqs:DeleteMessageBatch`.
-* **if, nonRetryableExceptions attribute is used**, messages resulting in configured exceptions during processing will be immediately moved to the dead letter queue associated to the source SQS queue or deleted from the source SQS queue if `deleteNonRetryableMessageFromQueue` is set to `true`.
-* **Any unprocessed messages detected**, we will raise `SQSBatchProcessingException` to ensure failed messages return to your SQS queue.
-
-!!! warning
-    You will not have access to the **processed messages** within the Lambda Handler - all processing logic will and should be performed by the implemented `#!java SqsMessageHandler#process()` function.
-
-=== "AppSqsEvent.java"
-
-    ```java hl_lines="7"
-    import software.amazon.lambda.powertools.sqs.SqsBatch;
-    import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
-    import software.amazon.lambda.powertools.sqs.SqsUtils;
-    
-    public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
         @Override
-        @SqsBatch(SampleMessageHandler.class)
-        public String handleRequest(SQSEvent input, Context context) {
-            return "{\"statusCode\": 200}";
+        public StreamsEventResponse handleRequest(DynamodbEvent ddbEvent, Context context) {
+            return handler.processBatch(ddbEvent, context);
         }
-    
-        public class SampleMessageHandler implements SqsMessageHandler<Object> {
-    
-            @Override
-            public String process(SQSMessage message) {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-                return returnVal;
+
+        private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
+            // Process the change record
+        }
+    }
+    ```
+
+=== "DynamoDB Example Event"
+
+    ```json 
+        {
+          "Records": [
+            {
+              "eventID": "c4ca4238a0b923820dcc509a6f75849b",
+              "eventName": "INSERT",
+              "eventVersion": "1.1",
+              "eventSource": "aws:dynamodb",
+              "awsRegion": "eu-central-1",
+              "dynamodb": {
+                "Keys": {
+                  "Id": {
+                    "N": "101"
+                  }
+                },
+                "NewImage": {
+                  "Message": {
+                    "S": "New item!"
+                  },
+                  "Id": {
+                    "N": "101"
+                  }
+                },
+                "ApproximateCreationDateTime": 1428537600,
+                "SequenceNumber": "4421584500000000017450439091",
+                "SizeBytes": 26,
+                "StreamViewType": "NEW_AND_OLD_IMAGES"
+              },
+              "eventSourceARN": "arn:aws:dynamodb:eu-central-1:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899",
+              "userIdentity": {
+                "principalId": "dynamodb.amazonaws.com",
+                "type": "Service"
+              }
+            },
+            {
+              "eventID": "c81e728d9d4c2f636f067f89cc14862c",
+              "eventName": "MODIFY",
+              "eventVersion": "1.1",
+              "eventSource": "aws:dynamodb",
+              "awsRegion": "eu-central-1",
+              "dynamodb": {
+                "Keys": {
+                  "Id": {
+                    "N": "101"
+                  }
+                },
+                "NewImage": {
+                  "Message": {
+                    "S": "This item has changed"
+                  },
+                  "Id": {
+                    "N": "101"
+                  }
+                },
+                "OldImage": {
+                  "Message": {
+                    "S": "New item!"
+                  },
+                  "Id": {
+                    "N": "101"
+                  }
+                },
+                "ApproximateCreationDateTime": 1428537600,
+                "SequenceNumber": "4421584500000000017450439092",
+                "SizeBytes": 59,
+                "StreamViewType": "NEW_AND_OLD_IMAGES"
+              },
+              "eventSourceARN": "arn:aws:dynamodb:eu-central-1:123456789012:table/ExampleTableWithStream/stream/2015-06-27T00:48:05.899"
             }
+          ]
         }
+    ```
+
+
+## Handling Messages
+
+### Raw message and deserialized message handlers
+You must provide either a raw message handler, or a deserialized message handler. The raw message handler receives
+the envelope record type relevant for the particular event source - for instance, the SQS event source provides
+[SQSMessage](https://javadoc.io/doc/com.amazonaws/aws-lambda-java-events/2.2.2/com/amazonaws/services/lambda/runtime/events/SQSEvent.html)
+instances. The deserialized message handler extracts the body from this envelope, and deserializes it to a user-defined
+type. Note that deserialized message handlers are not relevant for the DynamoDB provider, as the format of the inner 
+message is fixed by DynamoDB.
+
+In general, the deserialized message handler should be used unless you need access to information on the envelope.
+
+=== "Raw Message Handler"
+
+    ```java
+    public void setup() {
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWithRawMessageHandler(this::processRawMessage);
     }
-    ```
 
-=== "AppSqsEventWithNonRetryableExceptions.java"
-
-    ```java hl_lines="7 21" 
-    import software.amazon.lambda.powertools.sqs.SqsBatch;
-    import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
-    import software.amazon.lambda.powertools.sqs.SqsUtils;
-    
-    public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
-        @Override
-        @SqsBatch(value = SampleMessageHandler.class, nonRetryableExceptions = {IllegalArgumentException.class})
-        public String handleRequest(SQSEvent input, Context context) {
-            return "{\"statusCode\": 200}";
-        }
-    
-        public class SampleMessageHandler implements SqsMessageHandler<Object> {
-    
-            @Override
-            public String process(SQSMessage message) {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-
-                if(/**Business validation failure**/) {
-                    throw new IllegalArgumentException("Failed business validation. No point of retrying. Move me to DLQ." + message.getMessageId());
-                }
-
-                return returnVal;
-            }
-        }
+    private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
+        // Do something with the raw message
     }
+    
     ```
 
+=== "Deserialized Message Handler" 
 
-### SqsUtils Utility API
-
-If you require access to the result of processed messages, you can use this utility. The result from calling **`#!java SqsUtils#batchProcessor()`** on the context manager will be a list of all the return values 
-from your **`#!java SqsMessageHandler#process()`** function.
-
-You can also use the utility in functional way by providing inline implementation of functional interface **`#!java SqsMessageHandler#process()`**
-
-
-=== "Utility API"
-    
-    ```java hl_lines="4"
-    public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
-        @Override
-        public List<String> handleRequest(SQSEvent input, Context context) {
-            List<String> returnValues = SqsUtils.batchProcessor(input, SampleMessageHandler.class);
-    
-            return returnValues;
-        }
-    
-        public class SampleMessageHandler implements SqsMessageHandler<String> {
-    
-            @Override
-            public String process(SQSMessage message) {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-                return returnVal;
-            }
-        }
+    ```java
+    public void setup() {
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWitMessageHandler(this::processRawMessage, Product.class);
     }
-    ```
 
-=== "Function implementation"
-
-    ```java hl_lines="5 6 7 8 9 10"
-    public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
-    
-        @Override
-        public List<String> handleRequest(SQSEvent input, Context context) {
-            List<String> returnValues = SqsUtils.batchProcessor(input, (message) -> {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-                return returnVal;
-            });
-    
-            return returnValues;
-        }
+    private void processMessage(Product product) {
+        // Do something with the deserialized message
     }
+    
     ```
 
-## Passing custom SqsClient
+### Success and failure handlers
 
-If you need to pass custom SqsClient such as region to the SDK, you can pass your own `SqsClient` to be used by utility either for
-**[SqsBatch annotation](#sqsbatch-annotation)**, or **[SqsUtils Utility API](#sqsutils-utility-api)**.
+You can register a success or failure handler which will be invoked as each message is processed by the batch
+module. This may be useful for reporting - for instance, writing metrics or logging failures. 
 
-=== "App.java"
+These handlers are optional. Batch failures are handled by the module regardless of whether or not you 
+provide a custom failure handler. 
 
-    ```java hl_lines="3 4"
-    public class AppSqsEvent implements RequestHandler<SQSEvent, List<String>> {
-        static {
-            SqsUtils.overrideSqsClient(SqsClient.builder()
-                    .build());
-        }
-    
-        @Override
-        public List<String> handleRequest(SQSEvent input, Context context) {
-            List<String> returnValues = SqsUtils.batchProcessor(input, SampleMessageHandler.class);
-    
-            return returnValues;
-        }
-    
-        public class SampleMessageHandler implements SqsMessageHandler<String> {
-    
-            @Override
-            public String process(SQSMessage message) {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-                return returnVal;
-            }
-        }
-    }
-    ```
+Handlers can be provided when building the batch processor and are available for all event sources.
+For instance for DynamoDB:
 
-## Suppressing exceptions
-
-If you want to disable the default behavior where `SQSBatchProcessingException` is raised if there are any exception, you can pass the `suppressException` boolean argument.
-
-=== "Within SqsBatch annotation"
-
-    ```java hl_lines="2"
-        @Override
-        @SqsBatch(value = SampleMessageHandler.class, suppressException = true)
-        public String handleRequest(SQSEvent input, Context context) {
-            return "{\"statusCode\": 200}";
-        }
-    ```
-
-=== "Within SqsUtils Utility API"
-
-    ```java hl_lines="3"
-        @Override
-        public List<String> handleRequest(SQSEvent input, Context context) {
-            List<String> returnValues = SqsUtils.batchProcessor(input, true, SampleMessageHandler.class);
-    
-            return returnValues;
-        }
-    ```
-
-## Move non retryable messages to a dead letter queue
-
-If you want certain exceptions to be treated as permanent failures during batch processing, i.e. exceptions where the result of retrying will
-always be a failure and want these can be immediately moved to the dead letter queue associated to the source SQS queue, you can use `SqsBatch#nonRetryableExceptions()` 
-to configure such exceptions. 
-
-If you want such messages to be deleted instead, set `SqsBatch#deleteNonRetryableMessageFromQueue()` to `true`. By default, its value is `false`.
-
-Same capability is also provided by [SqsUtils Utility API](#sqsutils-utility-api).
+```java
+BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+            .withDynamoDbBatchHandler()
+            .withSuccessHandler((m) -> {
+                // Success handler receives the raw message
+                LOGGER.info("Message with sequenceNumber {} was successfully processed",
+                    m.getDynamodb().getSequenceNumber());
+            })
+            .withFailureHandler((m, e) -> {
+                // Failure handler receives the raw message and the exception thrown.
+                LOGGER.info("Message with sequenceNumber {} failed to be processed: {}"
+                , e.getDynamodb().getSequenceNumber(), e);
+            })
+            .buildWithMessageHander(this::processMessage);
+```
 
 !!! info
-    Make sure the lambda function has required permissions needed by utility. Refer [this section](#iam-permissions).
+    If the success handler throws an exception, the item it is processing will be marked as failed by the
+    batch processor.
+    If the failure handler throws, the batch processing will continue; the item it is processing has
+    already been marked as failed.
 
-=== "SqsBatch annotation"
 
-    ```java hl_lines="7 21" 
-    import software.amazon.lambda.powertools.sqs.SqsBatch;
-    import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
-    import software.amazon.lambda.powertools.sqs.SqsUtils;
-    
-    public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
-        @Override
-        @SqsBatch(value = SampleMessageHandler.class, nonRetryableExceptions = {IllegalArgumentException.class})
-        public String handleRequest(SQSEvent input, Context context) {
-            return "{\"statusCode\": 200}";
+### Lambda Context 
+
+Both raw and deserialized message handlers can choose to take the Lambda context as an argument if they
+need it, or not:
+
+```java
+    public class ClassWithHandlers {
+
+        private void processMessage(Product product) {
+            // Do something with the raw message
         }
     
-        public class SampleMessageHandler implements SqsMessageHandler<Object> {
-    
-            @Override
-            public String process(SQSMessage message) {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-
-                if(/**Business validation failure**/) {
-                    throw new IllegalArgumentException("Failed business validation. No point of retrying. Move me to DLQ." + message.getMessageId());
-                }
-
-                return returnVal;
-            }
+        private void processMessageWithContext(Product product, Context context) {
+            // Do something with the raw message and the lambda Context
         }
     }
-    ```
-
-=== "SqsBatch API"
-
-    ```java hl_lines="9 23" 
-    import software.amazon.lambda.powertools.sqs.SqsBatch;
-    import software.amazon.lambda.powertools.sqs.SqsMessageHandler;
-    import software.amazon.lambda.powertools.sqs.SqsUtils;
-    
-    public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
-        @Override
-        public String handleRequest(SQSEvent input, Context context) {
-            
-            SqsUtils.batchProcessor(input, BatchProcessor.class, IllegalArgumentException.class);
-            
-            return "{\"statusCode\": 200}";
-        }
-    
-        public class SampleMessageHandler implements SqsMessageHandler<Object> {
-    
-            @Override
-            public String process(SQSMessage message) {
-                // This will be called for each individual message from a batch
-                // It should raise an exception if the message was not processed successfully
-                String returnVal = doSomething(message.getBody());
-
-                if(/**Business validation failure**/) {
-                    throw new IllegalArgumentException("Failed business validation. No point of retrying. Move me to DLQ." + message.getMessageId());
-                }
-
-                return returnVal;
-            }
-        }
-    }
-    ```
+```

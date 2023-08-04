@@ -16,6 +16,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
 
         <lambda.java.core>1.2.2</lambda.java.core>
+        <lambda.java.serialization>1.1.2</lambda.java.serialization>
         <lambda.java.events>3.11.2</lambda.java.events>
         <maven.shade.version>3.5.0</maven.shade.version>
         <aspectj.plugin.version>1.13.1</aspectj.plugin.version>
@@ -73,6 +74,11 @@
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-batch</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-core</artifactId>
                 <version>${lambda.java.core}</version>
@@ -81,6 +87,11 @@
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-events</artifactId>
                 <version>${lambda.java.events}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-lambda-java-serialization</artifactId>
+                <version>${lambda.java.serialization}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>

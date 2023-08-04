@@ -54,6 +54,7 @@
         <module>powertools-idempotency</module>
         <module>powertools-large-messages</module>
         <module>powertools-e2e-tests</module>
+        <module>powertools-batch</module>
         <module>examples</module>
     </modules>
 
