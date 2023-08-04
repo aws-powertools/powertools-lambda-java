@@ -57,7 +57,7 @@ public class CdkStack extends Stack {
     }
 
     /**
-     * Adds URL to the lambda to the outputs
+     * Adds API URL to the outputs
      *
      * @param restApi
      */
