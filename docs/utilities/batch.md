@@ -124,9 +124,9 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
 
 !!! note "You do not need any additional IAM permissions to use this utility, except for what each event source requires."
 
-## Processing messages from SQS
+### Processing messages from SQS
 
-=== "App.java" 
+=== "SQSBatchHandler" 
     
     ```java hl_lines="10 13-15 20 25"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -159,7 +159,7 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
     }
     ```
 
-=== "Product.java"
+=== "SQS Product"
     
     ```java
     public class Product {
@@ -204,7 +204,7 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
     }
     ``` 
 
-=== "Example Event"
+=== "SQS Example Event"
 
     ```json
         {
@@ -246,9 +246,9 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
         }
     ```
 
-## Processing messages from Kinesis Streams
+### Processing messages from Kinesis Streams
 
-=== "App.java"
+=== "KinesisBatchHandler"
     
     ```java  hl_lines="10 13-15 20 24"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -280,7 +280,7 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
     }
     ```
 
-=== "Product.java"
+=== "Kinesis Product"
     
     ```java
     public class Product {
@@ -325,7 +325,7 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
     }
     ``` 
 
-=== "Example Event"
+=== "Kinesis Example Event"
 
     ```json 
         {
@@ -367,9 +367,9 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
           ]
         }
     ```
-## Processing messages from DynamoDB Streams
+### Processing messages from DynamoDB Streams
 
-=== "App.java"
+=== "DynamoDBStreamBatchHandler"
     
     ```java  hl_lines="10 13-15 20 24"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -400,7 +400,7 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
     }
     ```
 
-=== "Example Event"
+=== "DynamoDB Example Event"
 
     ```json 
         {
@@ -474,3 +474,94 @@ see the details for [SQS](https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.
           ]
         }
     ```
+
+
+## Handling Messages
+
+### Raw message and deserialized message handlers
+You must provide either a raw message handler, or a deserialized message handler. The raw message handler receives
+the envelope record type relevant for the particular event source - for instance, the SQS event source provides
+[SQSMessage](https://javadoc.io/doc/com.amazonaws/aws-lambda-java-events/2.2.2/com/amazonaws/services/lambda/runtime/events/SQSEvent.html)
+instances. The deserialized message handler extracts the body from this envelope, and deserializes it to a user-defined
+type. 
+
+In general, the deserialized message handler should be used unless you need access to information on the envelope.
+
+=== "Raw Message Handler"
+
+    ```java
+    public void setup() {
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWithRawMessageHandler(this::processRawMessage);
+    }
+
+    private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
+        // Do something with the raw message
+    }
+    
+    ```
+
+=== "Deserialized Message Handler" 
+
+    ```java
+    public void setup() {
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWitMessageHandler(this::processRawMessage, Product.class);
+    }
+
+    private void processMessage(Product product) {
+        // Do something with the raw message
+    }
+    
+    ```
+
+### Success and failure handlers
+
+You can register a success or failure handler which will be invoked as each message is processed by the batch
+module.
+
+Handlers can be provided when building the batch processor and are available for all event sources.
+For instance for DynamoDB:
+
+```java
+BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+            .withDynamoDbBatchHandler()
+            .withSuccessHandler((m) -> {
+                // Success handler receives the raw message
+                LOGGER.info("Message with sequenceNumber {} was successfully processed",
+                    m.getDynamodb().getSequenceNumber());
+            })
+            .withFailureHandler((m, e) -> {
+                // Failure handler receives the raw message and the exception thrown
+                LOGGER.info("Message with sequenceNumber {} failed to be processed: {}"
+                , e.getDynamodb().getSequenceNumber(), e);
+            })
+            .buildWithMessageHander(this::processMessage);
+```
+
+!!! info
+    If the success handler throws an exception, the item it is processing will be marked as failed by the
+    batch processor.
+    If the failure handler throws, the batch processing will continue; the item it is processing has
+    already been marked as failed.
+
+
+### Lambda Context 
+
+Both raw and deserialized message handlers can choose to take the Lambda context as an argument if they
+need it, or not:
+
+```java
+    public class ClassWithHandlers {
+
+        private void processMessage(Product product) {
+            // Do something with the raw message
+        }
+    
+        private void processMessageWithContext(Product product, Context context) {
+            // Do something with the raw message and the lambda Context
+        }
+    }
+```
