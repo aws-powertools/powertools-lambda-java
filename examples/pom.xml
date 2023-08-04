@@ -36,7 +36,6 @@
         <module>powertools-examples-idempotency</module>
         <module>powertools-examples-parameters</module>
         <module>powertools-examples-serialization</module>
-        <module>powertools-examples-sqs</module>
         <module>powertools-examples-batch</module>
         <module>powertools-examples-validation</module>
         <module>powertools-examples-cloudformation</module>
