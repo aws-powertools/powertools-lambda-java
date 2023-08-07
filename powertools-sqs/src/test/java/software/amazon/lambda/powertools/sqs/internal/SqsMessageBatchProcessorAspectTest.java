@@ -86,21 +86,21 @@ public class SqsMessageBatchProcessorAspectTest {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
                 .satisfies(e ->
-                    {
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("message")
-                                .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
+                {
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("message")
+                            .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .containsExactly("2e1424d4-f796-459a-8184-9c92662be6da");
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(1)
-                                .contains("Success");
-                    });
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(1)
+                            .contains("Success");
+                });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -218,21 +218,21 @@ public class SqsMessageBatchProcessorAspectTest {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
                 .satisfies(e ->
-                    {
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("message")
-                                .containsExactly("Invalid message and was moved to DLQ");
+                {
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("message")
+                            .containsExactly("Invalid message and was moved to DLQ");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .containsExactly("");
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .containsExactly("");
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(1)
-                                .contains("Success");
-                    });
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(1)
+                            .contains("Success");
+                });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -258,21 +258,21 @@ public class SqsMessageBatchProcessorAspectTest {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
                 .satisfies(e ->
-                    {
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("message")
-                                .containsExactly("Invalid message and was moved to DLQ");
+                {
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("message")
+                            .containsExactly("Invalid message and was moved to DLQ");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .containsExactly("");
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .containsExactly("");
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(1)
-                                .contains("Success");
-                    });
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(1)
+                            .contains("Success");
+                });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));
@@ -301,21 +301,21 @@ public class SqsMessageBatchProcessorAspectTest {
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> requestHandler.handleRequest(event, context))
                 .satisfies(e ->
-                    {
-                        assertThat(e.getExceptions())
-                                .hasSize(1)
-                                .extracting("message")
-                                .containsExactly("Invalid message and should be reprocessed");
+                {
+                    assertThat(e.getExceptions())
+                            .hasSize(1)
+                            .extracting("message")
+                            .containsExactly("Invalid message and should be reprocessed");
 
-                        assertThat(e.getFailures())
-                                .hasSize(1)
-                                .extracting("messageId")
-                                .containsExactly("2e1424d4-f796-459a-9696-9c92662ba5da");
+                    assertThat(e.getFailures())
+                            .hasSize(1)
+                            .extracting("messageId")
+                            .containsExactly("2e1424d4-f796-459a-9696-9c92662ba5da");
 
-                        assertThat(e.successMessageReturnValues())
-                                .hasSize(1)
-                                .contains("Success");
-                    });
+                    assertThat(e.successMessageReturnValues())
+                            .hasSize(1)
+                            .contains("Success");
+                });
 
         verify(interactionClient).listQueues();
         verify(sqsClient).deleteMessageBatch(any(DeleteMessageBatchRequest.class));

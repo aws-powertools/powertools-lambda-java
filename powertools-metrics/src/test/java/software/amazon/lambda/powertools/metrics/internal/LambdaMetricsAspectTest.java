@@ -100,30 +100,30 @@ public class LambdaMetricsAspectTest {
             assertThat(out.toString().split("\n"))
                     .hasSize(2)
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s[0]);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric2", 1.0)
-                                    .containsEntry("Dimension1", "Value1")
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                                    .containsEntry("function_request_id", "123ABC");
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("function_request_id", "123ABC");
 
-                            Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                            assertThat(aws.get("CloudWatchMetrics"))
-                                    .asString()
-                                    .contains("Namespace=ExampleApplication");
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
 
-                            logAsJson = readAsJson(s[1]);
+                        logAsJson = readAsJson(s[1]);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -144,30 +144,30 @@ public class LambdaMetricsAspectTest {
             assertThat(out.toString().split("\n"))
                     .hasSize(2)
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s[0]);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric2", 1.0)
-                                    .containsEntry("CustomDimension", "booking")
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                                    .containsEntry("function_request_id", "123ABC");
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsEntry("CustomDimension", "booking")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("function_request_id", "123ABC");
 
-                            Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                            assertThat(aws.get("CloudWatchMetrics"))
-                                    .asString()
-                                    .contains("Namespace=ExampleApplication");
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
 
-                            logAsJson = readAsJson(s[1]);
+                        logAsJson = readAsJson(s[1]);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("CustomDimension", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("CustomDimension", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -188,28 +188,28 @@ public class LambdaMetricsAspectTest {
             assertThat(out.toString().split("\n"))
                     .hasSize(2)
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s[0]);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric2", 1.0)
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                                    .containsEntry("function_request_id", "123ABC");
+                        assertThat(logAsJson)
+                                .containsEntry("Metric2", 1.0)
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                                .containsEntry("function_request_id", "123ABC");
 
-                            Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                            assertThat(aws.get("CloudWatchMetrics"))
-                                    .asString()
-                                    .contains("Namespace=ExampleApplication");
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=ExampleApplication");
 
-                            logAsJson = readAsJson(s[1]);
+                        logAsJson = readAsJson(s[1]);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -228,25 +228,25 @@ public class LambdaMetricsAspectTest {
             assertThat(out.toString().split("\n"))
                     .hasSize(2)
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s[0]);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
 
-                            assertThat(logAsJson)
-                                    .doesNotContainKey("Metric1")
-                                    .containsEntry("ColdStart", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
+                        assertThat(logAsJson)
+                                .doesNotContainKey("Metric1")
+                                .containsEntry("ColdStart", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
 
-                            logAsJson = readAsJson(s[1]);
+                        logAsJson = readAsJson(s[1]);
 
-                            assertThat(logAsJson)
-                                    .doesNotContainKey("ColdStart")
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .doesNotContainKey("ColdStart")
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -265,34 +265,34 @@ public class LambdaMetricsAspectTest {
             assertThat(out.toString().split("\n"))
                     .hasSize(3)
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s[0]);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s[0]);
 
-                            assertThat(logAsJson)
-                                    .doesNotContainKey("Metric1")
-                                    .containsEntry("ColdStart", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
+                        assertThat(logAsJson)
+                                .doesNotContainKey("Metric1")
+                                .containsEntry("ColdStart", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
 
-                            logAsJson = readAsJson(s[1]);
+                        logAsJson = readAsJson(s[1]);
 
-                            assertThat(logAsJson)
-                                    .doesNotContainKey("ColdStart")
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
+                        assertThat(logAsJson)
+                                .doesNotContainKey("ColdStart")
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
 
-                            logAsJson = readAsJson(s[2]);
+                        logAsJson = readAsJson(s[2]);
 
-                            assertThat(logAsJson)
-                                    .doesNotContainKey("ColdStart")
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .doesNotContainKey("ColdStart")
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -309,15 +309,15 @@ public class LambdaMetricsAspectTest {
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -348,13 +348,13 @@ public class LambdaMetricsAspectTest {
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Service", "booking")
-                                    .doesNotContainKey("_aws");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Service", "booking")
+                                .doesNotContainKey("_aws");
+                    });
         }
     }
 
@@ -369,13 +369,13 @@ public class LambdaMetricsAspectTest {
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
-                            assertThat(logAsJson)
-                                    .containsEntry("CoolMetric", 1.0)
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
+                        assertThat(logAsJson)
+                                .containsEntry("CoolMetric", 1.0)
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 
@@ -409,14 +409,14 @@ public class LambdaMetricsAspectTest {
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
-                            assertThat(logAsJson)
-                                    .containsEntry("CoolMetric", 1.0)
-                                    .containsEntry("Service", "booking")
-                                    .containsEntry("function_request_id", "123ABC")
-                                    .containsKey("_aws");
-                        });
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
+                        assertThat(logAsJson)
+                                .containsEntry("CoolMetric", 1.0)
+                                .containsEntry("Service", "booking")
+                                .containsEntry("function_request_id", "123ABC")
+                                .containsKey("_aws");
+                    });
         }
     }
 

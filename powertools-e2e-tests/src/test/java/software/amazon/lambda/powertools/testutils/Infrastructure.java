@@ -45,14 +45,16 @@ import software.amazon.awscdk.services.appconfig.CfnDeployment;
 import software.amazon.awscdk.services.appconfig.CfnDeploymentStrategy;
 import software.amazon.awscdk.services.appconfig.CfnEnvironment;
 import software.amazon.awscdk.services.appconfig.CfnHostedConfigurationVersion;
-import software.amazon.awscdk.services.dynamodb.Attribute;
-import software.amazon.awscdk.services.dynamodb.AttributeType;
-import software.amazon.awscdk.services.dynamodb.BillingMode;
-import software.amazon.awscdk.services.dynamodb.Table;
+import software.amazon.awscdk.services.dynamodb.*;
 import software.amazon.awscdk.services.iam.PolicyStatement;
+import software.amazon.awscdk.services.kinesis.Stream;
+import software.amazon.awscdk.services.kinesis.StreamMode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.lambda.StartingPosition;
 import software.amazon.awscdk.services.lambda.Tracing;
+import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSource;
+import software.amazon.awscdk.services.lambda.eventsources.KinesisEventSource;
 import software.amazon.awscdk.services.lambda.eventsources.SqsEventSource;
 import software.amazon.awscdk.services.logs.LogGroup;
 import software.amazon.awscdk.services.logs.RetentionDays;
@@ -110,8 +112,9 @@ public class Infrastructure {
     private final AppConfig appConfig;
     private final SdkHttpClient httpClient;
     private final String queue;
+    private final String kinesisStream;
     private final String largeMessagesBucket;
-
+    private String ddbStreamsTableName;
     private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
@@ -126,7 +129,9 @@ public class Infrastructure {
         this.idempotencyTable = builder.idemPotencyTable;
         this.appConfig = builder.appConfig;
         this.queue = builder.queue;
+        this.kinesisStream = builder.kinesisStream;
         this.largeMessagesBucket = builder.largeMessagesBucket;
+        this.ddbStreamsTableName = builder.ddbStreamsTableName;
 
         this.app = new App();
         this.stack = createStackWithLambda();
@@ -172,7 +177,8 @@ public class Infrastructure {
         WaiterResponse<DescribeStacksResponse> waiterResponse =
                 cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
         if (waiterResponse.matched().response().isPresent()) {
-            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack = waiterResponse.matched().response().get().stacks().get(0);
+            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack =
+                    waiterResponse.matched().response().get().stacks().get(0);
             LOG.info("Stack " + deployedStack.stackName() + " successfully deployed");
             Map<String, String> outputs = new HashMap<>();
             deployedStack.outputs().forEach(output -> outputs.put(output.outputKey(), output.outputValue()));
@@ -225,8 +231,8 @@ public class Infrastructure {
 
         functionName = stackName + "-function";
         CfnOutput.Builder.create(stack, FUNCTION_NAME_OUTPUT)
-                        .value(functionName)
-                        .build();
+                .value(functionName)
+                .build();
 
         LOG.debug("Building Lambda function with command " +
                 packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
@@ -279,13 +285,58 @@ public class Infrastructure {
                     .maxReceiveCount(1) // do not retry in case of error
                     .build();
             sqsQueue.grantConsumeMessages(function);
-            SqsEventSource sqsEventSource = SqsEventSource.Builder.create(sqsQueue).enabled(true).batchSize(1).build();
+            SqsEventSource sqsEventSource = SqsEventSource.Builder
+                    .create(sqsQueue)
+                    .enabled(true)
+                    .reportBatchItemFailures(true)
+                    .batchSize(1)
+                    .build();
             function.addEventSource(sqsEventSource);
             CfnOutput.Builder
                     .create(stack, "QueueURL")
                     .value(sqsQueue.getQueueUrl())
                     .build();
             createTableForAsyncTests = true;
+        }
+        if (!StringUtils.isEmpty(kinesisStream)) {
+            Stream stream = Stream.Builder
+                    .create(stack, "KinesisStream")
+                    .streamMode(StreamMode.ON_DEMAND)
+                    .streamName(kinesisStream)
+                    .build();
+
+            stream.grantRead(function);
+            KinesisEventSource kinesisEventSource = KinesisEventSource.Builder
+                    .create(stream)
+                    .enabled(true)
+                    .batchSize(3)
+                    .reportBatchItemFailures(true)
+                    .startingPosition(StartingPosition.TRIM_HORIZON)
+                    .maxBatchingWindow(Duration.seconds(1))
+                    .build();
+            function.addEventSource(kinesisEventSource);
+            CfnOutput.Builder
+                    .create(stack, "KinesisStreamName")
+                    .value(stream.getStreamName())
+                    .build();
+        }
+
+        if (!StringUtils.isEmpty(ddbStreamsTableName)) {
+            Table ddbStreamsTable = Table.Builder.create(stack, "DDBStreamsTable")
+                    .tableName(ddbStreamsTableName)
+                    .stream(StreamViewType.KEYS_ONLY)
+                    .removalPolicy(RemovalPolicy.DESTROY)
+                    .partitionKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
+                    .build();
+
+            DynamoEventSource ddbEventSource = DynamoEventSource.Builder.create(ddbStreamsTable)
+                    .batchSize(1)
+                    .startingPosition(StartingPosition.TRIM_HORIZON)
+                    .maxBatchingWindow(Duration.seconds(1))
+                    .reportBatchItemFailures(true)
+                    .build();
+            function.addEventSource(ddbEventSource);
+            CfnOutput.Builder.create(stack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();
         }
 
         if (!StringUtils.isEmpty(largeMessagesBucket)) {
@@ -394,20 +445,20 @@ public class Infrastructure {
     private void uploadAssets() {
         Map<String, Asset> assets = findAssets();
         assets.forEach((objectKey, asset) ->
-            {
-                if (!asset.assetPath.endsWith(".jar")) {
-                    return;
-                }
-                ListObjectsV2Response objects =
-                        s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
-                if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
-                    LOG.debug("Asset already exists, skipping");
-                    return;
-                }
-                LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
-                s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(),
-                        Paths.get(cfnAssetDirectory, asset.assetPath));
-            });
+        {
+            if (!asset.assetPath.endsWith(".jar")) {
+                return;
+            }
+            ListObjectsV2Response objects =
+                    s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
+            if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
+                LOG.debug("Asset already exists, skipping");
+                return;
+            }
+            LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
+            s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(),
+                    Paths.get(cfnAssetDirectory, asset.assetPath));
+        });
     }
 
     /**
@@ -422,17 +473,17 @@ public class Infrastructure {
                     .readTree(new File(cfnAssetDirectory, stackName + ".assets.json"));
             JsonNode files = jsonNode.get("files");
             files.iterator().forEachRemaining(file ->
-                {
-                    String assetPath = file.get("source").get("path").asText();
-                    String assetPackaging = file.get("source").get("packaging").asText();
-                    String bucketName =
-                            file.get("destinations").get("current_account-current_region").get("bucketName").asText();
-                    String objectKey =
-                            file.get("destinations").get("current_account-current_region").get("objectKey").asText();
-                    Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
-                            .replace("${AWS::Region}", region.toString()));
-                    assets.put(objectKey, asset);
-                });
+            {
+                String assetPath = file.get("source").get("path").asText();
+                String assetPackaging = file.get("source").get("packaging").asText();
+                String bucketName =
+                        file.get("destinations").get("current_account-current_region").get("bucketName").asText();
+                String objectKey =
+                        file.get("destinations").get("current_account-current_region").get("objectKey").asText();
+                Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
+                        .replace("${AWS::Region}", region.toString()));
+                assets.put(objectKey, asset);
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -451,6 +502,8 @@ public class Infrastructure {
         private Map<String, String> environmentVariables = new HashMap<>();
         private String idemPotencyTable;
         private String queue;
+        private String kinesisStream;
+        private String ddbStreamsTableName;
 
         private Builder() {
             getJavaRuntime();
@@ -523,6 +576,16 @@ public class Infrastructure {
 
         public Builder queue(String queue) {
             this.queue = queue;
+            return this;
+        }
+
+        public Builder kinesisStream(String stream) {
+            this.kinesisStream = stream;
+            return this;
+        }
+
+        public Builder ddbStreamsTableName(String tableName) {
+            this.ddbStreamsTableName = tableName;
             return this;
         }
 

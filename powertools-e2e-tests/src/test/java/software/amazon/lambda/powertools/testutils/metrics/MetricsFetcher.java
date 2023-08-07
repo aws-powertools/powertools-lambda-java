@@ -73,33 +73,33 @@ public class MetricsFetcher {
         }
 
         Callable<List<Double>> callable = () ->
-            {
-                LOG.debug("Get Metrics for namespace {}, start {}, end {}, metric {}, dimensions {}", namespace, start,
-                        end, metricName, dimensionsList);
-                GetMetricDataResponse metricData = cloudwatch.getMetricData(GetMetricDataRequest.builder()
-                        .startTime(start)
-                        .endTime(end)
-                        .metricDataQueries(MetricDataQuery.builder()
-                                .id(metricName.toLowerCase())
-                                .metricStat(MetricStat.builder()
-                                        .unit(StandardUnit.COUNT)
-                                        .metric(Metric.builder()
-                                                .namespace(namespace)
-                                                .metricName(metricName)
-                                                .dimensions(dimensionsList)
-                                                .build())
-                                        .period(period)
-                                        .stat("Sum")
-                                        .build())
-                                .returnData(true)
-                                .build())
-                        .build());
-                List<Double> values = metricData.metricDataResults().get(0).values();
-                if (values == null || values.isEmpty()) {
-                    throw new Exception("No data found for metric " + metricName);
-                }
-                return values;
-            };
+        {
+            LOG.debug("Get Metrics for namespace {}, start {}, end {}, metric {}, dimensions {}", namespace, start,
+                    end, metricName, dimensionsList);
+            GetMetricDataResponse metricData = cloudwatch.getMetricData(GetMetricDataRequest.builder()
+                    .startTime(start)
+                    .endTime(end)
+                    .metricDataQueries(MetricDataQuery.builder()
+                            .id(metricName.toLowerCase())
+                            .metricStat(MetricStat.builder()
+                                    .unit(StandardUnit.COUNT)
+                                    .metric(Metric.builder()
+                                            .namespace(namespace)
+                                            .metricName(metricName)
+                                            .dimensions(dimensionsList)
+                                            .build())
+                                    .period(period)
+                                    .stat("Sum")
+                                    .build())
+                            .returnData(true)
+                            .build())
+                    .build());
+            List<Double> values = metricData.metricDataResults().get(0).values();
+            if (values == null || values.isEmpty()) {
+                throw new Exception("No data found for metric " + metricName);
+            }
+            return values;
+        };
 
         RetryConfig retryConfig = new RetryConfigBuilder()
                 .withMaxNumberOfTries(10)
@@ -110,9 +110,9 @@ public class MetricsFetcher {
         CallExecutor<List<Double>> callExecutor = new CallExecutorBuilder<List<Double>>()
                 .config(retryConfig)
                 .afterFailedTryListener(s ->
-                    {
-                        LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
-                    })
+                {
+                    LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
+                })
                 .build();
         Status<List<Double>> status = callExecutor.execute(callable);
         return status.getResult();

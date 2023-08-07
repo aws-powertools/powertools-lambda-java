@@ -109,14 +109,14 @@ public class DynamoDbProvider extends BaseProvider {
                 .items()
                 .stream()
                 .peek((i) ->
-                    {
-                        if (!i.containsKey("sk")) {
-                            throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
-                        }
-                        if (!i.containsKey("value")) {
-                            throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
-                        }
-                    })
+                {
+                    if (!i.containsKey("sk")) {
+                        throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
+                    }
+                    if (!i.containsKey("value")) {
+                        throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
+                    }
+                })
                 .collect(
                         Collectors.toMap(
                                 (i) -> i.get("sk").s(),
@@ -135,7 +135,9 @@ public class DynamoDbProvider extends BaseProvider {
             return DynamoDbClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .overrideConfiguration(ClientOverrideConfiguration.builder()
+                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
+                                    UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
                     .build();
         }
 

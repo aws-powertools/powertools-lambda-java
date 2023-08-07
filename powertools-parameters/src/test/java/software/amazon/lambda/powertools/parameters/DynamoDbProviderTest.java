@@ -123,9 +123,9 @@ public class DynamoDbProviderTest {
                 .build());
         // Act
         Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
-            {
-                provider.getValue(key);
-            });
+        {
+            provider.getValue(key);
+        });
     }
 
 
@@ -190,10 +190,10 @@ public class DynamoDbProviderTest {
 
         // Assert
         Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
-            {
-                // Act
-                provider.getMultipleValues(key);
-            });
+        {
+            // Act
+            provider.getMultipleValues(key);
+        });
     }
 
     @Test
@@ -211,10 +211,10 @@ public class DynamoDbProviderTest {
 
         // Assert
         Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
-            {
-                // Act
-                provider.getMultipleValues(key);
-            });
+        {
+            // Act
+            provider.getMultipleValues(key);
+        });
     }
 
     @Test

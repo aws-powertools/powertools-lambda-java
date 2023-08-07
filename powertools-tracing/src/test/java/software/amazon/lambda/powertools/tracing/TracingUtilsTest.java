@@ -96,31 +96,31 @@ class TracingUtilsTest {
         Context test = mock(Context.class);
 
         TracingUtils.withSubsegment("testSubSegment", subsegment ->
-            {
-                subsegment.putAnnotation("key", "val");
-                subsegment.putMetadata("key", "val");
-                test.getFunctionName();
-            });
+        {
+            subsegment.putAnnotation("key", "val");
+            subsegment.putMetadata("key", "val");
+            test.getFunctionName();
+        });
 
         verify(test).getFunctionName();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
                 .allSatisfy(subsegment ->
-                    {
-                        assertThat(subsegment.getName())
-                                .isEqualTo("## testSubSegment");
+                {
+                    assertThat(subsegment.getName())
+                            .isEqualTo("## testSubSegment");
 
-                        assertThat(subsegment.getNamespace())
-                                .isEqualTo("service_undefined");
+                    assertThat(subsegment.getNamespace())
+                            .isEqualTo("service_undefined");
 
-                        assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("key", "val");
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(1)
+                            .containsEntry("key", "val");
 
-                        assertThat(subsegment.getMetadata())
-                                .hasSize(1);
-                    });
+                    assertThat(subsegment.getMetadata())
+                            .hasSize(1);
+                });
     }
 
     @Test
@@ -128,31 +128,31 @@ class TracingUtilsTest {
         Context test = mock(Context.class);
 
         TracingUtils.withSubsegment("testNamespace", "testSubSegment", subsegment ->
-            {
-                subsegment.putAnnotation("key", "val");
-                subsegment.putMetadata("key", "val");
-                test.getFunctionName();
-            });
+        {
+            subsegment.putAnnotation("key", "val");
+            subsegment.putMetadata("key", "val");
+            test.getFunctionName();
+        });
 
         verify(test).getFunctionName();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
                 .allSatisfy(subsegment ->
-                    {
-                        assertThat(subsegment.getName())
-                                .isEqualTo("## testSubSegment");
+                {
+                    assertThat(subsegment.getName())
+                            .isEqualTo("## testSubSegment");
 
-                        assertThat(subsegment.getNamespace())
-                                .isEqualTo("testNamespace");
+                    assertThat(subsegment.getNamespace())
+                            .isEqualTo("testNamespace");
 
-                        assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("key", "val");
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(1)
+                            .containsEntry("key", "val");
 
-                        assertThat(subsegment.getMetadata())
-                                .hasSize(1);
-                    });
+                    assertThat(subsegment.getMetadata())
+                            .hasSize(1);
+                });
     }
 
     @Test
@@ -162,10 +162,10 @@ class TracingUtilsTest {
         Entity traceEntity = AWSXRay.getTraceEntity();
 
         Thread thread = new Thread(() -> withEntitySubsegment("testSubSegment", traceEntity, subsegment ->
-            {
-                subsegment.putAnnotation("key", "val");
-                test.getFunctionName();
-            }));
+        {
+            subsegment.putAnnotation("key", "val");
+            test.getFunctionName();
+        }));
 
         thread.start();
         thread.join();
@@ -175,17 +175,17 @@ class TracingUtilsTest {
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
                 .allSatisfy(subsegment ->
-                    {
-                        assertThat(subsegment.getName())
-                                .isEqualTo("## testSubSegment");
+                {
+                    assertThat(subsegment.getName())
+                            .isEqualTo("## testSubSegment");
 
-                        assertThat(subsegment.getNamespace())
-                                .isEqualTo("service_undefined");
+                    assertThat(subsegment.getNamespace())
+                            .isEqualTo("service_undefined");
 
-                        assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("key", "val");
-                    });
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(1)
+                            .containsEntry("key", "val");
+                });
     }
 
     @Test
@@ -196,10 +196,10 @@ class TracingUtilsTest {
 
         Thread thread =
                 new Thread(() -> withEntitySubsegment("testNamespace", "testSubSegment", traceEntity, subsegment ->
-                    {
-                        subsegment.putAnnotation("key", "val");
-                        test.getFunctionName();
-                    }));
+                {
+                    subsegment.putAnnotation("key", "val");
+                    test.getFunctionName();
+                }));
 
         thread.start();
         thread.join();
@@ -209,16 +209,16 @@ class TracingUtilsTest {
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
                 .allSatisfy(subsegment ->
-                    {
-                        assertThat(subsegment.getName())
-                                .isEqualTo("## testSubSegment");
+                {
+                    assertThat(subsegment.getName())
+                            .isEqualTo("## testSubSegment");
 
-                        assertThat(subsegment.getNamespace())
-                                .isEqualTo("testNamespace");
+                    assertThat(subsegment.getNamespace())
+                            .isEqualTo("testNamespace");
 
-                        assertThat(subsegment.getAnnotations())
-                                .hasSize(1)
-                                .containsEntry("key", "val");
-                    });
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(1)
+                            .containsEntry("key", "val");
+                });
     }
 }

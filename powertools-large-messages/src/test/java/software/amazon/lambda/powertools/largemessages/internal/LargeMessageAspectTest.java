@@ -65,7 +65,9 @@ public class LargeMessageAspectTest {
     private static final String BUCKET_NAME = "bucketname";
     private static final String BUCKET_KEY = "c71eb2ae-37e0-4265-8909-32f4153faddf";
 
-    private static final String BIG_MESSAGE_BODY = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\", {\"s3BucketName\":\"" + BUCKET_NAME + "\", \"s3Key\":\"" + BUCKET_KEY + "\"}]";
+    private static final String BIG_MESSAGE_BODY =
+            "[\"software.amazon.payloadoffloading.PayloadS3Pointer\", {\"s3BucketName\":\"" + BUCKET_NAME +
+                    "\", \"s3Key\":\"" + BUCKET_KEY + "\"}]";
 
     @Mock
     private S3Client s3Client;
@@ -89,7 +91,8 @@ public class LargeMessageAspectTest {
     }
 
     @LargeMessage
-    private String processSQSMessageWithMd5Checks(SQSMessage transformedMessage, String initialBodyMD5, String initialAttributesMD5) {
+    private String processSQSMessageWithMd5Checks(SQSMessage transformedMessage, String initialBodyMD5,
+                                                  String initialAttributesMD5) {
         assertThat(transformedMessage.getMd5OfBody()).isNotEqualTo(initialBodyMD5);
         assertThat(transformedMessage.getMd5OfBody()).isEqualTo(BIG_MSG_MD5);
 
@@ -133,7 +136,8 @@ public class LargeMessageAspectTest {
         ArgumentCaptor<DeleteObjectRequest> delete = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(s3Client).deleteObject(delete.capture());
         Assertions.assertThat(delete.getValue())
-                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest -> {
+                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
+                {
                     assertThat(deleteObjectRequest.bucket())
                             .isEqualTo(BUCKET_NAME);
 
@@ -156,7 +160,8 @@ public class LargeMessageAspectTest {
         binAttribute.setDataType("Binary");
 
         MessageAttribute listBinAttribute = new MessageAttribute();
-        listBinAttribute.setBinaryListValues(Collections.singletonList(ByteBuffer.wrap("customAttributeValue".getBytes(StandardCharsets.UTF_8))));
+        listBinAttribute.setBinaryListValues(
+                Collections.singletonList(ByteBuffer.wrap("customAttributeValue".getBytes(StandardCharsets.UTF_8))));
         listBinAttribute.setDataType("BinaryList");
 
         Map<String, MessageAttribute> attrs = new HashMap<>();
@@ -166,7 +171,8 @@ public class LargeMessageAspectTest {
         SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true, attrs);
 
         // when
-        String message = processSQSMessageWithMd5Checks(sqsMessage, sqsMessage.getMd5OfBody(), sqsMessage.getMd5OfMessageAttributes());
+        String message = processSQSMessageWithMd5Checks(sqsMessage, sqsMessage.getMd5OfBody(),
+                sqsMessage.getMd5OfMessageAttributes());
 
         // then
         assertThat(message).isEqualTo(BIG_MSG);
@@ -186,7 +192,8 @@ public class LargeMessageAspectTest {
         ArgumentCaptor<DeleteObjectRequest> delete = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(s3Client).deleteObject(delete.capture());
         Assertions.assertThat(delete.getValue())
-                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest -> {
+                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
+                {
                     assertThat(deleteObjectRequest.bucket())
                             .isEqualTo(BUCKET_NAME);
 
@@ -263,7 +270,8 @@ public class LargeMessageAspectTest {
     @Test
     public void testGetS3ObjectException_shouldThrowLargeMessageProcessingException() {
         // given
-        when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(S3Exception.create("Permission denied", new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(S3Exception.create("Permission denied",
+                new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
         SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
 
         // when / then
@@ -276,7 +284,8 @@ public class LargeMessageAspectTest {
     public void testDeleteS3ObjectException_shouldThrowLargeMessageProcessingException() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
-        when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenThrow(S3Exception.create("Permission denied", new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
+        when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenThrow(S3Exception.create("Permission denied",
+                new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
         SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
 
         // when / then
@@ -286,18 +295,21 @@ public class LargeMessageAspectTest {
     }
 
     private ResponseInputStream<GetObjectResponse> s3ObjectWithLargeMessage() {
-        return new ResponseInputStream<>(GetObjectResponse.builder().build(), AbortableInputStream.create(new ByteArrayInputStream(BIG_MSG.getBytes())));
+        return new ResponseInputStream<>(GetObjectResponse.builder().build(),
+                AbortableInputStream.create(new ByteArrayInputStream(BIG_MSG.getBytes())));
     }
 
     private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage) {
         return sqsMessageWithBody(messageBody, largeMessage, null);
     }
 
-    private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage, Map<String, MessageAttribute> optionalAttributes) {
+    private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage,
+                                          Map<String, MessageAttribute> optionalAttributes) {
         SQSMessage sqsMessage = new SQSMessage();
         sqsMessage.setBody(messageBody);
         if (messageBody != null) {
-            sqsMessage.setMd5OfBody(calculateMessageBodyMd5(messageBody).orElseThrow(() -> new RuntimeException("Unable to md5 body " + messageBody)));
+            sqsMessage.setMd5OfBody(calculateMessageBodyMd5(messageBody).orElseThrow(
+                    () -> new RuntimeException("Unable to md5 body " + messageBody)));
         }
 
         if (largeMessage) {
@@ -311,7 +323,8 @@ public class LargeMessageAspectTest {
             attributeMap.put(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME, payloadAttribute);
 
             sqsMessage.setMessageAttributes(attributeMap);
-            sqsMessage.setMd5OfMessageAttributes(calculateMessageAttributesMd5(attributeMap).orElseThrow(() -> new RuntimeException("Unable to md5 attributes " + attributeMap)));
+            sqsMessage.setMd5OfMessageAttributes(calculateMessageAttributesMd5(attributeMap).orElseThrow(
+                    () -> new RuntimeException("Unable to md5 attributes " + attributeMap)));
         }
         return sqsMessage;
     }
@@ -319,7 +332,8 @@ public class LargeMessageAspectTest {
     private SNSRecord snsRecordWithMessage(String messageBody, boolean largeMessage) {
         SNS sns = new SNS().withMessage(messageBody);
         if (largeMessage) {
-            sns.setMessageAttributes(Collections.singletonMap(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME, new SNSEvent.MessageAttribute()));
+            sns.setMessageAttributes(Collections.singletonMap(LargeMessageProcessor.RESERVED_ATTRIBUTE_NAME,
+                    new SNSEvent.MessageAttribute()));
         }
         return new SNSRecord().withSns(sns);
     }

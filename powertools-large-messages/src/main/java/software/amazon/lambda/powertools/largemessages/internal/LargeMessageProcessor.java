@@ -56,7 +56,8 @@ abstract class LargeMessageProcessor<T> {
             return pjp.proceed(proceedArgs);
         }
         // legacy attribute (sqs only)
-        payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer", "software.amazon.payloadoffloading.PayloadS3Pointer");
+        payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer",
+                "software.amazon.payloadoffloading.PayloadS3Pointer");
 
         if (LOG.isInfoEnabled()) {
             LOG.info("Large message [{}]: retrieving content from S3", getMessageId(message));

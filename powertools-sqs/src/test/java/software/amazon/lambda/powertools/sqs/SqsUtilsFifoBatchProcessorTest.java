@@ -76,10 +76,10 @@ public class SqsUtilsFifoBatchProcessorTest {
         // Act
         AtomicInteger processedCount = new AtomicInteger();
         List<Object> results = batchProcessor(sqsBatchEvent, false, (message) ->
-            {
-                processedCount.getAndIncrement();
-                return true;
-            });
+        {
+            processedCount.getAndIncrement();
+            return true;
+        });
 
         // Assert
         assertThat(processedCount.get()).isEqualTo(3);
@@ -103,26 +103,26 @@ public class SqsUtilsFifoBatchProcessorTest {
         AtomicInteger processedCount = new AtomicInteger();
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) ->
-                    {
-                        int value = processedCount.getAndIncrement();
-                        if (value == 1) {
-                            throw new RuntimeException("Whoops");
-                        }
-                        return true;
-                    }))
+                {
+                    int value = processedCount.getAndIncrement();
+                    if (value == 1) {
+                        throw new RuntimeException("Whoops");
+                    }
+                    return true;
+                }))
 
                 // Assert
                 .isInstanceOf(SQSBatchProcessingException.class)
                 .satisfies(e ->
-                    {
-                        List<SQSEvent.SQSMessage> failures = ((SQSBatchProcessingException) e).getFailures();
-                        assertThat(failures.size()).isEqualTo(2);
-                        List<String> failureIds = failures.stream()
-                                .map(SQSEvent.SQSMessage::getMessageId)
-                                .collect(Collectors.toList());
-                        assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(1).getMessageId());
-                        assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(2).getMessageId());
-                    });
+                {
+                    List<SQSEvent.SQSMessage> failures = ((SQSBatchProcessingException) e).getFailures();
+                    assertThat(failures.size()).isEqualTo(2);
+                    List<String> failureIds = failures.stream()
+                            .map(SQSEvent.SQSMessage::getMessageId)
+                            .collect(Collectors.toList());
+                    assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(1).getMessageId());
+                    assertThat(failureIds).contains(sqsBatchEvent.getRecords().get(2).getMessageId());
+                });
 
         DeleteMessageBatchRequest deleteRequest = deleteMessageBatchCaptor.getValue();
         List<String> messageIds = deleteRequest.entries().stream()
@@ -146,13 +146,13 @@ public class SqsUtilsFifoBatchProcessorTest {
         AtomicInteger processedCount = new AtomicInteger();
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(sqsBatchEvent, false, (message) ->
-                    {
-                        int value = processedCount.getAndIncrement();
-                        if (value == 2) {
-                            throw new RuntimeException("Whoops");
-                        }
-                        return true;
-                    }));
+                {
+                    int value = processedCount.getAndIncrement();
+                    if (value == 2) {
+                        throw new RuntimeException("Whoops");
+                    }
+                    return true;
+                }));
 
         // Assert
         DeleteMessageBatchRequest deleteRequest = deleteMessageBatchCaptor.getValue();
@@ -171,18 +171,18 @@ public class SqsUtilsFifoBatchProcessorTest {
 
         assertThatExceptionOfType(SQSBatchProcessingException.class)
                 .isThrownBy(() -> batchProcessor(sqsBatchEvent, (message) ->
-                    {
-                        String groupId = message.getAttributes().get("MessageGroupId");
-                        if (groupId.equals(groupToFail)) {
-                            throw new RuntimeException("Failed processing");
-                        }
-                        return groupId;
-                    }))
+                {
+                    String groupId = message.getAttributes().get("MessageGroupId");
+                    if (groupId.equals(groupToFail)) {
+                        throw new RuntimeException("Failed processing");
+                    }
+                    return groupId;
+                }))
                 .satisfies(e ->
-                    {
-                        assertThat(e.successMessageReturnValues().size()).isEqualTo(0);
-                        assertThat(e.successMessageReturnValues().contains(groupToFail)).isFalse();
-                    });
+                {
+                    assertThat(e.successMessageReturnValues().size()).isEqualTo(0);
+                    assertThat(e.successMessageReturnValues().contains(groupToFail)).isFalse();
+                });
     }
 
 }
