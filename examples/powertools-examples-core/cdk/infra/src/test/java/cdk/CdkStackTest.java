@@ -1,5 +1,6 @@
 package cdk;
 
+import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.assertions.Template;
@@ -23,9 +24,13 @@ public class CdkStackTest {
         template.resourceCountIs("AWS::ApiGateway::RestApi", 1);
 
         // API Gateway should have a path pointing to the regular Lambda
-        template.hasResourceProperties("AWS::ApiGateway::Resource", Map.of("PathPart", "hello"));
+        Map<String, String> resourceProperties = new HashMap<>();
+        resourceProperties.put("PathPart", "hello");
+        template.hasResourceProperties("AWS::ApiGateway::Resource", resourceProperties);
 
         // API Gateway should have a path pointing to the streaming Lambda
-        template.hasResourceProperties("AWS::ApiGateway::Resource", Map.of("PathPart", "hellostream"));
+        resourceProperties = new HashMap<>();
+        resourceProperties.put("PathPart", "hellostream");
+        template.hasResourceProperties("AWS::ApiGateway::Resource", resourceProperties);
     }
 }

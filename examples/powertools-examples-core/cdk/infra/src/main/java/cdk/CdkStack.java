@@ -1,5 +1,7 @@
 package cdk;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import software.amazon.awscdk.BundlingOptions;
@@ -48,7 +50,7 @@ public class CdkStack extends Stack {
 
     private static List<String> createFunctionPackageInstructions() {
         // CDK will use this command to package your Java Lambda
-        return List.of(
+        return Arrays.asList(
                 SHELL_COMMAND,
                 "-c",
                 MAVEN_PACKAGE + " && " +
@@ -71,6 +73,12 @@ public class CdkStack extends Stack {
     private Function createHelloWorldFunction() {
         List<String> functionPackageInstructions = createFunctionPackageInstructions();
 
+        Map<String, String> environment = new HashMap<>();
+        environment.put("POWERTOOLS_LOG_LEVEL", "INFO");
+        environment.put("POWERTOOLS_LOGGER_SAMPLE_RATE", "0.1");
+        environment.put("POWERTOOLS_LOGGER_LOG_EVENT", "true");
+        environment.put("POWERTOOLS_METRICS_NAMESPACE", "Coreutilities");
+
         return Function.Builder.create(this, "HelloWorldFunction")
                 .runtime(Runtime.JAVA_11)
                 .memorySize(512)
@@ -83,16 +91,19 @@ public class CdkStack extends Stack {
                                 .build())
                         .build()))
                 .handler("helloworld.App")
-                .environment(Map.of("POWERTOOLS_LOG_LEVEL", "INFO",
-                        "POWERTOOLS_LOGGER_SAMPLE_RATE", "0.1",
-                        "POWERTOOLS_LOGGER_LOG_EVENT", "true",
-                        "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities"
-                ))
+                .environment(environment)
                 .build();
     }
 
     private Function createHelloWorldStreamFunction() {
         List<String> functionPackageInstructions = createFunctionPackageInstructions();
+
+        Map<String, String> environment = new HashMap<>();
+        environment.put("POWERTOOLS_LOG_LEVEL", "INFO");
+        environment.put("POWERTOOLS_LOGGER_SAMPLE_RATE", "0.7");
+        environment.put("POWERTOOLS_LOGGER_LOG_EVENT", "true");
+        environment.put("POWERTOOLS_METRICS_NAMESPACE", "Coreutilities");
+        environment.put("POWERTOOLS_SERVICE_NAME", "hello");
 
         return Function.Builder.create(this, "HelloWorldStreamFunction")
                 .runtime(Runtime.JAVA_11)
@@ -106,12 +117,7 @@ public class CdkStack extends Stack {
                                 .build())
                         .build()))
                 .handler("helloworld.AppStream")
-                .environment(Map.of("POWERTOOLS_LOG_LEVEL", "INFO",
-                        "POWERTOOLS_LOGGER_SAMPLE_RATE", "0.7",
-                        "POWERTOOLS_LOGGER_LOG_EVENT", "true",
-                        "POWERTOOLS_METRICS_NAMESPACE", "Coreutilities",
-                        "POWERTOOLS_SERVICE_NAME", "hello"
-                ))
+                .environment(environment)
                 .build();
     }
 
