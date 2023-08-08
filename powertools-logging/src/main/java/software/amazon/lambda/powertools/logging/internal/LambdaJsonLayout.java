@@ -163,11 +163,11 @@ public final class LambdaJsonLayout extends AbstractJacksonLayoutCopy {
 
         // Go over MDC
         logEvent.getContextData().forEach((key, value) ->
-            {
-                if (Strings.isNotBlank(key) && value != null) {
-                    additionalFieldsMap.put(key, value);
-                }
-            });
+        {
+            if (Strings.isNotBlank(key) && value != null) {
+                additionalFieldsMap.put(key, value);
+            }
+        });
 
         return additionalFieldsMap;
     }

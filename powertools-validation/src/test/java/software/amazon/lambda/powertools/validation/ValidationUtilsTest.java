@@ -65,9 +65,9 @@ public class ValidationUtilsTest {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
 
         assertThatNoException().isThrownBy(() ->
-            {
-                getJsonSchema("classpath:/schema_v7_ko.json", false);
-            });
+        {
+            getJsonSchema("classpath:/schema_v7_ko.json", false);
+        });
     }
 
     @Test
@@ -118,9 +118,9 @@ public class ValidationUtilsTest {
                 ValidationConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/json_ok.json"));
 
         assertThatNoException().isThrownBy(() ->
-            {
-                validate(node, schemaString);
-            });
+        {
+            validate(node, schemaString);
+        });
     }
 
     @Test
@@ -140,9 +140,9 @@ public class ValidationUtilsTest {
         map.put("price", 258);
 
         assertThatNoException().isThrownBy(() ->
-            {
-                validate(map, schemaString);
-            });
+        {
+            validate(map, schemaString);
+        });
     }
 
     @Test
@@ -167,9 +167,9 @@ public class ValidationUtilsTest {
         String json = "{\n  \"id\": 43242,\n  \"name\": \"FooBar XY\",\n  \"price\": 258\n}";
 
         assertThatNoException().isThrownBy(() ->
-            {
-                validate(json, schemaString);
-            });
+        {
+            validate(json, schemaString);
+        });
     }
 
     @Test
@@ -184,9 +184,9 @@ public class ValidationUtilsTest {
         Product product = new Product(42, "FooBar", 42);
 
         assertThatNoException().isThrownBy(() ->
-            {
-                validate(product, schemaString);
-            });
+        {
+            validate(product, schemaString);
+        });
     }
 
     @Test
@@ -211,9 +211,9 @@ public class ValidationUtilsTest {
         MyCustomEvent event = new MyCustomEvent(basket);
 
         assertThatNoException().isThrownBy(() ->
-            {
-                validate(event, schemaString, "basket.products[0]");
-            });
+        {
+            validate(event, schemaString, "basket.products[0]");
+        });
     }
 
     @Test

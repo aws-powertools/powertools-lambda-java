@@ -161,7 +161,9 @@ public class SecretsProvider extends BaseProvider {
             return SecretsManagerClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .overrideConfiguration(ClientOverrideConfiguration.builder()
+                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
+                                    UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
                     .build();
         }
 

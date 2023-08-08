@@ -37,8 +37,8 @@ public class PowertoolsMetricsEnabledDefaultNoDimensionHandler implements Reques
         metricsLogger.putMetric("Metric1", 1, Unit.BYTES);
 
         withSingleMetric("Metric2", 1, Unit.COUNT, log ->
-            {
-            });
+        {
+        });
 
         return null;
     }

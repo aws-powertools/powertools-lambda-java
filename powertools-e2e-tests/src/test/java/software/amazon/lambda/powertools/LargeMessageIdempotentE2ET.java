@@ -142,7 +142,8 @@ public class LargeMessageIdempotentE2ET {
                 .builder()
                 .tableName(tableName)
                 .keyConditionExpression("functionName = :func")
-                .expressionAttributeValues(Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
+                .expressionAttributeValues(
+                        Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
                 .build();
         QueryResponse response = dynamoDbClient.query(request);
         List<Map<String, AttributeValue>> items = response.items();

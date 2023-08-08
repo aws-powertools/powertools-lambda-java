@@ -58,16 +58,16 @@ public class CloudFormationResponseTest {
         ExecutableHttpRequest executableRequest = mock(ExecutableHttpRequest.class);
 
         when(client.prepareRequest(any(HttpExecuteRequest.class))).thenAnswer(args ->
-            {
-                HttpExecuteRequest request = args.getArgument(0, HttpExecuteRequest.class);
-                assertThat(request.contentStreamProvider()).isPresent();
+        {
+            HttpExecuteRequest request = args.getArgument(0, HttpExecuteRequest.class);
+            assertThat(request.contentStreamProvider()).isPresent();
 
-                InputStream inputStream = request.contentStreamProvider().get().newStream();
-                HttpExecuteResponse response = mock(HttpExecuteResponse.class);
-                when(response.responseBody()).thenReturn(Optional.of(AbortableInputStream.create(inputStream)));
-                when(executableRequest.call()).thenReturn(response);
-                return executableRequest;
-            });
+            InputStream inputStream = request.contentStreamProvider().get().newStream();
+            HttpExecuteResponse response = mock(HttpExecuteResponse.class);
+            when(response.responseBody()).thenReturn(Optional.of(AbortableInputStream.create(inputStream)));
+            when(executableRequest.call()).thenReturn(response);
+            return executableRequest;
+        });
 
         return new CloudFormationResponse(client);
     }

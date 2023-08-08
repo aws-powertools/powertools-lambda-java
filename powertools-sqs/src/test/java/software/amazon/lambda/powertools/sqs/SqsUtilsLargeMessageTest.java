@@ -86,11 +86,11 @@ class SqsUtilsLargeMessageTest {
                         "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages ->
-            {
-                Map<String, String> someBusinessLogic = new HashMap<>();
-                someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
-                return someBusinessLogic;
-            });
+        {
+            Map<String, String> someBusinessLogic = new HashMap<>();
+            someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
+            return someBusinessLogic;
+        });
 
         assertThat(sqsMessage)
                 .hasSize(1)
@@ -102,13 +102,13 @@ class SqsUtilsLargeMessageTest {
 
         Assertions.assertThat(delete.getValue())
                 .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
-                    {
-                        assertThat(deleteObjectRequest.bucket())
-                                .isEqualTo(BUCKET_NAME);
+                {
+                    assertThat(deleteObjectRequest.bucket())
+                            .isEqualTo(BUCKET_NAME);
 
-                        assertThat(deleteObjectRequest.key())
-                                .isEqualTo(BUCKET_KEY);
-                    });
+                    assertThat(deleteObjectRequest.key())
+                            .isEqualTo(BUCKET_KEY);
+                });
     }
 
     @ParameterizedTest
@@ -125,11 +125,11 @@ class SqsUtilsLargeMessageTest {
                         "\",\"s3Key\":\"" + BUCKET_KEY + "\"}]");
 
         Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, deleteS3Payload, sqsMessages ->
-            {
-                Map<String, String> someBusinessLogic = new HashMap<>();
-                someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
-                return someBusinessLogic;
-            });
+        {
+            Map<String, String> someBusinessLogic = new HashMap<>();
+            someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
+            return someBusinessLogic;
+        });
 
         assertThat(sqsMessage)
                 .hasSize(1)
@@ -141,13 +141,13 @@ class SqsUtilsLargeMessageTest {
 
             Assertions.assertThat(delete.getValue())
                     .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
-                        {
-                            assertThat(deleteObjectRequest.bucket())
-                                    .isEqualTo(BUCKET_NAME);
+                    {
+                        assertThat(deleteObjectRequest.bucket())
+                                .isEqualTo(BUCKET_NAME);
 
-                            assertThat(deleteObjectRequest.key())
-                                    .isEqualTo(BUCKET_KEY);
-                        });
+                        assertThat(deleteObjectRequest.key())
+                                .isEqualTo(BUCKET_KEY);
+                    });
         } else {
             verify(s3Client, never()).deleteObject(any(DeleteObjectRequest.class));
         }
@@ -164,11 +164,11 @@ class SqsUtilsLargeMessageTest {
         SQSEvent sqsEvent = messageWithBody("This is small message");
 
         Map<String, String> sqsMessage = SqsUtils.enrichedMessageFromS3(sqsEvent, sqsMessages ->
-            {
-                Map<String, String> someBusinessLogic = new HashMap<>();
-                someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
-                return someBusinessLogic;
-            });
+        {
+            Map<String, String> someBusinessLogic = new HashMap<>();
+            someBusinessLogic.put("Message", sqsMessages.get(0).getBody());
+            return someBusinessLogic;
+        });
 
         assertThat(sqsMessage)
                 .containsEntry("Message", "This is small message");

@@ -208,19 +208,19 @@ public class SSMProvider extends BaseProvider {
         GetParametersByPathResponse res = client.getParametersByPath(request);
         if (res.hasParameters()) {
             res.parameters().forEach(parameter ->
-                {
+            {
                 /* Standardize the parameter name
                    The parameter name returned by SSM will contained the full path.
                    However, for readability, we should return only the part after
                    the path.
                  */
-                    String name = parameter.name();
-                    if (name.startsWith(path)) {
-                        name = name.replaceFirst(path, "");
-                    }
-                    name = name.replaceFirst("/", "");
-                    params.put(name, parameter.value());
-                });
+                String name = parameter.name();
+                if (name.startsWith(path)) {
+                    name = name.replaceFirst(path, "");
+                }
+                name = name.replaceFirst("/", "");
+                params.put(name, parameter.value());
+            });
         }
 
         if (!StringUtils.isEmpty(res.nextToken())) {
@@ -251,7 +251,9 @@ public class SSMProvider extends BaseProvider {
             return SsmClient.builder()
                     .httpClientBuilder(UrlConnectionHttpClient.builder())
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder().putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX, UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                    .overrideConfiguration(ClientOverrideConfiguration.builder()
+                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
+                                    UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
                     .build();
         }
 

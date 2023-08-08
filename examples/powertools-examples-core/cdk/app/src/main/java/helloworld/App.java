@@ -58,10 +58,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
 
         withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) ->
-        {
-            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
-        });
+            {
+                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+                metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+            });
 
         LoggingUtils.appendKey("test", "willBeLogged");
 
@@ -74,17 +74,17 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
             TracingUtils.withSubsegment("loggingResponse", subsegment ->
-            {
-                String sampled = "log something out";
-                log.info(sampled);
-                log.info(output);
-            });
+                {
+                    String sampled = "log something out";
+                    log.info(sampled);
+                    log.info(output);
+                });
 
             log.info("After output");
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (RuntimeException | IOException e) {
+        } catch (IOException e) {
             return response
                     .withBody("{}")
                     .withStatusCode(500);

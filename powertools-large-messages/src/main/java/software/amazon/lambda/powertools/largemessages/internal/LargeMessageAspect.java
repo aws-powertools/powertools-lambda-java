@@ -51,7 +51,8 @@ public class LargeMessageAspect {
         Optional<LargeMessageProcessor<?>> largeMessageProcessor = LargeMessageProcessorFactory.get(message);
 
         if (!largeMessageProcessor.isPresent()) {
-            LOG.warn("@LargeMessage annotation is placed on a method with unsupported message type [{}], proceeding", message.getClass());
+            LOG.warn("@LargeMessage annotation is placed on a method with unsupported message type [{}], proceeding",
+                    message.getClass());
             return pjp.proceed(proceedArgs);
         }
 

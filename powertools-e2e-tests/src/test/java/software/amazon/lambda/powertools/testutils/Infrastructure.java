@@ -177,7 +177,8 @@ public class Infrastructure {
         WaiterResponse<DescribeStacksResponse> waiterResponse =
                 cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
         if (waiterResponse.matched().response().isPresent()) {
-            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack = waiterResponse.matched().response().get().stacks().get(0);
+            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack =
+                    waiterResponse.matched().response().get().stacks().get(0);
             LOG.info("Stack " + deployedStack.stackName() + " successfully deployed");
             Map<String, String> outputs = new HashMap<>();
             deployedStack.outputs().forEach(output -> outputs.put(output.outputKey(), output.outputValue()));
@@ -230,8 +231,8 @@ public class Infrastructure {
 
         functionName = stackName + "-function";
         CfnOutput.Builder.create(stack, FUNCTION_NAME_OUTPUT)
-                        .value(functionName)
-                        .build();
+                .value(functionName)
+                .build();
 
         LOG.debug("Building Lambda function with command " +
                 packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
@@ -444,20 +445,20 @@ public class Infrastructure {
     private void uploadAssets() {
         Map<String, Asset> assets = findAssets();
         assets.forEach((objectKey, asset) ->
-            {
-                if (!asset.assetPath.endsWith(".jar")) {
-                    return;
-                }
-                ListObjectsV2Response objects =
-                        s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
-                if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
-                    LOG.debug("Asset already exists, skipping");
-                    return;
-                }
-                LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
-                s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(),
-                        Paths.get(cfnAssetDirectory, asset.assetPath));
-            });
+        {
+            if (!asset.assetPath.endsWith(".jar")) {
+                return;
+            }
+            ListObjectsV2Response objects =
+                    s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
+            if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
+                LOG.debug("Asset already exists, skipping");
+                return;
+            }
+            LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
+            s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(),
+                    Paths.get(cfnAssetDirectory, asset.assetPath));
+        });
     }
 
     /**
@@ -472,17 +473,17 @@ public class Infrastructure {
                     .readTree(new File(cfnAssetDirectory, stackName + ".assets.json"));
             JsonNode files = jsonNode.get("files");
             files.iterator().forEachRemaining(file ->
-                {
-                    String assetPath = file.get("source").get("path").asText();
-                    String assetPackaging = file.get("source").get("packaging").asText();
-                    String bucketName =
-                            file.get("destinations").get("current_account-current_region").get("bucketName").asText();
-                    String objectKey =
-                            file.get("destinations").get("current_account-current_region").get("objectKey").asText();
-                    Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
-                            .replace("${AWS::Region}", region.toString()));
-                    assets.put(objectKey, asset);
-                });
+            {
+                String assetPath = file.get("source").get("path").asText();
+                String assetPackaging = file.get("source").get("packaging").asText();
+                String bucketName =
+                        file.get("destinations").get("current_account-current_region").get("bucketName").asText();
+                String objectKey =
+                        file.get("destinations").get("current_account-current_region").get("objectKey").asText();
+                Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
+                        .replace("${AWS::Region}", region.toString()));
+                assets.put(objectKey, asset);
+            });
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

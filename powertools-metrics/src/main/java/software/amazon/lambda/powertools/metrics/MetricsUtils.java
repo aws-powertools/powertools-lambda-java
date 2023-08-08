@@ -96,10 +96,10 @@ public final class MetricsUtils {
                                         final Unit unit,
                                         final Consumer<MetricsLogger> logger) {
         withMetricsLogger(metricsLogger ->
-            {
-                metricsLogger.putMetric(name, value, unit);
-                logger.accept(metricsLogger);
-            });
+        {
+            metricsLogger.putMetric(name, value, unit);
+            logger.accept(metricsLogger);
+        });
     }
 
     /**
@@ -119,11 +119,11 @@ public final class MetricsUtils {
                                         final String namespace,
                                         final Consumer<MetricsLogger> logger) {
         withMetricsLogger(metricsLogger ->
-            {
-                metricsLogger.setNamespace(namespace);
-                metricsLogger.putMetric(name, value, unit);
-                logger.accept(metricsLogger);
-            });
+        {
+            metricsLogger.setNamespace(namespace);
+            metricsLogger.putMetric(name, value, unit);
+            logger.accept(metricsLogger);
+        });
     }
 
     /**

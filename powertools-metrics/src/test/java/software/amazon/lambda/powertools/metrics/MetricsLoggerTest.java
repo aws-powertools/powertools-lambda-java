@@ -72,20 +72,20 @@ class MetricsLoggerTest {
 
             MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
                     metricsLogger ->
-                        {
-                        });
+                    {
+                    });
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Service", "Booking")
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Service", "Booking")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                    });
         }
     }
 
@@ -103,15 +103,15 @@ class MetricsLoggerTest {
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Dimension1", "Value1")
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
-                        });
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                    });
         }
     }
 
@@ -130,21 +130,21 @@ class MetricsLoggerTest {
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Dimension1", "Value1")
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
-                            Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                            assertThat(aws.get("CloudWatchMetrics"))
-                                    .asString()
-                                    .contains("Namespace=GlobalName");
-                        });
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=GlobalName");
+                    });
         }
     }
 
@@ -175,28 +175,28 @@ class MetricsLoggerTest {
                     .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
             methodToTest.accept(metricsLogger ->
-                {
-                    metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
-                    metricsLogger.putMetric("Metric1", 1, Unit.COUNT);
-                });
+            {
+                metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
+                metricsLogger.putMetric("Metric1", 1, Unit.COUNT);
+            });
 
             assertThat(out.toString())
                     .satisfies(s ->
-                        {
-                            Map<String, Object> logAsJson = readAsJson(s);
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
 
-                            assertThat(logAsJson)
-                                    .containsEntry("Metric1", 1.0)
-                                    .containsEntry("Dimension1", "Value1")
-                                    .containsKey("_aws")
-                                    .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
-                            Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                            assertThat(aws.get("CloudWatchMetrics"))
-                                    .asString()
-                                    .contains("Namespace=GlobalName");
-                        });
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=GlobalName");
+                    });
         }
     }
 

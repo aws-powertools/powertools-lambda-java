@@ -63,22 +63,22 @@ public class SqsMessageSender implements RequestHandler<ScheduledEvent, String> 
         // Push 5 messages on each invoke.
         List<SendMessageBatchRequestEntry> batchRequestEntries = IntStream.range(0, 5)
                 .mapToObj(value ->
-                    {
-                        Map<String, MessageAttributeValue> attributeValueHashMap = new HashMap<>();
-                        attributeValueHashMap.put("Key" + value, MessageAttributeValue.builder()
-                                .dataType("String")
-                                .stringValue("Value" + value)
-                                .build());
+                {
+                    Map<String, MessageAttributeValue> attributeValueHashMap = new HashMap<>();
+                    attributeValueHashMap.put("Key" + value, MessageAttributeValue.builder()
+                            .dataType("String")
+                            .stringValue("Value" + value)
+                            .build());
 
-                        byte[] array = new byte[7];
-                        random.nextBytes(array);
+                    byte[] array = new byte[7];
+                    random.nextBytes(array);
 
-                        return SendMessageBatchRequestEntry.builder()
-                                .messageAttributes(attributeValueHashMap)
-                                .id(input.getId() + value)
-                                .messageBody("Sample Message " + value)
-                                .build();
-                    }).collect(toList());
+                    return SendMessageBatchRequestEntry.builder()
+                            .messageAttributes(attributeValueHashMap)
+                            .id(input.getId() + value)
+                            .messageBody("Sample Message " + value)
+                            .build();
+                }).collect(toList());
 
         SendMessageBatchResponse sendMessageBatchResponse = sqsClient.sendMessageBatch(SendMessageBatchRequest.builder()
                 .queueUrl(queueUrl)

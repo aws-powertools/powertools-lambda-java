@@ -258,14 +258,14 @@ public class EventDeserializer {
                 }
             } else {
                 return contentList.stream().map(s ->
-                    {
-                        try {
-                            return s == null ? null : JsonConfig.get().getObjectMapper().reader().readValue(s, clazz);
-                        } catch (IOException e) {
-                            throw new EventDeserializationException(
-                                    "Cannot load the event as a list of " + clazz.getSimpleName(), e);
-                        }
-                    }).collect(Collectors.toList());
+                {
+                    try {
+                        return s == null ? null : JsonConfig.get().getObjectMapper().reader().readValue(s, clazz);
+                    } catch (IOException e) {
+                        throw new EventDeserializationException(
+                                "Cannot load the event as a list of " + clazz.getSimpleName(), e);
+                    }
+                }).collect(Collectors.toList());
             }
         }
     }
