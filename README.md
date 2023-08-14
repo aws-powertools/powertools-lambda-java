@@ -129,9 +129,9 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 <details>
 <summary><b>Gradle - Java 11+</b></summary>
 
-**Make sure you are using gradle >= 8.2.1.** 
-
 ```groovy
+        // Make sure you are using gradle >= 8.2.1 
+
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
