@@ -15,17 +15,15 @@
 package cdk;
 
 import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.assertions.Template;
 
-import java.io.IOException;
-import java.util.Map;
-
 public class CdkStackTest {
 
     @Test
-    public void testStack() throws IOException {
+    public void testStack() {
         App app = new App();
         CdkStack stack = new CdkStack(app, "test");
 
