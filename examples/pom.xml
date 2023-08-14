@@ -29,9 +29,9 @@
     </description>
 
     <modules>
-        <module>powertools-examples-core-utilities/sam</module>
-        <module>powertools-examples-core-utilities/cdk/app</module>
-        <module>powertools-examples-core-utilities/cdk/infra</module>
+        <module>powertools-examples-core/sam</module>
+        <module>powertools-examples-core/cdk/app</module>
+        <module>powertools-examples-core/cdk/infra</module>
         <module>powertools-examples-idempotency</module>
         <module>powertools-examples-parameters</module>
         <module>powertools-examples-serialization</module>
