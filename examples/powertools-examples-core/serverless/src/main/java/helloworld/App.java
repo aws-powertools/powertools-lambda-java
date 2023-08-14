@@ -91,11 +91,6 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         }
     }
 
-    @Tracing
-    private void log() {
-        log.info("inside threaded logging for function");
-    }
-
     @Tracing(namespace = "getPageContents", captureMode = CaptureMode.DISABLED)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
