@@ -17,14 +17,11 @@ package helloworld;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
-import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Entity;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -83,36 +80,15 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
                 log.info(output);
             });
 
-            threadOption1();
-
-            threadOption2();
-
             log.info("After output");
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             return response
                     .withBody("{}")
                     .withStatusCode(500);
         }
-    }
-
-    private void threadOption1() throws InterruptedException {
-        final Entity traceEntity = AWSXRay.getTraceEntity();
-        assert traceEntity != null;
-        traceEntity.run(new Thread(this::log));
-    }
-
-    private void threadOption2() throws InterruptedException {
-        Entity traceEntity = AWSXRay.getTraceEntity();
-        Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment ->
-        {
-            String var = "somethingToProcess";
-            log.info("inside threaded logging inline {}", var);
-        }));
-        anotherThread.start();
-        anotherThread.join();
     }
 
     @Tracing
