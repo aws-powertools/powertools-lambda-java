@@ -17,14 +17,16 @@ It is a [Maven](https://maven.apache.org/) based project, so you can open this p
 
 The minimum to deploy the app should be
 ```bash 
-sls deploy
+mvn package && sls deploy
 ```
 
-
 ## Useful commands
+Deploy your entire stack
+```bash
+sls deploy
+``` 
 
-* `mvn package`     compile and run tests
-* `cdk synth`       emits the synthesized CloudFormation template
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk docs`        open CDK documentation
+Deploy a single function
+```bash 
+sls deploy function -f hello
+```
