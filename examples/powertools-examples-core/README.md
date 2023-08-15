@@ -5,17 +5,17 @@ This project demonstrates the Lambda for Powertools Java module - including
 [tracing](https://docs.powertools.aws.dev/lambda/java/core/tracing/), and
 [metrics](https://docs.powertools.aws.dev/lambda/java/core/metrics/).
 
-It is made up of the following:
+We provide examples for the following infrastructure-as-code tools:
+* [AWS SAM](sam/) 
+* [AWS CDK](cdk/)
 
-- [App.java](src/main/java/helloworld/App.java) - Code for the application's Lambda function.
-- [events](events) - Invocation events that you can use to invoke the function.
-- [AppTests.java](src/test/java/helloworld/AppTest.java) - Unit tests for the application code. 
-- [template.yaml](template.yaml) - A template that defines the application's AWS resources.
+For each of the tools, the example application is the same, and consists of the following files:
 
-## Deploy the sample application
+- [App.java](sam/src/main/java/helloworld/App.java) - Code for the application's Lambda function.
+- [AppTests.java](sam/src/test/java/helloworld/AppTest.java) - Unit tests for the application code.
+- [events](sam/events/event.json) - Invocation events that you can use to invoke the function.
 
-This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
-started with SAM in [the examples directory](../README.md)
+Configuration files and deployment process for each tool are described in corresponding README files.
 
 ## Test the application
 
@@ -35,13 +35,4 @@ different function calls within the example
 
 Likewise, from the CloudWatch dashboard, under **Metrics**, **all metrics**,  you will find the namespaces `Another`
 and `ServerlessAirline`. The values in each of these are published by the code in
-[App.java](src/main/java/helloworld/App.java). 
-
-You can also watch the trace information or log information using the SAM CLI:
-```bash
-# Tail the logs
-sam logs --tail $MY_STACK
-
-# Tail the traces
-sam traces --tail
-```
+[App.java](sam/src/main/java/helloworld/App.java). 

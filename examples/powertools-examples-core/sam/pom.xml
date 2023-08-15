@@ -4,52 +4,43 @@
 
     <groupId>software.amazon.lambda.examples</groupId>
     <version>1.17.0-SNAPSHOT</version>
-    <artifactId>powertools-examples-cloudformation</artifactId>
+    <artifactId>powertools-examples-core-sam</artifactId>
     <packaging>jar</packaging>
-
-    <name>AWS Lambda Powertools for Java library Examples - CloudFormation</name>
+    
+    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
 
     <properties>
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <lambda.core.version>1.2.2</lambda.core.version>
-        <lambda.events.version>3.11.2</lambda.events.version>
-        <aws.sdk.version>2.20.126</aws.sdk.version>
     </properties>
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${aws.sdk.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <dependencies>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-core</artifactId>
-            <version>${lambda.core.version}</version>
-        </dependency>
-        <dependency>
-          <groupId>com.amazonaws</groupId>
-          <artifactId>aws-lambda-java-events</artifactId>
-          <version>${lambda.events.version}</version>
-        </dependency>
-        <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-cloudformation</artifactId>
+            <artifactId>powertools-tracing</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-metrics</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.2.2</version>
+        </dependency>
+        <dependency>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-lambda-java-events</artifactId>
+          <version>3.11.2</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -61,38 +52,13 @@
             <artifactId>log4j-api</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>s3</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>netty-nio-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>apache-client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>apache-client</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-jcl</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
 
-
-
+        <dependency>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.2</version>
+          <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -108,7 +74,15 @@
                  <aspectLibraries>
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-tracing</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
                          <artifactId>powertools-logging</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-metrics</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
              </configuration>
@@ -190,7 +164,15 @@
                                 <aspectLibraries>
                                     <aspectLibrary>
                                         <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-tracing</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
                                         <artifactId>powertools-logging</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-metrics</artifactId>
                                     </aspectLibrary>
                                 </aspectLibraries>
                             </configuration>

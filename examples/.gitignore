@@ -1,2 +1,4 @@
 dependency-reduced-pom.xml
 .aws-sam
+cdk.out
+.m2
