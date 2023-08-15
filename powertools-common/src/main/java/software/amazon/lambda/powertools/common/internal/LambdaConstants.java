@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.core.internal;
+package software.amazon.lambda.powertools.common.internal;
 
 public class LambdaConstants {
     public static final String LAMBDA_FUNCTION_NAME_ENV = "AWS_LAMBDA_FUNCTION_NAME";

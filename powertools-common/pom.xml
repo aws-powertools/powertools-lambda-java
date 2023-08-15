@@ -27,7 +27,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <name>Powertools for AWS Lambda (Java) library Core</name>
+    <name>Powertools for AWS Lambda (Java) library Common Utilities</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>

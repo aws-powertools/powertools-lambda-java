@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.core.internal;
+package software.amazon.lambda.powertools.common.internal;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
