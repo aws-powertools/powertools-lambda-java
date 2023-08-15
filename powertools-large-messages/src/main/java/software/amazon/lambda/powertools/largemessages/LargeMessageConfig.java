@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.largemessages;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
 
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
