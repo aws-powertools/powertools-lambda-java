@@ -41,7 +41,7 @@
     </licenses>
 
     <modules>
-        <module>powertools-core</module>
+        <module>powertools-common</module>
         <module>powertools-serialization</module>
         <module>powertools-logging</module>
         <module>powertools-tracing</module>
@@ -105,7 +105,7 @@
         <dependencies>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-core</artifactId>
+                <artifactId>powertools-common</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
