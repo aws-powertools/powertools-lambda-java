@@ -13,16 +13,11 @@ nav:
   - Utilities:
       - utilities/idempotency.md
       - utilities/parameters.md
-      - utilities/large_messages.md
+      - utilities/sqs_large_message_handling.md
       - utilities/batch.md
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
-  - Deprecated:
-      - utilities/sqs_large_message_handling.md
-      - utilities/sqs_batch.md
-  - Processes:
-      - processes/maintainers.md
 
 theme:
   name: material
@@ -87,6 +82,9 @@ extra_javascript:
   - javascript/extra.js
 
 extra:
+  version:
+    provider: mike
+    default: latest
   powertools:
     version: 1.16.1 # to update after each release (we do not want snapshot version here)
 
