@@ -13,7 +13,7 @@ It is a [Maven](https://maven.apache.org/) based project, so you can open this p
 
 ## Deploy the sample application
 
-The minimum to deploy the app should be
+To deploy the app, simply run the following commands:
 ```bash 
 mvn package && sls deploy
 ```
