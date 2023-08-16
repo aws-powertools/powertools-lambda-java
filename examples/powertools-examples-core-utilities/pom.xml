@@ -4,10 +4,10 @@
 
     <groupId>software.amazon.lambda.examples</groupId>
     <version>2.0.0-SNAPSHOT</version>
-    <artifactId>powertools-examples-core</artifactId>
+    <artifactId>powertools-examples-core-utilities</artifactId>
     <packaging>jar</packaging>
     
-    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
+    <name>Powertools for AWS Lambda (Java) library Examples - Core Utilities (logging, tracing, metrics)</name>
 
     <properties>
         <log4j.version>2.20.0</log4j.version>

@@ -5,7 +5,7 @@ Each example can be copied from its subdirectory and used independently of the r
 
 ## Examples
 
-* [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules 
+* [powertools-examples-core-utilities](powertools-examples-core-utilities) - Demonstrates the core modules - logging, tracing, and metrics 
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
@@ -34,8 +34,8 @@ amongst other things.
 To build and deploy an example application for the first time, run the following in your shell:
 
 ```bash
-# Switch to the directory containing an example for the powertools-core module
-$ cd powertools-examples-core
+# Switch to the directory containing an example for the powertools core utilities - logging, tracing, and metrics
+$ cd powertools-examples-core-utilities
 
 # Build and deploy the example
 $ sam build

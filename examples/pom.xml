@@ -29,7 +29,7 @@
     </description>
 
     <modules>
-        <module>powertools-examples-core</module>
+        <module>powertools-examples-core-utilities</module>
         <module>powertools-examples-idempotency</module>
         <module>powertools-examples-parameters</module>
         <module>powertools-examples-serialization</module>
