@@ -66,7 +66,7 @@ jobs:
       - name: Build Gradle Example
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         run: |
-          cd powertools-examples/powertools-examples-core/gradle
+          cd examples/powertools-examples-core/gradle
           ./gradlew build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # 3.1.1
