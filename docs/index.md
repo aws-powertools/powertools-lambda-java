@@ -211,6 +211,13 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 === "Gradle Java 11+"
 
     ```groovy
+
+        // the freefair aspect plugins targets gradle 8.2.1
+        // https://docs.freefair.io/gradle-plugins/8.2.2/reference/
+        wrapper {
+            gradleVersion = "8.2.1"
+        }
+
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
@@ -233,6 +240,14 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 === "Gradle Java 1.8"
 
     ```groovy
+
+
+        // the freefair aspect plugins targets gradle 7.6.1
+        // https://docs.freefair.io/gradle-plugins/6.6.3/reference/
+        wrapper {
+            gradleVersion = "7.6.1"
+        }
+
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
