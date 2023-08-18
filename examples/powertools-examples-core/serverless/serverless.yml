@@ -1,16 +1,3 @@
-# Welcome to Serverless!
-#
-# This file is the main config file for your service.
-# It's very minimal at this point and uses default values.
-# You can always add more config options for more control.
-# We've included some commented out config examples here.
-# Just uncomment any of them to get that config option.
-#
-# For full config options, check the docs:
-#    docs.serverless.com
-#
-# Happy Coding!
-
 service: hello
 # app and org for use with dashboard.serverless.com
 #app: your-app-name
@@ -47,8 +34,11 @@ provider:
 #                - "/*"
 
 # you can define service wide environment variables here
-#  environment:
-#    variable1: value1
+  environment:
+    POWERTOOLS_LOG_LEVEL: INFO
+    POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
+    POWERTOOLS_LOGGER_LOG_EVENT: true
+    POWERTOOLS_METRICS_NAMESPACE: Coreutilities
 
 # you can add packaging information here
 package:
@@ -98,10 +88,6 @@ functions:
 
 #    Define function environment variables here
     environment:
-      POWERTOOLS_LOG_LEVEL: INFO
-      POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
-      POWERTOOLS_LOGGER_LOG_EVENT: true
-      POWERTOOLS_METRICS_NAMESPACE: Coreutilities
       POWERTOOLS_SERVICE_NAME: hello
 
 # you can add CloudFormation resource templates here
