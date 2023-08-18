@@ -2,7 +2,7 @@
 
 This project demonstrates the Lambda for Powertools Java module deployed using [Serverless Framework](https://www.serverless.com/framework).
 For general information on the deployed example itself, you can refer to the parent [README](../README.md).
-To install Serverless Framework if you don't have it yet, you can follow the [Getting Started Guide](https://www.serverless.com/framework/docs/getting-started)
+To install Serverless Framework if you don't have it yet, you can follow the [Getting Started Guide](https://www.serverless.com/framework/docs/getting-started).
 
 ## Configuration
 Serverless Framework uses [serverless.yml](./serverless.yml) to define the application's AWS resources.
