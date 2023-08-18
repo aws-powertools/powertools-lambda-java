@@ -19,10 +19,6 @@ mvn package && sls deploy
 ```
 
 ## Useful commands
-Deploy your entire stack
-```bash
-sls deploy
-``` 
 
 Deploy a single function
 ```bash 
