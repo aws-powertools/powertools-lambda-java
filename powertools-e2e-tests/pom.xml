@@ -32,9 +32,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <constructs.version>10.2.69</constructs.version>
         <cdk.version>2.91.0</cdk.version>
-
-        <!-- Don't deploy the e2e tests -->
-        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <dependencies>
@@ -182,6 +179,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <!-- Don't deploy the e2e tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
