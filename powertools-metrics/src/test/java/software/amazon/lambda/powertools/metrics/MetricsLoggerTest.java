@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.metrics;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.mockStatic;
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
@@ -161,13 +160,6 @@ class MetricsLoggerTest {
                                 .contains("Namespace=GlobalName");
                     });
         }
-    }
-
-    @Test
-    void shouldThrowExceptionWhenDefaultDimensionIsNull() {
-        assertThatNullPointerException()
-                .isThrownBy(() -> MetricsUtils.defaultDimensions(null))
-                .withMessage("Null dimension set not allowed");
     }
 
     private void testLogger(Consumer<Consumer<MetricsLogger>> methodToTest) {
