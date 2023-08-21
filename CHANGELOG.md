@@ -10,8 +10,25 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.17.0] - 2023-08-21
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
+### Added
+* Feat: Add Batch Processor module in (#1317) by @scottgerring 
+* Feat: Add SNS+SQS large messages module (#1310) by @jeromevdl
 
+### Maintenance
+* fix: use default credentials provider for all provided SDK clients in (#1303) by @roamingthings
+* Chore: Make request for Logger explicitly for current class in (#1307) by @jreijn 
+* Chore: checkstyle formater & linter in (#1316) by @jeromevdl
+* Chore: Add powertools specific user-agent-suffix to the AWS SDK v2 clients by @eldimi in (#1306)
+* Chore: Add 'v2' branch to build workflows to prepare for v2 work in (#1341) by @scottgerring 
+* Deps: Bump third party dependencies to the latest versions.
+
+### Documentation
+* Docs: Add maintainers guide in (#1326) by @scottgerring 
+* Docs: improve contributing guide in (#1334) by @jeromevdl
+* Docs: Improve example documentation in (#1291) by @scottgerring 
+* Docs: Add discord + sec disclosure links to readme in (#1311) by @scottgerring 
+* Docs: Add external examples from AWS SAM CLI App Templates in (#1318) by @AlexeySoshin 
+* Docs: Add CDK example in (#1321) by @AlexeySoshin
 
 ## [1.16.1] - 2023-07-19
 
