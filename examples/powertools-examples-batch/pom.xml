@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.amazon.lambda.examples</groupId>
-    <version>1.17.0-SNAPSHOT</version>
+    <version>1.17.0</version>
     <artifactId>powertools-examples-batch</artifactId>
     <packaging>jar</packaging>
     <name>Powertools for AWS Lambda (Java) library Examples - Batch</name>
