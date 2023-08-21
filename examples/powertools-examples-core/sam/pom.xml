@@ -3,16 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.amazon.lambda.examples</groupId>
-<<<<<<<< HEAD:examples/powertools-examples-core-utilities/sam/pom.xml
     <version>2.0.0-SNAPSHOT</version>
-    <artifactId>powertools-examples-core-utilities-sam</artifactId>
-========
-    <version>1.17.0-SNAPSHOT</version>
     <artifactId>powertools-examples-core-sam</artifactId>
->>>>>>>> ef11a64d (docs: Adding CDK example (#1321)):examples/powertools-examples-core/sam/pom.xml
     <packaging>jar</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Examples - Core Utilities (logging, tracing, metrics) with SAM</name>
+    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
 
     <properties>
         <log4j.version>2.20.0</log4j.version>
