@@ -28,7 +28,7 @@
     </parent>
 
     <name>Powertools for AWS Lambda (Java) library Common Internal Utilities</name>
-    <description>Internal utilities shared by the Powertools for AWS Lambda (Java) modules</description>
+    <description>Internal utilities shared by the Powertools for AWS Lambda (Java) modules. Do not use directly in your project.</description>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
