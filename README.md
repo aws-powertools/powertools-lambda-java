@@ -176,7 +176,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 
 ## Examples
 
-See the **[examples](examples)**  directory for example projects showcasing usage of different utilities.
+See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.17.0/examples)** for example projects showcasing usage of different utilities.
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
