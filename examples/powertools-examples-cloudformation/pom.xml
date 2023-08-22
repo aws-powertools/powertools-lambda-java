@@ -14,9 +14,9 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <lambda.core.version>1.2.2</lambda.core.version>
+        <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.2</lambda.events.version>
-        <aws.sdk.version>2.20.127</aws.sdk.version>
+        <aws.sdk.version>2.20.130</aws.sdk.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -132,18 +132,16 @@
                     </goals>
                     <configuration>
                         <transformers>
-                            <transformer
-                                    implementation="com.github.edwgiz.maven_shade_plugin.log4j2_cache_transformer.PluginsCacheFileTransformer">
-                            </transformer>
+                            <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
                         </transformers>
                     </configuration>
                 </execution>
             </executions>
             <dependencies>
                 <dependency>
-                    <groupId>com.github.edwgiz</groupId>
-                    <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
-                    <version>2.15</version>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
+                    <version>0.1.0</version>
                 </dependency>
             </dependencies>
         </plugin>
