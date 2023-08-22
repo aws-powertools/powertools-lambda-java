@@ -1,19 +1,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>software.amazon.lambda.examples</groupId>
     <version>2.0.0-SNAPSHOT</version>
-    <artifactId>powertools-examples-parameters</artifactId>
+    <artifactId>powertools-examples-core</artifactId>
     <packaging>jar</packaging>
-    <name>Powertools for AWS Lambda (Java) library Examples - Parameters</name>
+    
+    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
 
     <properties>
+        <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
-    
+
     <dependencies>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-tracing</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging</artifactId>
@@ -21,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-parameters</artifactId>
+            <artifactId>powertools-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -30,40 +38,31 @@
             <version>1.2.3</version>
         </dependency>
         <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-events</artifactId>
-            <version>3.11.2</version>
+          <groupId>com.amazonaws</groupId>
+          <artifactId>aws-lambda-java-events</artifactId>
+          <version>3.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
 
-        <!-- Test dependencies -->
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>5.1.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.9.3</version>
-            <scope>test</scope>
+          <groupId>junit</groupId>
+          <artifactId>junit</artifactId>
+          <version>4.13.2</version>
+          <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
       <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-surefire-plugin</artifactId>
-              <!-- JUnit 5 requires Surefire version 3.1.0 or higher -->
-              <version>3.1.2</version>
-          </plugin>
         <plugin>
              <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
@@ -75,7 +74,15 @@
                  <aspectLibraries>
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-parameters</artifactId>
+                         <artifactId>powertools-tracing</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-logging</artifactId>
+                     </aspectLibrary>
+                     <aspectLibrary>
+                         <groupId>software.amazon.lambda</groupId>
+                         <artifactId>powertools-metrics</artifactId>
                      </aspectLibrary>
                  </aspectLibraries>
              </configuration>
@@ -86,6 +93,31 @@
                      </goals>
                  </execution>
              </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-shade-plugin</artifactId>
+            <version>3.5.0</version>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>shade</goal>
+                    </goals>
+                    <configuration>
+                        <transformers>
+                            <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
+                        </transformers>
+                    </configuration>
+                </execution>
+            </executions>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
+                    <version>0.1.0</version>
+                </dependency>
+            </dependencies>
         </plugin>
       </plugins>
     </build>
@@ -127,12 +159,23 @@
                                 <source>${maven.compiler.source}</source>
                                 <target>${maven.compiler.target}</target>
                                 <complianceLevel>${maven.compiler.target}</complianceLevel>
-                                <Xlint>ignore</Xlint>
-                                <encoding>UTF-8</encoding>
+                                <aspectLibraries>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-tracing</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-logging</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-metrics</artifactId>
+                                    </aspectLibrary>
+                                </aspectLibraries>
                             </configuration>
                             <executions>
                                 <execution>
-                                    <phase>process-sources</phase>
                                     <goals>
                                         <goal>compile</goal>
                                         <goal>test-compile</goal>
