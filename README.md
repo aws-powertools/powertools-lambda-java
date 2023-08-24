@@ -130,11 +130,18 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 <summary><b>Gradle - Java 11+</b></summary>
 
 ```groovy
+
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.2.2'
         }
         
+        // the freefair aspect plugins targets gradle 8.2.1
+        // https://docs.freefair.io/gradle-plugins/8.2.2/reference/
+        wrapper {
+            gradleVersion = "8.2.1"
+        }   
+
         repositories {
             mavenCentral()
         }
@@ -143,6 +150,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
             aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+            implementation "org.aspectj:aspectjrt:1.9.8.RC3"
         }
         
         sourceCompatibility = 11
@@ -159,6 +167,12 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
             id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
         }
         
+        // the freefair aspect plugins targets gradle 7.6.1
+        // https://docs.freefair.io/gradle-plugins/6.6.3/reference/
+        wrapper {
+            gradleVersion = "7.6.1"
+        }
+
         repositories {
             mavenCentral()
         }

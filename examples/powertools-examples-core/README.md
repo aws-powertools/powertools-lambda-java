@@ -6,8 +6,13 @@ This project demonstrates the Lambda for Powertools Java module - including
 [metrics](https://docs.powertools.aws.dev/lambda/java/core/metrics/).
 
 We provide examples for the following infrastructure-as-code tools:
+
 * [AWS SAM](sam/) 
 * [AWS CDK](cdk/)
+
+We also provide an example showing the integration of SAM, Powertools, and Gradle:
+
+* [AWS SAM with a Gradle build](gradle/)
 
 For each of the tools, the example application is the same, and consists of the following files:
 
