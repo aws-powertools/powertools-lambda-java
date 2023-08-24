@@ -214,7 +214,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.2.2'
         }
 
         // the freefair aspect plugins targets gradle 8.2.1
