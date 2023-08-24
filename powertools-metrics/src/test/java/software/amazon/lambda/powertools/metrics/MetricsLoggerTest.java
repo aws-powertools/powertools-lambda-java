@@ -18,7 +18,7 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.mockStatic;
-import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -62,8 +62,8 @@ class MetricsLoggerTest {
     @Test
     void singleMetricsCaptureUtilityWithDefaultDimension() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
                     .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
@@ -92,8 +92,8 @@ class MetricsLoggerTest {
     @Test
     void singleMetricsCaptureUtility() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
                     .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
@@ -118,8 +118,8 @@ class MetricsLoggerTest {
     @Test
     void singleMetricsCaptureUtilityWithDefaultNameSpace() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
@@ -167,8 +167,8 @@ class MetricsLoggerTest {
 
     private void testLogger(Consumer<Consumer<MetricsLogger>> methodToTest) {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))

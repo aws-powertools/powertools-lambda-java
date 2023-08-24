@@ -12,9 +12,9 @@
  *
  */
 
-package software.amazon.lambda.powertools.core.internal;
+package software.amazon.lambda.powertools.common.internal;
 
-import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import java.io.FileInputStream;
 import java.io.IOException;

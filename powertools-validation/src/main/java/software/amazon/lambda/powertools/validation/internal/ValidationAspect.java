@@ -16,7 +16,7 @@ package software.amazon.lambda.powertools.validation.internal;
 
 import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;

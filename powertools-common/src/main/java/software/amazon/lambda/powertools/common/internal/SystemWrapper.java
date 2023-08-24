@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.core.internal;
+package software.amazon.lambda.powertools.common.internal;
 
 public class SystemWrapper {
     private SystemWrapper() {

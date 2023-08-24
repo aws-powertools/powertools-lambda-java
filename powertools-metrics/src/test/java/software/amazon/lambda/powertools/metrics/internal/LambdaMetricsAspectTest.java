@@ -21,7 +21,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -40,7 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
-import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsColdStartEnabledHandler;
@@ -86,8 +86,8 @@ public class LambdaMetricsAspectTest {
     @Test
     public void metricsWithoutColdStart() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
 
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
@@ -130,8 +130,8 @@ public class LambdaMetricsAspectTest {
     @Test
     public void metricsWithDefaultDimensionSpecified() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
 
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
@@ -174,8 +174,8 @@ public class LambdaMetricsAspectTest {
     @Test
     public void metricsWithDefaultNoDimensionSpecified() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
 
             mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
             internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))

@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.tracing;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
 
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;

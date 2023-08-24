@@ -16,11 +16,11 @@ package software.amazon.lambda.powertools.metrics.internal;
 
 import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
 import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.hasNoMetrics;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.extractContext;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.coldStartDone;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.extractContext;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
@@ -34,7 +34,7 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;

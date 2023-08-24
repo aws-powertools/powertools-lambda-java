@@ -18,7 +18,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>powertools-core</artifactId>
+    <artifactId>powertools-common</artifactId>
     <packaging>jar</packaging>
 
     <parent>
@@ -27,10 +27,8 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <name>Powertools for AWS Lambda (Java) library Core</name>
-    <description>
-        A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
-    </description>
+    <name>Powertools for AWS Lambda (Java) library Common Internal Utilities</name>
+    <description>Internal utilities shared by the Powertools for AWS Lambda (Java) modules. Do not use directly in your project.</description>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
