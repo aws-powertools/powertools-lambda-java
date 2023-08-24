@@ -41,15 +41,15 @@ jobs:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
         with:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
           cache: maven
       - name: Setup AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1.6.1
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
