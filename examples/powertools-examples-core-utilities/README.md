@@ -12,7 +12,7 @@ We provide examples for the following infrastructure-as-code tools:
 
 We also provide an example showing the integration of SAM, Powertools, and Gradle:
 
-* [AWS SAM with a Gradle build](../powertools-examples-core-utilities/gradle/)
+* [AWS SAM with a Gradle build](gradle/)
 
 For each of the tools, the example application is the same, and consists of the following files:
 
