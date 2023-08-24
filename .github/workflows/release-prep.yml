@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Get current date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
@@ -18,42 +18,42 @@ jobs:
         run: |
           echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in mkdocs.yml
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2.0.0
         with:
           find: 'version: ${{ env.CURRENT_VERSION }}'
           replace: 'version: ${{ github.event.inputs.targetRelease }}'
           regex: false
           include: "mkdocs.yml"
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in main pom.xml
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2.0.0
         with:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
           include: "pom.xml"
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in modules pom.xml
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2.0.0
         with:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
           include: "**/*pom.xml"
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in build.gradle
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2.0.0
         with:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
           include: "**/*build.gradle"
       - name: Find and Replace ${{ env.CURRENT_VERSION }} with ${{ github.event.inputs.targetRelease }} in README.md
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2.0.0
         with:
           find: ${{ env.CURRENT_VERSION }}
           replace: ${{ github.event.inputs.targetRelease }}
           regex: false
           include: "README.md"
       - name: Create changelog placeholder for ${{ github.event.inputs.targetRelease }}
-        uses: jacobtomlinson/gha-find-replace@v2
+        uses: jacobtomlinson/gha-find-replace@f485fdc3f67a6d87ae6e3d11e41f648c26d7aee3 # v2.0.0
         with:
           find: '## [Unreleased]'
           replace: |
@@ -66,7 +66,7 @@ jobs:
           regex: false
           include: CHANGELOG.md
       - name: Create Release Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
         with:
           commit-message: chore:prep release ${{ github.event.inputs.targetRelease }}
           token: ${{ secrets.RELEASE }}
