@@ -25,7 +25,7 @@ import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
-import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 

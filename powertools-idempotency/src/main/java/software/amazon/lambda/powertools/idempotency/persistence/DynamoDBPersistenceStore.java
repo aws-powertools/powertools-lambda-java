@@ -14,8 +14,8 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.AWS_REGION_ENV;
-import static software.amazon.lambda.powertools.core.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 import java.time.Instant;
@@ -40,7 +40,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;

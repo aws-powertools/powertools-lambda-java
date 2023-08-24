@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.idempotency.internal;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;

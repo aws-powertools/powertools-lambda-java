@@ -12,14 +12,14 @@
  *
  */
 
-package software.amazon.lambda.powertools.core.internal;
+package software.amazon.lambda.powertools.common.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -31,6 +31,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 
 class LambdaHandlerProcessorTest {
 
