@@ -5,7 +5,7 @@ Each example can be copied from its subdirectory and used independently of the r
 
 ## Examples
 
-* [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules with different build tools 
+* [powertools-examples-core-utilities](powertools-examples-core-utilities) - Demonstrates the core logging, tracing, and metrics modules with different build tools 
   * [SAM](powertools-examples-core-utilities/sam) 
   * [CDK](powertools-examples-core-utilities/cdk)
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
@@ -54,7 +54,7 @@ The first command will build the source of your application. The second command 
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
-If you're not using SAM, you can look for examples for other tools under [powertools-examples-core](./powertools-examples-core)
+If you're not using SAM, you can look for examples for other tools under [powertools-examples-core-utilities](./powertools-examples-core-utilities)
 
 ### External examples
 
