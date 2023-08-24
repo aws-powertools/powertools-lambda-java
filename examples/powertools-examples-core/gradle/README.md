@@ -4,6 +4,10 @@ This project demonstrates the Lambda for Powertools Java module deployed using [
 [Gradle](https://gradle.org/) running the build. This example is configured for Java 1.8 only; in order to use a newer version, check out the Gradle 
 configuration guide [in the main project README](../../../README.md).
 
+You can also use `sam init` to create a new Gradle-powered Powertools application - choose to use the **AWS Quick Start Templates**,
+and then **Hello World Example with Powertools for AWS Lambda**, **Java 17** runtime, and finally **gradle**.
+
+
 For general information on the deployed example itself, you can refer to the parent [README](../README.md)
 
 ## Configuration
