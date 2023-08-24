@@ -57,7 +57,7 @@
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-core</artifactId>
+            <artifactId>powertools-common</artifactId>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

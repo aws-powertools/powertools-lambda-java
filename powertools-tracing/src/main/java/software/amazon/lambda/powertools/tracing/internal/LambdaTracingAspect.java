@@ -14,11 +14,11 @@
 
 package software.amazon.lambda.powertools.tracing.internal;
 
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.coldStartDone;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isColdStart;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.isSamLocal;
-import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor.serviceName;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.coldStartDone;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isHandlerMethod;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isSamLocal;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.objectMapper;
 
 import com.amazonaws.xray.AWSXRay;
