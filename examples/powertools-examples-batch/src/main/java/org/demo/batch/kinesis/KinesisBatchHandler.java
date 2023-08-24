@@ -12,7 +12,7 @@ import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 
 public class KinesisBatchHandler implements RequestHandler<KinesisEvent, StreamsEventResponse> {
 
-    private final static Logger LOGGER = LogManager.getLogger(org.demo.batch.sqs.SqsBatchHandler.class);
+    private final static Logger LOGGER = LogManager.getLogger(KinesisBatchHandler.class);
     private final BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler;
 
     public KinesisBatchHandler() {

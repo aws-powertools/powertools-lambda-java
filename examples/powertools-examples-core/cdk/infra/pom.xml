@@ -4,12 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>software.amazon.lambda.examples</groupId>
     <artifactId>cdk</artifactId>
-    <version>1.17.0-SNAPSHOT</version>
+    <version>1.18.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <cdk.version>2.91.0</cdk.version>
         <constructs.version>[10.0.0,11.0.0)</constructs.version>
         <junit.version>5.10.0</junit.version>
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
     <build>
         <plugins>
