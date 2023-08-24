@@ -5,7 +5,9 @@ Each example can be copied from its subdirectory and used independently of the r
 
 ## Examples
 
-* [powertools-examples-core-utilities](powertools-examples-core-utilities) - Demonstrates the core modules - logging, tracing, and metrics 
+* [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules with different build tools 
+  * [SAM](powertools-examples-core-utilities/sam) 
+  * [CDK](powertools-examples-core-utilities/cdk)
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
@@ -34,8 +36,8 @@ amongst other things.
 To build and deploy an example application for the first time, run the following in your shell:
 
 ```bash
-# Switch to the directory containing an example for the powertools core utilities - logging, tracing, and metrics
-$ cd powertools-examples-core-utilities
+# Switch to the directory containing an example for the powertools-idempotency module
+$ cd powertools-examples-idempotency
 
 # Build and deploy the example
 $ sam build
@@ -51,6 +53,8 @@ The first command will build the source of your application. The second command 
 * **Save arguments to samconfig.toml**: If set to yes, your choices will be saved to a configuration file inside the project, so that in the future you can just re-run `sam deploy` without parameters to deploy changes to your application.
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
+
+If you're not using SAM, you can look for examples for other tools under [powertools-examples-core](./powertools-examples-core)
 
 ### External examples
 

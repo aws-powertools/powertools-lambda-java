@@ -1,21 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.amazon.lambda.examples</groupId>
-    <version>2.0.0-SNAPSHOT</version>
-    <artifactId>powertools-examples-batch</artifactId>
+    <version>1.16.1</version>
+    <artifactId>powertools-examples-core-utilities-cdk</artifactId>
     <packaging>jar</packaging>
-    <name>Powertools for AWS Lambda (Java) library Examples - Batch</name>
+
+    <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
 
     <properties>
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <sdk.version>2.20.128</sdk.version>
     </properties>
 
     <dependencies>
@@ -31,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-batch</artifactId>
+            <artifactId>powertools-metrics</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -40,33 +38,31 @@
             <version>1.2.3</version>
         </dependency>
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sdk-core</artifactId>
-            <version>${sdk.version}</version>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+            <version>3.11.2</version>
         </dependency>
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sqs</artifactId>
-            <version>${sdk.version}</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
-            <version>${sdk.version}</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
+
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>dynamodb-enhanced</artifactId>
-            <version>${sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>kinesis</artifactId>
-            <version>${sdk.version}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
+        <finalName>helloworld-lambda</finalName>
         <plugins>
             <plugin>
                 <groupId>dev.aspectj</groupId>
@@ -84,6 +80,10 @@
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
                             <artifactId>powertools-logging</artifactId>
+                        </aspectLibrary>
+                        <aspectLibrary>
+                            <groupId>software.amazon.lambda</groupId>
+                            <artifactId>powertools-metrics</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                 </configuration>
@@ -168,6 +168,10 @@
                                     <aspectLibrary>
                                         <groupId>software.amazon.lambda</groupId>
                                         <artifactId>powertools-logging</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-metrics</artifactId>
                                     </aspectLibrary>
                                 </aspectLibraries>
                             </configuration>
