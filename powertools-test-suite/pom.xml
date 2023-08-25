@@ -47,10 +47,6 @@
         </developer>
     </developers>
 
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
-
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -158,6 +154,14 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- Don't deploy tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>
