@@ -63,18 +63,19 @@ public class LambdaParametersAspectTest {
     }
 
     @Test
-    public void testDefault_ShouldUseSSMProvider() {
-        try (MockedStatic<ParamManager> mocked = Mockito.mockStatic(ParamManager.class)) {
-            mocked.when(() -> ParamManager.getProvider(SSMProvider.class)).thenReturn(defaultProvider);
-            Mockito.when(defaultProvider.get("/default")).thenReturn("value");
-
-            Assertions.assertThat(defaultValue).isEqualTo("value");
-            mocked.verify(() -> ParamManager.getProvider(SSMProvider.class), Mockito.times(1));
-            Mockito.verify(defaultProvider, Mockito.times(1)).get("/default");
-
-            mocked.reset();
-        }
-    }
+    // TODO - no more defaults!
+//    public void testDefault_ShouldUseSSMProvider() {
+//        try (MockedStatic<ParamManager> mocked = Mockito.mockStatic(ParamManager.class)) {
+//            mocked.when(() -> ParamManager.getProvider(SSMProvider.class)).thenReturn(defaultProvider);
+//            Mockito.when(defaultProvider.get("/default")).thenReturn("value");
+//
+//            Assertions.assertThat(defaultValue).isEqualTo("value");
+//            mocked.verify(() -> ParamManager.getProvider(SSMProvider.class), Mockito.times(1));
+//            Mockito.verify(defaultProvider, Mockito.times(1)).get("/default");
+//
+//            mocked.reset();
+//        }
+//    }
 
     @Test
     public void testSimple() {

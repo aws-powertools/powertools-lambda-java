@@ -25,6 +25,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-parameters-secrets</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
             <version>1.2.3</version>

@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.parameters.ParamManager;
+import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
-import software.amazon.lambda.powertools.parameters.SecretsProvider;
 
 public class ParametersFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(ParametersFunction.class);
@@ -41,7 +41,9 @@ public class ParametersFunction implements RequestHandler<APIGatewayProxyRequest
     SSMProvider ssmProvider = SSMProvider
             .builder()
             .build();
-    SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
+    SecretsProvider secretsProvider = SecretsProvider
+            .builder()
+            .build();
 
     String simpleValue = ssmProvider.defaultMaxAge(30, SECONDS).get("/powertools-java/sample/simplekey");
     String listValue = ssmProvider.withMaxAge(60, SECONDS).get("/powertools-java/sample/keylist");

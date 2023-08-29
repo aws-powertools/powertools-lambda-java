@@ -43,7 +43,7 @@ import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.services.ssm.model.Parameter;
-import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
 public class ParamManagerIntegrationTest {
@@ -118,7 +118,9 @@ public class ParamManagerIntegrationTest {
 
     @Test
     public void secretsProvider_get() {
-        SecretsProvider secretsProvider = ParamManager.getSecretsProvider(secretsManagerClient);
+        SecretsProvider secretsProvider = SecretsProvider.builder()
+                .withClient(secretsManagerClient)
+                .build();
 
         String expectedValue = "Value1";
         GetSecretValueResponse response = GetSecretValueResponse.builder().secretString(expectedValue).build();

@@ -56,6 +56,7 @@
         <module>examples</module>
         <module>powertools-parameters/powertools-parameters-ssm</module>
         <module>powertools-parameters/powertools-parameters-tests</module>
+        <module>powertools-parameters/powertools-parameters-secrets</module>
     </modules>
 
     <scm>

@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters;
+package software.amazon.lambda.powertools.parameters.secrets;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -27,6 +27,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
@@ -151,7 +152,7 @@ public class SecretsProvider extends BaseProvider {
         return client;
     }
 
-    static class Builder {
+    public static class Builder {
 
         private SecretsManagerClient client;
         private CacheManager cacheManager;
@@ -163,7 +164,7 @@ public class SecretsProvider extends BaseProvider {
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                     .overrideConfiguration(ClientOverrideConfiguration.builder()
                             .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                    UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                                    UserAgentConfigurator.getUserAgent(BaseProvider.PARAMETERS)).build())
                     .build();
         }
 
@@ -174,7 +175,8 @@ public class SecretsProvider extends BaseProvider {
          */
         public SecretsProvider build() {
             if (cacheManager == null) {
-                throw new IllegalStateException("No CacheManager provided, please provide one");
+                // TODO - what should we do with this
+                cacheManager = new CacheManager();
             }
             SecretsProvider provider;
             if (client == null) {

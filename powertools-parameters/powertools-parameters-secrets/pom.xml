@@ -11,9 +11,9 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
-    <artifactId>powertools-parameters-ssm</artifactId>
-    <name>Powertools for AWS Lambda (Java) library Parameters - SSM</name>
-    <description>SSM Parameter Store implementation for the Parameters module</description>
+    <artifactId>powertools-parameters-secrets</artifactId>
+    <name>Powertools for AWS Lambda (Java) library Parameters - Secrets Manager</name>
+    <description>Secrets Manager implementation for the Parameters module</description>
 
     <issueManagement>
         <system>GitHub Issues</system>
@@ -46,7 +46,7 @@
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>ssm</artifactId>
+            <artifactId>secretsmanager</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>software.amazon.awssdk</groupId>

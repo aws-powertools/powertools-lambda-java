@@ -54,17 +54,6 @@ public final class ParamManager {
     }
 
     /**
-     * Get a {@link SecretsProvider} with default {@link SecretsManagerClient}.<br/>
-     * If you need to customize the region, or other part of the client, use {@link ParamManager#getSecretsProvider(SecretsManagerClient)} instead.
-     *
-     * @return a {@link SecretsProvider}
-     */
-    public static SecretsProvider getSecretsProvider() {
-        return getProvider(SecretsProvider.class);
-    }
-
-
-    /**
      * Get a {@link DynamoDbProvider} with default {@link DynamoDbClient} <br/>
      * If you need to customize the region, or other part of the client, use {@link ParamManager#getDynamoDbProvider(DynamoDbClient, String)}
      */
@@ -97,20 +86,6 @@ public final class ParamManager {
                 .build();
     }
 
-
-    /**
-     * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getSecretsProvider()}  if you don't need this customization.
-     *
-     * @return a {@link SecretsProvider}
-     */
-    public static SecretsProvider getSecretsProvider(SecretsManagerClient client) {
-        return (SecretsProvider) providers.computeIfAbsent(SecretsProvider.class, (k) -> SecretsProvider.builder()
-                .withClient(client)
-                .withCacheManager(cacheManager)
-                .withTransformationManager(transformationManager)
-                .build());
-    }
 
     /**
      * Get a {@link DynamoDbProvider} with your custom {@link DynamoDbClient}.<br/>

@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.internal.CustomProvider;
+import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 public class ParamManagerTest {
@@ -78,17 +79,6 @@ public class ParamManagerTest {
 
         // Act & Assert
         assertThatIllegalStateException().isThrownBy(() -> ParamManager.getProvider(null));
-    }
-
-    @Test
-    public void testGetSecretsProvider_withoutParameter_shouldCreateDefaultClient() {
-
-        // Act
-        SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
-
-        // Assert
-        assertNotNull(secretsProvider);
-        assertNotNull(secretsProvider.getClient());
     }
 
 

@@ -12,21 +12,24 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters;
+package software.amazon.lambda.powertools.parameters.secrets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
@@ -51,7 +54,7 @@ public class SecretsProviderTest {
 
     @BeforeEach
     public void init() {
-        openMocks(this);
+        MockitoAnnotations.openMocks(this);
         cacheManager = new CacheManager();
         provider = new SecretsProvider(cacheManager, client);
     }
@@ -67,8 +70,8 @@ public class SecretsProviderTest {
 
         String value = provider.getValue(key);
 
-        assertThat(value).isEqualTo(expectedValue);
-        assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
+        Assertions.assertThat(value).isEqualTo(expectedValue);
+        Assertions.assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
     }
 
     @Test
@@ -82,27 +85,28 @@ public class SecretsProviderTest {
 
         String value = provider.getValue(key);
 
-        assertThat(value).isEqualTo(expectedValue);
-        assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
+        Assertions.assertThat(value).isEqualTo(expectedValue);
+        Assertions.assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
     }
 
     @Test
     public void getMultipleValuesThrowsException() {
 
         // Act & Assert
-        assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
+        Assertions.assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
                 .withMessage("Impossible to get multiple values from AWS Secrets Manager");
 
     }
 
     @Test
-    public void testSecretsProviderBuilderMissingCacheManager_throwsException() {
+    public void testGetSecretsProvider_withoutParameter_shouldCreateDefaultClient() {
 
-        // Act & Assert
-        assertThatIllegalStateException().isThrownBy(() -> SecretsProvider.builder()
-                        .withClient(client)
-                        .withTransformationManager(transformationManager)
-                        .build())
-                .withMessage("No CacheManager provided, please provide one");
+        // Act
+        SecretsProvider secretsProvider = SecretsProvider.builder()
+                .build();
+
+        // Assert
+        assertNotNull(secretsProvider);
+        assertNotNull(secretsProvider.getClient());
     }
 }

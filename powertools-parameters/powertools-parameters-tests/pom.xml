@@ -23,6 +23,11 @@
             <artifactId>powertools-parameters-ssm</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-parameters-secrets</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
