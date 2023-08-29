@@ -15,7 +15,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.2</lambda.events.version>
-        <aws.sdk.version>2.20.135</aws.sdk.version>
+        <aws.sdk.version>2.20.136</aws.sdk.version>
     </properties>
     <dependencyManagement>
         <dependencies>
