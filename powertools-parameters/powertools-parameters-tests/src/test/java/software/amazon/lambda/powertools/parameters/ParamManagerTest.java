@@ -91,16 +91,6 @@ public class ParamManagerTest {
         assertNotNull(secretsProvider.getClient());
     }
 
-    @Test
-    public void testGetSSMProvider_withoutParameter_shouldCreateDefaultClient() {
-
-        // Act
-        SSMProvider ssmProvider = ParamManager.getSsmProvider();
-
-        // Assert
-        assertNotNull(ssmProvider);
-        assertNotNull(ssmProvider.getClient());
-    }
 
     @Test
     public void testGetDynamoDBProvider_requireOtherParameters_throwException() {

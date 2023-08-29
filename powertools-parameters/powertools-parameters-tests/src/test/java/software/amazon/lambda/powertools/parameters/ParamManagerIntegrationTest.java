@@ -43,6 +43,8 @@ import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.services.ssm.model.Parameter;
+import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
 public class ParamManagerIntegrationTest {
 
@@ -71,7 +73,9 @@ public class ParamManagerIntegrationTest {
 
     @Test
     public void ssmProvider_get() {
-        SSMProvider ssmProvider = ParamManager.getSsmProvider(ssmClient);
+        SSMProvider ssmProvider = SSMProvider.builder()
+                .withClient(ssmClient)
+                .build();
 
         String expectedValue = "value";
         Parameter parameter = Parameter.builder().value(expectedValue).build();
@@ -87,7 +91,9 @@ public class ParamManagerIntegrationTest {
 
     @Test
     public void ssmProvider_getMultiple() {
-        SSMProvider ssmProvider = ParamManager.getSsmProvider(ssmClient);
+        SSMProvider ssmProvider = SSMProvider.builder()
+                .withClient(ssmClient)
+                .build();
 
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());

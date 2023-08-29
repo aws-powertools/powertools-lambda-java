@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters;
+package software.amazon.lambda.powertools.parameters.ssm;
 
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -28,6 +28,8 @@ import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.ParamManager;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
@@ -87,17 +89,6 @@ public class SSMProvider extends BaseProvider {
     SSMProvider(CacheManager cacheManager, SsmClient client) {
         super(cacheManager);
         this.client = client;
-    }
-
-    /**
-     * Constructor with only a CacheManager<br/>
-     * <p>
-     * Used in {@link ParamManager#createProvider(Class)}
-     *
-     * @param cacheManager handles the parameter caching
-     */
-    SSMProvider(CacheManager cacheManager) {
-        this(cacheManager, Builder.createClient());
     }
 
     /**
@@ -242,7 +233,7 @@ public class SSMProvider extends BaseProvider {
         return client;
     }
 
-    static class Builder {
+    public static class Builder {
         private SsmClient client;
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
@@ -253,7 +244,7 @@ public class SSMProvider extends BaseProvider {
                     .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                     .overrideConfiguration(ClientOverrideConfiguration.builder()
                             .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                    UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                                    UserAgentConfigurator.getUserAgent(BaseProvider.PARAMETERS)).build())
                     .build();
         }
 
@@ -264,7 +255,8 @@ public class SSMProvider extends BaseProvider {
          */
         public SSMProvider build() {
             if (cacheManager == null) {
-                throw new IllegalStateException("No CacheManager provided, please provide one");
+                // TODO - do we want to share this somehow?
+                cacheManager = new CacheManager();
             }
             SSMProvider provider;
             if (client == null) {

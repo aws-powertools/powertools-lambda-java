@@ -32,13 +32,15 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.parameters.ParamManager;
-import software.amazon.lambda.powertools.parameters.SSMProvider;
+import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 import software.amazon.lambda.powertools.parameters.SecretsProvider;
 
 public class ParametersFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(ParametersFunction.class);
 
-    SSMProvider ssmProvider = ParamManager.getSsmProvider();
+    SSMProvider ssmProvider = SSMProvider
+            .builder()
+            .build();
     SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
 
     String simpleValue = ssmProvider.defaultMaxAge(30, SECONDS).get("/powertools-java/sample/simplekey");

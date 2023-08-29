@@ -54,6 +54,8 @@
         <module>powertools-e2e-tests</module>
         <module>powertools-batch</module>
         <module>examples</module>
+        <module>powertools-parameters/powertools-parameters-ssm</module>
+        <module>powertools-parameters/powertools-parameters-tests</module>
     </modules>
 
     <scm>

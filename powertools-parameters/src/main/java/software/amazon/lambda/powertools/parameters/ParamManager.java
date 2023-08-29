@@ -19,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
-import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -37,7 +36,6 @@ public final class ParamManager {
 
     /**
      * Get a concrete implementation of {@link BaseProvider}.<br/>
-     * You can specify {@link SecretsProvider}, {@link SSMProvider} or create your
      * custom provider by extending {@link BaseProvider} if you need to integrate with a different parameter store.
      *
      * @return a {@link SecretsProvider}
@@ -65,15 +63,6 @@ public final class ParamManager {
         return getProvider(SecretsProvider.class);
     }
 
-    /**
-     * Get a {@link SSMProvider} with default {@link SsmClient}.<br/>
-     * If you need to customize the region, or other part of the client, use {@link ParamManager#getSsmProvider(SsmClient)} instead.
-     *
-     * @return a {@link SSMProvider}
-     */
-    public static SSMProvider getSsmProvider() {
-        return getProvider(SSMProvider.class);
-    }
 
     /**
      * Get a {@link DynamoDbProvider} with default {@link DynamoDbClient} <br/>
@@ -111,26 +100,12 @@ public final class ParamManager {
 
     /**
      * Get a {@link SecretsProvider} with your custom {@link SecretsManagerClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
+     * Use this to configure region or other part of the client. Use {@link ParamManager#getSecretsProvider()}  if you don't need this customization.
      *
      * @return a {@link SecretsProvider}
      */
     public static SecretsProvider getSecretsProvider(SecretsManagerClient client) {
         return (SecretsProvider) providers.computeIfAbsent(SecretsProvider.class, (k) -> SecretsProvider.builder()
-                .withClient(client)
-                .withCacheManager(cacheManager)
-                .withTransformationManager(transformationManager)
-                .build());
-    }
-
-    /**
-     * Get a {@link SSMProvider} with your custom {@link SsmClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getSsmProvider()} if you don't need this customization.
-     *
-     * @return a {@link SSMProvider}
-     */
-    public static SSMProvider getSsmProvider(SsmClient client) {
-        return (SSMProvider) providers.computeIfAbsent(SSMProvider.class, (k) -> SSMProvider.builder()
                 .withClient(client)
                 .withCacheManager(cacheManager)
                 .withTransformationManager(transformationManager)

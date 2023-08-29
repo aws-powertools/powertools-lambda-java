@@ -39,7 +39,7 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
 public @interface Param {
     String key();
 
-    Class<? extends BaseProvider> provider() default SSMProvider.class;
+    Class<? extends BaseProvider> provider();
 
     Class<? extends Transformer> transformer() default Transformer.class;
 }

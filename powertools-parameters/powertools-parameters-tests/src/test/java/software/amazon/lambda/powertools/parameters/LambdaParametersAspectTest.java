@@ -1,4 +1,4 @@
-/*
+package software.amazon.lambda.powertools.parameters;/*
  * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -12,8 +12,6 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters.internal;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.mockito.Mockito.mockStatic;
@@ -22,14 +20,19 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import software.amazon.lambda.powertools.parameters.Param;
 import software.amazon.lambda.powertools.parameters.ParamManager;
-import software.amazon.lambda.powertools.parameters.SSMProvider;
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
+import software.amazon.lambda.powertools.parameters.internal.AnotherObject;
+import software.amazon.lambda.powertools.parameters.internal.CustomProvider;
+import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 import software.amazon.lambda.powertools.parameters.transform.Base64Transformer;
 import software.amazon.lambda.powertools.parameters.transform.JsonTransformer;
 import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
@@ -39,7 +42,7 @@ public class LambdaParametersAspectTest {
     @Mock
     private SSMProvider defaultProvider;
 
-    @Param(key = "/default")
+    @Param(key = "/default", provider = SSMProvider.class)
     private String defaultValue;
 
     @Param(key = "/simple", provider = CustomProvider.class)
@@ -56,18 +59,18 @@ public class LambdaParametersAspectTest {
 
     @BeforeEach
     public void init() {
-        openMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
     public void testDefault_ShouldUseSSMProvider() {
-        try (MockedStatic<ParamManager> mocked = mockStatic(ParamManager.class)) {
+        try (MockedStatic<ParamManager> mocked = Mockito.mockStatic(ParamManager.class)) {
             mocked.when(() -> ParamManager.getProvider(SSMProvider.class)).thenReturn(defaultProvider);
-            when(defaultProvider.get("/default")).thenReturn("value");
+            Mockito.when(defaultProvider.get("/default")).thenReturn("value");
 
-            assertThat(defaultValue).isEqualTo("value");
-            mocked.verify(() -> ParamManager.getProvider(SSMProvider.class), times(1));
-            verify(defaultProvider, times(1)).get("/default");
+            Assertions.assertThat(defaultValue).isEqualTo("value");
+            mocked.verify(() -> ParamManager.getProvider(SSMProvider.class), Mockito.times(1));
+            Mockito.verify(defaultProvider, Mockito.times(1)).get("/default");
 
             mocked.reset();
         }
@@ -75,17 +78,17 @@ public class LambdaParametersAspectTest {
 
     @Test
     public void testSimple() {
-        assertThat(param).isEqualTo("value");
+        Assertions.assertThat(param).isEqualTo("value");
     }
 
     @Test
     public void testWithBasicTransform() {
-        assertThat(basicTransform).isEqualTo("value");
+        Assertions.assertThat(basicTransform).isEqualTo("value");
     }
 
     @Test
     public void testWithComplexTransform() {
-        assertThat(complexTransform)
+        Assertions.assertThat(complexTransform)
                 .isInstanceOf(ObjectToDeserialize.class)
                 .matches(
                         o -> o.getFoo().equals("Foo") &&
@@ -95,7 +98,7 @@ public class LambdaParametersAspectTest {
 
     @Test
     public void testWithComplexTransformWrongTargetClass_ShouldThrowException() {
-        assertThatExceptionOfType(TransformationException.class)
+        Assertions.assertThatExceptionOfType(TransformationException.class)
                 .isThrownBy(() ->
                 {
                     AnotherObject obj = wrongTransform;
