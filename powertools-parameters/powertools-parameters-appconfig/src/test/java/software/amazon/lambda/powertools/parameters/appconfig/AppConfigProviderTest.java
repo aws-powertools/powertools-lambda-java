@@ -12,19 +12,16 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters;
+package software.amazon.lambda.powertools.parameters.appconfig;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.mockito.MockitoAnnotations.openMocks;
-
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
@@ -52,7 +49,7 @@ public class AppConfigProviderTest {
 
     @BeforeEach
     public void init() {
-        openMocks(this);
+        MockitoAnnotations.openMocks(this);
 
         provider = AppConfigProvider.builder()
                 .withClient(client)
@@ -101,18 +98,18 @@ public class AppConfigProviderTest {
         String returnedValue3 = provider.getValue(defaultTestKey);
 
         // Assert
-        assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
-        assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
-        assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
+        Assertions.assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
+        Assertions.assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
+        Assertions.assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
                 .asUtf8String()); // Third response is mocked to return null and should re-use previous value
-        assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
-        assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
-        assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+        Assertions.assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
+        Assertions.assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
+        Assertions.assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
+        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
                 firstSession.initialConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
                 firstResponse.nextPollConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(
+        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(
                 secondResponse.nextPollConfigurationToken());
     }
 
@@ -136,7 +133,7 @@ public class AppConfigProviderTest {
 
 
         // Assert
-        assertThat(returnedValue).isEqualTo(null);
+        Assertions.assertThat(returnedValue).isEqualTo(null);
     }
 
     /**
@@ -172,15 +169,15 @@ public class AppConfigProviderTest {
         String secondKeyValue = provider.getValue(param2Key);
 
         // Assert
-        assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
-        assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
-        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(
+        Assertions.assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
+        Assertions.assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
+        Assertions.assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(
                 param1Key);
-        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(
+        Assertions.assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(
                 param2Key);
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
                 param1Session.initialConfigurationToken());
-        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
                 param2Session.initialConfigurationToken());
 
     }
@@ -189,7 +186,7 @@ public class AppConfigProviderTest {
     public void getMultipleValuesThrowsException() {
 
         // Act & Assert
-        assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
+        Assertions.assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
                 .withMessage("Retrieving multiple parameter values is not supported with the AWS App Config Provider");
     }
 
@@ -197,7 +194,7 @@ public class AppConfigProviderTest {
     public void testAppConfigProviderBuilderMissingCacheManager_throwsException() {
 
         // Act & Assert
-        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+        Assertions.assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                         .withEnvironment(environmentName)
                         .withApplication(applicationName)
                         .withClient(client)
@@ -209,7 +206,7 @@ public class AppConfigProviderTest {
     public void testAppConfigProviderBuilderMissingEnvironment_throwsException() {
 
         // Act & Assert
-        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+        Assertions.assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                         .withCacheManager(new CacheManager())
                         .withApplication(applicationName)
                         .withClient(client)
@@ -221,7 +218,7 @@ public class AppConfigProviderTest {
     public void testAppConfigProviderBuilderMissingApplication_throwsException() {
 
         // Act & Assert
-        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+        Assertions.assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                         .withCacheManager(new CacheManager())
                         .withEnvironment(environmentName)
                         .withClient(client)

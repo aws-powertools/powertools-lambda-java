@@ -90,10 +90,4 @@ public class ParamManagerTest {
         assertThatIllegalArgumentException().isThrownBy(() -> ParamManager.getProvider(DynamoDbProvider.class));
     }
 
-    @Test
-    public void testGetAppConfigProvider_requireOtherParameters_throwException() {
-
-        // Act & Assert
-        assertThatIllegalArgumentException().isThrownBy(() -> ParamManager.getProvider(AppConfigProvider.class));
-    }
 }

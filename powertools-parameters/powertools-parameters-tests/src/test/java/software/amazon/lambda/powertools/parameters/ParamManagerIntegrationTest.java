@@ -133,14 +133,4 @@ public class ParamManagerIntegrationTest {
         verify(secretsManagerClient, times(1)).getSecretValue(any(GetSecretValueRequest.class));
     }
 
-    @Test
-    public void getAppConfigProvider() {
-
-        // Act
-        AppConfigProvider provider = ParamManager.getAppConfigProvider(appConfigDataClient, "test-env", "test-app");
-
-        // Assert
-        assertThat(provider).isNotNull();
-
-    }
 }

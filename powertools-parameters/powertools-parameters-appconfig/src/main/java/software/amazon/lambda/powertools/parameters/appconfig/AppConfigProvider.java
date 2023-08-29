@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters;
+package software.amazon.lambda.powertools.parameters.appconfig;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,6 +26,7 @@ import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfiguratio
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -158,7 +159,7 @@ public class AppConfigProvider extends BaseProvider {
                         .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                         .overrideConfiguration(ClientOverrideConfiguration.builder()
                                 .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                        UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
+                                        UserAgentConfigurator.getUserAgent(BaseProvider.PARAMETERS)).build())
                         .build();
             }
 

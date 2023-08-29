@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.parameters;
 
 import java.lang.reflect.Constructor;
 import java.util.concurrent.ConcurrentHashMap;
-import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -44,46 +43,7 @@ public final class ParamManager {
         if (providerClass == null) {
             throw new IllegalStateException("providerClass cannot be null.");
         }
-        if (providerClass == AppConfigProvider.class) {
-            throw new IllegalArgumentException(
-                    providerClass + " cannot be instantiated like this, additional parameters are required");
-        }
         return (T) providers.computeIfAbsent(providerClass, ParamManager::createProvider);
-    }
-
-    /**
-     * Get a {@link AppConfigProvider} with default {@link AppConfigDataClient}.<br/>
-     * If you need to customize the region, or other part of the client, use {@link ParamManager#getAppConfigProvider(AppConfigDataClient, String, String)} instead.
-     *
-     * @return a {@link AppConfigProvider}
-     */
-    public static AppConfigProvider getAppConfigProvider(String environment, String application) {
-        // Because we need a DDB table name to configure our client, we can't use
-        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
-        // set transformation manager and cache manager.
-        return AppConfigProvider.builder()
-                .withCacheManager(cacheManager)
-                .withTransformationManager(transformationManager)
-                .withEnvironment(environment)
-                .withApplication(application)
-                .build();
-    }
-
-    /**
-     * Get a {@link AppConfigProvider} with your custom {@link AppConfigDataClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getAppConfigProvider(String, String)} if you don't need this customization.
-     *
-     * @return a {@link AppConfigProvider}
-     */
-    public static AppConfigProvider getAppConfigProvider(AppConfigDataClient client, String environment,
-                                                         String application) {
-        return (AppConfigProvider) providers.computeIfAbsent(AppConfigProvider.class, (k) -> AppConfigProvider.builder()
-                .withClient(client)
-                .withCacheManager(cacheManager)
-                .withTransformationManager(transformationManager)
-                .withEnvironment(environment)
-                .withApplication(application)
-                .build());
     }
 
 

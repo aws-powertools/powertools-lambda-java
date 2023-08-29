@@ -58,6 +58,7 @@
         <module>powertools-parameters/powertools-parameters-secrets</module>
         <module>powertools-parameters/powertools-parameters-dynamodb</module>
         <module>powertools-parameters/powertools-parameters-tests</module>
+        <module>powertools-parameters/powertools-parameters-appconfig</module>
     </modules>
 
     <scm>
