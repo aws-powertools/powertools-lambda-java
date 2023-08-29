@@ -62,7 +62,7 @@ public class LambdaParametersAspectTest {
         MockitoAnnotations.openMocks(this);
     }
 
-    @Test
+    // @Test
     // TODO - no more defaults!
 //    public void testDefault_ShouldUseSSMProvider() {
 //        try (MockedStatic<ParamManager> mocked = Mockito.mockStatic(ParamManager.class)) {

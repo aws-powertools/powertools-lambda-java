@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters;
+package software.amazon.lambda.powertools.parameters.dynamodb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;

@@ -17,8 +17,6 @@ package software.amazon.lambda.powertools.parameters;
 import java.lang.reflect.Constructor;
 import java.util.concurrent.ConcurrentHashMap;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -46,26 +44,11 @@ public final class ParamManager {
         if (providerClass == null) {
             throw new IllegalStateException("providerClass cannot be null.");
         }
-        if (providerClass == DynamoDbProvider.class || providerClass == AppConfigProvider.class) {
+        if (providerClass == AppConfigProvider.class) {
             throw new IllegalArgumentException(
                     providerClass + " cannot be instantiated like this, additional parameters are required");
         }
         return (T) providers.computeIfAbsent(providerClass, ParamManager::createProvider);
-    }
-
-    /**
-     * Get a {@link DynamoDbProvider} with default {@link DynamoDbClient} <br/>
-     * If you need to customize the region, or other part of the client, use {@link ParamManager#getDynamoDbProvider(DynamoDbClient, String)}
-     */
-    public static DynamoDbProvider getDynamoDbProvider(String tableName) {
-        // Because we need a DDB table name to configure our client, we can't use
-        // ParamManager#getProvider. This means that we need to make sure we do the same stuff -
-        // set transformation manager and cache manager.
-        return DynamoDbProvider.builder()
-                .withCacheManager(cacheManager)
-                .withTable(tableName)
-                .withTransformationManager(transformationManager)
-                .build();
     }
 
     /**
@@ -84,22 +67,6 @@ public final class ParamManager {
                 .withEnvironment(environment)
                 .withApplication(application)
                 .build();
-    }
-
-
-    /**
-     * Get a {@link DynamoDbProvider} with your custom {@link DynamoDbClient}.<br/>
-     * Use this to configure region or other part of the client. Use {@link ParamManager#getDynamoDbProvider(String)} )} if you don't need this customization.
-     *
-     * @return a {@link DynamoDbProvider}
-     */
-    public static DynamoDbProvider getDynamoDbProvider(DynamoDbClient client, String table) {
-        return (DynamoDbProvider) providers.computeIfAbsent(DynamoDbProvider.class, (k) -> DynamoDbProvider.builder()
-                .withClient(client)
-                .withTable(table)
-                .withCacheManager(cacheManager)
-                .withTransformationManager(transformationManager)
-                .build());
     }
 
     /**

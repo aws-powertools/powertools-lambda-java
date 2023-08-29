@@ -134,16 +134,6 @@ public class ParamManagerIntegrationTest {
     }
 
     @Test
-    public void getDynamoDbProvider() {
-
-        // Act
-        DynamoDbProvider provider = ParamManager.getDynamoDbProvider(ddbClient, "test-table");
-
-        // Assert
-        assertThat(provider).isNotNull();
-    }
-
-    @Test
     public void getAppConfigProvider() {
 
         // Act
