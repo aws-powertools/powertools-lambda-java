@@ -16,6 +16,9 @@ package software.amazon.lambda.powertools.e2e;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
@@ -30,10 +33,21 @@ public class Function implements RequestHandler<Input, String> {
     public String handleRequest(Input input, Context context) {
 
         DimensionSet dimensionSet = new DimensionSet();
-        input.getDimensions().forEach((key, value) -> dimensionSet.addDimension(key, value));
+        input.getDimensions().forEach((key, value) -> {
+            try {
+                dimensionSet.addDimension(key, value);
+            } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                // log or something
+            }
+        });
         metricsLogger.putDimensions(dimensionSet);
-
-        input.getMetrics().forEach((key, value) -> metricsLogger.putMetric(key, value, Unit.COUNT));
+        input.getMetrics().forEach((key, value) -> {
+            try {
+                metricsLogger.putMetric(key, value, Unit.COUNT);
+            } catch (InvalidMetricException e) {
+                // log or something
+            }
+        });
 
         return "OK";
     }

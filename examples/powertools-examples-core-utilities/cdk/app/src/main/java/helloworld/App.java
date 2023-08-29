@@ -31,6 +31,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidDimensionException;
+import software.amazon.cloudwatchlogs.emf.exception.InvalidMetricException;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.Logging;
@@ -44,7 +47,7 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
  * Handler for requests to Lambda function.
  */
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    private final static Logger log = LogManager.getLogger(App.class);
+    private static final Logger log = LogManager.getLogger(App.class);
 
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
@@ -55,12 +58,20 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
 
-        metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+        try {
+            metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+        } catch (InvalidMetricException e) {
+            log.error(e);
+        }
 
-        withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) ->
+        withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", metric ->
         {
-            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+            try {
+                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
+                metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
+            } catch (InvalidDimensionException | DimensionSetExceededException e) {
+                log.error(e);
+            }
         });
 
         LoggingUtils.appendKey("test", "willBeLogged");
