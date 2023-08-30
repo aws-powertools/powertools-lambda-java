@@ -12,23 +12,11 @@ package software.amazon.lambda.powertools.parameters;/*
  *
  */
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import software.amazon.lambda.powertools.parameters.Param;
-import software.amazon.lambda.powertools.parameters.ParamManager;
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 import software.amazon.lambda.powertools.parameters.internal.AnotherObject;
 import software.amazon.lambda.powertools.parameters.internal.CustomProvider;
@@ -42,8 +30,8 @@ public class LambdaParametersAspectTest {
     @Mock
     private SSMProvider defaultProvider;
 
-    @Param(key = "/default", provider = SSMProvider.class)
-    private String defaultValue;
+//    @Param(key = "/default", provider = SSMProvider.class)
+//    private String defaultValue;
 
     @Param(key = "/simple", provider = CustomProvider.class)
     private String param;

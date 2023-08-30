@@ -68,7 +68,7 @@ public class SecretsProvider extends BaseProvider {
      *
      * @param client custom client you would like to use.
      */
-    SecretsProvider(CacheManager cacheManager, SecretsManagerClient client) {
+    public SecretsProvider(CacheManager cacheManager, SecretsManagerClient client) {
         super(cacheManager);
         this.client = client;
     }
@@ -80,7 +80,7 @@ public class SecretsProvider extends BaseProvider {
      *
      * @param cacheManager handles the parameter caching
      */
-    SecretsProvider(CacheManager cacheManager) {
+    public SecretsProvider(CacheManager cacheManager) {
         this(cacheManager, Builder.createClient());
     }
 

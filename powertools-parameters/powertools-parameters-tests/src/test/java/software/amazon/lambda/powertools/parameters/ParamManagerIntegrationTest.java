@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
@@ -61,8 +60,6 @@ public class ParamManagerIntegrationTest {
     SecretsManagerClient secretsManagerClient;
     @Captor
     ArgumentCaptor<GetSecretValueRequest> secretsCaptor;
-    @Mock
-    private AppConfigDataClient appConfigDataClient;
 
     @BeforeEach
     public void setup() throws IllegalAccessException {

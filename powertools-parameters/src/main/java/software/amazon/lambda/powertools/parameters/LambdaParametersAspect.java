@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters.internal;
+package software.amazon.lambda.powertools.parameters;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
