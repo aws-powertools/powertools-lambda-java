@@ -4,7 +4,7 @@
 
     <groupId>software.amazon.lambda.examples</groupId>
     <version>1.17.0</version>
-    <artifactId>powertools-examples-core-cdk</artifactId>
+    <artifactId>powertools-examples-core-utilities-cdk</artifactId>
     <packaging>jar</packaging>
 
     <name>Powertools for AWS Lambda (Java) library Examples - Core</name>
