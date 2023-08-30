@@ -19,6 +19,7 @@ import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogg
 
 import java.lang.reflect.Field;
 import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
+import software.amazon.lambda.powertools.metrics.exception.InvalidMetricDimensionException;
 
 public final class MetricsLoggerHelper {
 
@@ -33,7 +34,7 @@ public final class MetricsLoggerHelper {
         try {
             return metricsContext().getDimensions().size();
         } catch (DimensionSetExceededException e) {
-            throw new RuntimeException("Too many dimensions defined", e);
+            throw new InvalidMetricDimensionException(e);
         }
     }
 

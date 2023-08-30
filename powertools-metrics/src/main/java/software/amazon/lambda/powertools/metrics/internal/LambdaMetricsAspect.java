@@ -43,6 +43,8 @@ import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
+import software.amazon.lambda.powertools.metrics.exception.InvalidMetricDimensionException;
+import software.amazon.lambda.powertools.metrics.exception.InvalidMetricNamespaceException;
 
 @Aspect
 public class LambdaMetricsAspect {
@@ -69,8 +71,10 @@ public class LambdaMetricsAspect {
             f.set(metricsLogger(), context);
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
-        } catch (InvalidDimensionException | DimensionSetExceededException e) {
-            throw new RuntimeException("A valid service is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_SERVICE_NAME", e);
+        } catch (InvalidDimensionException e) {
+            throw new InvalidMetricNamespaceException(e);
+        } catch (DimensionSetExceededException e) {
+            throw new InvalidMetricDimensionException(e);
         }
     }
 
@@ -126,7 +130,7 @@ public class LambdaMetricsAspect {
                 try {
                     metricsLogger.setNamespace(namespace(metrics));
                 } catch (InvalidNamespaceException e) {
-                    throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+                    throw new InvalidMetricNamespaceException(e);
                 }
                 try {
                     metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
@@ -135,8 +139,10 @@ public class LambdaMetricsAspect {
                 }
                 try {
                     metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
-                } catch (InvalidDimensionException | DimensionSetExceededException e) {
-                    throw new RuntimeException("A valid service is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_SERVICE_NAME", e);
+                } catch (InvalidDimensionException e) {
+                    throw new InvalidMetricNamespaceException(e);
+                } catch (DimensionSetExceededException e) {
+                    throw new InvalidMetricDimensionException(e);
                 }
                 metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
                 metricsLogger.flush();

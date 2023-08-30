@@ -31,6 +31,7 @@ import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.metrics.exception.InvalidMetricNamespaceException;
 
 /**
  * A class used to retrieve the instance of the {@code MetricsLogger} used by
@@ -87,9 +88,9 @@ public final class MetricsUtils {
             captureRequestAndTraceId(metricsLogger);
             logger.accept(metricsLogger);
         } catch (InvalidNamespaceException e) {
-            throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+            throw new InvalidMetricNamespaceException(e);
         } catch (InvalidMetricException e) {
-            throw new RuntimeException(e);
+            throw new software.amazon.lambda.powertools.metrics.exception.InvalidMetricException(e);
         } finally {
             metricsLogger.flush();
         }
@@ -119,9 +120,9 @@ public final class MetricsUtils {
             captureRequestAndTraceId(metricsLogger);
             logger.accept(metricsLogger);
         } catch (InvalidNamespaceException e) {
-            throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+            throw new InvalidMetricNamespaceException(e);
         } catch (InvalidMetricException e) {
-            throw new RuntimeException(e);
+            throw new software.amazon.lambda.powertools.metrics.exception.InvalidMetricException(e);
         } finally {
             metricsLogger.flush();
         }
@@ -143,7 +144,7 @@ public final class MetricsUtils {
             captureRequestAndTraceId(metricsLogger);
             logger.accept(metricsLogger);
         } catch (InvalidNamespaceException e) {
-            throw new RuntimeException("A valid namespace is required, either pass it to the @Metrics annotation or set the environment variable POWERTOOLS_METRICS_NAMESPACE", e);
+            throw new InvalidMetricNamespaceException(e);
         } finally {
             metricsLogger.flush();
         }
