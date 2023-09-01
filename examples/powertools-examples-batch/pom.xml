@@ -14,7 +14,7 @@
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <sdk.version>2.20.143</sdk.version>
+        <sdk.version>2.20.152</sdk.version>
         <aspectj.version>1.9.20</aspectj.version>
     </properties>
 
@@ -152,7 +152,6 @@
               - If you are running on Java 1.8, you should apply the aspectJ version here to the project, and remove
                 the profile.
               -->
-
         <profile>
             <id>jdk8</id>
             <activation>
