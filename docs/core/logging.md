@@ -347,7 +347,7 @@ You can set a Correlation ID using `correlationIdPath` attribute by passing a [J
 	  	"functionName": "test",
 	  	"functionMemorySize": 128,
 	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
 	  	"correlation_id": "correlation_id_value"
 	}
     ```
@@ -397,7 +397,7 @@ for known event sources, where either a request ID or X-Ray Trace ID are present
 	  	"functionName": "test",
 	  	"functionMemorySize": 128,
 	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
 	  	"correlation_id": "correlation_id_value"
 	}
     ```
@@ -510,7 +510,7 @@ this means that custom keys can be persisted across invocations. If you want all
 	  	"functionName": "test",
 	  	"functionMemorySize": 128,
 	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
+	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
         "specialKey": "value"
 	}
     ```
@@ -527,7 +527,7 @@ this means that custom keys can be persisted across invocations. If you want all
 	  	"functionName": "test",
 	  	"functionMemorySize": 128,
 	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
-	  	"lambda_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
+	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
 	}
     ```
 
