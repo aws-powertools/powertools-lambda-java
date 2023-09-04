@@ -46,9 +46,12 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(App.class);
 
-    @Logging(logEvent = true, samplingRate = 0.7)
+    // This is controlled by POWERTOOLS_LOGGER_SAMPLE_RATE environment variable
+    // @Logging(logEvent = true, samplingRate = 0.7)
+    // This is controlled by POWERTOOLS_METRICS_NAMESPACE environment variable
+    // @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    // This is controlled by POWERTOOLS_TRACER_CAPTURE_ERROR environment variable
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
