@@ -6,7 +6,7 @@ description: Utility
 !!! warning
     This module is now deprecated and will be removed in version 2.
     See [Large Message Handling](large_messages.md) and 
-    [the migration guide](https://docs.powertools.aws.dev/lambda/java/utilities/large_messages/#migration-from-the-sqs-large-message-utility)
+    [the migration guide](large_messages.md#migration-from-the-sqs-large-message-utility)
     for the new module (`powertools-large-messages`) documentation
 
 The large message handling utility handles SQS messages which have had their payloads
