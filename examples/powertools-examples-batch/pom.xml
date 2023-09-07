@@ -14,7 +14,7 @@
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <sdk.version>2.20.140</sdk.version>
+        <sdk.version>2.20.142</sdk.version>
     </properties>
 
     <dependencies>
