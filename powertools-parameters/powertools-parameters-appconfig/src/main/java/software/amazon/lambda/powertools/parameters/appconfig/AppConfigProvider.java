@@ -143,7 +143,7 @@ public class AppConfigProvider extends BaseProvider {
          */
         public AppConfigProvider build() {
             if (cacheManager == null) {
-                throw new IllegalStateException("No CacheManager provided; please provide one");
+                cacheManager = new CacheManager();
             }
             if (environment == null) {
                 throw new IllegalStateException("No environment provided; please provide one");

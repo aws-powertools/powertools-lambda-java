@@ -12,49 +12,45 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters.appconfig;
+package software.amazon.lambda.powertools.parameters.dynamodb;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
-import software.amazon.lambda.powertools.parameters.BaseProvider;
-import software.amazon.lambda.powertools.parameters.Param;
-import software.amazon.lambda.powertools.parameters.ParamManager;
 
 @Aspect
-public class AppConfigParametersAspect {
+public class DynamoDbParamAspect {
 
 
-    @Pointcut("get(* *) && @annotation(appConfigParamAnnotation)")
-    public void getParam(AppConfigParam appConfigParamAnnotation) {
+    @Pointcut("get(* *) && @annotation(ddbConfigParam)")
+    public void getParam(DynamoDbParam ddbConfigParam) {
     }
 
-    @Around("getParam(appConfigParamAnnotation)")
-    public Object injectParam(final ProceedingJoinPoint joinPoint, final AppConfigParam appConfigParamAnnotation) {
+    @Around("getParam(ddbConfigParam)")
+    public Object injectParam(final ProceedingJoinPoint joinPoint, final DynamoDbParam ddbConfigParam) {
         System.out.println("GET IT");
 
-        AppConfigProvider provider = AppConfigProvider.builder()
-                .withEnvironment(appConfigParamAnnotation.environment())
-                .withApplication(appConfigParamAnnotation.application())
+        DynamoDbProvider provider = DynamoDbProvider.builder()
+                .withTable(ddbConfigParam.table())
                 .build();
 
-        if (appConfigParamAnnotation.transformer().isInterface()) {
+        if (ddbConfigParam.transformer().isInterface()) {
             // No transformation
-            return provider.get(appConfigParamAnnotation.key());
+            return provider.get(ddbConfigParam.key());
         } else {
             FieldSignature s = (FieldSignature) joinPoint.getSignature();
             if (String.class.isAssignableFrom(s.getFieldType())) {
                 // Basic transformation
                 return provider
-                        .withTransformation(appConfigParamAnnotation.transformer())
-                        .get(appConfigParamAnnotation.key());
+                        .withTransformation(ddbConfigParam.transformer())
+                        .get(ddbConfigParam.key());
             } else {
                 // Complex transformation
                 return provider
-                        .withTransformation(appConfigParamAnnotation.transformer())
-                        .get(appConfigParamAnnotation.key(), s.getFieldType());
+                        .withTransformation(ddbConfigParam.transformer())
+                        .get(ddbConfigParam.key(), s.getFieldType());
             }
         }
     }

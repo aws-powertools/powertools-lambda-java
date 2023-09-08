@@ -12,49 +12,44 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters.appconfig;
+package software.amazon.lambda.powertools.parameters.ssm;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
-import software.amazon.lambda.powertools.parameters.BaseProvider;
-import software.amazon.lambda.powertools.parameters.Param;
-import software.amazon.lambda.powertools.parameters.ParamManager;
 
 @Aspect
-public class AppConfigParametersAspect {
+public class SSMParamAspect {
 
 
-    @Pointcut("get(* *) && @annotation(appConfigParamAnnotation)")
-    public void getParam(AppConfigParam appConfigParamAnnotation) {
+    @Pointcut("get(* *) && @annotation(secretsParam)")
+    public void getParam(SSMParam secretsParam) {
     }
 
-    @Around("getParam(appConfigParamAnnotation)")
-    public Object injectParam(final ProceedingJoinPoint joinPoint, final AppConfigParam appConfigParamAnnotation) {
+    @Around("getParam(SSMParam)")
+    public Object injectParam(final ProceedingJoinPoint joinPoint, final SSMParam SSMParam) {
         System.out.println("GET IT");
 
-        AppConfigProvider provider = AppConfigProvider.builder()
-                .withEnvironment(appConfigParamAnnotation.environment())
-                .withApplication(appConfigParamAnnotation.application())
+        SSMProvider provider = SSMProvider.builder()
                 .build();
 
-        if (appConfigParamAnnotation.transformer().isInterface()) {
+        if (SSMParam.transformer().isInterface()) {
             // No transformation
-            return provider.get(appConfigParamAnnotation.key());
+            return provider.get(SSMParam.key());
         } else {
             FieldSignature s = (FieldSignature) joinPoint.getSignature();
             if (String.class.isAssignableFrom(s.getFieldType())) {
                 // Basic transformation
                 return provider
-                        .withTransformation(appConfigParamAnnotation.transformer())
-                        .get(appConfigParamAnnotation.key());
+                        .withTransformation(SSMParam.transformer())
+                        .get(SSMParam.key());
             } else {
                 // Complex transformation
                 return provider
-                        .withTransformation(appConfigParamAnnotation.transformer())
-                        .get(appConfigParamAnnotation.key(), s.getFieldType());
+                        .withTransformation(SSMParam.transformer())
+                        .get(SSMParam.key(), s.getFieldType());
             }
         }
     }

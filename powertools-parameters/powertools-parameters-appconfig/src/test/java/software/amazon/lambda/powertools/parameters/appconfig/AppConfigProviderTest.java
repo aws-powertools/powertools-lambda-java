@@ -191,18 +191,6 @@ public class AppConfigProviderTest {
     }
 
     @Test
-    public void testAppConfigProviderBuilderMissingCacheManager_throwsException() {
-
-        // Act & Assert
-        Assertions.assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
-                        .withEnvironment(environmentName)
-                        .withApplication(applicationName)
-                        .withClient(client)
-                        .build())
-                .withMessage("No CacheManager provided; please provide one");
-    }
-
-    @Test
     public void testAppConfigProviderBuilderMissingEnvironment_throwsException() {
 
         // Act & Assert

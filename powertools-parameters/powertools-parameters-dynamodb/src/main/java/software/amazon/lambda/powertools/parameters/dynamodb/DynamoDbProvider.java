@@ -150,7 +150,7 @@ public class DynamoDbProvider extends BaseProvider {
          */
         public DynamoDbProvider build() {
             if (cacheManager == null) {
-                throw new IllegalStateException("No CacheManager provided; please provide one");
+                cacheManager = new CacheManager();
             }
             if (table == null) {
                 throw new IllegalStateException("No DynamoDB table name provided; please provide one");

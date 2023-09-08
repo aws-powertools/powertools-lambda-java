@@ -48,46 +48,46 @@ public class ParamManagerTest {
         assertNotNull(transformationManager);
     }
 
-    @Test
-    public void testCreateProvider() {
-
+//    @Test
+//    public void testCreateProvider() {
+//
         // Act
-        CustomProvider customProvider = ParamManager.createProvider(CustomProvider.class);
-
-        // Assert
-        assertNotNull(customProvider);
-    }
-
-    @Test
-    public void testCreateUninstanciableProvider_throwsException() {
-
-        // Act & Assert
-        assertThatRuntimeException().isThrownBy(() -> ParamManager.createProvider(BaseProvider.class));
-    }
-
-    @Test
-    public void testGetProviderWithProviderClass() {
-
-        // Act
-        SecretsProvider secretsProvider = ParamManager.getProvider(SecretsProvider.class);
-
-        // Assert
-        assertNotNull(secretsProvider);
-    }
-
-    @Test
-    public void testGetProviderWithProviderClass_throwsException() {
-
-        // Act & Assert
-        assertThatIllegalStateException().isThrownBy(() -> ParamManager.getProvider(null));
-    }
-
-
-    @Test
-    public void testGetDynamoDBProvider_requireOtherParameters_throwException() {
-
-        // Act & Assert
-        assertThatIllegalArgumentException().isThrownBy(() -> ParamManager.getProvider(DynamoDbProvider.class));
-    }
+//        CustomProvider customProvider = ParamManager.createProvider(CustomProvider.class);
+//
+//        // Assert
+//        assertNotNull(customProvider);
+//    }
+//
+//    @Test
+//    public void testCreateUninstanciableProvider_throwsException() {
+//
+//        // Act & Assert
+//        assertThatRuntimeException().isThrownBy(() -> ParamManager.createProvider(BaseProvider.class));
+//    }
+//
+//    @Test
+//    public void testGetProviderWithProviderClass() {
+//
+//        // Act
+//        SecretsProvider secretsProvider = ParamManager.getProvider(SecretsProvider.class);
+//
+//        // Assert
+//        assertNotNull(secretsProvider);
+//    }
+//
+//    @Test
+//    public void testGetProviderWithProviderClass_throwsException() {
+//
+//        // Act & Assert
+//        assertThatIllegalStateException().isThrownBy(() -> ParamManager.getProvider(null));
+//    }
+//
+//
+//    @Test
+//    public void testGetDynamoDBProvider_requireOtherParameters_throwException() {
+//
+//        // Act & Assert
+//        assertThatIllegalArgumentException().isThrownBy(() -> ParamManager.getProvider(DynamoDbProvider.class));
+//    }
 
 }

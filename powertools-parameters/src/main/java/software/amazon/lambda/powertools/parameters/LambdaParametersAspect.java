@@ -30,27 +30,29 @@ public class LambdaParametersAspect {
     public void getParam(Param paramAnnotation) {
     }
 
-    @Around("getParam(paramAnnotation)")
-    public Object injectParam(final ProceedingJoinPoint joinPoint, final Param paramAnnotation) {
-        BaseProvider provider = ParamManager.getProvider(paramAnnotation.provider());
+    // TODO - get rid of this
 
-        if (paramAnnotation.transformer().isInterface()) {
-            // No transformation
-            return provider.get(paramAnnotation.key());
-        } else {
-            FieldSignature s = (FieldSignature) joinPoint.getSignature();
-            if (String.class.isAssignableFrom(s.getFieldType())) {
-                // Basic transformation
-                return provider
-                        .withTransformation(paramAnnotation.transformer())
-                        .get(paramAnnotation.key());
-            } else {
-                // Complex transformation
-                return provider
-                        .withTransformation(paramAnnotation.transformer())
-                        .get(paramAnnotation.key(), s.getFieldType());
-            }
-        }
-    }
+//    @Around("getParam(paramAnnotation)")
+//    public Object injectParam(final ProceedingJoinPoint joinPoint, final Param paramAnnotation) {
+//        BaseProvider provider = ParamManager.getProvider(paramAnnotation.provider());
+//
+//        if (paramAnnotation.transformer().isInterface()) {
+//            // No transformation
+//            return provider.get(paramAnnotation.key());
+//        } else {
+//            FieldSignature s = (FieldSignature) joinPoint.getSignature();
+//            if (String.class.isAssignableFrom(s.getFieldType())) {
+//                // Basic transformation
+//                return provider
+//                        .withTransformation(paramAnnotation.transformer())
+//                        .get(paramAnnotation.key());
+//            } else {
+//                // Complex transformation
+//                return provider
+//                        .withTransformation(paramAnnotation.transformer())
+//                        .get(paramAnnotation.key(), s.getFieldType());
+//            }
+//        }
+//    }
 
 }
