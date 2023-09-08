@@ -29,7 +29,6 @@ import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
-import software.amazon.lambda.powertools.parameters.ParamManager;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;

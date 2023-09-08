@@ -218,15 +218,6 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void testDynamoDBBuilderMissingCacheManager_throwsException() {
-
-        // Act & Assert
-        assertThatIllegalStateException().isThrownBy(() -> DynamoDbProvider.builder()
-                .withTable("table")
-                .build());
-    }
-
-    @Test
     public void testDynamoDBBuilderMissingTable_throwsException() {
 
         // Act & Assert

@@ -32,11 +32,21 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.parameters.ParamManager;
+import software.amazon.lambda.powertools.parameters.secrets.SecretsParam;
 import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
+import software.amazon.lambda.powertools.parameters.ssm.SSMParam;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
 public class ParametersFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(ParametersFunction.class);
+
+    // Annotation-style injection from secrets manager
+    @SecretsParam(key = "/powertools-java/userpwd")
+    String secretParamInjected;
+
+    // Annotation-style injection from Systems Manager
+    @SSMParam(key = "/powertools-java/sample/simplekey")
+    String ssmParamInjected;
 
     SSMProvider ssmProvider = SSMProvider
             .builder()

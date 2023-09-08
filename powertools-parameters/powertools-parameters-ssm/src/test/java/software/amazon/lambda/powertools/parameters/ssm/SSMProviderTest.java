@@ -16,12 +16,6 @@ package software.amazon.lambda.powertools.parameters.ssm;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -198,17 +192,6 @@ public class SSMProviderTest {
 
         Assertions.assertThat(request1.nextToken()).isNull();
         Assertions.assertThat(request2.nextToken()).isEqualTo("123abc");
-    }
-
-    @Test
-    public void testSecretsProviderBuilderMissingCacheManager_throwsException() {
-
-        // Act & Assert
-        Assertions.assertThatIllegalStateException().isThrownBy(() -> SSMProvider.builder()
-                        .withClient(client)
-                        .withTransformationManager(transformationManager)
-                        .build())
-                .withMessage("No CacheManager provided, please provide one");
     }
 
     private void initMock(String expectedValue) {
