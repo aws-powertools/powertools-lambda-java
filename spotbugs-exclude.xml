@@ -66,14 +66,6 @@
                 <Field name="client"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
-                <Field name="cacheManager"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
-                <Field name="transformer"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
                 <Field name="store"/>
             </And>
@@ -141,16 +133,8 @@
                 <Method name="objectMapper"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
-                <Method name="getCacheManager"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
                 <Method name="s3Client"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
-                <Method name="getTransformationManager"/>
             </And>
         </Or>
     </Match>
