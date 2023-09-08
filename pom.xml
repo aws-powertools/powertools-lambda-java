@@ -511,7 +511,7 @@
                         </executions>
                         <configuration>
                             <xmlOutput>true</xmlOutput>
-                            <excludeFilterFile>${project.basedir}/spotbugs-exclude.xml</excludeFilterFile>
+                            <excludeFilterFile>../spotbugs-exclude.xml</excludeFilterFile>
                         </configuration>
                     </plugin>
                 </plugins>
