@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters.exception;
+package software.amazon.lambda.powertools.parameters.dynamodb.exception;
 
 /**
  * Thrown when the DynamoDbProvider comes across parameter data that
