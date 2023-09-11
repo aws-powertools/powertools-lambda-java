@@ -56,7 +56,7 @@ public class SecretsProviderTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         cacheManager = new CacheManager();
-        provider = new SecretsProvider(cacheManager, client);
+        provider = new SecretsProvider(cacheManager, transformationManager, client);
     }
 
     @Test

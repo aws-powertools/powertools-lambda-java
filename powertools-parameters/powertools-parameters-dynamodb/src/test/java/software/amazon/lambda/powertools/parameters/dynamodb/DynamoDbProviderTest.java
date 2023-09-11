@@ -55,7 +55,7 @@ public class DynamoDbProviderTest {
     public void init() {
         openMocks(this);
         CacheManager cacheManager = new CacheManager();
-        provider = new DynamoDbProvider(cacheManager, client, tableName);
+        provider = new DynamoDbProvider(cacheManager, transformationManager, client, tableName);
     }
 
 

@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.parameters.appconfig;
 
+import java.util.function.BiFunction;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -22,6 +23,12 @@ import org.aspectj.lang.reflect.FieldSignature;
 
 @Aspect
 public class AppConfigParametersAspect {
+
+    private static BiFunction<String, String, AppConfigProvider> providerBuilder =
+        (String env, String app) -> AppConfigProvider.builder()
+                .withEnvironment(env)
+                .withApplication(app)
+                .build();
 
 
     @Pointcut("get(* *) && @annotation(appConfigParamAnnotation)")
@@ -32,10 +39,8 @@ public class AppConfigParametersAspect {
     public Object injectParam(final ProceedingJoinPoint joinPoint, final AppConfigParam appConfigParamAnnotation) {
         System.out.println("GET IT");
 
-        AppConfigProvider provider = AppConfigProvider.builder()
-                .withEnvironment(appConfigParamAnnotation.environment())
-                .withApplication(appConfigParamAnnotation.application())
-                .build();
+        AppConfigProvider provider = providerBuilder.apply
+                (appConfigParamAnnotation.environment(), appConfigParamAnnotation.application());
 
         if (appConfigParamAnnotation.transformer().isInterface()) {
             // No transformation

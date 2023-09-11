@@ -53,7 +53,6 @@ public class BaseProviderTest {
         cacheManager = new CacheManager();
         provider = new BasicProvider(cacheManager);
         transformationManager = new TransformationManager();
-        provider.setTransformationManager(transformationManager);
     }
 
     @Test
@@ -335,7 +334,6 @@ public class BaseProviderTest {
 
     @Test
     public void get_noTransformationManager_shouldThrowException() {
-        provider.setTransformationManager(null);
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> provider.withTransformation(base64).get("foo"));
@@ -343,7 +341,6 @@ public class BaseProviderTest {
 
     @Test
     public void getObject_noTransformationManager_shouldThrowException() {
-        provider.setTransformationManager(null);
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
@@ -380,7 +377,7 @@ public class BaseProviderTest {
         private String value = "valueFromStore";
 
         public BasicProvider(CacheManager cacheManager) {
-            super(cacheManager);
+            super(cacheManager, null);
         }
 
         public void setValue(String value) {

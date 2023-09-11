@@ -17,18 +17,12 @@ package software.amazon.lambda.powertools.parameters.dynamodb;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
-import software.amazon.awssdk.core.SdkSystemSetting;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
-import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.ParamProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
@@ -46,23 +40,19 @@ public class DynamoDbProvider extends BaseProvider {
     private final DynamoDbClient client;
     private final String tableName;
 
-    DynamoDbProvider(CacheManager cacheManager, DynamoDbClient client, String tableName) {
-        super(cacheManager);
+    DynamoDbProvider(CacheManager cacheManager, TransformationManager transformationManager, DynamoDbClient client, String tableName) {
+        super(cacheManager, transformationManager);
         this.client = client;
         this.tableName = tableName;
-    }
-
-    DynamoDbProvider(CacheManager cacheManager, String tableName) {
-        this(cacheManager, Builder.createClient(), tableName);
     }
 
     /**
      * Create a builder that can be used to configure and create a {@link DynamoDbProvider}.
      *
-     * @return a new instance of {@link DynamoDbProvider.Builder}
+     * @return a new instance of {@link DynamoDbProviderBuilder}
      */
-    public static DynamoDbProvider.Builder builder() {
-        return new DynamoDbProvider.Builder();
+    public static DynamoDbProviderBuilder builder() {
+        return new DynamoDbProviderBuilder();
     }
 
     /**
@@ -127,89 +117,4 @@ public class DynamoDbProvider extends BaseProvider {
 
     }
 
-    static class Builder {
-        private DynamoDbClient client;
-        private String table;
-        private CacheManager cacheManager;
-        private TransformationManager transformationManager;
-
-        private static DynamoDbClient createClient() {
-            return DynamoDbClient.builder()
-                    .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder()
-                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                    UserAgentConfigurator.getUserAgent(PARAMETERS)).build())
-                    .build();
-        }
-
-        /**
-         * Create a {@link DynamoDbProvider} instance.
-         *
-         * @return a {@link DynamoDbProvider}
-         */
-        public DynamoDbProvider build() {
-            if (cacheManager == null) {
-                cacheManager = new CacheManager();
-            }
-            if (table == null) {
-                throw new IllegalStateException("No DynamoDB table name provided; please provide one");
-            }
-            DynamoDbProvider provider;
-            if (client == null) {
-                client = createClient();
-            }
-            provider = new DynamoDbProvider(cacheManager, client, table);
-
-            if (transformationManager != null) {
-                provider.setTransformationManager(transformationManager);
-            }
-            return provider;
-        }
-
-        /**
-         * Set custom {@link DynamoDbClient} to pass to the {@link DynamoDbClient}. <br/>
-         * Use it if you want to customize the region or any other part of the client.
-         *
-         * @param client Custom client
-         * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
-         */
-        public DynamoDbProvider.Builder withClient(DynamoDbClient client) {
-            this.client = client;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide a CacheManager to the {@link DynamoDbProvider}
-         *
-         * @param cacheManager the manager that will handle the cache of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
-         */
-        public DynamoDbProvider.Builder withCacheManager(CacheManager cacheManager) {
-            this.cacheManager = cacheManager;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide a DynamoDB table to the {@link DynamoDbProvider}
-         *
-         * @param table the table that parameters will be retrieved from.
-         * @return the builder to chain calls (eg. <pre>builder.withTable().build()</pre>)
-         */
-        public DynamoDbProvider.Builder withTable(String table) {
-            this.table = table;
-            return this;
-        }
-
-        /**
-         * Provide a transformationManager to the {@link DynamoDbProvider}
-         *
-         * @param transformationManager the manager that will handle transformation of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
-         */
-        public DynamoDbProvider.Builder withTransformationManager(TransformationManager transformationManager) {
-            this.transformationManager = transformationManager;
-            return this;
-        }
-    }
 }

@@ -62,7 +62,7 @@ public class SSMProviderTest {
     public void init() {
         MockitoAnnotations.openMocks(this);
         cacheManager = new CacheManager();
-        provider = new SSMProvider(cacheManager, client);
+        provider = new SSMProvider(cacheManager, null, client);
     }
 
     @Test

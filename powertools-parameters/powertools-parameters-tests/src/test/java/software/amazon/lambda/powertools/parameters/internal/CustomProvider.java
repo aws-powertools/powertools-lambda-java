@@ -25,7 +25,7 @@ public class CustomProvider extends BaseProvider {
     private final Map<String, String> values = new HashMap<>();
 
     public CustomProvider(CacheManager cacheManager) {
-        super(cacheManager);
+        super(cacheManager, null);
         values.put("/simple", "value");
         values.put("/base64", Base64.getEncoder().encodeToString("value".getBytes()));
         values.put("/json", "{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");

@@ -34,11 +34,12 @@ public abstract class BaseProvider implements ParamProvider {
     public static final String PARAMETERS = "parameters";
 
     protected final CacheManager cacheManager;
-    private TransformationManager transformationManager;
+    private final TransformationManager transformationManager;
     private Clock clock;
 
-    public BaseProvider(CacheManager cacheManager) {
+    public BaseProvider(CacheManager cacheManager, TransformationManager transformationManager) {
         this.cacheManager = cacheManager;
+        this.transformationManager = transformationManager;
     }
 
     /**
@@ -223,10 +224,6 @@ public abstract class BaseProvider implements ParamProvider {
         if (transformationManager != null) {
             transformationManager.setTransformer(null);
         }
-    }
-
-    protected void setTransformationManager(TransformationManager transformationManager) {
-        this.transformationManager = transformationManager;
     }
 
     /**

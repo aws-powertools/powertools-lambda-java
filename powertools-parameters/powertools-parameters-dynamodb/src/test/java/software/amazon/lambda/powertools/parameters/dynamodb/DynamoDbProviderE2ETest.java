@@ -104,7 +104,7 @@ public class DynamoDbProviderE2ETest {
     }
 
     private DynamoDbProvider makeProvider(String tableName) {
-        return new DynamoDbProvider(new CacheManager(), DynamoDbClient.builder()
+        return new DynamoDbProvider(new CacheManager(), null, DynamoDbClient.builder()
                 .httpClientBuilder(UrlConnectionHttpClient.builder()).build(),
                 tableName);
     }

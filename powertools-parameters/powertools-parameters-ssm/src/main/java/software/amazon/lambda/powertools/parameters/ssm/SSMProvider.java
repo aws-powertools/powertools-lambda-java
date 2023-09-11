@@ -17,17 +17,11 @@ package software.amazon.lambda.powertools.parameters.ssm;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import software.amazon.awssdk.core.SdkSystemSetting;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
-import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -81,22 +75,23 @@ public class SSMProvider extends BaseProvider {
      * Constructor with custom {@link SsmClient}. <br/>
      * Use when you need to customize region or any other attribute of the client.<br/><br/>
      * <p>
-     * Use the {@link SSMProvider.Builder} to create an instance of it.
+     * Use the {@link SSMProviderBuilder} to create an instance of it.
      *
      * @param client custom client you would like to use.
+     * @param transformationManager Null, or a transformation manager
      */
-    SSMProvider(CacheManager cacheManager, SsmClient client) {
-        super(cacheManager);
+    SSMProvider(CacheManager cacheManager, TransformationManager transformationManager, SsmClient client) {
+        super(cacheManager, transformationManager);
         this.client = client;
     }
 
     /**
      * Create a builder that can be used to configure and create a {@link SSMProvider}.
      *
-     * @return a new instance of {@link SSMProvider.Builder}
+     * @return a new instance of {@link SSMProviderBuilder}
      */
-    public static SSMProvider.Builder builder() {
-        return new SSMProvider.Builder();
+    public static SSMProviderBuilder builder() {
+        return new SSMProviderBuilder();
     }
 
     /**
@@ -232,76 +227,4 @@ public class SSMProvider extends BaseProvider {
         return client;
     }
 
-    public static class Builder {
-        private SsmClient client;
-        private CacheManager cacheManager;
-        private TransformationManager transformationManager;
-
-        private static SsmClient createClient() {
-            return SsmClient.builder()
-                    .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder()
-                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                    UserAgentConfigurator.getUserAgent(BaseProvider.PARAMETERS)).build())
-                    .build();
-        }
-
-        /**
-         * Create a {@link SSMProvider} instance.
-         *
-         * @return a {@link SSMProvider}
-         */
-        public SSMProvider build() {
-            if (cacheManager == null) {
-                // TODO - do we want to share this somehow?
-                cacheManager = new CacheManager();
-            }
-            SSMProvider provider;
-            if (client == null) {
-                client = createClient();
-            }
-
-            provider = new SSMProvider(cacheManager, client);
-
-            if (transformationManager != null) {
-                provider.setTransformationManager(transformationManager);
-            }
-            return provider;
-        }
-
-        /**
-         * Set custom {@link SsmClient} to pass to the {@link SSMProvider}. <br/>
-         * Use it if you want to customize the region or any other part of the client.
-         *
-         * @param client Custom client
-         * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
-         */
-        public SSMProvider.Builder withClient(SsmClient client) {
-            this.client = client;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide a CacheManager to the {@link SSMProvider}
-         *
-         * @param cacheManager the manager that will handle the cache of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
-         */
-        public SSMProvider.Builder withCacheManager(CacheManager cacheManager) {
-            this.cacheManager = cacheManager;
-            return this;
-        }
-
-        /**
-         * Provide a transformationManager to the {@link SSMProvider}
-         *
-         * @param transformationManager the manager that will handle transformation of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
-         */
-        public SSMProvider.Builder withTransformationManager(TransformationManager transformationManager) {
-            this.transformationManager = transformationManager;
-            return this;
-        }
-    }
 }

@@ -16,17 +16,12 @@ package software.amazon.lambda.powertools.parameters.appconfig;
 
 import java.util.HashMap;
 import java.util.Map;
-import software.amazon.awssdk.core.SdkSystemSetting;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
-import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.ParamProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -51,8 +46,8 @@ public class AppConfigProvider extends BaseProvider {
     private final String environment;
     private final HashMap<String, EstablishedSession> establishedSessions = new HashMap<>();
 
-    AppConfigProvider(CacheManager cacheManager, AppConfigDataClient client, String environment, String application) {
-        super(cacheManager);
+    AppConfigProvider(CacheManager cacheManager, TransformationManager transformationManager, AppConfigDataClient client, String environment, String application) {
+        super(cacheManager, transformationManager);
         this.client = client;
         this.application = application;
         this.environment = environment;
@@ -61,10 +56,10 @@ public class AppConfigProvider extends BaseProvider {
     /**
      * Create a builder that can be used to configure and create a {@link AppConfigProvider}.
      *
-     * @return a new instance of {@link AppConfigProvider.Builder}
+     * @return a new instance of {@link AppConfigProviderBuilder}
      */
-    public static AppConfigProvider.Builder builder() {
-        return new AppConfigProvider.Builder();
+    public static AppConfigProviderBuilder builder() {
+        return new AppConfigProviderBuilder();
     }
 
     /**
@@ -129,102 +124,4 @@ public class AppConfigProvider extends BaseProvider {
         }
     }
 
-    static class Builder {
-        private AppConfigDataClient client;
-        private CacheManager cacheManager;
-        private TransformationManager transformationManager;
-        private String environment;
-        private String application;
-
-        /**
-         * Create a {@link AppConfigProvider} instance.
-         *
-         * @return a {@link AppConfigProvider}
-         */
-        public AppConfigProvider build() {
-            if (cacheManager == null) {
-                cacheManager = new CacheManager();
-            }
-            if (environment == null) {
-                throw new IllegalStateException("No environment provided; please provide one");
-            }
-            if (application == null) {
-                throw new IllegalStateException("No application provided; please provide one");
-            }
-
-            // Create a AppConfigDataClient if we haven't been given one
-            if (client == null) {
-                client = AppConfigDataClient.builder()
-                        .httpClientBuilder(UrlConnectionHttpClient.builder())
-                        .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                        .overrideConfiguration(ClientOverrideConfiguration.builder()
-                                .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                        UserAgentConfigurator.getUserAgent(BaseProvider.PARAMETERS)).build())
-                        .build();
-            }
-
-            AppConfigProvider provider = new AppConfigProvider(cacheManager, client, environment, application);
-
-            if (transformationManager != null) {
-                provider.setTransformationManager(transformationManager);
-            }
-            return provider;
-        }
-
-        /**
-         * Set custom {@link AppConfigProvider} to pass to the {@link AppConfigDataClient}. <br/>
-         * Use it if you want to customize the region or any other part of the client.
-         *
-         * @param client Custom client
-         * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
-         */
-        public AppConfigProvider.Builder withClient(AppConfigDataClient client) {
-            this.client = client;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide an environment to the {@link AppConfigProvider}
-         *
-         * @param environment the AppConfig environment
-         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
-         */
-        public AppConfigProvider.Builder withEnvironment(String environment) {
-            this.environment = environment;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide an application to the {@link AppConfigProvider}
-         *
-         * @param application the application to pull configuration from
-         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
-         */
-        public AppConfigProvider.Builder withApplication(String application) {
-            this.application = application;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide a CacheManager to the {@link AppConfigProvider}
-         *
-         * @param cacheManager the manager that will handle the cache of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
-         */
-        public AppConfigProvider.Builder withCacheManager(CacheManager cacheManager) {
-            this.cacheManager = cacheManager;
-            return this;
-        }
-
-        /**
-         * Provide a transformationManager to the {@link AppConfigProvider}
-         *
-         * @param transformationManager the manager that will handle transformation of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
-         */
-        public AppConfigProvider.Builder withTransformationManager(TransformationManager transformationManager) {
-            this.transformationManager = transformationManager;
-            return this;
-        }
-    }
 }

@@ -19,14 +19,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Map;
-import software.amazon.awssdk.core.SdkSystemSetting;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
-import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -64,33 +58,22 @@ public class SecretsProvider extends BaseProvider {
      * Constructor with custom {@link SecretsManagerClient}. <br/>
      * Use when you need to customize region or any other attribute of the client.<br/><br/>
      * <p>
-     * Use the {@link Builder} to create an instance of it.
+     * Use the {@link SecretsProviderBuilder} to create an instance of it.
      *
      * @param client custom client you would like to use.
      */
-    public SecretsProvider(CacheManager cacheManager, SecretsManagerClient client) {
-        super(cacheManager);
+    public SecretsProvider(CacheManager cacheManager, TransformationManager transformationManager, SecretsManagerClient client) {
+        super(cacheManager, transformationManager);
         this.client = client;
-    }
-
-    /**
-     * Constructor with only a CacheManager<br/>
-     * <p>
-     * Used in {@link ParamManager#createProvider(Class)}
-     *
-     * @param cacheManager handles the parameter caching
-     */
-    public SecretsProvider(CacheManager cacheManager) {
-        this(cacheManager, Builder.createClient());
     }
 
     /**
      * Create a builder that can be used to configure and create a {@link SecretsProvider}.
      *
-     * @return a new instance of {@link SecretsProvider.Builder}
+     * @return a new instance of {@link SecretsProviderBuilder}
      */
-    public static Builder builder() {
-        return new Builder();
+    public static SecretsProviderBuilder builder() {
+        return new SecretsProviderBuilder();
     }
 
     /**
@@ -152,77 +135,4 @@ public class SecretsProvider extends BaseProvider {
         return client;
     }
 
-    public static class Builder {
-
-        private SecretsManagerClient client;
-        private CacheManager cacheManager;
-        private TransformationManager transformationManager;
-
-        private static SecretsManagerClient createClient() {
-            return SecretsManagerClient.builder()
-                    .httpClientBuilder(UrlConnectionHttpClient.builder())
-                    .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
-                    .overrideConfiguration(ClientOverrideConfiguration.builder()
-                            .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
-                                    UserAgentConfigurator.getUserAgent(BaseProvider.PARAMETERS)).build())
-                    .build();
-        }
-
-        /**
-         * Create a {@link SecretsProvider} instance.
-         *
-         * @return a {@link SecretsProvider}
-         */
-        public SecretsProvider build() {
-            if (cacheManager == null) {
-                // TODO - what should we do with this
-                cacheManager = new CacheManager();
-            }
-            SecretsProvider provider;
-            if (client == null) {
-                client = createClient();
-            }
-
-            provider = new SecretsProvider(cacheManager, client);
-
-            if (transformationManager != null) {
-                provider.setTransformationManager(transformationManager);
-            }
-            return provider;
-        }
-
-        /**
-         * Set custom {@link SecretsManagerClient} to pass to the {@link SecretsProvider}. <br/>
-         * Use it if you want to customize the region or any other part of the client.
-         *
-         * @param client Custom client
-         * @return the builder to chain calls (eg. <pre>builder.withClient().build()</pre>)
-         */
-        public Builder withClient(SecretsManagerClient client) {
-            this.client = client;
-            return this;
-        }
-
-        /**
-         * <b>Mandatory</b>. Provide a CacheManager to the {@link SecretsProvider}
-         *
-         * @param cacheManager the manager that will handle the cache of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
-         */
-        public Builder withCacheManager(CacheManager cacheManager) {
-            this.cacheManager = cacheManager;
-            return this;
-        }
-
-        /**
-         * Provide a transformationManager to the {@link SecretsProvider}
-         *
-         * @param transformationManager the manager that will handle transformation of parameters
-         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
-         */
-        public Builder withTransformationManager(TransformationManager transformationManager) {
-            this.transformationManager = transformationManager;
-            return this;
-        }
-    }
 }
