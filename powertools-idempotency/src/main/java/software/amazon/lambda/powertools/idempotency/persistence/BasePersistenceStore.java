@@ -26,7 +26,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
@@ -122,7 +121,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                 // missing idempotency key => non-idempotent transaction, we do not store the data, simply return
                 return;
             }
-            DataRecord record = new DataRecord(
+            DataRecord dataRecord = new DataRecord(
                     hashedIdempotencyKey.get(),
                     DataRecord.Status.COMPLETED,
                     getExpiryEpochSecond(now),
@@ -130,9 +129,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                     getHashedPayload(data)
             );
             LOG.debug("Function successfully executed. Saving record to persistence store with idempotency key: {}",
-                    record.getIdempotencyKey());
-            updateRecord(record);
-            saveToCache(record);
+                    dataRecord.getIdempotencyKey());
+            updateRecord(dataRecord);
+            saveToCache(dataRecord);
         } catch (JsonProcessingException e) {
             // TODO : throw ?
             throw new RuntimeException("Error while serializing the response", e);
@@ -164,7 +163,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                     OptionalLong.of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
         }
 
-        DataRecord record = new DataRecord(
+        DataRecord dataRecord = new DataRecord(
                 idempotencyKey,
                 DataRecord.Status.INPROGRESS,
                 getExpiryEpochSecond(now),
@@ -172,8 +171,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                 getHashedPayload(data),
                 inProgressExpirationMsTimestamp
         );
-        LOG.debug("saving in progress record for idempotency key: {}", record.getIdempotencyKey());
-        putRecord(record, now);
+        LOG.debug("saving in progress record for idempotency key: {}", dataRecord.getIdempotencyKey());
+        putRecord(dataRecord, now);
     }
 
     /**
@@ -223,10 +222,10 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             return cachedRecord;
         }
 
-        DataRecord record = getRecord(idemPotencyKey);
-        saveToCache(record);
-        validatePayload(data, record);
-        return record;
+        DataRecord dataRecord = getRecord(idemPotencyKey);
+        saveToCache(dataRecord);
+        validatePayload(data, dataRecord);
+        return dataRecord;
     }
 
     /**
@@ -258,10 +257,10 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
     private boolean isMissingIdemPotencyKey(JsonNode data) {
         if (data.isContainerNode()) {
-            Stream<Map.Entry<String, JsonNode>> stream =
-                    StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.fields(), Spliterator.ORDERED),
+            Stream<JsonNode> stream =
+                    StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.elements(), Spliterator.ORDERED),
                             false);
-            return stream.allMatch(e -> e.getValue().isNull());
+            return stream.allMatch(JsonNode::isNull);
         }
         return data.isNull();
     }
@@ -378,10 +377,10 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             return null;
         }
 
-        DataRecord record = cache.get(idempotencyKey);
-        if (record != null) {
-            if (!record.isExpired(now)) {
-                return record;
+        DataRecord dataRecord = cache.get(idempotencyKey);
+        if (dataRecord != null) {
+            if (!dataRecord.isExpired(now)) {
+                return dataRecord;
             }
             LOG.debug("Removing expired local cache record for idempotency key: {}", idempotencyKey);
             deleteFromCache(idempotencyKey);
