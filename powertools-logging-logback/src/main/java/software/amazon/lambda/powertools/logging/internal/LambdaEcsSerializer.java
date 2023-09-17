@@ -1,17 +1,34 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.logging.internal;
-
-import ch.qos.logback.classic.Level;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.regex.Matcher;
 
 import static software.amazon.lambda.powertools.logging.internal.JsonUtils.serializeAttributeAsString;
 
+import ch.qos.logback.classic.Level;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Map;
+import java.util.TimeZone;
+import java.util.TreeMap;
+import java.util.regex.Matcher;
+
 /**
  * This class will serialize the log events in ecs format (ElasticSearch).<br/>
- *
+ * <p>
  * Inspired from the ElasticSearch Serializer <code>co.elastic.logging.EcsJsonSerializer</code>, this class doesn't use
  * any JSON (de)serialization library (Jackson, Gson, etc.) to avoid the dependency
  */
@@ -50,7 +67,8 @@ public class LambdaEcsSerializer {
         builder.append("}\n");
     }
 
-    public static void serializeTimestamp(StringBuilder builder, long timestamp, String timestampFormat, String timestampFormatTimezoneId) {
+    public static void serializeTimestamp(StringBuilder builder, long timestamp, String timestampFormat,
+                                          String timestampFormatTimezoneId) {
         String formattedTimestamp;
         if (timestampFormat == null || timestamp < 0) {
             formattedTimestamp = String.valueOf(timestamp);
@@ -78,7 +96,8 @@ public class LambdaEcsSerializer {
     }
 
     public static void serializeFormattedMessage(StringBuilder builder, String formattedMessage) {
-        serializeAttributeAsString(builder, FORMATTED_MESSAGE_ATTR_NAME, formattedMessage.replaceAll("\"", Matcher.quoteReplacement("\\\"")));
+        serializeAttributeAsString(builder, FORMATTED_MESSAGE_ATTR_NAME,
+                formattedMessage.replaceAll("\"", Matcher.quoteReplacement("\\\"")));
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {
@@ -88,7 +107,8 @@ public class LambdaEcsSerializer {
     }
 
     public static void serializeException(StringBuilder builder, Throwable throwable) {
-        serializeException(builder, throwable.getClass().getName(), throwable.getMessage(), Arrays.toString(throwable.getStackTrace()));
+        serializeException(builder, throwable.getClass().getName(), throwable.getMessage(),
+                Arrays.toString(throwable.getStackTrace()));
     }
 
     public static void serializeThreadId(StringBuilder builder, String threadId) {

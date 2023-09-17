@@ -69,10 +69,8 @@ public final class LambdaLoggingAspect {
 
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
-
-    private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
-
     private static final LoggingManager loggingManager;
+    private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
 
     static {
         loggingManager = loadLoggingManager();
@@ -98,6 +96,10 @@ public final class LambdaLoggingAspect {
         } else {
             return loggingManagerList.get(0);
         }
+    }
+
+    private static void resetLogLevels(Level logLevel) {
+        loggingManager.resetLogLevel(logLevel);
     }
 
     @SuppressWarnings({"EmptyMethod"})
@@ -138,10 +140,6 @@ public final class LambdaLoggingAspect {
 
         coldStartDone();
         return proceed;
-    }
-
-    private static void resetLogLevels(Level logLevel) {
-        loggingManager.resetLogLevel(logLevel);
     }
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,

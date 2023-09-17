@@ -1,13 +1,15 @@
 package software.amazon.lambda.powertools.logging.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.slf4j.event.Level.ERROR;
+import static org.slf4j.event.Level.INFO;
+import static org.slf4j.event.Level.WARN;
+
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.slf4j.event.Level.*;
 
 public class Log4jLoggingManagerTest {
 

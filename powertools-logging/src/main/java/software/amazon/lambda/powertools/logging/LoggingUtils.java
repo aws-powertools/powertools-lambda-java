@@ -15,10 +15,9 @@
 package software.amazon.lambda.powertools.logging;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.MDC;
-
 import java.util.Arrays;
 import java.util.Map;
+import org.slf4j.MDC;
 
 /**
  * A class of helper functions to add additional functionality to Logging.

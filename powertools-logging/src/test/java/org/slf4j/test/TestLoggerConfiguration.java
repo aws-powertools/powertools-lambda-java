@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2004-2011 QOS.ch
  * All rights reserved.
- *
+ * <p>
  * Permission is hereby granted, free  of charge, to any person obtaining
  * a  copy  of this  software  and  associated  documentation files  (the
  * "Software"), to  deal in  the Software without  restriction, including
@@ -9,10 +9,10 @@
  * distribute,  sublicense, and/or sell  copies of  the Software,  and to
  * permit persons to whom the Software  is furnished to do so, subject to
  * the following conditions:
- *
+ * <p>
  * The  above  copyright  notice  and  this permission  notice  shall  be
  * included in all copies or substantial portions of the Software.
- *
+ * <p>
  * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
  * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
  * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
@@ -20,11 +20,9 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
-package org.slf4j.test;
 
-import org.slf4j.helpers.Util;
+package org.slf4j.test;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -35,73 +33,105 @@ import java.security.PrivilegedAction;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
+import org.slf4j.helpers.Util;
 
 /**
  * This class holds configuration values for {@link TestLogger}. The
  * values are computed at runtime. See {@link TestLogger} documentation for
  * more information.
- * 
- * 
+ *
+ *
  * @author Ceki G&uuml;lc&uuml;
  * @author Scott Sanders
  * @author Rod Waldhoff
  * @author Robert Burrell Donkin
  * @author C&eacute;drik LIME
- * 
+ *
  * @since 1.7.25
  */
 public class TestLoggerConfiguration {
 
+    final static boolean SHOW_LOG_NAME_DEFAULT = true;
     private static final String CONFIGURATION_FILE = "testlogger.properties";
-
-    static int DEFAULT_LOG_LEVEL_DEFAULT = TestLogger.LOG_LEVEL_INFO;
-    int defaultLogLevel = DEFAULT_LOG_LEVEL_DEFAULT;
-
     private static final boolean SHOW_DATE_TIME_DEFAULT = false;
-    boolean showDateTime = SHOW_DATE_TIME_DEFAULT;
-
     private static final String DATE_TIME_FORMAT_STR_DEFAULT = null;
-    private static String dateTimeFormatStr = DATE_TIME_FORMAT_STR_DEFAULT;
-
-    DateFormat dateFormatter = null;
-
     private static final boolean SHOW_THREAD_NAME_DEFAULT = true;
-    boolean showThreadName = SHOW_THREAD_NAME_DEFAULT;
-
     /**
      * See https://jira.qos.ch/browse/SLF4J-499
      * @since 1.7.33 and 2.0.0-alpha6
      */
     private static final boolean SHOW_THREAD_ID_DEFAULT = false;
-    boolean showThreadId = SHOW_THREAD_ID_DEFAULT;
-    
-    final static boolean SHOW_LOG_NAME_DEFAULT = true;
-    boolean showLogName = SHOW_LOG_NAME_DEFAULT;
-
     private static final boolean SHOW_SHORT_LOG_NAME_DEFAULT = false;
-    boolean showShortLogName = SHOW_SHORT_LOG_NAME_DEFAULT;
-
     private static final boolean LEVEL_IN_BRACKETS_DEFAULT = false;
-    boolean levelInBrackets = LEVEL_IN_BRACKETS_DEFAULT;
-
     private static final String LOG_FILE_DEFAULT = "System.err";
-    private String logFile = LOG_FILE_DEFAULT;
-    OutputChoice outputChoice = null;
-
     private static final boolean CACHE_OUTPUT_STREAM_DEFAULT = false;
+    private static final String WARN_LEVELS_STRING_DEFAULT = "WARN";
+    static int DEFAULT_LOG_LEVEL_DEFAULT = TestLogger.LOG_LEVEL_INFO;
+    private static String dateTimeFormatStr = DATE_TIME_FORMAT_STR_DEFAULT;
+    private final Properties properties = new Properties();
+    int defaultLogLevel = DEFAULT_LOG_LEVEL_DEFAULT;
+    boolean showDateTime = SHOW_DATE_TIME_DEFAULT;
+    DateFormat dateFormatter = null;
+    boolean showThreadName = SHOW_THREAD_NAME_DEFAULT;
+    boolean showThreadId = SHOW_THREAD_ID_DEFAULT;
+    boolean showLogName = SHOW_LOG_NAME_DEFAULT;
+    boolean showShortLogName = SHOW_SHORT_LOG_NAME_DEFAULT;
+    boolean levelInBrackets = LEVEL_IN_BRACKETS_DEFAULT;
+    OutputChoice outputChoice = null;
+    String warnLevelString = WARN_LEVELS_STRING_DEFAULT;
+    private String logFile = LOG_FILE_DEFAULT;
     private boolean cacheOutputStream = CACHE_OUTPUT_STREAM_DEFAULT;
 
-    private static final String WARN_LEVELS_STRING_DEFAULT = "WARN";
-    String warnLevelString = WARN_LEVELS_STRING_DEFAULT;
+    static int stringToLevel(String levelStr) {
+        if ("trace".equalsIgnoreCase(levelStr)) {
+            return TestLogger.LOG_LEVEL_TRACE;
+        } else if ("debug".equalsIgnoreCase(levelStr)) {
+            return TestLogger.LOG_LEVEL_DEBUG;
+        } else if ("info".equalsIgnoreCase(levelStr)) {
+            return TestLogger.LOG_LEVEL_INFO;
+        } else if ("warn".equalsIgnoreCase(levelStr)) {
+            return TestLogger.LOG_LEVEL_WARN;
+        } else if ("error".equalsIgnoreCase(levelStr)) {
+            return TestLogger.LOG_LEVEL_ERROR;
+        } else if ("off".equalsIgnoreCase(levelStr)) {
+            return TestLogger.LOG_LEVEL_OFF;
+        }
+        // assume INFO by default
+        return TestLogger.LOG_LEVEL_INFO;
+    }
 
-    private final Properties properties = new Properties();
+    private static OutputChoice computeOutputChoice(String logFile, boolean cacheOutputStream) {
+        if ("System.err".equalsIgnoreCase(logFile)) {
+            if (cacheOutputStream) {
+                return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_ERR);
+            } else {
+                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
+            }
+        } else if ("System.out".equalsIgnoreCase(logFile)) {
+            if (cacheOutputStream) {
+                return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_OUT);
+            } else {
+                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_OUT);
+            }
+        } else {
+            try {
+                FileOutputStream fos = new FileOutputStream(logFile);
+                PrintStream printStream = new PrintStream(fos);
+                return new OutputChoice(printStream);
+            } catch (FileNotFoundException e) {
+                Util.report("Could not open [" + logFile + "]. Defaulting to System.err", e);
+                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
+            }
+        }
+    }
 
     void init() {
         loadProperties();
 
         String defaultLogLevelString = getStringProperty(TestLogger.DEFAULT_LOG_LEVEL_KEY, null);
-        if (defaultLogLevelString != null)
+        if (defaultLogLevelString != null) {
             defaultLogLevel = stringToLevel(defaultLogLevelString);
+        }
 
         showLogName = getBooleanProperty(TestLogger.SHOW_LOG_NAME_KEY, TestLoggerConfiguration.SHOW_LOG_NAME_DEFAULT);
         showShortLogName = getBooleanProperty(TestLogger.SHOW_SHORT_LOG_NAME_KEY, SHOW_SHORT_LOG_NAME_DEFAULT);
@@ -169,47 +199,6 @@ public class TestLoggerConfiguration {
             ; // Ignore
         }
         return (prop == null) ? properties.getProperty(name) : prop;
-    }
-
-    static int stringToLevel(String levelStr) {
-        if ("trace".equalsIgnoreCase(levelStr)) {
-            return TestLogger.LOG_LEVEL_TRACE;
-        } else if ("debug".equalsIgnoreCase(levelStr)) {
-            return TestLogger.LOG_LEVEL_DEBUG;
-        } else if ("info".equalsIgnoreCase(levelStr)) {
-            return TestLogger.LOG_LEVEL_INFO;
-        } else if ("warn".equalsIgnoreCase(levelStr)) {
-            return TestLogger.LOG_LEVEL_WARN;
-        } else if ("error".equalsIgnoreCase(levelStr)) {
-            return TestLogger.LOG_LEVEL_ERROR;
-        } else if ("off".equalsIgnoreCase(levelStr)) {
-            return TestLogger.LOG_LEVEL_OFF;
-        }
-        // assume INFO by default
-        return TestLogger.LOG_LEVEL_INFO;
-    }
-
-    private static OutputChoice computeOutputChoice(String logFile, boolean cacheOutputStream) {
-        if ("System.err".equalsIgnoreCase(logFile))
-            if (cacheOutputStream)
-                return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_ERR);
-            else
-                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
-        else if ("System.out".equalsIgnoreCase(logFile)) {
-            if (cacheOutputStream)
-                return new OutputChoice(OutputChoice.OutputChoiceType.CACHED_SYS_OUT);
-            else
-                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_OUT);
-        } else {
-            try {
-                FileOutputStream fos = new FileOutputStream(logFile);
-                PrintStream printStream = new PrintStream(fos);
-                return new OutputChoice(printStream);
-            } catch (FileNotFoundException e) {
-                Util.report("Could not open [" + logFile + "]. Defaulting to System.err", e);
-                return new OutputChoice(OutputChoice.OutputChoiceType.SYS_ERR);
-            }
-        }
     }
 
 }

@@ -1,7 +1,7 @@
 /**
  * Copyright (c) 2004-2022 QOS.ch Sarl (Switzerland)
  * All rights reserved.
- *
+ * <p>
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
  * "Software"), to  deal in  the Software without  restriction, including
@@ -9,10 +9,10 @@
  * distribute,  sublicense, and/or sell  copies of  the Software,  and to
  * permit persons to whom the Software  is furnished to do so, subject to
  * the following conditions:
- *
+ * <p>
  * The  above  copyright  notice  and  this permission  notice  shall  be
  * included in all copies or substantial portions of the Software.
- *
+ * <p>
  * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
  * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
  * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
@@ -20,10 +20,14 @@
  * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
  * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  */
+
 package org.slf4j.test;
 
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.event.Level;
@@ -33,23 +37,18 @@ import org.slf4j.helpers.MessageFormatter;
 import org.slf4j.helpers.NormalizedParameters;
 import org.slf4j.spi.LocationAwareLogger;
 
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
 /**
  * <p>
  * Simple implementation of {@link Logger} that sends all enabled log messages,
  * for all defined loggers, to the console ({@code System.err}). The following
  * system properties are supported to configure the behavior of this logger:
- * 
+ *
  *
  * <ul>
  * <li><code>org.slf4j.simpleLogger.logFile</code> - The output target which can
  * be the <em>path</em> to a file, or the special values "System.out" and
  * "System.err". Default is "System.err".</li>
- * 
+ *
  * <li><code>org.slf4j.simpleLogger.cacheOutputStream</code> - If the output
  * target is set to "System.out" or "System.err" (see preceding entry), by
  * default, logs will be output to the latest value referenced by
@@ -57,7 +56,7 @@ import java.util.List;
  * output stream will be cached, i.e. assigned once at initialization time and
  * re-used independently of the current value referenced by
  * <code>System.out/err</code>.</li>
- * 
+ *
  * <li><code>org.slf4j.simpleLogger.defaultLogLevel</code> - Default log level
  * for all instances of SimpleLogger. Must be one of ("trace", "debug", "info",
  * "warn", "error" or "off"). If not specified, defaults to "info".</li>
@@ -84,11 +83,11 @@ import java.util.List;
  * <li><code>org.slf4j.simpleLogger.showThreadName</code> -Set to
  * <code>true</code> if you want to output the current thread name. Defaults to
  * <code>true</code>.</li>
- * 
+ *
  * <li>(since version 1.7.33 and 2.0.0-alpha6) <code>org.slf4j.simpleLogger.showThreadId</code> - 
  * If you would like to output the current thread id, then set to
  * <code>true</code>. Defaults to <code>false</code>.</li>
- * 
+ *
  * <li><code>org.slf4j.simpleLogger.showLogName</code> - Set to
  * <code>true</code> if you want the Logger instance name to be included in
  * output messages. Defaults to <code>true</code>.</li>
@@ -102,7 +101,7 @@ import java.util.List;
  *
  * <li><code>org.slf4j.simpleLogger.warnLevelString</code> - The string value
  * output for the warn level. Defaults to <code>WARN</code>.</li>
- * 
+ *
  * </ul>
  *
  * <p>
@@ -110,18 +109,18 @@ import java.util.List;
  * this implementation also checks for a class loader resource named
  * <code>"simplelogger.properties"</code>, and includes any matching definitions
  * from this resource (if it exists).
- * 
+ *
  *
  * <p>
  * With no configuration, the default output includes the relative time in
  * milliseconds, thread name, the level, logger name, and the message followed
  * by the line separator for the host. In log4j terms it amounts to the "%r [%t]
  * %level %logger - %m%n" pattern.
- * 
+ *
  * <p>
  * Sample output follows.
- * 
- * 
+ *
+ *
  * <pre>
  * 176 [main] INFO examples.Sort - Populating an array of 2 elements in reverse order.
  * 225 [main] INFO examples.SortAlgo - Entered the sort method.
@@ -139,7 +138,7 @@ import java.util.List;
  * This implementation is heavily inspired by
  * <a href="http://commons.apache.org/logging/">Apache Commons Logging</a>'s
  * SimpleLog.
- * 
+ *
  *
  * @author Ceki G&uuml;lc&uuml;
  * @author Scott Sanders
@@ -149,76 +148,42 @@ import java.util.List;
  */
 public class TestLogger extends LegacyAbstractLogger {
 
-    private static final long serialVersionUID = -632788891211436180L;
-
-    private static final long START_TIME = System.currentTimeMillis();
-
-    protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
-    protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
-    protected static final int LOG_LEVEL_INFO = LocationAwareLogger.INFO_INT;
-    protected static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
-    protected static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
-
-    static char SP = ' ';
-    static final String TID_PREFIX = "tid=";
-
-
-    // The OFF level can only be used in configuration files to disable logging.
-    // It has
-    // no printing method associated with it in o.s.Logger interface.
-    protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
-
-    private static boolean INITIALIZED = false;
-    static final TestLoggerConfiguration CONFIG_PARAMS = new TestLoggerConfiguration();
-    
-    static void lazyInit() {
-        if (INITIALIZED) {
-            return;
-        }
-        INITIALIZED = true;
-        init();
-    }
-
-    // external software might be invoking this method directly. Do not rename
-    // or change its semantics.
-    static void init() {
-        CONFIG_PARAMS.init();
-    }
-
-    /** The current log level */
-    protected int currentLogLevel = LOG_LEVEL_INFO;
-    /** The short name of this simple log instance */
-    private transient String shortLogName = null;
-
     /**
      * All system properties used by <code>SimpleLogger</code> start with this
      * prefix
      */
     public static final String SYSTEM_PREFIX = "org.slf4j.simpleLogger.";
-
     public static final String LOG_KEY_PREFIX = TestLogger.SYSTEM_PREFIX + "log.";
-
     public static final String CACHE_OUTPUT_STREAM_STRING_KEY = TestLogger.SYSTEM_PREFIX + "cacheOutputStream";
-
     public static final String WARN_LEVEL_STRING_KEY = TestLogger.SYSTEM_PREFIX + "warnLevelString";
-
     public static final String LEVEL_IN_BRACKETS_KEY = TestLogger.SYSTEM_PREFIX + "levelInBrackets";
-
     public static final String LOG_FILE_KEY = TestLogger.SYSTEM_PREFIX + "logFile";
-
     public static final String SHOW_SHORT_LOG_NAME_KEY = TestLogger.SYSTEM_PREFIX + "showShortLogName";
-
     public static final String SHOW_LOG_NAME_KEY = TestLogger.SYSTEM_PREFIX + "showLogName";
-
     public static final String SHOW_THREAD_NAME_KEY = TestLogger.SYSTEM_PREFIX + "showThreadName";
-
     public static final String SHOW_THREAD_ID_KEY = TestLogger.SYSTEM_PREFIX + "showThreadId";
-    
     public static final String DATE_TIME_FORMAT_KEY = TestLogger.SYSTEM_PREFIX + "dateTimeFormat";
-
     public static final String SHOW_DATE_TIME_KEY = TestLogger.SYSTEM_PREFIX + "showDateTime";
-
     public static final String DEFAULT_LOG_LEVEL_KEY = TestLogger.SYSTEM_PREFIX + "defaultLogLevel";
+    protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
+    protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
+    protected static final int LOG_LEVEL_INFO = LocationAwareLogger.INFO_INT;
+    protected static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
+    protected static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
+    // The OFF level can only be used in configuration files to disable logging.
+    // It has
+    // no printing method associated with it in o.s.Logger interface.
+    protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
+    static final String TID_PREFIX = "tid=";
+    static final TestLoggerConfiguration CONFIG_PARAMS = new TestLoggerConfiguration();
+    private static final long serialVersionUID = -632788891211436180L;
+    private static final long START_TIME = System.currentTimeMillis();
+    static char SP = ' ';
+    private static boolean INITIALIZED = false;
+    /** The current log level */
+    protected int currentLogLevel = LOG_LEVEL_INFO;
+    /** The short name of this simple log instance */
+    private transient String shortLogName = null;
 
     /**
      * Package access allows only {@link TestLoggerFactory} to instantiate
@@ -235,12 +200,26 @@ public class TestLogger extends LegacyAbstractLogger {
         }
     }
 
-    public void setLogLevel(String levelString) {
-        this.currentLogLevel = TestLoggerConfiguration.stringToLevel(levelString);
+    static void lazyInit() {
+        if (INITIALIZED) {
+            return;
+        }
+        INITIALIZED = true;
+        init();
+    }
+
+    // external software might be invoking this method directly. Do not rename
+    // or change its semantics.
+    static void init() {
+        CONFIG_PARAMS.init();
     }
 
     public int getLogLevel() {
         return currentLogLevel;
+    }
+
+    public void setLogLevel(String levelString) {
+        this.currentLogLevel = TestLoggerConfiguration.stringToLevel(levelString);
     }
 
     String recursivelyComputeLevelString() {
@@ -258,7 +237,7 @@ public class TestLogger extends LegacyAbstractLogger {
     /**
      * To avoid intermingling of log messages and associated stack traces, the two
      * operations are done in a synchronized block.
-     * 
+     *
      * @param buf
      * @param t
      */
@@ -269,7 +248,7 @@ public class TestLogger extends LegacyAbstractLogger {
             targetStream.println(buf.toString());
             writeThrowable(t, targetStream);
             targetStream.flush();
-        } 
+        }
 
     }
 
@@ -373,7 +352,8 @@ public class TestLogger extends LegacyAbstractLogger {
      * @param throwable  The exception whose stack trace should be logged, may be null
      */
     @Override
-    protected void handleNormalizedLoggingCall(Level level, Marker marker, String messagePattern, Object[] arguments, Throwable throwable) {
+    protected void handleNormalizedLoggingCall(Level level, Marker marker, String messagePattern, Object[] arguments,
+                                               Throwable throwable) {
 
         List<Marker> markers = null;
 
@@ -385,7 +365,8 @@ public class TestLogger extends LegacyAbstractLogger {
         innerHandleNormalizedLoggingCall(level, markers, messagePattern, arguments, throwable);
     }
 
-    private void innerHandleNormalizedLoggingCall(Level level, List<Marker> markers, String messagePattern, Object[] arguments, Throwable t) {
+    private void innerHandleNormalizedLoggingCall(Level level, List<Marker> markers, String messagePattern,
+                                                  Object[] arguments, Throwable t) {
 
         StringBuilder buf = new StringBuilder(32);
 
@@ -406,27 +387,30 @@ public class TestLogger extends LegacyAbstractLogger {
             buf.append(Thread.currentThread().getName());
             buf.append("] ");
         }
-        
+
         if (CONFIG_PARAMS.showThreadId) {
             buf.append(TID_PREFIX);
             buf.append(Thread.currentThread().getId());
             buf.append(SP);
         }
 
-        if (CONFIG_PARAMS.levelInBrackets)
+        if (CONFIG_PARAMS.levelInBrackets) {
             buf.append('[');
+        }
 
         // Append a readable representation of the log level
         String levelStr = level.name();
         buf.append(levelStr);
-        if (CONFIG_PARAMS.levelInBrackets)
+        if (CONFIG_PARAMS.levelInBrackets) {
             buf.append(']');
+        }
         buf.append(SP);
 
         // Append the name of the log instance if so configured
         if (CONFIG_PARAMS.showShortLogName) {
-            if (shortLogName == null)
+            if (shortLogName == null) {
                 shortLogName = computeShortName();
+            }
             buf.append(String.valueOf(shortLogName)).append(" - ");
         } else if (CONFIG_PARAMS.showLogName) {
             buf.append(String.valueOf(name)).append(" - ");
@@ -456,7 +440,8 @@ public class TestLogger extends LegacyAbstractLogger {
 
         NormalizedParameters np = NormalizedParameters.normalize(event);
 
-        innerHandleNormalizedLoggingCall(event.getLevel(), event.getMarkers(), np.getMessage(), np.getArguments(), event.getThrowable());
+        innerHandleNormalizedLoggingCall(event.getLevel(), event.getMarkers(), np.getMessage(), np.getArguments(),
+                event.getThrowable());
     }
 
     @Override

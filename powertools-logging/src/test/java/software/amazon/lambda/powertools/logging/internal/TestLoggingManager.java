@@ -14,14 +14,15 @@ public class TestLoggingManager implements LoggingManager {
     public TestLoggingManager() {
         ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
         if (!(loggerFactory instanceof TestLoggerFactory)) {
-            throw new RuntimeException("LoggerFactory does not match required type: " + TestLoggerFactory.class.getName());
+            throw new RuntimeException(
+                    "LoggerFactory does not match required type: " + TestLoggerFactory.class.getName());
         }
         this.loggerFactory = (TestLoggerFactory) loggerFactory;
     }
 
     @Override
     public void resetLogLevel(Level logLevel) {
-        loggerFactory.getLoggers().forEach( (key, logger) -> ((TestLogger) logger).setLogLevel(logLevel.toString()));
+        loggerFactory.getLoggers().forEach((key, logger) -> ((TestLogger) logger).setLogLevel(logLevel.toString()));
     }
 
     @Override

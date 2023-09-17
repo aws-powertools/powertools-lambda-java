@@ -1,4 +1,20 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.logging;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -7,8 +23,6 @@ import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
 import software.amazon.lambda.powertools.logging.internal.LambdaJsonSerializer;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Custom encoder for logback that encodes logs in JSON format.
@@ -45,11 +59,13 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         IThrowableProxy throwableProxy = event.getThrowableProxy();
         if (throwableProxy != null) {
             if (throwableConverter != null) {
-                LambdaJsonSerializer.serializeException(builder, throwableProxy.getClassName(), throwableProxy.getMessage(), throwableConverter.convert(event));
+                LambdaJsonSerializer.serializeException(builder, throwableProxy.getClassName(),
+                        throwableProxy.getMessage(), throwableConverter.convert(event));
             } else if (throwableProxy instanceof ThrowableProxy) {
                 LambdaJsonSerializer.serializeException(builder, ((ThrowableProxy) throwableProxy).getThrowable());
             } else {
-                LambdaJsonSerializer.serializeException(builder, throwableProxy.getClassName(), throwableProxy.getMessage(), throwableProxyConverter.convert(event));
+                LambdaJsonSerializer.serializeException(builder, throwableProxy.getClassName(),
+                        throwableProxy.getMessage(), throwableProxyConverter.convert(event));
             }
         }
         LambdaJsonSerializer.serializePowertools(builder, event.getMDCPropertyMap());
@@ -58,7 +74,8 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
             LambdaJsonSerializer.serializeThreadId(builder, String.valueOf(Thread.currentThread().getId()));
             LambdaJsonSerializer.serializeThreadPriority(builder, String.valueOf(Thread.currentThread().getPriority()));
         }
-        LambdaJsonSerializer.serializeTimestamp(builder, event.getTimeStamp(), timestampFormat, timestampFormatTimezoneId);
+        LambdaJsonSerializer.serializeTimestamp(builder, event.getTimeStamp(), timestampFormat,
+                timestampFormatTimezoneId);
         LambdaJsonSerializer.serializeObjectEnd(builder);
         return builder.toString().getBytes(UTF_8);
     }

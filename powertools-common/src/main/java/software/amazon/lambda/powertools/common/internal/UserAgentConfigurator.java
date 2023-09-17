@@ -37,8 +37,8 @@ public class UserAgentConfigurator {
     public static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurator.class);
     private static final String NO_OP = "no-op";
-    private static String ptVersion = getProjectVersion();
-    private static String userAgentPattern = "PT/" + PT_FEATURE_VARIABLE + "/" + ptVersion + " PTEnv/"
+    private static final String POWERTOOLS_VERSION = getProjectVersion();
+    private static final String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + POWERTOOLS_VERSION + " PTEnv/"
             + PT_EXEC_ENV_VARIABLE;
 
     private UserAgentConfigurator() {
@@ -99,7 +99,7 @@ public class UserAgentConfigurator {
 
         String awsExecutionEnv = getenv(AWS_EXECUTION_ENV);
         String ptExecEnv = awsExecutionEnv != null ? awsExecutionEnv : NA;
-        String userAgent = userAgentPattern.replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
+        String userAgent = USER_AGENT_PATTERN.replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
 
         if (ptFeature == null || ptFeature.isEmpty()) {
             ptFeature = NO_OP;
