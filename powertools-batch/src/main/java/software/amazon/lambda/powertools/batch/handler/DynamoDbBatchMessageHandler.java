@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * @see <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-ddb.html#services-ddb-batchfailurereporting">DynamoDB Streams batch failure reporting</a>
  */
 public class DynamoDbBatchMessageHandler implements BatchMessageHandler<DynamodbEvent, StreamsEventResponse> {
-    private final static Logger LOGGER = LoggerFactory.getLogger(DynamoDbBatchMessageHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDbBatchMessageHandler.class);
 
     private final Consumer<DynamodbEvent.DynamodbStreamRecord> successHandler;
     private final BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler;

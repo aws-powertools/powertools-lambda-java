@@ -22,18 +22,21 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class APIGatewayRequestDeserializationFunction
         implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
-    private final static Logger LOGGER = LogManager.getLogger(APIGatewayRequestDeserializationFunction.class);
-    private static final Map<String, String> HEADERS = new HashMap<String, String>() {{
+    private static final Logger LOGGER = LoggerFactory.getLogger(APIGatewayRequestDeserializationFunction.class);
+    private static final Map<String, String> HEADERS = new HashMap<String, String>() {
+        private static final long serialVersionUID = 7074189990115081999L;
+        {
         put("Content-Type", "application/json");
         put("X-Custom-Header", "application/json");
-    }};
+        }
+    };
 
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent event, Context context) {
 

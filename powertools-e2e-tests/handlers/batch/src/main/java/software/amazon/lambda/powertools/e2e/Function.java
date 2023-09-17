@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.e2e;
 
-import com.amazonaws.lambda.thirdparty.com.fasterxml.jackson.databind.ObjectMapper;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
@@ -24,41 +23,26 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
 import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
-import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
-
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.util.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.e2e.model.Product;
-import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import javax.management.Attribute;
 
 
 public class Function implements RequestHandler<InputStream, Object> {
 
-    private final static Logger LOGGER = LogManager.getLogger(Function.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Function.class);
 
     private final BatchMessageHandler<SQSEvent, SQSBatchResponse> sqsHandler;
     private final BatchMessageHandler<KinesisEvent, StreamsEventResponse> kinesisHandler;
@@ -139,7 +123,7 @@ public class Function implements RequestHandler<InputStream, Object> {
         SQSEvent event = serializer.fromJson(input);
         if (event.getRecords().get(0).getEventSource().equals("aws:sqs")) {
             LOGGER.info("Running for SQS");
-            LOGGER.info(event);
+            LOGGER.info(event.toString());
             return sqsHandler.processBatch(event, context);
         }
 

@@ -31,11 +31,11 @@ import software.amazon.lambda.powertools.utilities.EventDeserializer;
  * @see <a href="https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting">SQS Batch failure reporting</a>
  */
 public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, SQSBatchResponse> {
-    private final static Logger LOGGER = LoggerFactory.getLogger(SqsBatchMessageHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqsBatchMessageHandler.class);
 
     // The attribute on an SQS-FIFO message used to record the message group ID
     // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#sample-fifo-queues-message-event
-    private final static String MESSAGE_GROUP_ID_KEY = "MessageGroupId";
+    private static final String MESSAGE_GROUP_ID_KEY = "MessageGroupId";
 
     private final Class<M> messageClass;
     private final BiConsumer<M, Context> messageHandler;

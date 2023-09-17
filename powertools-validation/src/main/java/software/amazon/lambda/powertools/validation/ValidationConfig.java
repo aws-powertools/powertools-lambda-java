@@ -97,6 +97,6 @@ public class ValidationConfig {
     }
 
     private static class ConfigHolder {
-        private final static ValidationConfig instance = new ValidationConfig();
+        private static final ValidationConfig instance = new ValidationConfig();
     }
 }

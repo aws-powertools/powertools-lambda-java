@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.stream.IntStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.demo.batch.model.Product;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
@@ -27,7 +27,7 @@ import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
  */
 public class SqsBatchSender implements RequestHandler<ScheduledEvent, String> {
 
-    private static final Logger LOGGER = LogManager.getLogger(SqsBatchSender.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqsBatchSender.class);
 
     private final SqsClient sqsClient;
     private final SecureRandom random;

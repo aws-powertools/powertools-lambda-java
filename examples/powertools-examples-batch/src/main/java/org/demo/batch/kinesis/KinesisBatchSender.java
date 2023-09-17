@@ -10,8 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.stream.IntStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.demo.batch.model.Product;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
  */
 public class KinesisBatchSender implements RequestHandler<ScheduledEvent, String> {
 
-    private static final Logger LOGGER = LogManager.getLogger(KinesisBatchSender.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KinesisBatchSender.class);
 
     private final KinesisClient kinesisClient;
     private final SecureRandom random;
