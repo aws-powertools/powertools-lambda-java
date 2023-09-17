@@ -51,14 +51,13 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.slf4j.MDC;
+import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
@@ -237,7 +236,7 @@ class LambdaLoggingAspectTest {
         handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
 
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", eventId);
     }
