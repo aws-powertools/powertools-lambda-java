@@ -1,18 +1,24 @@
 package software.amazon.lambda.powertools.logging;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_NAME;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_REQUEST_ID;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
+
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
-import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import java.util.Map;
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.LambdaEcsSerializer;
 
-import java.util.Map;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.*;
 
 /**
  * This class will encode the logback event into the format expected by the ECS service (ElasticSearch).

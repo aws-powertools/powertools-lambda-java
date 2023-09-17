@@ -28,6 +28,9 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonPointer;
@@ -39,16 +42,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
-import org.apache.logging.log4j.core.LoggerContext;
-import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.logging.log4j.core.util.IOUtils;
+import java.util.ServiceLoader;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -94,16 +93,11 @@ public final class LambdaLoggingAspect {
         if (loggingManagerList.isEmpty()) {
             throw new IllegalStateException("No LoggingManager was found on the classpath");
         } else if (loggingManagerList.size() > 1) {
-            throw new IllegalStateException("Multiple LoggingManagers were found on the classpath: " + loggingManagerList);
+            throw new IllegalStateException(
+                    "Multiple LoggingManagers were found on the classpath: " + loggingManagerList);
         } else {
             return loggingManagerList.get(0);
         }
-    }
-
-    private static void resetLogLevels(Level logLevel) {
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configurator.setAllLevels(LogManager.getRootLogger().getName(), logLevel);
-        ctx.updateLoggers();
     }
 
     @SuppressWarnings({"EmptyMethod"})
