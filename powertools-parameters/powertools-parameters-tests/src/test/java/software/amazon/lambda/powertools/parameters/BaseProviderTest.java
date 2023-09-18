@@ -51,8 +51,8 @@ public class BaseProviderTest {
 
         clock = Clock.systemDefaultZone();
         cacheManager = new CacheManager();
-        provider = new BasicProvider(cacheManager);
         transformationManager = new TransformationManager();
+        provider = new BasicProvider(cacheManager, transformationManager);
     }
 
     @Test
@@ -303,7 +303,6 @@ public class BaseProviderTest {
     @Test
     public void getObject_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
-
         provider.defaultMaxAge(12, ChronoUnit.MINUTES)
                 .withMaxAge(5, SECONDS)
                 .withTransformation(json)
@@ -334,6 +333,7 @@ public class BaseProviderTest {
 
     @Test
     public void get_noTransformationManager_shouldThrowException() {
+        provider = new BasicProvider(new CacheManager(), null);
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> provider.withTransformation(base64).get("foo"));
@@ -376,8 +376,8 @@ public class BaseProviderTest {
 
         private String value = "valueFromStore";
 
-        public BasicProvider(CacheManager cacheManager) {
-            super(cacheManager, null);
+        public BasicProvider(CacheManager cacheManager, TransformationManager transformationManager) {
+            super(cacheManager, transformationManager);
         }
 
         public void setValue(String value) {
