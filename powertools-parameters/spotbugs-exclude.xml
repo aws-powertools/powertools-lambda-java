@@ -16,8 +16,52 @@
                 <Field name="cacheManager"/>
             </And>
             <And>
+                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
                 <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
-                <Field name="transformer"/>
+                <Field name="transformation"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
+                <Field name="client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
+                <Field name="transformationManager"/>
             </And>
         </Or>
     </Match>

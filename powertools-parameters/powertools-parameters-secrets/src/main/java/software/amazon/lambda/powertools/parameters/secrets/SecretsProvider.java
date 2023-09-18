@@ -55,14 +55,11 @@ public class SecretsProvider extends BaseProvider {
     private final SecretsManagerClient client;
 
     /**
-     * Constructor with custom {@link SecretsManagerClient}. <br/>
-     * Use when you need to customize region or any other attribute of the client.<br/><br/>
-     * <p>
-     * Use the {@link SecretsProviderBuilder} to create an instance of it.
+     * Use the {@link SecretsProviderBuilder} to create an instance!
      *
      * @param client custom client you would like to use.
      */
-    public SecretsProvider(CacheManager cacheManager, TransformationManager transformationManager, SecretsManagerClient client) {
+    SecretsProvider(CacheManager cacheManager, TransformationManager transformationManager, SecretsManagerClient client) {
         super(cacheManager, transformationManager);
         this.client = client;
     }
