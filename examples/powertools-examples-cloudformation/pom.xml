@@ -49,7 +49,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
+            <artifactId>powertools-logging-log4j</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -124,6 +124,16 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-logging-log4j</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-logging-logback</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-sqs</artifactId>
                 <version>${project.version}</version>
             </dependency>

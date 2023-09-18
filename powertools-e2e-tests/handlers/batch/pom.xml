@@ -19,7 +19,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
+            <artifactId>powertools-logging-log4j</artifactId>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
