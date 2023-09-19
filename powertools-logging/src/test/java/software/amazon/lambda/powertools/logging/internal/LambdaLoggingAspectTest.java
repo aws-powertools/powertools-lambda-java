@@ -192,10 +192,19 @@ class LambdaLoggingAspectTest {
 
     @Test
     @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "42")
+    void shouldNotLogDebugWhenSamplingEnvVarIsTooBig() {
+        requestHandler.handleRequest(new Object(), context);
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).doesNotContain("Test debug event");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "NotANumber")
     void shouldNotLogDebugWhenSamplingEnvVarIsInvalid() {
         requestHandler.handleRequest(new Object(), context);
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).doesNotContain("Test debug event");
+        assertThat(contentOf(logFile)).contains("Skipping sampling rate on environment variable configuration because of invalid value");
     }
 
     @Test

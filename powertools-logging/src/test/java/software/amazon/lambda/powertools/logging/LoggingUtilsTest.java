@@ -31,7 +31,7 @@ class LoggingUtilsTest {
     }
 
     @Test
-    void shouldSetCustomKeyOnThreadContext() {
+    void shouldSetCustomKeyInLoggingContext() {
         LoggingUtils.appendKey("org/slf4j/test", "value");
 
         assertThat(MDC.getCopyOfContextMap())
@@ -40,7 +40,7 @@ class LoggingUtilsTest {
     }
 
     @Test
-    void shouldSetCustomKeyAsMapOnThreadContext() {
+    void shouldSetCustomKeyAsMapInLoggingContext() {
         Map<String, String> customKeys = new HashMap<>();
         customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
@@ -54,7 +54,7 @@ class LoggingUtilsTest {
     }
 
     @Test
-    void shouldRemoveCustomKeyOnThreadContext() {
+    void shouldRemoveCustomKeyInLoggingContext() {
         LoggingUtils.appendKey("org/slf4j/test", "value");
 
         assertThat(MDC.getCopyOfContextMap())
@@ -68,7 +68,7 @@ class LoggingUtilsTest {
     }
 
     @Test
-    void shouldRemoveCustomKeysOnThreadContext() {
+    void shouldRemoveCustomKeysInLoggingContext() {
         Map<String, String> customKeys = new HashMap<>();
         customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
@@ -84,5 +84,14 @@ class LoggingUtilsTest {
 
         assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();
+    }
+
+    @Test
+    void shouldAddCorrelationIdToLoggingContext() {
+        LoggingUtils.setCorrelationId("correlationID_12345");
+
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(1)
+                .containsEntry("correlation_id", "correlationID_12345");
     }
 }
