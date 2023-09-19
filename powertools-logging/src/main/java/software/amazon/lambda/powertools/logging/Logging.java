@@ -34,9 +34,9 @@ import java.lang.annotation.Target;
  * {@code com.amazonaws.services.lambda.runtime.Context}</p>
  *
  * <ul>
- *     <li>FunctionName</li>
- *     <li>FunctionVersion</li>
- *     <li>InvokedFunctionArn</li>
+ *     <li>function_name</li>
+ *     <li>function_version</li>
+ *     <li>function_arn</li>
  *     <li>MemoryLimitInMB</li>
  * </ul>
  *

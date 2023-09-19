@@ -204,14 +204,14 @@ Key | Type | Example | Description
 ------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------
 **timestamp** | String | "2020-05-24 18:17:33,774" | Timestamp of actual log statement
 **level** | String | "INFO" | Logging level
-**coldStart** | Boolean | true| ColdStart value.
+**cold_start** | Boolean | true| ColdStart value.
 **service** | String | "payment" | Service name defined. "service_undefined" will be used if unknown
-**samplingRate** | int |  0.1 | Debug logging sampling rate in percentage e.g. 10% in this case
+**sampling_rate** | int |  0.1 | Debug logging sampling rate in percentage e.g. 10% in this case
 **message** | String |  "Collecting payment" | Log statement value. Unserializable JSON values will be casted to string
-**functionName**| String | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
-**functionVersion**| String | "12"
-**functionMemorySize**| String | "128"
-**functionArn**| String | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
+**function_name**| String | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
+**function_version**| String | "12"
+**function_memory_size**| String | "128"
+**function_arn**| String | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
 **xray_trace_id**| String | "1-5759e988-bd862e3fe1be46a994272793" | X-Ray Trace ID when Lambda function has enabled Tracing
 **function_request_id**| String | "899856cb-83d1-40d7-8611-9e78f15f32f4"" | AWS Request ID from lambda context
 
@@ -343,10 +343,10 @@ You can set a Correlation ID using `correlationIdPath` attribute by passing a [J
 	  	"message": "Collecting payment",
 		"timestamp": "2021-05-03 11:47:12,494+0200",
 	  	"service": "payment",
-	  	"coldStart": true,
-	  	"functionName": "test",
-	  	"functionMemorySize": 128,
-	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"cold_start": true,
+	  	"function_name": "test",
+	  	"function_memory_size": 128,
+	  	"function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
 	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
 	  	"correlation_id": "correlation_id_value"
 	}
@@ -393,10 +393,10 @@ for known event sources, where either a request ID or X-Ray Trace ID are present
 	  	"message": "Collecting payment",
 		"timestamp": "2021-05-03 11:47:12,494+0200",
 	  	"service": "payment",
-	  	"coldStart": true,
-	  	"functionName": "test",
-	  	"functionMemorySize": 128,
-	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"cold_start": true,
+	  	"function_name": "test",
+	  	"function_memory_size": 128,
+	  	"function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
 	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
 	  	"correlation_id": "correlation_id_value"
 	}
@@ -506,10 +506,10 @@ this means that custom keys can be persisted across invocations. If you want all
 	  	"message": "Collecting payment",
 		"timestamp": "2021-05-03 11:47:12,494+0200",
 	  	"service": "payment",
-	  	"coldStart": true,
-	  	"functionName": "test",
-	  	"functionMemorySize": 128,
-	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"cold_start": true,
+	  	"function_name": "test",
+	  	"function_memory_size": 128,
+	  	"function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
 	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72",
         "specialKey": "value"
 	}
@@ -523,10 +523,10 @@ this means that custom keys can be persisted across invocations. If you want all
 	  	"message": "Collecting payment",
 		"timestamp": "2021-05-03 11:47:12,494+0200",
 	  	"service": "payment",
-	  	"coldStart": true,
-	  	"functionName": "test",
-	  	"functionMemorySize": 128,
-	  	"functionArn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
+	  	"cold_start": true,
+	  	"function_name": "test",
+	  	"function_memory_size": 128,
+	  	"function_arn": "arn:aws:lambda:eu-west-1:12345678910:function:test",
 	  	"function_request_id": "52fdfc07-2182-154f-163f-5f0f9a621d72"
 	}
     ```
