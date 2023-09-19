@@ -66,9 +66,7 @@ import software.amazon.lambda.powertools.logging.LoggingUtils;
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LoggerFactory.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
-
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
-    private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
     private static final LoggingManager loggingManager;
     private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
 
@@ -83,6 +81,11 @@ public final class LambdaLoggingAspect {
     }
 
     private static LoggingManager loadLoggingManager() {
+        // JAVA_TOOL_OPTIONS="-Dslf4j.binding=ch.qos.logback.classic.spi.LogbackServiceProvider"
+        // JAVA_TOOL_OPTIONS="-Dslf4j.binding=org.apache.logging.slf4j.SLF4JServiceProvider"
+        String slf4jBinding = System.getProperty("slf4j.binding");
+        System.out.println(slf4jBinding); // TODO
+
         ServiceLoader<LoggingManager> loggingManagers = ServiceLoader.load(LoggingManager.class);
         List<LoggingManager> loggingManagerList = new ArrayList<>();
         for (LoggingManager loggingManager : loggingManagers) {
@@ -149,7 +152,7 @@ public final class LambdaLoggingAspect {
         if (isHandlerMethod(pjp)) {
 
             if (samplingRate < 0 || samplingRate > 1) {
-                LOG.debug("Skipping sampling rate configuration because of invalid value. Sampling rate: {}",
+                LOG.warn("Skipping sampling rate configuration because of invalid value. Sampling rate: {}",
                         samplingRate);
                 return;
             }
@@ -174,12 +177,13 @@ public final class LambdaLoggingAspect {
     }
 
     private double samplingRate(final Logging logging) {
-        if (null != SAMPLING_RATE) {
+        String sampleRate = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
+        if (null != sampleRate) {
             try {
-                return Double.parseDouble(SAMPLING_RATE);
+                return Double.parseDouble(sampleRate);
             } catch (NumberFormatException e) {
-                LOG.debug("Skipping sampling rate on environment variable configuration because of invalid " +
-                        "value. Sampling rate: {}", SAMPLING_RATE);
+                LOG.warn("Skipping sampling rate on environment variable configuration because of invalid " +
+                        "value. Sampling rate: {}", sampleRate);
             }
         }
         return logging.samplingRate();

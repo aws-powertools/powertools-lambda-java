@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class PowerLogToolApiGatewayHttpApiCorrelationId implements RequestHandler<APIGatewayV2HTTPEvent, Object> {
-    private final Logger LOG = LoggerFactory.getLogger(PowerLogToolApiGatewayHttpApiCorrelationId.class);
+public class PowertoolsLogApiGatewayHttpApiCorrelationId implements RequestHandler<APIGatewayV2HTTPEvent, Object> {
+    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogApiGatewayHttpApiCorrelationId.class);
 
     @Override
     @Logging(correlationIdPath = API_GATEWAY_HTTP)

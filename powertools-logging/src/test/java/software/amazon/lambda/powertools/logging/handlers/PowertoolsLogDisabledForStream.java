@@ -15,19 +15,14 @@
 package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.lambda.powertools.logging.Logging;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-public class PowerLogToolSamplingEnabled implements RequestHandler<Object, Object> {
-    private final Logger LOG = LoggerFactory.getLogger(PowerLogToolSamplingEnabled.class);
+public class PowertoolsLogDisabledForStream implements RequestStreamHandler {
 
     @Override
-    @Logging(samplingRate = 1.0)
-    public Object handleRequest(Object input, Context context) {
-        LOG.info("Test event");
-        LOG.debug("Test debug event");
-        return null;
+    public void handleRequest(InputStream input, OutputStream output, Context context) {
+
     }
 }

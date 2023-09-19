@@ -61,7 +61,6 @@ public final class LambdaHandlerProcessor {
     }
 
     public static Context extractContext(final ProceedingJoinPoint pjp) {
-
         if (placedOnRequestHandler(pjp)) {
             return (Context) pjp.getArgs()[1];
         } else if (placedOnStreamHandler(pjp)) {
