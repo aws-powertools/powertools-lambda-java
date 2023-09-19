@@ -22,12 +22,10 @@ import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 public class Function implements RequestHandler<Input, String> {
-
     private static final Logger LOG = LoggerFactory.getLogger(Function.class);
 
     @Logging
     public String handleRequest(Input input, Context context) {
-
         LoggingUtils.appendKeys(input.getKeys());
         LOG.info(input.getMessage());
 
