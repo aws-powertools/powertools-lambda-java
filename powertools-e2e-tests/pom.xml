@@ -24,7 +24,7 @@
     </parent>
 
     <artifactId>powertools-e2e-tests</artifactId>
-    <name>Powertools for AWS Lambda (Java)library End-to-end tests</name>
+    <name>Powertools for AWS Lambda (Java) library End-to-end tests</name>
     <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
 
     <properties>

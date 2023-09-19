@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powertools-logging-logback</artifactId>
-    <name>AWS Lambda Powertools for Java library Logging with LogBack</name>
+    <name>Powertools for AWS Lambda (Java) library Logging with LogBack</name>
     <description>Set of utility for better logging with logback</description>
 
     <url>https://aws.amazon.com/lambda/</url>
