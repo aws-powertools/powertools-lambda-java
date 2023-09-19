@@ -79,22 +79,4 @@ public final class LoggingUtils {
     public static void setCorrelationId(String value) {
         MDC.put("correlation_id", value);
     }
-
-    /**
-     * Sets the instance of ObjectMapper object which is used for serialising event when
-     * {@code @Logging(logEvent = true)}.
-     *
-     * @param objectMapper Custom implementation of object mapper to be used for logging serialised event
-     */
-    public static void defaultObjectMapper(ObjectMapper objectMapper) {
-        LoggingUtils.objectMapper = objectMapper;
-    }
-
-    public static ObjectMapper objectMapper() {
-        if (null == objectMapper) {
-            objectMapper = new ObjectMapper();
-        }
-
-        return objectMapper;
-    }
 }

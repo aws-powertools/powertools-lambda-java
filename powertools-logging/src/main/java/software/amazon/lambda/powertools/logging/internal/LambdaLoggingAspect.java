@@ -27,7 +27,6 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
@@ -59,6 +58,7 @@ import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 
 @Aspect
@@ -192,16 +192,12 @@ public final class LambdaLoggingAspect {
     private Object[] logEvent(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
 
-        if (isHandlerMethod(pjp)) {
-            if (placedOnRequestHandler(pjp)) {
-                Logger log = logger(pjp);
-                asJson(pjp, pjp.getArgs()[0])
-                        .ifPresent(log::info);
-            }
-
-            if (placedOnStreamHandler(pjp)) {
-                args = logFromInputStream(pjp);
-            }
+        if (placedOnRequestHandler(pjp)) {
+            Logger log = logger(pjp);
+            asJson(pjp, pjp.getArgs()[0])
+                    .ifPresent(log::info);
+        } else if (placedOnStreamHandler(pjp)) {
+            args = logFromInputStream(pjp);
         }
 
         return args;
@@ -210,29 +206,26 @@ public final class LambdaLoggingAspect {
     private Object[] captureCorrelationId(final String correlationIdPath,
                                           final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
-        if (isHandlerMethod(pjp)) {
-            if (placedOnRequestHandler(pjp)) {
-                Object arg = pjp.getArgs()[0];
-                JsonNode jsonNode = objectMapper().valueToTree(arg);
+
+        if (placedOnRequestHandler(pjp)) {
+            Object arg = pjp.getArgs()[0];
+            JsonNode jsonNode = JsonConfig.get().getObjectMapper().valueToTree(arg);
+
+            setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
+
+            return args;
+        } else if (placedOnStreamHandler(pjp)) {
+            try {
+                byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
+                JsonNode jsonNode = JsonConfig.get().getObjectMapper().readTree(bytes);
+                args[0] = new ByteArrayInputStream(bytes);
 
                 setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
 
                 return args;
-            }
-
-            if (placedOnStreamHandler(pjp)) {
-                try {
-                    byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
-                    JsonNode jsonNode = objectMapper().readTree(bytes);
-                    args[0] = new ByteArrayInputStream(bytes);
-
-                    setCorrelationIdFromNode(correlationIdPath, pjp, jsonNode);
-
-                    return args;
-                } catch (IOException e) {
-                    Logger log = logger(pjp);
-                    log.warn("Failed to capture correlation id on event from supplied input stream.", e);
-                }
+            } catch (IOException e) {
+                Logger log = logger(pjp);
+                log.warn("Failed to capture correlation id on event from supplied input stream.", e);
             }
         }
 
@@ -246,7 +239,7 @@ public final class LambdaLoggingAspect {
         if (null != asText && !asText.isEmpty()) {
             LoggingUtils.setCorrelationId(asText);
         } else {
-            logger(pjp).debug("Unable to extract any correlation id. Is your function expecting supported event type?");
+            logger(pjp).warn("Unable to extract any correlation id. Is your function expecting supported event type?");
         }
     }
 
@@ -258,12 +251,12 @@ public final class LambdaLoggingAspect {
             args[0] = new ByteArrayInputStream(bytes);
             Logger log = logger(pjp);
 
-            asJson(pjp, objectMapper().readValue(bytes, Map.class))
+            asJson(pjp, JsonConfig.get().getObjectMapper().readValue(bytes, Map.class))
                     .ifPresent(log::info);
 
         } catch (IOException e) {
             Logger log = logger(pjp);
-            log.debug("Failed to log event from supplied input stream.", e);
+            log.warn("Failed to log event from supplied input stream.", e);
         }
 
         return args;
@@ -286,7 +279,7 @@ public final class LambdaLoggingAspect {
     private Optional<String> asJson(final ProceedingJoinPoint pjp,
                                     final Object target) {
         try {
-            return ofNullable(objectMapper().writeValueAsString(target));
+            return ofNullable(JsonConfig.get().getObjectMapper().writeValueAsString(target));
         } catch (JsonProcessingException e) {
             logger(pjp).error("Failed logging event of type {}", target.getClass(), e);
             return empty();
