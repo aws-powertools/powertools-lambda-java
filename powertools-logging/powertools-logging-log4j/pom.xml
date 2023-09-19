@@ -8,15 +8,14 @@
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
         <version>2.0.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>powertools-logging-log4j</artifactId>
     <packaging>jar</packaging>
-
     <name>AWS Lambda Powertools for Java library Logging with Log4j2</name>
-    <description>
-        A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
-    </description>
+    <description>Set of utility for better logging with log4j</description>
+
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
@@ -114,5 +113,14 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -44,8 +44,8 @@
         <module>powertools-common</module>
         <module>powertools-serialization</module>
         <module>powertools-logging</module>
-        <module>powertools-logging-log4j</module>
-        <module>powertools-logging-logback</module>
+        <module>powertools-logging/powertools-logging-log4j</module>
+        <module>powertools-logging/powertools-logging-logback</module>
         <module>powertools-tracing</module>
         <module>powertools-metrics</module>
         <module>powertools-parameters</module>
