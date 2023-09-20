@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.logging;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Map;
 import org.slf4j.MDC;
@@ -25,8 +24,6 @@ import org.slf4j.MDC;
  * {@see Logging}
  */
 public final class LoggingUtils {
-    private static ObjectMapper objectMapper;
-
     private LoggingUtils() {
     }
 

@@ -12,14 +12,19 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
+package org.apache.logging.log4j.layout.template.json.resolver;
 
 import org.apache.logging.log4j.core.LogEvent;
-import org.apache.logging.log4j.layout.template.json.resolver.EventResolver;
-import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolverConfig;
 import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
+/**
+ * Custom {@link org.apache.logging.log4j.layout.template.json.resolver.TemplateResolver}
+ * used by {@link org.apache.logging.log4j.layout.template.json.JsonTemplateLayout}
+ * to be able to recognize powertools fields in the LambdaJsonLayout.json file.
+ */
 final class PowertoolsResolver implements EventResolver {
 
     private static final EventResolver COLD_START_RESOLVER = new EventResolver() {
@@ -87,7 +92,11 @@ final class PowertoolsResolver implements EventResolver {
         public boolean isResolvable(LogEvent logEvent) {
             final String samplingRate =
                     logEvent.getContextData().getValue(PowertoolsLoggedFields.SAMPLING_RATE.getName());
-            return null != samplingRate;
+            try {
+                return (null != samplingRate && Float.parseFloat(samplingRate) > 0.f);
+            } catch (NumberFormatException nfe) {
+                return false;
+            }
         }
 
         @Override
@@ -98,12 +107,21 @@ final class PowertoolsResolver implements EventResolver {
         }
     };
 
-    private static final EventResolver XRAY_TRACE_RESOLVER =
-            (final LogEvent logEvent, final JsonWriter jsonWriter) -> {
-                final String traceId =
-                        logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_TRACE_ID.getName());
-                jsonWriter.writeString(traceId);
-            };
+    private static final EventResolver XRAY_TRACE_RESOLVER = new EventResolver() {
+        @Override
+        public boolean isResolvable(LogEvent logEvent) {
+            final String traceId =
+                    logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_TRACE_ID.getName());
+            return null != traceId;
+        }
+
+        @Override
+        public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
+            final String traceId =
+                    logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_TRACE_ID.getName());
+            jsonWriter.writeString(traceId);
+        }
+    };
 
     private static final EventResolver SERVICE_RESOLVER =
             (final LogEvent logEvent, final JsonWriter jsonWriter) -> {
@@ -113,7 +131,7 @@ final class PowertoolsResolver implements EventResolver {
 
     private static final EventResolver REGION_RESOLVER =
             (final LogEvent logEvent, final JsonWriter jsonWriter) ->
-                    jsonWriter.writeString(System.getenv("AWS_REGION"));
+                    jsonWriter.writeString(System.getenv(LambdaConstants.AWS_REGION_ENV));
 
     private static final EventResolver ACCOUNT_ID_RESOLVER = new EventResolver() {
         @Override
@@ -132,7 +150,7 @@ final class PowertoolsResolver implements EventResolver {
     private static final EventResolver NON_POWERTOOLS_FIELD_RESOLVER =
             (LogEvent logEvent, JsonWriter jsonWriter) -> {
                 StringBuilder stringBuilder = jsonWriter.getStringBuilder();
-                // remove dummy field to kick inn powertools resolver
+                // remove dummy field to kick in powertools resolver
                 stringBuilder.setLength(stringBuilder.length() - 4);
 
                 // Inject all the context information.
@@ -195,10 +213,6 @@ final class PowertoolsResolver implements EventResolver {
         }
     }
 
-    static String getName() {
-        return "powertools";
-    }
-
     @Override
     public void resolve(LogEvent value, JsonWriter jsonWriter) {
         internalResolver.resolve(value, jsonWriter);
@@ -207,6 +221,6 @@ final class PowertoolsResolver implements EventResolver {
     @Override
     public boolean isResolvable(LogEvent value) {
         ReadOnlyStringMap contextData = value.getContextData();
-        return null != contextData && !contextData.isEmpty() && internalResolver.isResolvable();
+        return null != contextData && !contextData.isEmpty() && internalResolver.isResolvable(value);
     }
 }

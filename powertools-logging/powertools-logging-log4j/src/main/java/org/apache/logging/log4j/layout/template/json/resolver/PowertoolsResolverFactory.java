@@ -12,21 +12,17 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
+package org.apache.logging.log4j.layout.template.json.resolver;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
-import org.apache.logging.log4j.layout.template.json.resolver.EventResolverContext;
-import org.apache.logging.log4j.layout.template.json.resolver.EventResolverFactory;
-import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolver;
-import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolverConfig;
-import org.apache.logging.log4j.layout.template.json.resolver.TemplateResolverFactory;
 
 @Plugin(name = "PowertoolsResolverFactory", category = TemplateResolverFactory.CATEGORY)
 public final class PowertoolsResolverFactory implements EventResolverFactory {
 
     private static final PowertoolsResolverFactory INSTANCE = new PowertoolsResolverFactory();
+    private static final String RESOLVER_NAME = "powertools";
 
     private PowertoolsResolverFactory() {
     }
@@ -38,7 +34,7 @@ public final class PowertoolsResolverFactory implements EventResolverFactory {
 
     @Override
     public String getName() {
-        return PowertoolsResolver.getName();
+        return RESOLVER_NAME;
     }
 
     @Override

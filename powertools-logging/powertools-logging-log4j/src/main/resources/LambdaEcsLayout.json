@@ -23,10 +23,6 @@
     "$resolver": "powertools",
     "field": "service_version"
   },
-  "event.dataset": {
-    "$resolver": "powertools",
-    "field": "service_name"
-  },
   "process.thread.name": {
     "$resolver": "thread",
     "field": "name"

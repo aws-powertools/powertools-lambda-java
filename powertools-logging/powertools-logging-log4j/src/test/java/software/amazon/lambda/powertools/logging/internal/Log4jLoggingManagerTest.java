@@ -11,29 +11,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
-public class Log4jLoggingManagerTest {
+class Log4jLoggingManagerTest {
 
-    private static Logger LOG = LoggerFactory.getLogger(Log4jLoggingManagerTest.class);
-    private static Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    private final static Logger LOG = LoggerFactory.getLogger(Log4jLoggingManagerTest.class);
+    private final static Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     @Test
     @Order(1)
-    public void getLogLevel_shouldReturnConfiguredLogLevel() {
+    void getLogLevel_shouldReturnConfiguredLogLevel() {
+        // Given log4j2.xml in resources
+
+        // When
         Log4jLoggingManager manager = new Log4jLoggingManager();
         Level logLevel = manager.getLogLevel(LOG);
-        assertThat(logLevel).isEqualTo(INFO);
+        Level rootLevel = manager.getLogLevel(ROOT);
 
-        logLevel = manager.getLogLevel(ROOT);
-        assertThat(logLevel).isEqualTo(WARN);
+        // Then
+        assertThat(logLevel).isEqualTo(INFO);
+        assertThat(rootLevel).isEqualTo(WARN);
     }
 
     @Test
     @Order(2)
-    public void resetLogLevel() {
+    void resetLogLevel() {
+        // Given log4j2.xml in resources
+
+        // When
         Log4jLoggingManager manager = new Log4jLoggingManager();
         manager.resetLogLevel(ERROR);
 
+        Level rootLevel = manager.getLogLevel(ROOT);
         Level logLevel = manager.getLogLevel(LOG);
+
+        // Then
+        assertThat(rootLevel).isEqualTo(ERROR);
         assertThat(logLevel).isEqualTo(ERROR);
     }
 }
