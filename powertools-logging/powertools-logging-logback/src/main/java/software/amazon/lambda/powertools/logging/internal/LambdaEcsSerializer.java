@@ -137,10 +137,6 @@ public class LambdaEcsSerializer {
         serializeAttributeAsString(builder, SERVICE_VERSION_ATTR_NAME, serviceVersion);
     }
 
-    public static void serializeEventDataset(StringBuilder builder, String serviceName) {
-        serializeAttributeAsString(builder, EVENT_DATASET_ATTR_NAME, serviceName);
-    }
-
     public static void serializeLoggerName(StringBuilder builder, String loggerName) {
         serializeAttributeAsString(builder, LOGGER_ATTR_NAME, loggerName);
     }

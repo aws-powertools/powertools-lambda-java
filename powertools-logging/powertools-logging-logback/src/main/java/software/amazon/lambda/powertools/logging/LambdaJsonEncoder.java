@@ -35,6 +35,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     protected String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZz";
     protected String timestampFormatTimezoneId = null;
     private boolean includeThreadInfo = false;
+    private boolean includePowertoolsInfo = true;
 
     @Override
     public byte[] headerBytes() {
@@ -68,7 +69,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
                         throwableProxy.getMessage(), throwableProxyConverter.convert(event));
             }
         }
-        LambdaJsonSerializer.serializePowertools(builder, event.getMDCPropertyMap());
+        LambdaJsonSerializer.serializePowertools(builder, event.getMDCPropertyMap(), includePowertoolsInfo);
         if (includeThreadInfo) {
             LambdaJsonSerializer.serializeThreadName(builder, event.getThreadName());
             LambdaJsonSerializer.serializeThreadId(builder, String.valueOf(Thread.currentThread().getId()));
@@ -85,19 +86,95 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         return null;
     }
 
+    /**
+     * Specify the format of the timestamp (default is <b>yyyy-MM-dd'T'HH:mm:ss.SSSZz</b>):
+     * <br/>
+     * <pre>{@code
+     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *         <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZz</timestampFormat>
+     *     </encoder>
+     * }</pre>
+     * @param timestampFormat format of the timestamp (compatible with {@link java.text.SimpleDateFormat})
+     */
     public void setTimestampFormat(String timestampFormat) {
         this.timestampFormat = timestampFormat;
     }
 
+    /**
+     * Specify the format of the time zone id for timestamp (default is <b>null</b>, no timezone):
+     * <br/>
+     * <pre>{@code
+     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *         <timestampFormatTimezoneId>Europe/Paris</timestampFormatTimezoneId>
+     *     </encoder>
+     * }</pre>
+     * @param timestampFormatTimezoneId Zone Id (see {@link java.util.TimeZone})
+     */
     public void setTimestampFormatTimezoneId(String timestampFormatTimezoneId) {
         this.timestampFormatTimezoneId = timestampFormatTimezoneId;
     }
 
+    /**
+     * Specify a throwable converter to format the stacktrace according to your need (default is <b>null</b>, no throwableConverter):
+     * <br/>
+     * <pre>{@code
+     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *         <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
+     *              <maxDepthPerThrowable>30</maxDepthPerThrowable>
+     *              <maxLength>2048</maxLength>
+     *              <shortenedClassNameLength>20</shortenedClassNameLength>
+     *              <exclude>sun\.reflect\..*\.invoke.*</exclude>
+     *              <exclude>net\.sf\.cglib\.proxy\.MethodProxy\.invoke</exclude>
+     *              <evaluator class="myorg.MyCustomEvaluator"/>
+     *              <rootCauseFirst>true</rootCauseFirst>
+     *              <inlineHash>true</inlineHash>
+     *         </throwableConverter>
+     *     </encoder>
+     * }</pre>
+     * @param throwableConverter
+     */
     public void setThrowableConverter(ThrowableHandlingConverter throwableConverter) {
         this.throwableConverter = throwableConverter;
     }
 
+    /**
+     * Specify if thread information should be logged (default is <b>false</b>)
+     * <br/>
+     * <pre>{@code
+     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *         <includeThreadInfo>true</includeThreadInfo>
+     *     </encoder>
+     * }</pre>
+     * @param includeThreadInfo if thread information should be logged
+     */
     public void setIncludeThreadInfo(boolean includeThreadInfo) {
         this.includeThreadInfo = includeThreadInfo;
+    }
+
+    /**
+     * Specify if Lambda function information should be logged (default is <b>true</b>):
+     * <ul>
+     *     <li>function_name</li>
+     *     <li>function_version</li>
+     *     <li>function_arn</li>
+     *     <li>function_memory_size</li>
+     *     <li>function_request_id</li>
+     *     <li>cold_start</li>
+     *     <li>xray_trace_id</li>
+     *     <li>sampling_rate</li>
+     *     <li>service</li>
+     * </ul>
+     * <br/>
+     * We strongly recommend to keep these information.
+     * <br/>
+     * <pre>{@code
+     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *         <includePowertoolsInfo>false</includePowertoolsInfo>
+     *     </encoder>
+     * }</pre>
+     * @param includePowertoolsInfo if function information should be logged
+     */
+    public void setIncludePowertoolsInfo(boolean includePowertoolsInfo) {
+        this.includePowertoolsInfo = includePowertoolsInfo;
     }
 }

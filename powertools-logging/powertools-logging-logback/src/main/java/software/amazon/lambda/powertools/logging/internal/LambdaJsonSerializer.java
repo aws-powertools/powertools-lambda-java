@@ -87,11 +87,11 @@ public class LambdaJsonSerializer {
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {
-        builder.append("\"").append(EXCEPTION_ATTR_NAME).append("\": {");
+        builder.append(",\"").append(EXCEPTION_ATTR_NAME).append("\":{");
         serializeAttribute(builder, EXCEPTION_MSG_ATTR_NAME, message, false);
         serializeAttribute(builder, EXCEPTION_CLASS_ATTR_NAME, className);
         serializeAttribute(builder, EXCEPTION_STACK_ATTR_NAME, stackTrace);
-        builder.append("},");
+        builder.append("}");
     }
 
     public static void serializeException(StringBuilder builder, Throwable throwable) {
@@ -107,10 +107,13 @@ public class LambdaJsonSerializer {
         serializeAttribute(builder, THREAD_PRIORITY_ATTR_NAME, threadPriority);
     }
 
-    public static void serializePowertools(StringBuilder builder, Map<String, String> mdc) {
+    public static void serializePowertools(StringBuilder builder, Map<String, String> mdc, boolean includePowertoolsInfo) {
         TreeMap<String, String> sortedMap = new TreeMap<>(mdc);
-        sortedMap.forEach((k, v) ->
-                serializeAttribute(builder, k, v));
+        sortedMap.forEach((k, v) -> {
+            if ((PowertoolsLoggedFields.stringValues().contains(k) && includePowertoolsInfo) || !PowertoolsLoggedFields.stringValues().contains(k)) {
+                serializeAttribute(builder, k, v);
+            }
+        });
     }
 
 }

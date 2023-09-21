@@ -19,9 +19,9 @@ public class JsonUtils {
     protected static void serializeAttribute(StringBuilder builder, String attr, String value, boolean notBegin) {
         if (value != null) {
             if (notBegin) {
-                builder.append(", ");
+                builder.append(",");
             }
-            builder.append("\"").append(attr).append("\": ");
+            builder.append("\"").append(attr).append("\":");
             boolean isString = isString(value);
             if (isString) {
                 builder.append("\"");
@@ -37,11 +37,11 @@ public class JsonUtils {
                                                      boolean notBegin) {
         if (value != null) {
             if (notBegin) {
-                builder.append(", ");
+                builder.append(",");
             }
             builder.append("\"")
                     .append(attr)
-                    .append("\": \"")
+                    .append("\":\"")
                     .append(value)
                     .append("\"");
         }
@@ -72,7 +72,7 @@ public class JsonUtils {
      * Taken from commons-lang3 NumberUtils to avoid include the library
      */
     private static boolean isNumeric(final String str) {
-        if (str == null || str.length() == 0) {
+        if (str == null || str.isEmpty()) {
             return false;
         }
         if (str.charAt(str.length() - 1) == '.') {

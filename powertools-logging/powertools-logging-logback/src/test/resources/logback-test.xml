@@ -1,13 +1,27 @@
 <configuration>
-    <appender name="JsonAppender" class="ch.qos.logback.core.ConsoleAppender">
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
         </encoder>
     </appender>
 
-    <logger name="software.amazon.lambda.powertools" level="INFO">
-        <appender-ref ref="JsonAppender" />
+    <appender name="logFile" class="ch.qos.logback.core.FileAppender">
+        <file>target/logfile.json</file>
+        <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+        </encoder>
+    </appender>
+
+    <appender name="logFileWithEcs" class="ch.qos.logback.core.FileAppender">
+        <file>target/ecslogfile.json</file>
+        <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
+        </encoder>
+    </appender>
+
+    <logger name="software.amazon.lambda.powertools" level="DEBUG" additivity="false">
+        <appender-ref ref="logFile" />
+        <appender-ref ref="logFileWithEcs" />
     </logger>
     <root level="WARN">
-        <appender-ref ref="JsonAppender" />
+        <appender-ref ref="logFile" />
+        <appender-ref ref="logFileWithEcs" />
     </root>
 </configuration>
