@@ -49,6 +49,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -92,9 +93,13 @@ class LambdaLoggingAspectTest {
         setupContext();
         requestHandler = new PowertoolsLogEnabled();
         requestStreamHandler = new PowertoolsLogEnabledForStream();
+        resetLogLevel(Level.INFO);
+    }
+
+    @AfterEach
+    void cleanUp() throws IOException {
         //Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-        resetLogLevel(Level.INFO);
     }
 
     @Test

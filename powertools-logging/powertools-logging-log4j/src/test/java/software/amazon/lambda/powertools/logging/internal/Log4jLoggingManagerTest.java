@@ -1,8 +1,8 @@
 package software.amazon.lambda.powertools.logging.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.slf4j.event.Level.DEBUG;
 import static org.slf4j.event.Level.ERROR;
-import static org.slf4j.event.Level.INFO;
 import static org.slf4j.event.Level.WARN;
 
 import org.junit.jupiter.api.Order;
@@ -27,7 +27,7 @@ class Log4jLoggingManagerTest {
         Level rootLevel = manager.getLogLevel(ROOT);
 
         // Then
-        assertThat(logLevel).isEqualTo(INFO);
+        assertThat(logLevel).isEqualTo(DEBUG);
         assertThat(rootLevel).isEqualTo(WARN);
     }
 

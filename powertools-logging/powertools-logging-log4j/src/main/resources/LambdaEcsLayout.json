@@ -15,22 +15,6 @@
     "$resolver": "message",
     "stringified": true
   },
-  "service.name": {
-    "$resolver": "powertools",
-    "field": "service"
-  },
-  "service.version": {
-    "$resolver": "powertools",
-    "field": "service_version"
-  },
-  "process.thread.name": {
-    "$resolver": "thread",
-    "field": "name"
-  },
-  "log.logger": {
-    "$resolver": "logger",
-    "field": "name"
-  },
   "error.type": {
     "$resolver": "exception",
     "field": "className"
@@ -46,6 +30,22 @@
       "stringified": true
     }
   },
+  "service.name": {
+    "$resolver": "powertools",
+    "field": "service"
+  },
+  "service.version": {
+    "$resolver": "powertools",
+    "field": "service_version"
+  },
+  "log.logger": {
+    "$resolver": "logger",
+    "field": "name"
+  },
+  "process.thread.name": {
+    "$resolver": "thread",
+    "field": "name"
+  },
   "cloud.provider" : "aws",
   "cloud.service.name" : "lambda",
   "cloud.region" : {
@@ -56,35 +56,35 @@
     "$resolver": "powertools",
     "field": "account_id"
   },
-  "faas.coldstart": {
-    "$resolver": "powertools",
-    "field": "cold_start"
-  },
   "faas.id": {
     "$resolver": "powertools",
     "field": "function_arn"
-  },
-  "faas.memory": {
-    "$resolver": "powertools",
-    "field": "function_memory_size"
   },
   "faas.name": {
     "$resolver": "powertools",
     "field": "function_name"
   },
-  "faas.execution": {
-    "$resolver": "powertools",
-    "field": "function_request_id"
-  },
   "faas.version": {
     "$resolver": "powertools",
     "field": "function_version"
   },
-  "": {
-    "$resolver": "powertools"
+  "faas.memory": {
+    "$resolver": "powertools",
+    "field": "function_memory_size"
+  },
+  "faas.execution": {
+    "$resolver": "powertools",
+    "field": "function_request_id"
+  },
+  "faas.coldstart": {
+    "$resolver": "powertools",
+    "field": "cold_start"
   },
   "trace.id": {
     "$resolver": "powertools",
     "field": "xray_trace_id"
+  },
+  "": {
+    "$resolver": "powertools"
   }
 }

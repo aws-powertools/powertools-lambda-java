@@ -1,7 +1,11 @@
 {
-  "cold_start": {
-    "$resolver": "powertools",
-    "field": "cold_start"
+  "level": {
+    "$resolver": "level",
+    "field": "name"
+  },
+  "message": {
+    "$resolver": "message",
+    "stringified": true
   },
   "error": {
     "message": {
@@ -19,6 +23,10 @@
         "stringified": true
       }
     }
+  },
+  "cold_start": {
+    "$resolver": "powertools",
+    "field": "cold_start"
   },
   "function_arn": {
     "$resolver": "powertools",
@@ -39,14 +47,6 @@
   "function_version": {
     "$resolver": "powertools",
     "field": "function_version"
-  },
-  "level": {
-    "$resolver": "level",
-    "field": "name"
-  },
-  "message": {
-    "$resolver": "message",
-    "stringified": true
   },
   "sampling_rate": {
     "$resolver": "powertools",

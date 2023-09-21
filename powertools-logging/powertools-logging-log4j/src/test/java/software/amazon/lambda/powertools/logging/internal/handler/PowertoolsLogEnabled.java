@@ -25,10 +25,9 @@ public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
     private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
 
     @Override
-    @Logging
+    @Logging(clearState = true)
     public Object handleRequest(Object input, Context context) {
         LoggingUtils.appendKey("myKey", "myValue");
-        LOG.info("Test event");
         LOG.debug("Test debug event");
         return null;
     }

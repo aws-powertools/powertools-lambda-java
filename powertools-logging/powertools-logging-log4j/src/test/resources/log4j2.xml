@@ -12,7 +12,7 @@
         </File>
     </Appenders>
     <Loggers>q
-        <Logger name="software.amazon.lambda.powertools" level="INFO" additivity="false">
+        <Logger name="software.amazon.lambda.powertools" level="DEBUG" additivity="false">
             <AppenderRef ref="logFileWithEcs"/>
             <AppenderRef ref="logFile"/>
         </Logger>

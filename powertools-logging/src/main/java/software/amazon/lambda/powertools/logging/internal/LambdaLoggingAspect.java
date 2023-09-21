@@ -81,24 +81,71 @@ public final class LambdaLoggingAspect {
     }
 
     private static LoggingManager loadLoggingManager() {
-        // JAVA_TOOL_OPTIONS="-Dslf4j.binding=ch.qos.logback.classic.spi.LogbackServiceProvider"
-        // JAVA_TOOL_OPTIONS="-Dslf4j.binding=org.apache.logging.slf4j.SLF4JServiceProvider"
+        return getLoggingManagerFromSlf4jBinding().orElse(getLoggingManagerFromServiceLoader());
+    }
+
+    /**
+     * To avoid Service Loader loading of the log provider, SLF4j provides a system property 'slf4j.binding'
+     * that users can set. If this is set, we can also leverage it and avoid Service Loader for the {@link LoggingManager}.
+     * <p>In Lambda, system properties can be set with JAVA_TOOL_OPTIONS:
+     * <ul>
+     * <li>JAVA_TOOL_OPTIONS="-Dslf4j.binding=ch.qos.logback.classic.spi.LogbackServiceProvider"</li>
+     * <li>JAVA_TOOL_OPTIONS="-Dslf4j.binding=org.apache.logging.slf4j.SLF4JServiceProvider"</li>
+     * </ul>
+     * </p>
+     * @return an instance of {@link LoggingManager} or null
+     */
+    private static Optional<LoggingManager> getLoggingManagerFromSlf4jBinding() {
+        LoggingManager loggingManager = null;
+
         String slf4jBinding = System.getProperty("slf4j.binding");
-        System.out.println(slf4jBinding); // TODO
+        if (slf4jBinding != null) {
+            LOG.debug("slf4j.binding is set to {}", slf4jBinding);
+            try {
+                if ("org.apache.logging.slf4j.SLF4JServiceProvider".equals(slf4jBinding)) {
+                    String managerClass = "software.amazon.lambda.powertools.logging.internal.Log4jLoggingManager";
+                    LOG.debug("Loading {}", managerClass);
+                    Class<?> log4jManagerClass = LambdaLoggingAspect.class.getClassLoader()
+                            .loadClass(managerClass);
+                    loggingManager = (LoggingManager) log4jManagerClass.newInstance();
+                } else if ("ch.qos.logback.classic.spi.LogbackServiceProvider".equals(slf4jBinding)) {
+                    String managerClass = "software.amazon.lambda.powertools.logging.internal.LogbackLoggingManager";
+                    LOG.debug("Loading {}", managerClass);
+                    Class<?> log4backManagerClass = LambdaLoggingAspect.class.getClassLoader()
+                            .loadClass(managerClass);
+                    loggingManager = (LoggingManager) log4backManagerClass.newInstance();
+                } else {
+                    LOG.warn("slf4j.binding {} not supported, fallback to Service Loader. " +
+                            "Only log4j and logback are supported.", slf4jBinding);
+                }
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+                LOG.warn("Could not instantiate LoggingManager based on slf4j.binding {}, " +
+                                "make sure to add either powertools-logging-log4j or powertools-logging-logback module",
+                        slf4jBinding);
+            }
+        }
+        return Optional.ofNullable(loggingManager);
+    }
+
+    private static LoggingManager getLoggingManagerFromServiceLoader() {
+        LoggingManager loggingManager;
 
         ServiceLoader<LoggingManager> loggingManagers = ServiceLoader.load(LoggingManager.class);
         List<LoggingManager> loggingManagerList = new ArrayList<>();
-        for (LoggingManager loggingManager : loggingManagers) {
-            loggingManagerList.add(loggingManager);
+        for (LoggingManager lm : loggingManagers) {
+            loggingManagerList.add(lm);
         }
         if (loggingManagerList.isEmpty()) {
-            throw new IllegalStateException("No LoggingManager was found on the classpath");
+            throw new IllegalStateException("No LoggingManager was found on the classpath, " +
+                    "make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
         } else if (loggingManagerList.size() > 1) {
             throw new IllegalStateException(
-                    "Multiple LoggingManagers were found on the classpath: " + loggingManagerList);
+                    "Multiple LoggingManagers were found on the classpath: " + loggingManagerList +
+                            ", make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
         } else {
-            return loggingManagerList.get(0);
+            loggingManager = loggingManagerList.get(0);
         }
+        return loggingManager;
     }
 
     private static void resetLogLevels(Level logLevel) {

@@ -35,6 +35,4 @@ public class Log4jLoggingManager implements LoggingManager {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         return org.slf4j.event.Level.valueOf(ctx.getLogger(logger.getName()).getLevel().toString());
     }
-
-
 }
