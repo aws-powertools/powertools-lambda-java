@@ -34,6 +34,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
@@ -140,9 +141,9 @@ class LambdaJsonEncoderTest {
         // GIVEN
         LambdaJsonEncoder encoder = new LambdaJsonEncoder();
         String pattern = "yyyy-MM-dd_HH";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String timeZone = "Europe/Paris";
         encoder.setTimestampFormat(pattern);
-        encoder.setTimestampFormatTimezoneId("Europe/Paris");
+        encoder.setTimestampFormatTimezoneId(timeZone);
 
         // WHEN
         Date date = new Date();
@@ -150,6 +151,8 @@ class LambdaJsonEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone(timeZone));
         assertThat(result).contains("\"timestamp\":\""+simpleDateFormat.format(date)+"\"");
     }
 
