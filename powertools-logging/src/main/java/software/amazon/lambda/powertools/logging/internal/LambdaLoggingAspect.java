@@ -56,7 +56,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
-import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
@@ -69,6 +68,9 @@ public final class LambdaLoggingAspect {
     private static final Random SAMPLER = new Random();
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final LoggingManager loggingManager;
+
+    private static String LOG_EVENT = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT"); /* not final for test purpose */
+    private static String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
     private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
 
     static {
@@ -187,7 +189,7 @@ public final class LambdaLoggingAspect {
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
-        if (logging.logEvent() || "true".equals(SystemWrapper.getenv("POWERTOOLS_LOGGER_LOG_EVENT"))) {
+        if (logging.logEvent() || "true".equals(LOG_EVENT)) {
             proceedArgs = logEvent(pjp);
         }
 
@@ -237,7 +239,7 @@ public final class LambdaLoggingAspect {
     }
 
     private double samplingRate(final Logging logging) {
-        String sampleRate = SystemWrapper.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
+        String sampleRate = SAMPLING_RATE;
         if (null != sampleRate) {
             try {
                 return Double.parseDouble(sampleRate);

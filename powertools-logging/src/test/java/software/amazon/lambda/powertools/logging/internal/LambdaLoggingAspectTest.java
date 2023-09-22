@@ -93,6 +93,8 @@ class LambdaLoggingAspectTest {
         requestHandler = new PowertoolsLogEnabled();
         requestStreamHandler = new PowertoolsLogEnabledForStream();
         resetLogLevel(Level.INFO);
+        writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", null, true);
+        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", null, true);
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         } catch (NoSuchFileException e) {
@@ -186,58 +188,66 @@ class LambdaLoggingAspectTest {
     @Test
     void shouldLogDebugWhenSamplingEqualsOne() {
         PowertoolsLogSamplingEnabled handler = new PowertoolsLogSamplingEnabled();
+
         Boolean debugEnabled = handler.handleRequest(new Object(), context);
+
         assertThat(debugEnabled).isTrue();
     }
 
     @Test
-    void shouldLogDebugWhenSamplingEnvVarEqualsOne() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"))
-                    .thenReturn("1");
+    void shouldLogDebugWhenSamplingEnvVarEqualsOne() throws IllegalAccessException {
+        // GIVEN
+        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "1", true);
+        PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
 
-            PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
-            handler.handleRequest(new Object(), context);
-            File logFile = new File("target/logfile.json");
-            assertThat(contentOf(logFile)).contains("Test debug event");
-        }
+        // WHEN
+        handler.handleRequest(new Object(), context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).contains("Test debug event");
     }
 
     @Test
-    void shouldNotLogDebugWhenSamplingEnvVarIsTooBig() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"))
-                    .thenReturn("42");
+    void shouldNotLogDebugWhenSamplingEnvVarIsTooBig() throws IllegalAccessException {
+        // GIVEN
+        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "42", true);
 
-            requestHandler.handleRequest(new Object(), context);
-            File logFile = new File("target/logfile.json");
-            assertThat(contentOf(logFile)).doesNotContain("Test debug event");
-        }
+        // WHEN
+        requestHandler.handleRequest(new Object(), context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).doesNotContain("Test debug event");
     }
 
     @Test
-    void shouldNotLogDebugWhenSamplingEnvVarIsInvalid() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"))
-                    .thenReturn("NotANumber");
+    void shouldNotLogDebugWhenSamplingEnvVarIsInvalid() throws IllegalAccessException {
+        // GIVEN
+        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "NotANumber", true);
 
+        // WHEN
             requestHandler.handleRequest(new Object(), context);
-            File logFile = new File("target/logfile.json");
-            assertThat(contentOf(logFile)).doesNotContain("Test debug event");
-            assertThat(contentOf(logFile)).contains(
-                    "Skipping sampling rate on environment variable configuration because of invalid value");
-        }
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).doesNotContain("Test debug event");
+        assertThat(contentOf(logFile)).contains(
+                "Skipping sampling rate on environment variable configuration because of invalid value");
     }
 
     @Test
     void shouldNotLogDebugWhenSamplingEqualsZero() {
         PowertoolsLogSamplingDisabled handler = new PowertoolsLogSamplingDisabled();
+
         Boolean debugEnabled = handler.handleRequest(new Object(), context);
+
         assertThat(debugEnabled).isFalse();
     }
 
     @Test
     void shouldHaveNoEffectIfNotUsedOnLambdaHandler() {
+        // GIVEN
         PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
 
         handler.anotherMethod();
@@ -247,9 +257,13 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogServiceNameWhenEnvVarSet() throws IllegalAccessException {
+        // GIVEN
         writeStaticField(LambdaHandlerProcessor.class, "SERVICE_NAME", "testService", true);
+
+        // WHEN
         requestHandler.handleRequest(new Object(), context);
 
+        // THEN
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(SERVICE.getName(), "testService");
@@ -257,14 +271,17 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogxRayTraceIdEnvVarSet() {
+        // GIVEN
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
                     .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
 
+            // WHEN
             requestHandler.handleRequest(new Object(), context);
 
+            // THEN
             assertThat(MDC.getCopyOfContextMap())
                     .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                     .containsEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId);
@@ -273,35 +290,41 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogEventForHandlerWithLogEventAnnotation() {
+        // GIVEN
         requestHandler = new PowertoolsLogEvent();
 
+        // WHEN
         requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
 
+        // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains("[\"ListOfOneElement\"]");
     }
 
     @Test
-    void shouldLogEventForHandlerWithLogEventEnvVar() {
+    void shouldLogEventForHandlerWithLogEventEnvVar() throws IllegalAccessException {
+        // GIVEN
+        writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", "true", true);
         requestHandler = new PowertoolsLogEnabled();
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("POWERTOOLS_LOGGER_LOG_EVENT"))
-                    .thenReturn("true");
+        // WHEN
+        requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
 
-            requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
-
-            File logFile = new File("target/logfile.json");
-            assertThat(contentOf(logFile)).contains("[\"ListOfOneElement\"]");
-        }
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).contains("[\"ListOfOneElement\"]");
     }
 
     @Test
     void shouldLogEventForStreamHandler() throws IOException {
+        // GIVEN
         requestStreamHandler = new PowertoolsLogEventForStream();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        // WHEN
         requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(Collections.singletonMap("key", "value"))), output, context);
 
+        // THEN
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
                 .isNotEmpty();
 
@@ -312,9 +335,13 @@ class LambdaLoggingAspectTest {
     @ParameterizedTest
     @Event(value = "apiGatewayProxyEventV1.json", type = APIGatewayProxyRequestEvent.class)
     void shouldLogCorrelationIdOnAPIGatewayProxyRequestEvent(APIGatewayProxyRequestEvent event) {
+        // GIVEN
         RequestHandler<APIGatewayProxyRequestEvent, Object> handler = new PowertoolsLogApiGatewayRestApiCorrelationId();
+
+        // WHEN
         handler.handleRequest(event, context);
 
+        // THEN
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getRequestContext().getRequestId());
@@ -323,9 +350,13 @@ class LambdaLoggingAspectTest {
     @ParameterizedTest
     @Event(value = "apiGatewayProxyEventV2.json", type = APIGatewayV2HTTPEvent.class)
     void shouldLogCorrelationIdOnAPIGatewayV2HTTPEvent(APIGatewayV2HTTPEvent event) {
+        // GIVEN
         RequestHandler<APIGatewayV2HTTPEvent, Object> handler = new PowertoolsLogApiGatewayHttpApiCorrelationId();
+
+        // WHEN
         handler.handleRequest(event, context);
 
+        // THEN
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getRequestContext().getRequestId());
@@ -334,9 +365,13 @@ class LambdaLoggingAspectTest {
     @ParameterizedTest
     @Event(value = "albEvent.json", type = ApplicationLoadBalancerRequestEvent.class)
     void shouldLogCorrelationIdOnALBEvent(ApplicationLoadBalancerRequestEvent event) {
+        // GIVEN
         RequestHandler<ApplicationLoadBalancerRequestEvent, Object> handler = new PowertoolsLogAlbCorrelationId();
+
+        // WHEN
         handler.handleRequest(event, context);
 
+        // THEN
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", event.getHeaders().get("x-amzn-trace-id"));
@@ -344,12 +379,16 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogCorrelationIdOnStreamHandler() throws IOException {
+        // GIVEN
         RequestStreamHandler handler = new PowertoolsLogEventBridgeCorrelationId();
         String eventId = "3";
         String event = "{\"id\":" + eventId + "}"; // CorrelationIdPath.EVENT_BRIDGE
         ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
+
+        // WHEN
         handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
 
+        // THEN
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", eventId);
@@ -357,12 +396,16 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldLogCorrelationIdOnAppSyncEvent() throws IOException {
+        // GIVEN
         RequestStreamHandler handler = new PowertoolsLogAppSyncCorrelationId();
         String eventId = "456";
         String event = "{\"request\":{\"headers\":{\"x-amzn-trace-id\":" + eventId + "}}}"; // CorrelationIdPath.APPSYNC_RESOLVER
         ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
+
+        // WHEN
         handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
 
+        // THEN
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", eventId);
