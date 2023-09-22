@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.logging.handlers;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.API_GATEWAY_HTTP;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPaths.API_GATEWAY_HTTP;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;

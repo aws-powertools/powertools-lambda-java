@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.logging.handlers;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPaths.EVENT_BRIDGE;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPaths.APPSYNC_RESOLVER;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -25,12 +25,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class PowertoolsLogEventBridgeCorrelationId implements RequestStreamHandler {
+public class PowertoolsLogAppSyncCorrelationId implements RequestStreamHandler {
 
-    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEventBridgeCorrelationId.class);
+    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogAppSyncCorrelationId.class);
 
     @Override
-    @Logging(correlationIdPath = EVENT_BRIDGE)
+    @Logging(correlationIdPath = APPSYNC_RESOLVER)
     public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
         LOG.info("Test event");
     }

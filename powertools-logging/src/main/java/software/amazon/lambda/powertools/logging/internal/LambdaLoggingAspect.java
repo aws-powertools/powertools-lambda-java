@@ -32,9 +32,9 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.burt.jmespath.Expression;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -292,7 +292,8 @@ public final class LambdaLoggingAspect {
     }
 
     private void setCorrelationIdFromNode(String correlationIdPath, ProceedingJoinPoint pjp, JsonNode jsonNode) {
-        JsonNode node = jsonNode.at(JsonPointer.compile(correlationIdPath));
+        Expression<JsonNode> jmesExpression = JsonConfig.get().getJmesPath().compile(correlationIdPath);
+        JsonNode node = jmesExpression.search(jsonNode);
 
         String asText = node.asText();
         if (null != asText && !asText.isEmpty()) {

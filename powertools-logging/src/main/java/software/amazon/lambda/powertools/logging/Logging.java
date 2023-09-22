@@ -64,7 +64,8 @@ import java.lang.annotation.Target;
 public @interface Logging {
 
     /**
-     * Set to true if you want to log the event received by the Lambda function handler
+     * Set to true if you want to log the event received by the Lambda function handler.
+     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_EVENT' environment variable
      */
     boolean logEvent() default false;
 

@@ -64,6 +64,7 @@ import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayRestApiCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAppSyncCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogClearState;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogDisabledForStream;
@@ -314,10 +315,22 @@ class LambdaLoggingAspectTest {
     void shouldLogCorrelationIdOnStreamHandler() throws IOException {
         RequestStreamHandler handler = new PowertoolsLogEventBridgeCorrelationId();
         String eventId = "3";
-        String event = "{\"id\":" + eventId + "}"; // CorrelationIdPathConstants.EVENT_BRIDGE
+        String event = "{\"id\":" + eventId + "}"; // CorrelationIdPath.EVENT_BRIDGE
         ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
         handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
 
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("correlation_id", eventId);
+    }
+
+    @Test
+    void shouldLogCorrelationIdOnAppSyncEvent() throws IOException {
+        RequestStreamHandler handler = new PowertoolsLogAppSyncCorrelationId();
+        String eventId = "456";
+        String event = "{\"request\":{\"headers\":{\"x-amzn-trace-id\":" + eventId + "}}}"; // CorrelationIdPath.APPSYNC_RESOLVER
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(event.getBytes());
+        handler.handleRequest(inputStream, new ByteArrayOutputStream(), context);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)

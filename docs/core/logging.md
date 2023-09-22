@@ -357,7 +357,7 @@ for known event sources, where either a request ID or X-Ray Trace ID are present
 === "App.java"
 
     ```java hl_lines="10"
-    import software.amazon.lambda.powertools.logging.CorrelationIdPathConstants;
+    import software.amazon.lambda.powertools.logging.CorrelationIdPaths;
 
     /**
      * Handler for requests to Lambda function.

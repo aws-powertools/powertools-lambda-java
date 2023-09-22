@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.logging.handlers;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPaths.APPLICATION_LOAD_BALANCER;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
