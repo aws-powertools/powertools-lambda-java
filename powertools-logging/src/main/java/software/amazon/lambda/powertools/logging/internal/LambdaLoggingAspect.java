@@ -93,6 +93,7 @@ public final class LambdaLoggingAspect {
      * <li>JAVA_TOOL_OPTIONS="-Dslf4j.binding=org.apache.logging.slf4j.SLF4JServiceProvider"</li>
      * </ul>
      * </p>
+     *
      * @return an instance of {@link LoggingManager} or null
      */
     private static Optional<LoggingManager> getLoggingManagerFromSlf4jBinding() {
@@ -115,18 +116,26 @@ public final class LambdaLoggingAspect {
                             .loadClass(managerClass);
                     loggingManager = (LoggingManager) log4backManagerClass.newInstance();
                 } else {
-                    LOG.warn("slf4j.binding {} not supported, fallback to Service Loader. " +
-                            "Only log4j and logback are supported.", slf4jBinding);
+                    LOG.warn("slf4j.binding {} not supported, fallback to Service Loader. "
+                            + "Only log4j and logback are supported.", slf4jBinding);
                 }
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
-                LOG.warn("Could not instantiate LoggingManager based on slf4j.binding {}, " +
-                                "make sure to add either powertools-logging-log4j or powertools-logging-logback module",
+                LOG.warn("Could not instantiate LoggingManager based on slf4j.binding {}, "
+                                + "make sure to add either powertools-logging-log4j or powertools-logging-logback module",
                         slf4jBinding);
             }
         }
         return Optional.ofNullable(loggingManager);
     }
 
+    /**
+     * Use {@link ServiceLoader} to lookup for a {@link LoggingManager}.
+     * A file <i>software.amazon.lambda.powertools.logging.internal.LoggingManager</i> must be created in
+     * <i>META-INF/services/</i> folder with the appropriate implementation of the {@link LoggingManager}
+     *
+     * @return an instance of {@link LoggingManager}
+     * @throws IllegalStateException if no {@link LoggingManager} could be found
+     */
     private static LoggingManager getLoggingManagerFromServiceLoader() {
         LoggingManager loggingManager;
 
@@ -136,12 +145,12 @@ public final class LambdaLoggingAspect {
             loggingManagerList.add(lm);
         }
         if (loggingManagerList.isEmpty()) {
-            throw new IllegalStateException("No LoggingManager was found on the classpath, " +
-                    "make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
+            throw new IllegalStateException("No LoggingManager was found on the classpath, "
+                    + "make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
         } else if (loggingManagerList.size() > 1) {
             throw new IllegalStateException(
-                    "Multiple LoggingManagers were found on the classpath: " + loggingManagerList +
-                            ", make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
+                    "Multiple LoggingManagers were found on the classpath: " + loggingManagerList
+                            + ", make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
         } else {
             loggingManager = loggingManagerList.get(0);
         }
@@ -157,6 +166,9 @@ public final class LambdaLoggingAspect {
     public void callAt(Logging logging) {
     }
 
+    /**
+     * Main method of the aspect
+     */
     @Around(value = "callAt(logging) && execution(@Logging * *.*(..))", argNames = "pjp,logging")
     public Object around(ProceedingJoinPoint pjp,
                          Logging logging) throws Throwable {
@@ -215,8 +227,8 @@ public final class LambdaLoggingAspect {
             if (samplingRate > sample) {
                 resetLogLevels(Level.DEBUG);
 
-                LOG.debug("Changed log level to DEBUG based on Sampling configuration. " +
-                        "Sampling Rate: {}, Sampler Value: {}.", samplingRate, sample);
+                LOG.debug("Changed log level to DEBUG based on Sampling configuration. "
+                        + "Sampling Rate: {}, Sampler Value: {}.", samplingRate, sample);
             } else if (LEVEL_AT_INITIALISATION != loggingManager.getLogLevel(LOG)) {
                 resetLogLevels(LEVEL_AT_INITIALISATION);
             }
@@ -229,8 +241,8 @@ public final class LambdaLoggingAspect {
             try {
                 return Double.parseDouble(sampleRate);
             } catch (NumberFormatException e) {
-                LOG.warn("Skipping sampling rate on environment variable configuration because of invalid " +
-                        "value. Sampling rate: {}", sampleRate);
+                LOG.warn("Skipping sampling rate on environment variable configuration because of invalid "
+                        + "value. Sampling rate: {}", sampleRate);
             }
         }
         return logging.samplingRate();
@@ -311,7 +323,7 @@ public final class LambdaLoggingAspect {
 
     private byte[] bytesFromInputStreamSafely(final InputStream inputStream) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             InputStreamReader reader = new InputStreamReader(inputStream, UTF_8)) {
+                InputStreamReader reader = new InputStreamReader(inputStream, UTF_8)) {
             OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
             int n;
             char[] buffer = new char[4096];

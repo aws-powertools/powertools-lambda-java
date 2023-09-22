@@ -26,7 +26,8 @@ import software.amazon.lambda.powertools.logging.internal.LambdaJsonSerializer;
 
 /**
  * Custom encoder for logback that encodes logs in JSON format.
- * It does not use a JSON library but a custom serializer ({@link LambdaJsonSerializer}) to reduce the weight of the library.
+ * It does not use a JSON library but a custom serializer ({@link LambdaJsonSerializer})
+ * to reduce the weight of the library.
  */
 public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
 
@@ -94,6 +95,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *         <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZz</timestampFormat>
      *     </encoder>
      * }</pre>
+     *
      * @param timestampFormat format of the timestamp (compatible with {@link java.text.SimpleDateFormat})
      */
     public void setTimestampFormat(String timestampFormat) {
@@ -108,6 +110,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *         <timestampFormatTimezoneId>Europe/Paris</timestampFormatTimezoneId>
      *     </encoder>
      * }</pre>
+     *
      * @param timestampFormatTimezoneId Zone Id (see {@link java.util.TimeZone})
      */
     public void setTimestampFormatTimezoneId(String timestampFormatTimezoneId) {
@@ -115,7 +118,8 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     }
 
     /**
-     * Specify a throwable converter to format the stacktrace according to your need (default is <b>null</b>, no throwableConverter):
+     * Specify a throwable converter to format the stacktrace according to your need
+     * (default is <b>null</b>, no throwableConverter):
      * <br/>
      * <pre>{@code
      *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
@@ -131,7 +135,8 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *         </throwableConverter>
      *     </encoder>
      * }</pre>
-     * @param throwableConverter
+     *
+     * @param throwableConverter converter for the throwable
      */
     public void setThrowableConverter(ThrowableHandlingConverter throwableConverter) {
         this.throwableConverter = throwableConverter;
@@ -145,6 +150,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *         <includeThreadInfo>true</includeThreadInfo>
      *     </encoder>
      * }</pre>
+     *
      * @param includeThreadInfo if thread information should be logged
      */
     public void setIncludeThreadInfo(boolean includeThreadInfo) {
@@ -172,6 +178,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *         <includePowertoolsInfo>false</includePowertoolsInfo>
      *     </encoder>
      * }</pre>
+     *
      * @param includePowertoolsInfo if function information should be logged
      */
     public void setIncludePowertoolsInfo(boolean includePowertoolsInfo) {

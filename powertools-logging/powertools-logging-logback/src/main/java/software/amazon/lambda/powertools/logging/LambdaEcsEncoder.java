@@ -59,9 +59,15 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
         return null;
     }
 
+    /**
+     * Main method of the encoder. Encode a logging event into Json format (with Elastic Search fields)
+     *
+     * @param event the logging event
+     * @return the encoded bytes
+     */
     @Override
     public byte[] encode(ILoggingEvent event) {
-        Map<String, String> mdcPropertyMap = event.getMDCPropertyMap();
+        final Map<String, String> mdcPropertyMap = event.getMDCPropertyMap();
 
         StringBuilder builder = new StringBuilder(256);
         LambdaEcsSerializer.serializeObjectStart(builder);
@@ -118,7 +124,8 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
     }
 
     /**
-     * Specify a throwable converter to format the stacktrace according to your need (default is <b>null</b>, no throwableConverter):
+     * Specify a throwable converter to format the stacktrace according to your need
+     * (default is <b>null</b>, no throwableConverter):
      * <br/>
      * <pre>{@code
      *     <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
@@ -134,7 +141,8 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      *         </throwableConverter>
      *     </encoder>
      * }</pre>
-     * @param throwableConverter
+     *
+     * @param throwableConverter converter for the throwable
      */
     public void setThrowableConverter(ThrowableHandlingConverter throwableConverter) {
         this.throwableConverter = throwableConverter;
@@ -156,6 +164,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      *         <includeCloudInfo>false</includeCloudInfo>
      *     </encoder>
      * }</pre>
+     *
      * @param includeCloudInfo if thread information should be logged
      */
     public void setIncludeCloudInfo(boolean includeCloudInfo) {
@@ -181,6 +190,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      *         <includeFaasInfo>false</includeFaasInfo>
      *     </encoder>
      * }</pre>
+     *
      * @param includeFaasInfo if function information should be logged
      */
     public void setIncludeFaasInfo(boolean includeFaasInfo) {

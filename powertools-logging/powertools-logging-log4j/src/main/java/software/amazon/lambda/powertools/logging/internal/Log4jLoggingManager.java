@@ -20,8 +20,14 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
 
+/**
+ * LoggingManager for Log4j2 (see {@link LoggingManager}).
+ */
 public class Log4jLoggingManager implements LoggingManager {
 
+    /**
+     * @inheritDoc
+     */
     @Override
     @SuppressWarnings("java:S4792")
     public void resetLogLevel(org.slf4j.event.Level logLevel) {
@@ -30,6 +36,9 @@ public class Log4jLoggingManager implements LoggingManager {
         ctx.updateLoggers();
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public org.slf4j.event.Level getLogLevel(Logger logger) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);

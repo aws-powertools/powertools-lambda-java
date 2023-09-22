@@ -21,6 +21,9 @@ import java.util.List;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
 
+/**
+ * LoggingManager for Logback (see {@link LoggingManager}).
+ */
 public class LogbackLoggingManager implements LoggingManager {
 
     private final LoggerContext loggerContext;
@@ -33,6 +36,9 @@ public class LogbackLoggingManager implements LoggingManager {
         loggerContext = (LoggerContext) loggerFactory;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     @SuppressWarnings("java:S4792")
     public void resetLogLevel(org.slf4j.event.Level logLevel) {
@@ -42,6 +48,9 @@ public class LogbackLoggingManager implements LoggingManager {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public org.slf4j.event.Level getLogLevel(org.slf4j.Logger logger) {
         return org.slf4j.event.Level.valueOf(loggerContext.getLogger(logger.getName()).getEffectiveLevel().toString());

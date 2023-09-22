@@ -107,10 +107,12 @@ public class LambdaJsonSerializer {
         serializeAttribute(builder, THREAD_PRIORITY_ATTR_NAME, threadPriority);
     }
 
-    public static void serializePowertools(StringBuilder builder, Map<String, String> mdc, boolean includePowertoolsInfo) {
+    public static void serializePowertools(StringBuilder builder, Map<String, String> mdc,
+                                           boolean includePowertoolsInfo) {
         TreeMap<String, String> sortedMap = new TreeMap<>(mdc);
         sortedMap.forEach((k, v) -> {
-            if ((PowertoolsLoggedFields.stringValues().contains(k) && includePowertoolsInfo) || !PowertoolsLoggedFields.stringValues().contains(k)) {
+            if ((PowertoolsLoggedFields.stringValues().contains(k) && includePowertoolsInfo)
+                    || !PowertoolsLoggedFields.stringValues().contains(k)) {
                 serializeAttribute(builder, k, v);
             }
         });

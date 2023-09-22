@@ -37,7 +37,8 @@ import java.lang.annotation.Target;
  *     <li>function_name</li>
  *     <li>function_version</li>
  *     <li>function_arn</li>
- *     <li>MemoryLimitInMB</li>
+ *     <li>function_memory_size</li>
+ *     <li>function_request_id</li>
  * </ul>
  *
  * <p>By default {@code Logging} will also create keys for:</p>
@@ -56,17 +57,20 @@ import java.lang.annotation.Target;
  * <p>By default {@code Logging} will not log the event which has trigger the invoke of the Lambda function.
  * This can be enabled using {@code @Logging(logEvent = true)}.</p>
  *
- * <p>By default {@code Logging} all debug logs will follow log4j2 configuration unless configured via
- * POWERTOOLS_LOGGER_SAMPLE_RATE environment variable {@code @Logging(samplingRate = <0.0-1.0>)}.</p>
- *
  * <p>To append additional keys to each log entry you can use {@link LoggingUtils#appendKey(String, String)}</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Logging {
 
+    /**
+     * Set to true if you want to log the event received by the Lambda function handler
+     */
     boolean logEvent() default false;
 
+    /**
+     * Sampling rate to change log level to DEBUG. (values must be >=0.0, <=1.0)
+     */
     double samplingRate() default 0;
 
     /**

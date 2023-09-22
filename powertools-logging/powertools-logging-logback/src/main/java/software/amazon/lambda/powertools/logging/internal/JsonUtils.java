@@ -14,7 +14,14 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+/**
+ * Json tools to serialize attributes manually, to avoid using further dependencies (jackson, gson...)
+ */
 public class JsonUtils {
+
+    private JsonUtils() {
+        // static utils
+    }
 
     protected static void serializeAttribute(StringBuilder builder, String attr, String value, boolean notBegin) {
         if (value != null) {
@@ -33,6 +40,10 @@ public class JsonUtils {
         }
     }
 
+    protected static void serializeAttribute(StringBuilder builder, String attr, String value) {
+        serializeAttribute(builder, attr, value, true);
+    }
+
     protected static void serializeAttributeAsString(StringBuilder builder, String attr, String value,
                                                      boolean notBegin) {
         if (value != null) {
@@ -47,16 +58,13 @@ public class JsonUtils {
         }
     }
 
-    protected static void serializeAttribute(StringBuilder builder, String attr, String value) {
-        serializeAttribute(builder, attr, value, true);
-    }
-
     protected static void serializeAttributeAsString(StringBuilder builder, String attr, String value) {
         serializeAttributeAsString(builder, attr, value, true);
     }
 
     /**
-     * As MDC is a Map<String, String>, we need to check the type to output numbers and booleans correctly (without quotes)
+     * As MDC is a {@code Map<String, String>}, we need to check the type
+     * to output numbers and booleans correctly (without quotes)
      */
     private static boolean isString(String str) {
         if (str == null) {

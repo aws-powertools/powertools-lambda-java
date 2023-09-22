@@ -18,6 +18,9 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 
+/**
+ * Factory for {@link PowertoolsResolver}. Log4j plugin to process powertools fields in the layout.json
+ */
 @Plugin(name = "PowertoolsResolverFactory", category = TemplateResolverFactory.CATEGORY)
 public final class PowertoolsResolverFactory implements EventResolverFactory {
 

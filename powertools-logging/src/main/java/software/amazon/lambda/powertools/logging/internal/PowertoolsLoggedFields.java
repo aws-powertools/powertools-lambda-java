@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Fields added in the logs by Powertools
+ */
 public enum PowertoolsLoggedFields {
     FUNCTION_NAME("function_name"),
     FUNCTION_VERSION("function_version"),
@@ -41,7 +44,6 @@ public enum PowertoolsLoggedFields {
     public static List<String> stringValues() {
         return Stream.of(values()).map(PowertoolsLoggedFields::getName).collect(Collectors.toList());
     }
-
 
     static Map<String, String> setValuesFromLambdaContext(Context context) {
         Map<String, String> hashMap = new HashMap<>();
