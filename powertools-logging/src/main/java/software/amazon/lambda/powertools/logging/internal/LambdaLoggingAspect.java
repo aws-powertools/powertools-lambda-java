@@ -70,7 +70,7 @@ public final class LambdaLoggingAspect {
     private static final LoggingManager loggingManager;
 
     private static String LOG_EVENT = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT"); /* not final for test purpose */
-    private static String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
+    public static String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
     private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
 
     static {

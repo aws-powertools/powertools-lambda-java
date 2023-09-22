@@ -16,8 +16,10 @@ package software.amazon.lambda.powertools.logging.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.File;
@@ -30,9 +32,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.slf4j.MDC;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
 @Order(1)
@@ -60,15 +63,19 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_SERVICE_NAME", value = "testLog4j")
     void testSlf4jBinding() {
-        PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
-        handler.handleRequest("Input", context);
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("POWERTOOLS_SERVICE_NAME"))
+                    .thenReturn("testLog4j");
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile))
-                .contains("slf4j.binding is set to org.apache.logging.slf4j.SLF4JServiceProvider")
-                .contains("Loading software.amazon.lambda.powertools.logging.internal.Log4jLoggingManager");
+            PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
+            handler.handleRequest("Input", context);
+
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile))
+                    .contains("slf4j.binding is set to org.apache.logging.slf4j.SLF4JServiceProvider")
+                    .contains("Loading software.amazon.lambda.powertools.logging.internal.Log4jLoggingManager");
+        }
     }
 
     private void setupContext() {

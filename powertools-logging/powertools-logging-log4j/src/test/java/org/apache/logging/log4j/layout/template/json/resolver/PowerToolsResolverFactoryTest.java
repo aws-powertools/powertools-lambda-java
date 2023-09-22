@@ -17,8 +17,10 @@ package org.apache.logging.log4j.layout.template.json.resolver;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.io.File;
@@ -31,10 +33,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
 @Order(2)
@@ -56,6 +60,7 @@ class PowerToolsResolverFactoryTest {
         } catch (NoSuchFileException e) {
             // file may not exist on the first launch
         }
+        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", null, true);
     }
 
     @AfterEach
@@ -65,28 +70,38 @@ class PowerToolsResolverFactoryTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "0.000000001")
-    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-63441c4a-abcdef012345678912345678")
-    void shouldLogInJsonFormat() {
-        PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
-        handler.handleRequest("Input", context);
+    void shouldLogInJsonFormat() throws IllegalAccessException {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn("Root=1-63441c4a-abcdef012345678912345678");
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":\"1\",\"sampling_rate\":1.0E-9,\"service\":\"testLog4j\",\"timestamp\":")
-                .contains("\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+            writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "0.000000001", true);
+
+            PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
+            handler.handleRequest("Input", context);
+
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains(
+                            "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":\"1\",\"sampling_rate\":1.0E-9,\"service\":\"testLog4j\",\"timestamp\":")
+                    .contains("\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+        }
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_REGION", value = "eu-central-1")
-    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-63441c4a-abcdef012345678912345678")
     void shouldLogInEcsFormat() {
-        PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
-        handler.handleRequest("Input", context);
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn("Root=1-63441c4a-abcdef012345678912345678");
+            mocked.when(() -> getenv("AWS_REGION"))
+                    .thenReturn("eu-central-1");
 
-        File logFile = new File("target/ecslogfile.json");
-        assertThat(contentOf(logFile)).contains(
-                        "\"ecs.version\":\"1.2.0\",\"log.level\":\"DEBUG\",\"message\":\"Test debug event\",\"service.name\":\"testLog4j\",\"service.version\":\"1\",\"log.logger\":\"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled\",\"process.thread.name\":\"main\",\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"eu-central-1\",\"cloud.account.id\":\"012345678910\",\"faas.id\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"faas.name\":\"testFunction\",\"faas.version\":\"1\",\"faas.memory\":1024,\"faas.execution\":\"RequestId\",\"faas.coldstart\":true,\"trace.id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+            PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
+            handler.handleRequest("Input", context);
+
+            File logFile = new File("target/ecslogfile.json");
+            assertThat(contentOf(logFile)).contains(
+                    "\"ecs.version\":\"1.2.0\",\"log.level\":\"DEBUG\",\"message\":\"Test debug event\",\"service.name\":\"testLog4j\",\"service.version\":\"1\",\"log.logger\":\"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled\",\"process.thread.name\":\"main\",\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"eu-central-1\",\"cloud.account.id\":\"012345678910\",\"faas.id\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"faas.name\":\"testFunction\",\"faas.version\":\"1\",\"faas.memory\":1024,\"faas.execution\":\"RequestId\",\"faas.coldstart\":true,\"trace.id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+        }
     }
 
     private void setupContext() {

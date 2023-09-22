@@ -18,6 +18,7 @@ import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 /**
@@ -131,7 +132,7 @@ final class PowertoolsResolver implements EventResolver {
 
     private static final EventResolver REGION_RESOLVER =
             (final LogEvent logEvent, final JsonWriter jsonWriter) ->
-                    jsonWriter.writeString(System.getenv(LambdaConstants.AWS_REGION_ENV));
+                    jsonWriter.writeString(SystemWrapper.getenv(LambdaConstants.AWS_REGION_ENV));
 
     private static final EventResolver ACCOUNT_ID_RESOLVER = new EventResolver() {
         @Override

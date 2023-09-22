@@ -17,8 +17,10 @@ package software.amazon.lambda.powertools.logging.internal;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -39,11 +41,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.LambdaJsonEncoder;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
@@ -59,6 +62,7 @@ class LambdaJsonEncoderTest {
         openMocks(this);
         MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", null, true);
         setupContext();
         // Make sure file is cleaned up before running tests
         try {
@@ -74,19 +78,23 @@ class LambdaJsonEncoderTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "0.000000001")
-    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-63441c4a-abcdef012345678912345678")
-    void shouldLogInJsonFormat() {
+    void shouldLogInJsonFormat() throws IllegalAccessException {
         // GIVEN
-        PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn("Root=1-63441c4a-abcdef012345678912345678");
+            writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "0.000000001", true);
 
-        // WHEN
-        handler.handleRequest("Input", context);
+            PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
 
-        // THEN
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"sampling_rate\":\"1.0E-9\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
+            // WHEN
+            handler.handleRequest("Input", context);
+
+            // THEN
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains(
+                            "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"sampling_rate\":\"1.0E-9\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
+        }
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);

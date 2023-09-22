@@ -15,6 +15,8 @@
 package org.apache.logging.log4j.layout.template.json.resolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mockStatic;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -29,7 +31,8 @@ import org.apache.logging.log4j.util.StringMap;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import org.mockito.MockedStatic;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 class PowertoolsResolverTest {
@@ -68,10 +71,14 @@ class PowertoolsResolverTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_REGION", value = "eu-central-2")
     void shouldResolveRegion() {
-        String result = resolveField("region", "dummy, will use the env var");
-        assertThat(result).isEqualTo("\"eu-central-2\"");
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("AWS_REGION"))
+                    .thenReturn("eu-central-2");
+
+            String result = resolveField("region", "dummy, will use the env var");
+            assertThat(result).isEqualTo("\"eu-central-2\"");
+        }
     }
 
     private static String resolveField(String field, String value) {
