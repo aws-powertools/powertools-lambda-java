@@ -81,6 +81,15 @@
     </Match>
     <!--Functionally needed-->
     <Match>
+        <Bug pattern="MS_SHOULD_BE_FINAL"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
+                <Field name="SAMPLING_RATE"/>
+            </And>
+        </Or>
+    </Match>
+    <Match>
         <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
         <Or>
             <And>
