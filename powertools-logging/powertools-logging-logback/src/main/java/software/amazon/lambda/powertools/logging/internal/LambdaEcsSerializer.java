@@ -59,6 +59,8 @@ public class LambdaEcsSerializer {
     protected static final String FUNCTION_MEMORY_ATTR_NAME = "faas.memory";
     protected static final String FUNCTION_TRACE_ID_ATTR_NAME = "trace.id";
 
+    private LambdaEcsSerializer() {}
+
     public static void serializeObjectStart(StringBuilder builder) {
         builder.append('{');
     }
@@ -97,7 +99,7 @@ public class LambdaEcsSerializer {
 
     public static void serializeFormattedMessage(StringBuilder builder, String formattedMessage) {
         serializeAttributeAsString(builder, FORMATTED_MESSAGE_ATTR_NAME,
-                formattedMessage.replaceAll("\"", Matcher.quoteReplacement("\\\"")));
+                formattedMessage.replace("\"", Matcher.quoteReplacement("\\\"")));
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {

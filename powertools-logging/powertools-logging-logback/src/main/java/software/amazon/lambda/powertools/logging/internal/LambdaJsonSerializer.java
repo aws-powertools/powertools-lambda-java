@@ -44,6 +44,7 @@ public class LambdaJsonSerializer {
     protected static final String EXCEPTION_STACK_ATTR_NAME = "stack";
     protected static final String EXCEPTION_ATTR_NAME = "error";
 
+    private LambdaJsonSerializer() {}
 
     public static void serializeObjectStart(StringBuilder builder) {
         builder.append('{');
@@ -83,7 +84,7 @@ public class LambdaJsonSerializer {
 
     public static void serializeFormattedMessage(StringBuilder builder, String formattedMessage) {
         serializeAttribute(builder, FORMATTED_MESSAGE_ATTR_NAME,
-                formattedMessage.replaceAll("\"", Matcher.quoteReplacement("\\\"")));
+                formattedMessage.replace("\"", Matcher.quoteReplacement("\\\"")));
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {
