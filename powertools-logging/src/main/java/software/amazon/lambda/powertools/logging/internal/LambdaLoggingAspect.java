@@ -56,6 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
+import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
@@ -186,7 +187,7 @@ public final class LambdaLoggingAspect {
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
-        if (logging.logEvent()) {
+        if (logging.logEvent() || "true".equals(SystemWrapper.getenv("POWERTOOLS_LOGGER_LOG_EVENT"))) {
             proceedArgs = logEvent(pjp);
         }
 
@@ -236,7 +237,7 @@ public final class LambdaLoggingAspect {
     }
 
     private double samplingRate(final Logging logging) {
-        String sampleRate = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
+        String sampleRate = SystemWrapper.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
         if (null != sampleRate) {
             try {
                 return Double.parseDouble(sampleRate);

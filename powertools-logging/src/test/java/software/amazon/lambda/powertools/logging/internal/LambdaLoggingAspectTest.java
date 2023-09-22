@@ -46,6 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
@@ -53,8 +54,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junitpioneer.jupiter.ClearEnvironmentVariable;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.slf4j.MDC;
@@ -86,8 +85,7 @@ class LambdaLoggingAspectTest {
     private Context context;
 
     @BeforeEach
-    @ClearEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE")
-    void setUp() throws IllegalAccessException, IOException, NoSuchMethodException, InvocationTargetException {
+    void setUp() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException {
         openMocks(this);
         MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
@@ -95,6 +93,11 @@ class LambdaLoggingAspectTest {
         requestHandler = new PowertoolsLogEnabled();
         requestStreamHandler = new PowertoolsLogEnabledForStream();
         resetLogLevel(Level.INFO);
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there in the first run
+        }
     }
 
     @AfterEach
@@ -188,29 +191,42 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "1")
     void shouldLogDebugWhenSamplingEnvVarEqualsOne() {
-        PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
-        handler.handleRequest(new Object(), context);
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains("Test debug event");
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"))
+                    .thenReturn("1");
+
+            PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
+            handler.handleRequest(new Object(), context);
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains("Test debug event");
+        }
     }
 
     @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "42")
     void shouldNotLogDebugWhenSamplingEnvVarIsTooBig() {
-        requestHandler.handleRequest(new Object(), context);
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).doesNotContain("Test debug event");
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"))
+                    .thenReturn("42");
+
+            requestHandler.handleRequest(new Object(), context);
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).doesNotContain("Test debug event");
+        }
     }
 
     @Test
-    @SetEnvironmentVariable(key = "POWERTOOLS_LOGGER_SAMPLE_RATE", value = "NotANumber")
     void shouldNotLogDebugWhenSamplingEnvVarIsInvalid() {
-        requestHandler.handleRequest(new Object(), context);
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).doesNotContain("Test debug event");
-        assertThat(contentOf(logFile)).contains("Skipping sampling rate on environment variable configuration because of invalid value");
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"))
+                    .thenReturn("NotANumber");
+
+            requestHandler.handleRequest(new Object(), context);
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).doesNotContain("Test debug event");
+            assertThat(contentOf(logFile)).contains(
+                    "Skipping sampling rate on environment variable configuration because of invalid value");
+        }
     }
 
     @Test
@@ -256,13 +272,28 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    void shouldLogEventForHandler() throws IOException {
+    void shouldLogEventForHandlerWithLogEventAnnotation() {
         requestHandler = new PowertoolsLogEvent();
 
         requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
 
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains("[\"ListOfOneElement\"]");
+    }
+
+    @Test
+    void shouldLogEventForHandlerWithLogEventEnvVar() {
+        requestHandler = new PowertoolsLogEnabled();
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("POWERTOOLS_LOGGER_LOG_EVENT"))
+                    .thenReturn("true");
+
+            requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
+
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains("[\"ListOfOneElement\"]");
+        }
     }
 
     @Test
