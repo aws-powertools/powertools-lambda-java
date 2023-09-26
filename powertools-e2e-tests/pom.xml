@@ -30,7 +30,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <constructs.version>10.2.69</constructs.version>
+        <constructs.version>10.2.70</constructs.version>
         <cdk.version>2.97.1</cdk.version>
     </properties>
 
