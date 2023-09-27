@@ -41,7 +41,7 @@ import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
-@Order(2)
+@Order(1)
 class PowerToolsResolverFactoryTest {
 
     @Mock
@@ -74,6 +74,8 @@ class PowerToolsResolverFactoryTest {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
                     .thenReturn("Root=1-63441c4a-abcdef012345678912345678");
+            mocked.when(() -> getenv("POWERTOOLS_SERVICE_NAME"))
+                    .thenReturn("testLog4j");
 
             writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "0.000000001", true);
 
@@ -94,6 +96,8 @@ class PowerToolsResolverFactoryTest {
                     .thenReturn("Root=1-63441c4a-abcdef012345678912345678");
             mocked.when(() -> getenv("AWS_REGION"))
                     .thenReturn("eu-central-1");
+            mocked.when(() -> getenv("POWERTOOLS_SERVICE_NAME"))
+                    .thenReturn("testLog4j");
 
             PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
             handler.handleRequest("Input", context);
