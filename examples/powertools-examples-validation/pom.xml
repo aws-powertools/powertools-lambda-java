@@ -13,7 +13,7 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>software.amazon.lambda.examples</groupId>
     <version>2.0.0-SNAPSHOT</version>
@@ -24,7 +24,7 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.deploy.skip>true</maven.deploy.skip>
+        <aspectj.version>1.9.20</aspectj.version>
     </properties>
 
     <dependencies>
@@ -42,6 +42,11 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
             <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>${aspectj.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
@@ -95,6 +100,13 @@
                      </goals>
                  </execution>
              </executions>
+            <dependencies>
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjtools</artifactId>
+                    <version>${aspectj.version}</version>
+                </dependency>
+            </dependencies>
         </plugin>
       </plugins>
     </build>
@@ -116,53 +128,6 @@
             <properties>
                 <aspectj.version>1.9.7</aspectj.version>
             </properties>
-            <dependencyManagement>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                </dependencies>
-            </dependencyManagement>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>dev.aspectj</groupId>
-                            <artifactId>aspectj-maven-plugin</artifactId>
-                            <version>${aspectj.plugin.version}</version>
-                            <configuration>
-                                <source>${maven.compiler.source}</source>
-                                <target>${maven.compiler.target}</target>
-                                <complianceLevel>${maven.compiler.target}</complianceLevel>
-                                <aspectLibraries>
-                                    <aspectLibrary>
-                                        <groupId>software.amazon.lambda</groupId>
-                                        <artifactId>powertools-validation</artifactId>
-                                    </aspectLibrary>
-                                </aspectLibraries>
-                            </configuration>
-                            <executions>
-                                <execution>
-                                    <goals>
-                                        <goal>compile</goal>
-                                        <goal>test-compile</goal>
-                                    </goals>
-                                </execution>
-                            </executions>
-                            <!-- Enforce aspectJ 1.9.7 -->
-                            <dependencies>
-                                <dependency>
-                                    <groupId>org.aspectj</groupId>
-                                    <artifactId>aspectjtools</artifactId>
-                                    <version>${aspectj.version}</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
     </profiles>
 </project>
