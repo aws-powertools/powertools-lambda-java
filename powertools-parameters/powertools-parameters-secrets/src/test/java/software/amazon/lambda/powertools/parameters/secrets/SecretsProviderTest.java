@@ -15,14 +15,11 @@
 package software.amazon.lambda.powertools.parameters.secrets;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -70,8 +67,8 @@ public class SecretsProviderTest {
 
         String value = provider.getValue(key);
 
-        Assertions.assertThat(value).isEqualTo(expectedValue);
-        Assertions.assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
     }
 
     @Test
@@ -85,15 +82,15 @@ public class SecretsProviderTest {
 
         String value = provider.getValue(key);
 
-        Assertions.assertThat(value).isEqualTo(expectedValue);
-        Assertions.assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().secretId()).isEqualTo(key);
     }
 
     @Test
     public void getMultipleValuesThrowsException() {
 
         // Act & Assert
-        Assertions.assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
+        assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
                 .withMessage("Impossible to get multiple values from AWS Secrets Manager");
 
     }

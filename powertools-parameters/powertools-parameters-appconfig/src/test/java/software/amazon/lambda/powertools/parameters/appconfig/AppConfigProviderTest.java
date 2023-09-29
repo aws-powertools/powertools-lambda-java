@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.parameters.appconfig;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,18 +100,18 @@ public class AppConfigProviderTest {
         String returnedValue3 = provider.getValue(defaultTestKey);
 
         // Assert
-        Assertions.assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
-        Assertions.assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
-        Assertions.assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
+        assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
+        assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
+        assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
                 .asUtf8String()); // Third response is mocked to return null and should re-use previous value
-        Assertions.assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
-        Assertions.assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
-        Assertions.assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
-        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+        assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
+        assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
+        assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
                 firstSession.initialConfigurationToken());
-        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
                 firstResponse.nextPollConfigurationToken());
-        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(2).configurationToken()).isEqualTo(
                 secondResponse.nextPollConfigurationToken());
     }
 
@@ -133,7 +135,7 @@ public class AppConfigProviderTest {
 
 
         // Assert
-        Assertions.assertThat(returnedValue).isEqualTo(null);
+        assertThat(returnedValue).isEqualTo(null);
     }
 
     /**
@@ -169,15 +171,15 @@ public class AppConfigProviderTest {
         String secondKeyValue = provider.getValue(param2Key);
 
         // Assert
-        Assertions.assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
-        Assertions.assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
-        Assertions.assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(
+        assertThat(firstKeyValue).isEqualTo(param1Response.configuration().asUtf8String());
+        assertThat(secondKeyValue).isEqualTo(param2Response.configuration().asUtf8String());
+        assertThat(startSessionRequestCaptor.getAllValues().get(0).configurationProfileIdentifier()).isEqualTo(
                 param1Key);
-        Assertions.assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(
+        assertThat(startSessionRequestCaptor.getAllValues().get(1).configurationProfileIdentifier()).isEqualTo(
                 param2Key);
-        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
                 param1Session.initialConfigurationToken());
-        Assertions.assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
+        assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
                 param2Session.initialConfigurationToken());
 
     }

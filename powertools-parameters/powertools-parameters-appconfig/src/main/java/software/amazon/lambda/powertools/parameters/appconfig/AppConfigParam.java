@@ -20,14 +20,34 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+/**
+ * Use this annotation to inject AWS AppConfig parameters into fields in your application. You
+ * can also use {@code AppConfigProviderBuilder} to obtain AppConfig values directly, rather than
+ * injecting them implicitly.
+ * Both {@code environment} and {@code application} fields are necessary.
+ *
+ * @see AppConfigProviderBuilder
+ * @see <a href="https://docs.aws.amazon.com/appconfig>AWS AppConfig</a>
+ * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/parameters/">Powertools for AWS Lambda (Java) parameters documentation</a>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface AppConfigParam {
     String key();
 
+    /**
+     * <b>Mandatory</b>. Provide an environment to the {@link AppConfigProvider}
+     *
+     */
     String environment();
 
+    /**
+     * <b>Mandatory</b>. Provide an application to the {@link AppConfigProvider}
+     */
     String application();
 
+    /**
+     * <b>Optional</b> Provide a Transformer to transform the returned parameter values.
+     */
     Class<? extends Transformer> transformer() default Transformer.class;
 }

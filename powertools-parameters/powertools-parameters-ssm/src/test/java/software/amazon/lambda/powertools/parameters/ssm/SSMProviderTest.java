@@ -21,7 +21,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,9 +72,9 @@ public class SSMProviderTest {
 
         String value = provider.getValue(key);
 
-        Assertions.assertThat(value).isEqualTo(expectedValue);
-        Assertions.assertThat(paramCaptor.getValue().name()).isEqualTo(key);
-        Assertions.assertThat(paramCaptor.getValue().withDecryption()).isFalse();
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().name()).isEqualTo(key);
+        assertThat(paramCaptor.getValue().withDecryption()).isFalse();
     }
 
     @Test
@@ -86,9 +85,9 @@ public class SSMProviderTest {
 
         String value = provider.withDecryption().getValue(key);
 
-        Assertions.assertThat(value).isEqualTo(expectedValue);
-        Assertions.assertThat(paramCaptor.getValue().name()).isEqualTo(key);
-        Assertions.assertThat(paramCaptor.getValue().withDecryption()).isTrue();
+        assertThat(value).isEqualTo(expectedValue);
+        assertThat(paramCaptor.getValue().name()).isEqualTo(key);
+        assertThat(paramCaptor.getValue().withDecryption()).isTrue();
     }
 
     @Test
@@ -101,7 +100,7 @@ public class SSMProviderTest {
         Mockito.when(client.getParametersByPath(paramByPathCaptor.capture())).thenReturn(response);
 
         Map<String, String> params = provider.getMultiple("/prod/app1");
-        Assertions.assertThat(params).contains(
+        assertThat(params).contains(
                 MapEntry.entry("key1", "foo1"),
                 MapEntry.entry("key2", "foo2"),
                 MapEntry.entry("key3", "foo3"));
@@ -109,9 +108,9 @@ public class SSMProviderTest {
         assertThat(provider.get("/prod/app1/key2")).isEqualTo("foo2");
         assertThat(provider.get("/prod/app1/key3")).isEqualTo("foo3");
 
-        Assertions.assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
-        Assertions.assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
-        Assertions.assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
+        assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
+        assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
+        assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
     }
 
     @Test
@@ -124,7 +123,7 @@ public class SSMProviderTest {
         Mockito.when(client.getParametersByPath(paramByPathCaptor.capture())).thenReturn(response);
 
         Map<String, String> params = provider.getMultiple("/prod/app1/");
-        Assertions.assertThat(params).contains(
+        assertThat(params).contains(
                 MapEntry.entry("key1", "foo1"),
                 MapEntry.entry("key2", "foo2"),
                 MapEntry.entry("key3", "foo3"));
@@ -132,9 +131,9 @@ public class SSMProviderTest {
         assertThat(provider.get("/prod/app1/key2")).isEqualTo("foo2");
         assertThat(provider.get("/prod/app1/key3")).isEqualTo("foo3");
 
-        Assertions.assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
-        Assertions.assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
-        Assertions.assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
+        assertThat(paramByPathCaptor.getValue().path()).isEqualTo("/prod/app1");
+        assertThat(paramByPathCaptor.getValue().withDecryption()).isFalse();
+        assertThat(paramByPathCaptor.getValue().recursive()).isFalse();
     }
 
     @Test
@@ -174,7 +173,7 @@ public class SSMProviderTest {
 
         Map<String, String> params = provider.getMultiple("/prod/app1");
 
-        Assertions.assertThat(params).contains(
+        assertThat(params).contains(
                 MapEntry.entry("key1", "foo1"),
                 MapEntry.entry("key2", "foo2"),
                 MapEntry.entry("key3", "foo3"));
@@ -183,15 +182,15 @@ public class SSMProviderTest {
         GetParametersByPathRequest request1 = requestParams.get(0);
         GetParametersByPathRequest request2 = requestParams.get(1);
 
-        Assertions.assertThat(asList(request1, request2)).allSatisfy(req ->
+        assertThat(asList(request1, request2)).allSatisfy(req ->
         {
-            Assertions.assertThat(req.path()).isEqualTo("/prod/app1");
-            Assertions.assertThat(req.withDecryption()).isFalse();
-            Assertions.assertThat(req.recursive()).isFalse();
+            assertThat(req.path()).isEqualTo("/prod/app1");
+            assertThat(req.withDecryption()).isFalse();
+            assertThat(req.recursive()).isFalse();
         });
 
-        Assertions.assertThat(request1.nextToken()).isNull();
-        Assertions.assertThat(request2.nextToken()).isEqualTo("123abc");
+        assertThat(request1.nextToken()).isNull();
+        assertThat(request2.nextToken()).isEqualTo("123abc");
     }
 
     private void initMock(String expectedValue) {

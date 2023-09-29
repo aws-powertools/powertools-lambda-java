@@ -65,7 +65,6 @@ abstract class LargeMessageProcessor<T> {
 
         String s3ObjectContent = getS3ObjectContent(payloadPointer);
 
-
         if (LOG.isDebugEnabled()) {
             LOG.debug("Large message [{}] retrieved in S3 [{}]: {}KB", getMessageId(message), payloadPointer,
                     s3ObjectContent.getBytes(StandardCharsets.UTF_8).length / 1024);
