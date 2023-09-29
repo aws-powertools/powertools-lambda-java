@@ -33,3 +33,6 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 }
 
+test {
+    environment 'LAMBDA_TASK_ROOT', 'handler'
+}
