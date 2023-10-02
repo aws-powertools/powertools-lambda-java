@@ -3,7 +3,9 @@
 }
 
 .highlight .hll {
-    background-color: lavender
+    [data-md-color-scheme="default"] {
+        background-color: lavender;
+    }
 }
 
 .md-typeset table:not([class]) {
