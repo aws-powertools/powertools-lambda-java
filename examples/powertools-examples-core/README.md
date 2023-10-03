@@ -15,11 +15,21 @@ We also provide an example showing the integration of SAM, Powertools, and Gradl
 
 * [AWS SAM with a Gradle build](gradle/)
 
+## Java
 For each of the tools, the example application is the same, and consists of the following files:
 
 - [App.java](sam/src/main/java/helloworld/App.java) - Code for the application's Lambda function.
 - [AppTests.java](sam/src/test/java/helloworld/AppTest.java) - Unit tests for the application code.
 - [events](sam/events/event.json) - Invocation events that you can use to invoke the function.
+
+Configuration files and deployment process for each tool are described in corresponding README files.
+
+## Kotlin
+For each of the tools, the example application is the same, and consists of the following files:
+
+- [App.kt](kotlin/src/main/kotlin/helloworld/App.kt) - Code for the application's Lambda function.
+- [AppTests.kt](kotlin/src/test/kotlin/helloworld/AppTest.kt) - Unit tests for the application code.
+- [events](kotlin/events/event.json) - Invocation events that you can use to invoke the function.
 
 Configuration files and deployment process for each tool are described in corresponding README files.
 

@@ -39,12 +39,12 @@ import java.util.stream.Collectors
  * Handler for requests to Lambda function.
  */
 
-// TODO: Update context so not optional - this was changed to satisfy test
 class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponseEvent> {
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-    override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent { // changed context to be optional so can pass null from test
+
+    override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent { // changed context to be optional so can pass null
         val headers: MutableMap<String, String> = HashMap()
         headers["Content-Type"] = "application/json"
         headers["X-Custom-Header"] = "application/json"
@@ -54,30 +54,28 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"))
         }
         LoggingUtils.appendKey("test", "willBeLogged")
-        val response = APIGatewayProxyResponseEvent()
-                .withHeaders(headers)
+        val response = APIGatewayProxyResponseEvent().withHeaders(headers)
         return try {
             val pageContents = getPageContents("https://checkip.amazonaws.com")
             log.info(pageContents)
             TracingUtils.putAnnotation("Test", "New")
-            val output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents)
+            val output = """
+            {
+                "message": "hello world", 
+                "location": "$pageContents"
+            }
+            """.trimIndent()
             TracingUtils.withSubsegment("loggingResponse") { subsegment: Subsegment? ->
                 val sampled = "log something out"
                 log.info(sampled)
                 log.info(output)
             }
             log.info("After output")
-            response
-                    .withStatusCode(200)
-                    .withBody(output)
+            response.withStatusCode(200).withBody(output)
         } catch (e: RuntimeException) {
-            response
-                    .withBody("{}")
-                    .withStatusCode(500)
+            response.withBody("{}").withStatusCode(500)
         } catch (e: IOException) {
-            response
-                    .withBody("{}")
-                    .withStatusCode(500)
+            response.withBody("{}").withStatusCode(500)
         }
     }
 
