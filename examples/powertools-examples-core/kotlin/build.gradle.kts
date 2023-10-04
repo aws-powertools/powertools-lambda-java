@@ -25,3 +25,7 @@ tasks.compileKotlin {
         jvmTarget = "1.8"
     }
 }
+
+java {
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
