@@ -89,7 +89,9 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
     private fun getPageContents(address: String): String {
         val url = URL(address)
         TracingUtils.putMetadata("getPageContents", address)
-        BufferedReader(InputStreamReader(url.openStream())).use { br -> return br.lines().collect(Collectors.joining(System.lineSeparator())) }
+        return InputStreamReader(url.openStream()).use { reader ->
+            reader.readText().trim()
+        }
     }
 
     private val log = LogManager.getLogger(App::class)
