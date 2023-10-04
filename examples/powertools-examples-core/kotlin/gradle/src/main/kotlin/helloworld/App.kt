@@ -45,7 +45,7 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
 
     override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent { // changed context to be optional so can pass null
-        val headers: MutableMap<String, String> = HashMap()
+        val headers = mutableMapOf<String, String>()
         headers["Content-Type"] = "application/json"
         headers["X-Custom-Header"] = "application/json"
         MetricsUtils.metricsLogger().putMetric("CustomMetric1", 1.0, Unit.COUNT)
@@ -65,7 +65,7 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
                 "location": "$pageContents"
             }
             """.trimIndent()
-            TracingUtils.withSubsegment("loggingResponse") { subsegment: Subsegment? ->
+            TracingUtils.withSubsegment("loggingResponse") { _: Subsegment? ->
                 val sampled = "log something out"
                 log.info(sampled)
                 log.info(output)
@@ -92,7 +92,5 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
         BufferedReader(InputStreamReader(url.openStream())).use { br -> return br.lines().collect(Collectors.joining(System.lineSeparator())) }
     }
 
-    companion object {
-        private val log = LogManager.getLogger(App::class.java)
-    }
+    private val log = LogManager.getLogger(App::class)
 }

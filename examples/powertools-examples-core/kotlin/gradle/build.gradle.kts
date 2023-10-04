@@ -26,6 +26,6 @@ tasks.compileKotlin {
     }
 }
 
-java {
-    targetCompatibility = JavaVersion.VERSION_1_8
+kotlin {
+    jvmToolchain(8)
 }
