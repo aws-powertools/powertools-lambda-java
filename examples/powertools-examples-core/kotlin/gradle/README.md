@@ -13,7 +13,8 @@ For general information on the deployed example itself, you can refer to the par
 SAM uses [template.yaml](template.yaml) to define the application's AWS resources.
 This file defines the Lambda function to be deployed as well as API Gateway for it.
 
-The build of the project is managed by Gradle, and configured in [build.gradle](_build.gradle). 
+The build of the project is managed by Gradle, and configured in [build.gradle.kts](build.gradle.kts)
+. 
 
 ## Deploy the sample application
 To get started, you can use the included template with SAM to run the build and deploy to your AWS environment:
