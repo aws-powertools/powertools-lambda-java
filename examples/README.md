@@ -7,7 +7,7 @@ Each example can be copied from its subdirectory and used independently of the r
 
 * [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules with different build tools 
   * [SAM](./powertools-examples-core/sam) 
-  * [CDK](./powertools-examples-core/cdk)
+  * [CDK](powertools-examples-core/java/cdk)
   * [Serverless](./powertools-examples-core/serverless)
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
