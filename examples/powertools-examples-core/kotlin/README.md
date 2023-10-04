@@ -7,7 +7,6 @@ configuration guide [in the main project README](../../../README.md).
 You can also use `sam init` to create a new Gradle-powered Powertools application - choose to use the **AWS Quick Start Templates**,
 and then **Hello World Example with Powertools for AWS Lambda**, **Java 17** runtime, and finally **gradle**.
 
-
 For general information on the deployed example itself, you can refer to the parent [README](../README.md)
 
 ## Configuration
@@ -17,10 +16,10 @@ This file defines the Lambda function to be deployed as well as API Gateway for 
 The build of the project is managed by Gradle, and configured in [build.gradle](_build.gradle). 
 
 ## Deploy the sample application
-To get started, you can use the Gradle wrapper to bootstrap Gradle and run the build:
+To get started, you can use the included template with SAM to run the build and deploy to your AWS environment:
 
 ```bash
-./gradlew build
+sam build && sam deploy --guided
 ```
 
 Once this is done to deploy the example, check out the instructions for getting started with SAM in 
