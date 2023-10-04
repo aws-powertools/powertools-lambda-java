@@ -5,13 +5,15 @@ This project demonstrates the Lambda for Powertools Java module - including
 [tracing](https://docs.powertools.aws.dev/lambda/java/core/tracing/), and
 [metrics](https://docs.powertools.aws.dev/lambda/java/core/metrics/).
 
+The example application is the same, and you can now also use Kotlin!
+
 ## Java
 * [CDK](java/cdk/)
 * [Gradle](java/gradle/)
 * [SAM](java/sam/)
 * [Serverless](java/serverless/)
 
-For each of the tools, the example application is the same, and consists of the following files:
+Example application consists of the following files:
 - App.java - Code for the application's Lambda function.
 - AppTests.java - Unit tests for the application code.
 - events - Invocation events that you can use to invoke the function.
@@ -21,6 +23,7 @@ Configuration files and deployment process for each tool are described in corres
 ## Kotlin
 * [Gradle](java/gradle/)
 
+Example application consists of the following files:
 - App.kt - Code for the application's Lambda function.
 - AppTests.kt - Unit tests for the application code.
 - events - Invocation events that you can use to invoke the function.
