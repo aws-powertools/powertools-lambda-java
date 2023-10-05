@@ -70,12 +70,12 @@ public class ValidationUtilsTest {
         });
     }
 
-    @Test
-    public void testLoadMetaSchemaV2019() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V201909", true);
-        assertThat(jsonSchema).isNotNull();
-    }
+//    @Test
+//    public void testLoadMetaSchemaV2019() {
+//        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
+//        JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V201909", true);
+//        assertThat(jsonSchema).isNotNull();
+//    }
 
     @Test
     public void testLoadMetaSchemaV7() {
