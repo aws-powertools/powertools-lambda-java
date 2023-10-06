@@ -12,7 +12,7 @@ Each example can be copied from its subdirectory and used independently of the r
     * [SAM](./powertools-examples-core/java/sam) 
     * [Serverless](./powertools-examples-core/java/serverless)
   * [Kotlin](./powertools-examples-core/kotlin)
-    * [Gradle](powertools-examples-core/kotlin/gradle1)
+    * [Gradle](powertools-examples-core/kotlin/)
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
