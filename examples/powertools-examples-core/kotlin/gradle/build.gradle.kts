@@ -26,6 +26,12 @@ tasks.compileKotlin {
     }
 }
 
-kotlin {
-    jvmToolchain(8)
+tasks.compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
+// If using JDK 11 or higher, use the following instead:
+//kotlin {
+//    jvmToolchain(8)
+//}
