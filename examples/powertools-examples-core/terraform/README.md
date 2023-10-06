@@ -16,7 +16,7 @@ It is a [Maven](https://maven.apache.org/) based project, so you can open this p
 To deploy the app, simply run the following commands:
 ```bash 
 terraform init
-terraform apply
+mvn package && terraform apply
 ```
 
 ## Useful commands
