@@ -109,3 +109,6 @@ example/HelloWorldFunction/build
 /example/.java-version
 .gradle
 build/
+.terraform
+.terraform.lock.hcl
+terraform.tfstate*
