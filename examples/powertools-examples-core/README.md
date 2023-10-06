@@ -21,7 +21,7 @@ Example application consists of the following files:
 Configuration files and deployment process for each tool are described in corresponding README files.
 
 ## Kotlin
-* [Gradle](java/gradle/)
+* [Gradle](kotlin/)
 
 Example application consists of the following files:
 - App.kt - Code for the application's Lambda function.
