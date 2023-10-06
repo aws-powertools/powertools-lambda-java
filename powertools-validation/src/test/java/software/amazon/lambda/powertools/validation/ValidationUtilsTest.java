@@ -57,7 +57,7 @@ public class ValidationUtilsTest {
         assertThatThrownBy(() -> getJsonSchema("classpath:/schema_v7_ko.json", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(
-                        "The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification V7");
+                        "The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification /draft-07/schema");
     }
 
     @Test
@@ -70,38 +70,38 @@ public class ValidationUtilsTest {
         });
     }
 
-    /**
-     * TODO - get this going again on github; commented out to unblock build, and seems to run outside of github
-     * workers still. See here -->
-     *
-     * https://github.com/aws-powertools/powertools-lambda-java/actions/runs/6417845031/job/17424409856?pr=1456
-     * https://github.com/aws-powertools/powertools-lambda-java/issues/1455
-     */
-//    @Test
-//    public void testLoadMetaSchemaV2019() {
-//        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
-//        JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V201909", true);
-//        assertThat(jsonSchema).isNotNull();
-//    }
+    @Test
+    public void testLoadMetaSchemaV2019() {
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
+        JsonSchema jsonSchema = getJsonSchema("classpath:/draft/2019-09/schema", true);
+        assertThat(jsonSchema).isNotNull();
+    }
+
+    @Test
+    public void testLoadMetaSchemaV2020() {
+        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V202012);
+        JsonSchema jsonSchema = getJsonSchema("classpath:/draft/2020-12/schema", true);
+        assertThat(jsonSchema).isNotNull();
+    }
 
     @Test
     public void testLoadMetaSchemaV7() {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V7", true);
+        JsonSchema jsonSchema = getJsonSchema("classpath:/draft-07/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV6() {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V6);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V6", true);
+        JsonSchema jsonSchema = getJsonSchema("classpath:/draft-06/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV4() {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/schemas/meta_schema_V4", true);
+        JsonSchema jsonSchema = getJsonSchema("classpath:/draft-04/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
