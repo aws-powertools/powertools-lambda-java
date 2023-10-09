@@ -49,7 +49,7 @@ public class ValidationConfig {
     /**
      * Set the version of the json schema specifications (default is V7)
      *
-     * @param version May be V4, V6, V7 or V201909
+     * @param version May be V4, V6, V7, V201909 or V202012
      */
     public void setSchemaVersion(SpecVersion.VersionFlag version) {
         if (version != jsonSchemaVersion) {
