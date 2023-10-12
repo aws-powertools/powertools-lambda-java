@@ -8,7 +8,7 @@ This project demonstrates the Lambda for Powertools Java module - including
 We provide examples for the following infrastructure-as-code tools:
 
 * [AWS SAM](sam/) 
-* [AWS CDK](cdk/)
+* [AWS CDK](../powertools-examples-core/cdk/)
 * [Serverless framework](serverless/)
 
 We also provide an example showing the integration of SAM, Powertools, and Gradle:
