@@ -155,6 +155,18 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <environmentVariables>
+                        <POWERTOOLS_SERVICE_NAME>testLog4j</POWERTOOLS_SERVICE_NAME>
+                        <AWS_REGION>eu-central-1</AWS_REGION>
+                        <_X_AMZN_TRACE_ID>Root=1-63441c4a-abcdef012345678912345678</_X_AMZN_TRACE_ID>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
