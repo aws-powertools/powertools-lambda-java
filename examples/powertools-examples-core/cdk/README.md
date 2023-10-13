@@ -2,7 +2,7 @@
 
 This project demonstrates the Lambda for Powertools Java module deployed using [Cloud Development Kit](https://aws.amazon.com/cdk/).
 
-For general information on the deployed example itself, you can refer to the parent [README](../../README.md)
+For general information on the deployed example itself, you can refer to the parent [README](../README.md)
 
 ## Configuration
 CDK uses the following project structure:

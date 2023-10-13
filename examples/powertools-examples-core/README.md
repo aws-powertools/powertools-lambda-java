@@ -8,10 +8,10 @@ This project demonstrates the Lambda for Powertools Java module - including
 The example application is the same, and you can now also use Kotlin!
 
 ## Java
-* [CDK](java/cdk/)
-* [Gradle](java/gradle/)
-* [SAM](java/sam/)
-* [Serverless](java/serverless/)
+* [CDK](cdk/)
+* [Gradle](gradle/)
+* [SAM](sam/)
+* [Serverless](serverless/)
 
 Example application consists of the following files:
 - App.java - Code for the application's Lambda function.
