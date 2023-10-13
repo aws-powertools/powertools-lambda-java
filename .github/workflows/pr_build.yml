@@ -68,6 +68,26 @@ jobs:
         run: |
           cd examples/powertools-examples-core/gradle
           ./gradlew build
+      - name: Setup Terraform
+        if: ${{ matrix.java == '11' }}
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 #v2.0.3
+      - name: Terraform validate
+        if: ${{ matrix.java == '11' }}
+        run: |
+          terraform -version
+          cd examples/powertools-examples-core/terraform
+          terraform init
+          terraform validate
+      - name: Setup Terraform lint
+        if: ${{ matrix.java == '11' }}
+        uses: terraform-linters/setup-tflint@a5a1af8c6551fb10c53f1cd4ba62359f1973746f # v3.1.1
+      - name: Terraform lint
+        if: ${{ matrix.java == '11' }}
+        run: |
+          tflint --version
+          cd examples/powertools-examples-core/terraform
+          tflint --init
+          tflint -f compact
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         if: ${{ matrix.java == '11' }} # publish results once
