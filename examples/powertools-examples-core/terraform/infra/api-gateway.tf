@@ -90,3 +90,5 @@ resource "aws_lambda_permission" "hello_world_stream_lambda_testinvoke" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.hello_world_api.execution_arn}/test-invoke-stage/GET/hellostream"
 }
+
+output "invoke" {value=aws_api_gateway_deployment.prod_deployment.invoke_url}
