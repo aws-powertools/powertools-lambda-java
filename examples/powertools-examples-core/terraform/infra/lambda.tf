@@ -9,14 +9,6 @@ resource "aws_lambda_function" "hello_world_lambda" {
   timeout           = 20
   memory_size       = 512
   role              = "${aws_iam_role.iam_role_for_lambda.arn}"
-  environment {
-    variables = {
-      POWERTOOLS_LOG_LEVEL = "INFO"
-      POWERTOOLS_LOGGER_SAMPLE_RATE = "0.1"
-      POWERTOOLS_LOGGER_LOG_EVENT = "true"
-      POWERTOOLS_METRICS_NAMESPACE = "Coreutilities"
-    }
-  }
   tracing_config {
     mode            = "Active"
   }
@@ -34,15 +26,6 @@ resource "aws_lambda_function" "hello_world_stream_lambda" {
   timeout           = 20
   memory_size       = 512
   role              = "${aws_iam_role.iam_role_for_lambda.arn}"
-  environment {
-    variables = {
-      POWERTOOLS_LOG_LEVEL = "INFO"
-      POWERTOOLS_LOGGER_SAMPLE_RATE = "0.7"
-      POWERTOOLS_LOGGER_LOG_EVENT = "true"
-      POWERTOOLS_METRICS_NAMESPACE = "Coreutilities"
-      POWERTOOLS_SERVICE_NAME = "hello"
-    }
-  }
   tracing_config {
     mode            = "Active"
   }
