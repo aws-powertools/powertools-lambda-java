@@ -76,7 +76,7 @@ jobs:
         run: |
           terraform -version
           cd examples/powertools-examples-core/terraform
-          terraform init
+          terraform init -backend=false
           terraform validate
           terraform plan
       - name: Setup Terraform lint
