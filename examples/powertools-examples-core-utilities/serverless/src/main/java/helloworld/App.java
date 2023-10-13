@@ -45,10 +45,7 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
  */
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(App.class);
-
-    @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
@@ -84,16 +81,11 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             return response
                     .withStatusCode(200)
                     .withBody(output);
-        } catch (IOException e) {
+        } catch (RuntimeException | IOException e) {
             return response
                     .withBody("{}")
                     .withStatusCode(500);
         }
-    }
-
-    @Tracing
-    private void log() {
-        log.info("inside threaded logging for function");
     }
 
     @Tracing(namespace = "getPageContents", captureMode = CaptureMode.DISABLED)
