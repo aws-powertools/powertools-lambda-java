@@ -379,6 +379,28 @@ public class IdempotencyAspectTest {
     }
 
     @Test
+    public void idempotencyOnSubMethodAnnotated_keyJMESPathArray_shouldPutInStoreWithKey() {
+        BasePersistenceStore persistenceStore = spy(BasePersistenceStore.class);
+
+        Idempotency.config()
+                .withPersistenceStore(persistenceStore)
+                .withConfig(IdempotencyConfig.builder().withEventKeyJMESPath("[id,name]").build())
+                .configure();
+
+        // WHEN
+        IdempotencyInternalFunctionInternalKey function = new IdempotencyInternalFunctionInternalKey();
+        Product p = new Product(42, "fake product", 12);
+        function.handleRequest(p, context);
+
+        // THEN
+        ArgumentCaptor<DataRecord> recordCaptor = ArgumentCaptor.forClass(DataRecord.class);
+        verify(persistenceStore).putRecord(recordCaptor.capture(), any());
+        // eec7cd392d9e3bb20deb2c9676697c3c = MD5([42,"fake product"])
+        assertThat(recordCaptor.getValue().getIdempotencyKey()).isEqualTo(
+                "testFunction.createBasket#eec7cd392d9e3bb20deb2c9676697c3c");
+    }
+
+    @Test
     public void idempotencyOnSubMethodNotAnnotated_shouldThrowException() {
         Idempotency.config()
                 .withPersistenceStore(store)

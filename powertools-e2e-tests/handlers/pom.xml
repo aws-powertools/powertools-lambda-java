@@ -23,7 +23,6 @@
         <maven.compiler.version>3.11.0</maven.compiler.version>
         <aws.sdk.version>2.20.108</aws.sdk.version>
         <log4j.version>2.20.0</log4j.version>
-        <aspectj.version>1.9.20</aspectj.version>
     </properties>
 
     <modules>

@@ -21,7 +21,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.uri.URITranslator;
 import io.burt.jmespath.Expression;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -257,7 +259,10 @@ public class ValidationUtils {
             String filePath = schema.substring(CLASSPATH.length());
             try (InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath)) {
 
-                jsonSchema = ValidationConfig.get().getFactory().getSchema(schemaStream);
+                SchemaValidatorsConfig config = new SchemaValidatorsConfig();
+                config.addUriTranslator(URITranslator.prefix("https://json-schema.org", "resource:"));
+
+                jsonSchema = ValidationConfig.get().getFactory().getSchema(schemaStream, config);
             } catch (Exception e) {
                 throw new IllegalArgumentException(
                         "'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
@@ -270,13 +275,13 @@ public class ValidationUtils {
     }
 
     private static void validateSchema(String schema, JsonSchema jsonSchema) {
-        String version = ValidationConfig.get().getSchemaVersion().toString();
+        String schemaId = ValidationConfig.get().getSchemaVersion().getId().replace("https://json-schema.org", "");
         try {
             validate(jsonSchema.getSchemaNode(),
-                    getJsonSchema("classpath:/schemas/meta_schema_" + version));
+                    getJsonSchema(CLASSPATH + schemaId));
         } catch (ValidationException ve) {
             throw new IllegalArgumentException(
-                    "The schema " + schema + " is not valid, it does not respect the specification " + version, ve);
+                    "The schema " + schema + " is not valid, it does not respect the specification " + schemaId, ve);
         }
     }
 
