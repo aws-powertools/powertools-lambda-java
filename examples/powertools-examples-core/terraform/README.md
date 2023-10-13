@@ -5,11 +5,7 @@ For general information on the deployed example itself, you can refer to the par
 To install Terraform if you don't have it yet, you can follow the [Install Terraform Guide](https://developer.hashicorp.com/terraform/downloads?product_intent=terraform).
 
 ## Configuration
-<<<<<<< HEAD
 Terraform uses [main.tf](./main.tf) to define the application's AWS resources.
-=======
-Serverless Framework uses [serverless.yml](./serverless.yml) to define the application's AWS resources.
->>>>>>> f6f13a6e66305f05ae92c74bbb308360c2408dd0
 This file defines the Lambda function to be deployed as well as API Gateway for it.
 
 It is a [Maven](https://maven.apache.org/) based project, so you can open this project with any Maven compatible Java IDE to build and run tests.
