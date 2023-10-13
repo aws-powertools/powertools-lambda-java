@@ -46,12 +46,9 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private final static Logger log = LogManager.getLogger(App.class);
 
-    // This is controlled by POWERTOOLS_LOGGER_SAMPLE_RATE environment variable
-    // @Logging(logEvent = true, samplingRate = 0.7)
-    // This is controlled by POWERTOOLS_METRICS_NAMESPACE environment variable
-    // @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-    // This is controlled by POWERTOOLS_TRACER_CAPTURE_ERROR environment variable
+    @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
+    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
@@ -87,25 +84,18 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             return response
                     .withStatusCode(200)
                     .withBody(output);
-<<<<<<<< HEAD:examples/powertools-examples-core/serverless/src/main/java/helloworld/App.java
         } catch (RuntimeException | IOException e) {
-========
-        } catch (IOException e) {
->>>>>>>> v2:examples/powertools-examples-core-utilities/cdk/app/src/main/java/helloworld/App.java
             return response
                     .withBody("{}")
                     .withStatusCode(500);
         }
     }
 
-<<<<<<<< HEAD:examples/powertools-examples-core/serverless/src/main/java/helloworld/App.java
-========
     @Tracing
     private void log() {
         log.info("inside threaded logging for function");
     }
 
->>>>>>>> v2:examples/powertools-examples-core-utilities/cdk/app/src/main/java/helloworld/App.java
     @Tracing(namespace = "getPageContents", captureMode = CaptureMode.DISABLED)
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
