@@ -15,10 +15,6 @@ We also provide an example showing the integration of SAM, Powertools, and Gradl
 
 * [AWS SAM with a Gradle build](gradle/)
 
-We also provide an example showing the integration of SAM, Powertools, and Gradle:
-
-* [AWS SAM with a Gradle build](../powertools-examples-core-utilities/gradle/)
-
 For each of the tools, the example application is the same, and consists of the following files:
 
 - [App.java](sam/src/main/java/helloworld/App.java) - Code for the application's Lambda function.
