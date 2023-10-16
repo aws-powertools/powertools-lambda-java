@@ -129,6 +129,16 @@
                     <skip>true</skip>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <environmentVariables>
+                        <LAMBDA_TASK_ROOT>handler</LAMBDA_TASK_ROOT>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <profiles>
