@@ -1,0 +1,57 @@
+name: Artifacts Size
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'powertools-cloudformation/**'
+      - 'powertools-core/**'
+      - 'powertools-serialization/**'
+      - 'powertools-logging/**'
+      - 'powertools-sqs/**'
+      - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'powertools-parameters/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-metrics/**'
+      - 'pom.xml'
+jobs:
+  codecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - name: Setup java JDK 11
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'corretto'
+          java-version: 11
+      - name: Build with Maven
+        run: mvn clean package --file pom.xml -DskipTests
+      - name: Get artifacts size & build report
+        id: artifacts-size-report
+        run: |
+          echo '## :floppy_disk: Artifacts Size Report' > report.md
+          echo '| Module | Version | Size (KB) |' >> report.md
+          echo '| --- | --- | --- |' >> report.md
+          artifact_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          for artifact in $(cat target/powertools-parent-*.buildinfo | grep 'outputs.*.jar' | grep -v 'sources.jar'); do
+            artifact_name=$(echo "$artifact" | cut -d '=' -f2)
+            artifact_name=${artifact_name%-$artifact_version.jar}
+            artifact_size=$(grep "${artifact%%.filename*}.length" target/powertools-parent-*.buildinfo | cut -d '=' -f2)
+            printf "| %s | %s | %.2f |\n" "$artifact_name" "$artifact_version" "$(bc <<< "scale=2; $artifact_size/1000")" >> report.md
+          done
+      - name: Find potential existing report
+        uses: peter-evans/find-comment@a54c31d7fa095754bfef525c0c8e5e5674c4b4b1 # 2.4.0
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: Artifacts Size Report
+      - name: Write artifacts size report in comment
+        uses: peter-evans/create-or-update-comment@c6c9a1a66007646a28c153e2a8580a5bad27bcfa # 3.0.2
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: 'report.md'
+          edit-mode: replace
