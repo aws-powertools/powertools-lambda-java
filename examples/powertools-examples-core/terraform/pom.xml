@@ -106,9 +106,7 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer
-                                        implementation="com.github.edwgiz.maven_shade_plugin.log4j2_cache_transformer.PluginsCacheFileTransformer">
-                                </transformer>
+                              <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>
