@@ -53,6 +53,9 @@ jobs:
     env:
       JAVA: ${{ matrix.java }}
       AWS_REGION: eu-west-1
+    permissions:
+      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
+      contents: read
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java
@@ -71,6 +74,11 @@ jobs:
       - name: Setup Terraform
         if: ${{ matrix.java == '11' }}
         uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 #v2.0.3
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
       - name: Terraform validate
         if: ${{ matrix.java == '11' }}
         run: |
