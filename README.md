@@ -202,10 +202,10 @@ Knowing which companies are using this library is important to help prioritize t
 
 The following companies, among others, use Powertools:
 
-* [Capital One](https://www.capitalone.com/){target="_blank" rel="nofollow"}
-* [CPQi (Exadel Financial Services)](https://cpqi.com/){target="_blank" rel="nofollow"}
-* [Europace AG](https://europace.de/){target="_blank" rel="nofollow"}
-* [Vertex Pharmaceuticals](https://www.vrtx.com/){target="_blank" rel="nofollow"}
+* [Capital One](https://www.capitalone.com/)
+* [CPQi (Exadel Financial Services)](https://cpqi.com/)
+* [Europace AG](https://europace.de/)
+* [Vertex Pharmaceuticals](https://www.vrtx.com/)
 
 ## Credits
 
