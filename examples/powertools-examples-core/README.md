@@ -1,6 +1,6 @@
 # Powertools for AWS Lambda (Java) - Core Utilities Example
 
-This project demonstrates the Lambda for Powertools Java module - including
+This project demonstrates the Lambda for Powertools Java module - including 
 [logging](https://docs.powertools.aws.dev/lambda/java/core/logging/),
 [tracing](https://docs.powertools.aws.dev/lambda/java/core/tracing/), and
 [metrics](https://docs.powertools.aws.dev/lambda/java/core/metrics/).
@@ -8,13 +8,14 @@ This project demonstrates the Lambda for Powertools Java module - including
 The example application is the same, and you can now also use Kotlin!
 
 ## Java
+* [AWS SAM](sam/) 
+* [AWS CDK](cdk/)
+* [Serverless framework](serverless/)
+* [Terraform](terraform/)
 
-- [CDK](cdk/)
-- [Gradle](gradle/)
-- [SAM](sam/)
-- [Serverless](serverless/)
+We also provide an example showing the integration of SAM, Powertools, and Gradle:
 
-Example application consists of the following files:
+* [AWS SAM with a Gradle build](gradle/)
 
 - App.java - Code for the application's Lambda function.
 - AppTests.java - Unit tests for the application code.
