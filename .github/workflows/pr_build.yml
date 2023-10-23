@@ -66,10 +66,14 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: mvn -B install --file pom.xml
-      - name: Build Gradle Example
+      - name: Build Gradle Example - Java
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         run: |
           cd examples/powertools-examples-core/gradle
+          ./gradlew build
+      - name: Build Gradle Example - Kotlin
+        run: |
+          cd examples/powertools-examples-core/kotlin
           ./gradlew build
       - name: Setup Terraform
         if: ${{ matrix.java == '11' }}
