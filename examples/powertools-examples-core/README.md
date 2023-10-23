@@ -10,6 +10,7 @@ We provide examples for the following infrastructure-as-code tools:
 * [AWS SAM](sam/) 
 * [AWS CDK](cdk/)
 * [Serverless framework](serverless/)
+* [Terraform](terraform/)
 
 We also provide an example showing the integration of SAM, Powertools, and Gradle:
 
