@@ -87,11 +87,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <scope>test</scope>
@@ -99,11 +94,6 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-inline</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -122,5 +112,39 @@
             </plugin>
         </plugins>
     </build>
+
+<!--    <profiles>-->
+<!--        <profile>-->
+<!--            <id>olderThanJdk11</id>-->
+<!--            <activation>-->
+<!--                <jdk>(,11)</jdk>-->
+<!--            </activation>-->
+<!--            <dependencies>-->
+<!--                <dependency>-->
+<!--                    <groupId>org.mockito</groupId>-->
+<!--                    <artifactId>mockito-core</artifactId>-->
+<!--                    <scope>test</scope>-->
+<!--                </dependency>-->
+<!--                <dependency>-->
+<!--                    <groupId>org.mockito</groupId>-->
+<!--                    <artifactId>mockito-inline</artifactId>-->
+<!--                    <scope>test</scope>-->
+<!--                </dependency>-->
+<!--            </dependencies>-->
+<!--        </profile>-->
+<!--        <profile>-->
+<!--            <id>newerThanJdk11</id>-->
+<!--            <activation>-->
+<!--                <jdk>[11,)</jdk>-->
+<!--            </activation>-->
+<!--            <dependencies>-->
+<!--                <dependency>-->
+<!--                    <groupId>org.mockito</groupId>-->
+<!--                    <artifactId>mockito-core</artifactId>-->
+<!--                    <scope>test</scope>-->
+<!--                </dependency>-->
+<!--            </dependencies>-->
+<!--        </profile>-->
+<!--    </profiles>-->
 
 </project>
