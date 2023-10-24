@@ -6,18 +6,19 @@ on:
       - main
       - v2
     paths:
+      - 'powertools-batch/**'
       - 'powertools-cloudformation/**'
-      - 'powertools-core/**'
-      - 'powertools-serialization/**'
+      - 'powertools-core/**'              # not in v2
+      - 'powertools-common/**'            # v2 only
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
       - 'powertools-logging/**'
-      - 'powertools-sqs/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
-      - 'powertools-idempotency/**'
-      - 'powertools-parameters/**'
-      - 'powertools-metrics/**'
-      - 'powertools-test-suite/**'
-      - 'powertools-e2e-tests/**'
       - 'examples/**'
       - 'pom.xml'
       - 'examples/pom.xml'
@@ -26,18 +27,18 @@ on:
     branches:
       - main
     paths:
+      - 'powertools-batch/**'
       - 'powertools-cloudformation/**'
       - 'powertools-core/**'
-      - 'powertools-serialization/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
       - 'powertools-logging/**'
-      - 'powertools-sqs/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
-      - 'powertools-idempotency/**'
-      - 'powertools-parameters/**'
-      - 'powertools-metrics/**'
-      - 'powertools-test-suite/**'
-      - 'powertools-e2e-tests/**'
       - 'examples/**'
       - 'pom.xml'
       - 'examples/pom.xml'
@@ -48,11 +49,14 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        java: [8, 11, 15, 16, 17, 18, 19, 20 ]
+        java: [8, 11, 17, 21, 15, 16, 18, 19, 20]
     name: Java ${{ matrix.java }}
     env:
       JAVA: ${{ matrix.java }}
       AWS_REGION: eu-west-1
+    permissions:
+      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
+      contents: read
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java
@@ -63,16 +67,46 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: mvn -B install --file pom.xml
-      - name: Build Gradle Example
+      - name: Build Gradle Example - Java
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        working-directory: examples/powertools-examples-core-utilities/gradle
+        run: ./gradlew build
+      - name: Build Gradle Example - Kotlin
+        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        working-directory: examples/powertools-examples-core-utilities/kotlin
+        run: ./gradlew build
+      - name: Setup Terraform
+        if: ${{ matrix.java == '11' }}
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 #v2.0.3
+      - name: Setup AWS credentials
+        if: ${{ matrix.java == '11' }}
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Terraform validate
+        working-directory: examples/powertools-examples-core-utilities/terraform
+        if: ${{ matrix.java == '11' }}
         run: |
-          cd examples/powertools-examples-core-utilities/gradle
-          ./gradlew build
+          terraform -version
+          terraform init -backend=false
+          terraform validate
+          terraform plan
+      - name: Setup Terraform lint
+        if: ${{ matrix.java == '11' }}
+        uses: terraform-linters/setup-tflint@a5a1af8c6551fb10c53f1cd4ba62359f1973746f # v3.1.1
+      - name: Terraform lint
+        working-directory: examples/powertools-examples-core-utilities/terraform
+        if: ${{ matrix.java == '11' }}
+        run: |
+          tflint --version
+          tflint --init
+          tflint -f compact
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         if: ${{ matrix.java == '11' }} # publish results once
         with:
-          files: ./powertools-cloudformation/target/site/jacoco/jacoco.xml,./powertools-core/target/site/jacoco/jacoco.xml,./powertools-idempotency/target/site/jacoco/jacoco.xml,./powertools-logging/target/site/jacoco/jacoco.xml,./powertools-metrics/target/site/jacoco/jacoco.xml,./powertools-parameters/target/site/jacoco/jacoco.xml,./powertools-serialization/target/site/jacoco/jacoco.xml,./powertools-sqs/target/site/jacoco/jacoco.xml,./powertools-tracing/target/site/jacoco/jacoco.xml,./powertools-validation/target/site/jacoco/jacoco.xml
+          files: ./powertools-cloudformation/target/site/jacoco/jacoco.xml,./powertools-core/target/site/jacoco/jacoco.xml,./powertools-idempotency/target/site/jacoco/jacoco.xml,./powertools-logging/target/site/jacoco/jacoco.xml,./powertools-metrics/target/site/jacoco/jacoco.xml,./powertools-parameters/target/site/jacoco/jacoco.xml,./powertools-serialization/target/site/jacoco/jacoco.xml,./powertools-sqs/target/site/jacoco/jacoco.xml,./powertools-tracing/target/site/jacoco/jacoco.xml,./powertools-validation/target/site/jacoco/jacoco.xml,./powertools-large-messages/target/site/jacoco/jacoco.xml,./powertools-batch/target/site/jacoco/jacoco.xml
   savepr:
     runs-on: ubuntu-latest
     name: Save PR number if running on PR by dependabot
