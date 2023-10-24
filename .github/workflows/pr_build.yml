@@ -73,7 +73,7 @@ jobs:
         run: ./gradlew build
       - name: Build Gradle Example - Kotlin
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
-        working-directory: examples/powertools-examples-core/kotlin
+        working-directory: examples/powertools-examples-core-utilities/kotlin
         run: ./gradlew build
       - name: Setup Terraform
         if: ${{ matrix.java == '11' }}

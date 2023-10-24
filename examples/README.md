@@ -6,11 +6,11 @@ Each example can be copied from its subdirectory and used independently of the r
 ## Examples
 
 * [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules with different build tools and languages 
-  * [CDK](./powertools-examples-core/cdk)
-  * [Gradle](./powertools-examples-core/gradle)
-  * [SAM](./powertools-examples-core/sam) 
-  * [Serverless](./powertools-examples-core/serverless)
-  * [Kotlin](./powertools-examples-core/kotlin)
+  * [CDK](./powertools-examples-core-utilities/cdk)
+  * [Gradle](./powertools-examples-core-utilities/gradle)
+  * [SAM](./powertools-examples-core-utilities/sam) 
+  * [Serverless](./powertools-examples-core-utilities/serverless)
+  * [Kotlin](./powertools-examples-core-utilities/kotlin)
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads

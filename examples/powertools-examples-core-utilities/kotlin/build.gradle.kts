@@ -14,9 +14,9 @@ dependencies {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.2.2")
     implementation("com.amazonaws:aws-lambda-java-events:3.11.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2")
-    aspect("software.amazon.lambda:powertools-tracing:1.18.0-SNAPSHOT")
-    aspect("software.amazon.lambda:powertools-logging:1.18.0-SNAPSHOT")
-    aspect("software.amazon.lambda:powertools-metrics:1.18.0-SNAPSHOT")
+    aspect("software.amazon.lambda:powertools-tracing:2.0.0-SNAPSHOT")
+    aspect("software.amazon.lambda:powertools-logging:2.0.0-SNAPSHOT")
+    aspect("software.amazon.lambda:powertools-metrics:2.0.0-SNAPSHOT")
     testImplementation("junit:junit:4.13.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 }
