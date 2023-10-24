@@ -5,7 +5,7 @@ Each example can be copied from its subdirectory and used independently of the r
 
 ## Examples
 
-* [powertools-examples-core](powertools-examples-core) - Demonstrates the core logging, tracing, and metrics modules with different build tools and languages 
+* [powertools-examples-core-utilities](powertools-examples-core-utilities) - Demonstrates the core logging, tracing, and metrics modules with different build tools and languages 
   * [CDK](./powertools-examples-core-utilities/cdk)
   * [Gradle](./powertools-examples-core-utilities/gradle)
   * [SAM](./powertools-examples-core-utilities/sam) 
