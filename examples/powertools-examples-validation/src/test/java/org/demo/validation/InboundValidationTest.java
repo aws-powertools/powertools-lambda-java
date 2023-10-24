@@ -53,7 +53,7 @@ public class InboundValidationTest {
     }
 
     @Test
-    public void shouldReturnBadRequestWhenRequestInInvalid() {
+    void shouldReturnBadRequestWhenRequestInInvalid() {
         String bodyWithMissedId = "{\n" +
                 "      \"name\": \"FooBar XY\",\n" +
                 "      \"price\": 258\n" +
