@@ -106,7 +106,7 @@ public class ValidationAspectTest {
 
     @ParameterizedTest
     @ArgumentsSource(ResponseEventsArgumentsProvider.class)
-    public void testValidateOutboundJsonSchemaWithExceptions(Object object) throws Throwable {
+    void testValidateOutboundJsonSchemaWithExceptions(Object object) throws Throwable {
         when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
@@ -124,7 +124,7 @@ public class ValidationAspectTest {
     
     @ParameterizedTest
     @ArgumentsSource(HandledResponseEventsArgumentsProvider.class)
-    public void testValidateOutboundJsonSchemaWithHandledExceptions(Object object) throws Throwable {
+    void testValidateOutboundJsonSchemaWithHandledExceptions(Object object) throws Throwable {
         when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
@@ -139,13 +139,13 @@ public class ValidationAspectTest {
         if (response instanceof APIGatewayProxyResponseEvent) {
         	assertThat(response).isInstanceOfSatisfying(APIGatewayProxyResponseEvent.class, t -> {
         		assertThat(t.getStatusCode()).isEqualTo(400);
-        		assertThat(t.getBody()).satisfies(x -> StringUtils.isNotBlank(x));
+        		assertThat(t.getBody()).isNotBlank();
         		assertThat(t.getIsBase64Encoded()).isFalse();
         	});        	
         } else if (response instanceof APIGatewayV2HTTPResponse) {
         	assertThat(response).isInstanceOfSatisfying(APIGatewayV2HTTPResponse.class, t -> {
         		assertThat(t.getStatusCode()).isEqualTo(400);
-        		assertThat(t.getBody()).satisfies(x -> StringUtils.isNotBlank(x));
+        		assertThat(t.getBody()).isNotBlank();
         		assertThat(t.getIsBase64Encoded()).isFalse();
         	});        	
         } else {
@@ -199,7 +199,7 @@ public class ValidationAspectTest {
                 "}");
         // price is negative
         APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
-        assertThat(response.getBody()).satisfies(x -> StringUtils.isNotBlank(x));
+        assertThat(response.getBody()).isNotBlank();
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 
@@ -229,7 +229,7 @@ public class ValidationAspectTest {
                 "}");
        
         APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
-        assertThat(response.getBody()).satisfies(x -> StringUtils.isNotBlank(x));
+        assertThat(response.getBody()).isNotBlank();
         assertThat(response.getStatusCode()).isEqualTo(400);
     }
 

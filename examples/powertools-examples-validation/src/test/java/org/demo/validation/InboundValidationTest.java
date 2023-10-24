@@ -53,13 +53,15 @@ public class InboundValidationTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenRequestInInvalid() {
+    public void shouldReturnBadRequestWhenRequestInInvalid() {
         String bodyWithMissedId = "{\n" +
                 "      \"name\": \"FooBar XY\",\n" +
                 "      \"price\": 258\n" +
                 "    }";
         APIGatewayProxyRequestEvent request = new APIGatewayProxyRequestEvent().withBody(bodyWithMissedId);
 
-        assertThrows(ValidationException.class, () -> inboundValidation.handleRequest(request, context));
+        APIGatewayProxyResponseEvent response = inboundValidation.handleRequest(request, context);
+        
+        assertEquals(400, response.getStatusCode());
     }
 }
