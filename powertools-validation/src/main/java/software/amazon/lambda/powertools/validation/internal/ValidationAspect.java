@@ -51,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.validation.Validation;
 import software.amazon.lambda.powertools.validation.ValidationConfig;
+import software.amazon.lambda.powertools.validation.ValidationException;
 
 /**
  * Aspect for {@link Validation} annotation
@@ -73,6 +74,11 @@ public class ValidationAspect {
         if (validation.schemaVersion() != V201909) {
             ValidationConfig.get().setSchemaVersion(validation.schemaVersion());
         }
+        
+        // we need this result object to be null at this point as validation of API events, if
+        // it fails, will catch the ValidationException and generate a 400 API response. This response
+        // will be stored in the result object to prevent executing the lambda
+        Object result = null;
 
         if (placedOnRequestHandler(pjp)) {
             validationNeeded = true;
@@ -85,10 +91,10 @@ public class ValidationAspect {
                     validate(obj, inboundJsonSchema, validation.envelope());
                 } else if (obj instanceof APIGatewayProxyRequestEvent) {
                     APIGatewayProxyRequestEvent event = (APIGatewayProxyRequestEvent) obj;
-                    validate(event.getBody(), inboundJsonSchema);
+                    result = validateAPIGatewayProxyBody(event.getBody(), inboundJsonSchema);
                 } else if (obj instanceof APIGatewayV2HTTPEvent) {
                     APIGatewayV2HTTPEvent event = (APIGatewayV2HTTPEvent) obj;
-                    validate(event.getBody(), inboundJsonSchema);
+                    result = validateAPIGatewayV2HTTPBody(event.getBody(), inboundJsonSchema);
                 } else if (obj instanceof SNSEvent) {
                     SNSEvent event = (SNSEvent) obj;
                     event.getRecords().forEach(record -> validate(record.getSNS().getMessage(), inboundJsonSchema));
@@ -140,33 +146,88 @@ public class ValidationAspect {
             }
         }
 
-        Object result = pjp.proceed(proceedArgs);
-
-        if (validationNeeded && !validation.outboundSchema().isEmpty()) {
-            JsonSchema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
-
-            if (result instanceof APIGatewayProxyResponseEvent) {
-                APIGatewayProxyResponseEvent response = (APIGatewayProxyResponseEvent) result;
-                validate(response.getBody(), outboundJsonSchema);
-            } else if (result instanceof APIGatewayV2HTTPResponse) {
-                APIGatewayV2HTTPResponse response = (APIGatewayV2HTTPResponse) result;
-                validate(response.getBody(), outboundJsonSchema);
-            } else if (result instanceof APIGatewayV2WebSocketResponse) {
-                APIGatewayV2WebSocketResponse response = (APIGatewayV2WebSocketResponse) result;
-                validate(response.getBody(), outboundJsonSchema);
-            } else if (result instanceof ApplicationLoadBalancerResponseEvent) {
-                ApplicationLoadBalancerResponseEvent response = (ApplicationLoadBalancerResponseEvent) result;
-                validate(response.getBody(), outboundJsonSchema);
-            } else if (result instanceof KinesisAnalyticsInputPreprocessingResponse) {
-                KinesisAnalyticsInputPreprocessingResponse response =
-                        (KinesisAnalyticsInputPreprocessingResponse) result;
-                response.getRecords().forEach(record -> validate(decode(record.getData()), outboundJsonSchema));
-            } else {
-                LOG.warn("Unhandled response type {}, please use the 'envelope' parameter to specify what to validate",
-                        result.getClass().getName());
-            }
+        // don't execute the lambda if result was set by previous validation step
+        // in that case result should already hold a response with validation information
+        if (result != null) {
+        	LOG.error("Incoming API event's body failed inbound schema validation.");
         }
+        else {
+        	result = pjp.proceed(proceedArgs);
+        	
+        	if (validationNeeded && !validation.outboundSchema().isEmpty()) {
+        		JsonSchema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
+        		
+        		Object overridenResponse = null;
+        		if (result instanceof APIGatewayProxyResponseEvent) {
+        			APIGatewayProxyResponseEvent response = (APIGatewayProxyResponseEvent) result;
+        			overridenResponse = validateAPIGatewayProxyBody(response.getBody(), outboundJsonSchema);
+        		} else if (result instanceof APIGatewayV2HTTPResponse) {
+        			APIGatewayV2HTTPResponse response = (APIGatewayV2HTTPResponse) result;
+        			overridenResponse = validateAPIGatewayV2HTTPBody(response.getBody(), outboundJsonSchema);
+        		} else if (result instanceof APIGatewayV2WebSocketResponse) {
+        			APIGatewayV2WebSocketResponse response = (APIGatewayV2WebSocketResponse) result;
+        			validate(response.getBody(), outboundJsonSchema);
+        		} else if (result instanceof ApplicationLoadBalancerResponseEvent) {
+        			ApplicationLoadBalancerResponseEvent response = (ApplicationLoadBalancerResponseEvent) result;
+        			validate(response.getBody(), outboundJsonSchema);
+        		} else if (result instanceof KinesisAnalyticsInputPreprocessingResponse) {
+        			KinesisAnalyticsInputPreprocessingResponse response =
+        					(KinesisAnalyticsInputPreprocessingResponse) result;
+        			response.getRecords().forEach(record -> validate(decode(record.getData()), outboundJsonSchema));
+        		} else {
+        			LOG.warn("Unhandled response type {}, please use the 'envelope' parameter to specify what to validate",
+        					result.getClass().getName());
+        		}
+        		
+        		if (overridenResponse != null) {
+        			result = overridenResponse;
+        			LOG.error("API response failed outbound schema validation.");
+        		}
+        	}
+        } 
 
         return result;
+    }
+    
+    /**
+     * Validates the given body against the provided JsonSchema. If validation fails the ValidationException
+     * will be catched and transformed to a 400, bad request, API response
+     * @param body body of the event to validate
+     * @param inboundJsonSchema validation schema
+     * @return null if validation passed, or a 400 response object otherwise
+     */
+    private APIGatewayProxyResponseEvent validateAPIGatewayProxyBody(final String body, final JsonSchema jsonSchema) {
+    	APIGatewayProxyResponseEvent result = null;
+    	try {    		
+    		validate(body, jsonSchema);
+    	} catch (ValidationException e) {
+    		LOG.error("There were validation errors: {}", e.getMessage());
+    		result = new APIGatewayProxyResponseEvent();
+    		result.setBody(e.getMessage());
+    		result.setStatusCode(400);
+    		result.setIsBase64Encoded(false);
+    	}
+    	return result;
+    }
+    
+    /**
+     * Validates the given body against the provided JsonSchema. If validation fails the ValidationException
+     * will be catched and transformed to a 400, bad request, API response
+     * @param body body of the event to validate
+     * @param inboundJsonSchema validation schema
+     * @return null if validation passed, or a 400 response object otherwise
+     */
+    private APIGatewayV2HTTPResponse validateAPIGatewayV2HTTPBody(final String body, final JsonSchema jsonSchema) {
+    	APIGatewayV2HTTPResponse result = null;
+    	try {    		
+    		validate(body, jsonSchema);
+    	} catch (ValidationException e) {
+    		LOG.error("There were validation errors: {}", e.getMessage());
+    		result = new APIGatewayV2HTTPResponse();
+    		result.setBody(e.getMessage());
+    		result.setStatusCode(400);
+    		result.setIsBase64Encoded(false);
+    	}
+    	return result;
     }
 }
