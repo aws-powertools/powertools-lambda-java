@@ -9,14 +9,16 @@ on:
       - v2
     paths: # add other modules when there are under e2e tests
       - 'powertools-e2e-tests/**'
+      - 'powertools-batch/**'
       - 'powertools-core/**'
-      - 'powertools-serialization/**'
-      - 'powertools-logging/**'
-      - 'powertools-tracing/**'
+      - 'powertools-common/**'
       - 'powertools-idempotency/**'
-      - 'powertools-parameters/**'
+      - 'powertools-large-message/**'
+      - 'powertools-logging/**'
       - 'powertools-metrics/**'
-      - 'powertools-large-messages/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-tracing/**'
       - 'pom.xml'
       - '.github/workflows/**'
 
