@@ -205,6 +205,7 @@ The following companies, among others, use Powertools:
 * [Capital One](https://www.capitalone.com/)
 * [CPQi (Exadel Financial Services)](https://cpqi.com/)
 * [Europace AG](https://europace.de/)
+* [Vertex Pharmaceuticals](https://www.vrtx.com/)
 
 ## Credits
 
