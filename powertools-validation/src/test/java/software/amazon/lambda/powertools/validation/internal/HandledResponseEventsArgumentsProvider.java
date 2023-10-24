@@ -14,26 +14,28 @@
 
 package software.amazon.lambda.powertools.validation.internal;
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2WebSocketResponse;
-import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerResponseEvent;
-import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsInputPreprocessingResponse;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
 
-public class ResponseEventsArgumentsProvider implements ArgumentsProvider {
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2WebSocketResponse;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerResponseEvent;
 
+public class HandledResponseEventsArgumentsProvider implements ArgumentsProvider {
+    
     @Override
     public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 
         String body = "{id";
+
+        final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent().withBody(body);
+
+        APIGatewayV2HTTPResponse apiGWV2HTTPResponse = new APIGatewayV2HTTPResponse();
+        apiGWV2HTTPResponse.setBody(body);
 
         APIGatewayV2WebSocketResponse apiGWV2WebSocketResponse = new APIGatewayV2WebSocketResponse();
         apiGWV2WebSocketResponse.setBody(body);
@@ -41,14 +43,6 @@ public class ResponseEventsArgumentsProvider implements ArgumentsProvider {
         ApplicationLoadBalancerResponseEvent albResponseEvent = new ApplicationLoadBalancerResponseEvent();
         albResponseEvent.setBody(body);
 
-        KinesisAnalyticsInputPreprocessingResponse kaipResponse = new KinesisAnalyticsInputPreprocessingResponse();
-        List records = new ArrayList<KinesisAnalyticsInputPreprocessingResponse.Record>();
-        ByteBuffer buffer = ByteBuffer.wrap(body.getBytes(StandardCharsets.UTF_8));
-        records.add(new KinesisAnalyticsInputPreprocessingResponse.Record("1",
-                KinesisAnalyticsInputPreprocessingResponse.Result.Ok, buffer));
-        kaipResponse.setRecords(records);
-
-        return Stream.of(apiGWV2WebSocketResponse, albResponseEvent,
-                kaipResponse).map(Arguments::of);
+        return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse).map(Arguments::of);
     }
 }
