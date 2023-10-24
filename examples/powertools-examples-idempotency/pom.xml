@@ -26,7 +26,6 @@
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <aspectj.version>1.9.20</aspectj.version>
     </properties>
 
     <dependencies>
@@ -65,35 +64,6 @@
             <artifactId>log4j-api</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>${aspectj.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>4.11.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>DynamoDBLocal</artifactId>
-            <version>1.22.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-tests</artifactId>
-            <version>1.1.1</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -128,13 +98,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjtools</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -180,8 +143,10 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
-                                <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
+                                <transformer
+                                        implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>
@@ -194,6 +159,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <!-- Don't deploy the example -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
@@ -221,6 +187,61 @@
             <properties>
                 <aspectj.version>1.9.7</aspectj.version>
             </properties>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+            <build>
+                <pluginManagement>
+                    <plugins>
+                        <plugin>
+                            <groupId>dev.aspectj</groupId>
+                            <artifactId>aspectj-maven-plugin</artifactId>
+                            <version>${aspectj.plugin.version}</version>
+                            <configuration>
+                                <source>${maven.compiler.source}</source>
+                                <target>${maven.compiler.target}</target>
+                                <complianceLevel>${maven.compiler.target}</complianceLevel>
+                                <aspectLibraries>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-tracing</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-logging</artifactId>
+                                    </aspectLibrary>
+                                    <aspectLibrary>
+                                        <groupId>software.amazon.lambda</groupId>
+                                        <artifactId>powertools-idempotency</artifactId>
+                                    </aspectLibrary>
+                                </aspectLibraries>
+                            </configuration>
+                            <executions>
+                                <execution>
+                                    <goals>
+                                        <goal>compile</goal>
+                                        <goal>test-compile</goal>
+                                    </goals>
+                                </execution>
+                            </executions>
+                            <!-- Enforce aspectJ 1.9.7 -->
+                            <dependencies>
+                                <dependency>
+                                    <groupId>org.aspectj</groupId>
+                                    <artifactId>aspectjtools</artifactId>
+                                    <version>${aspectj.version}</version>
+                                </dependency>
+                            </dependencies>
+                        </plugin>
+                    </plugins>
+                </pluginManagement>
+            </build>
         </profile>
     </profiles>
     <repositories>
