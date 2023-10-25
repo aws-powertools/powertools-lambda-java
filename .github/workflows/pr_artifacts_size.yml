@@ -22,6 +22,7 @@ on:
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
       - 'pom.xml'
+      - '.github/workflows/pr_artifacts_size.yml'
 jobs:
   codecheck:
     runs-on: ubuntu-latest
