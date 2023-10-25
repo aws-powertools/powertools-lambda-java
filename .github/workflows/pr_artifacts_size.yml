@@ -3,18 +3,24 @@ name: Artifacts Size
 on:
   pull_request:
     branches:
-      - master
+      - main
+      - v2
     paths:
+      - 'powertools-batch/**'
       - 'powertools-cloudformation/**'
-      - 'powertools-core/**'
-      - 'powertools-serialization/**'
+      - 'powertools-core/**'              # not in v2
+      - 'powertools-common/**'            # v2 only
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
       - 'powertools-logging/**'
-      - 'powertools-sqs/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'               # not in v2
+      - 'powertools-test-suite/**'        # not in v2
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
-      - 'powertools-parameters/**'
-      - 'powertools-idempotency/**'
-      - 'powertools-metrics/**'
       - 'pom.xml'
 jobs:
   codecheck:
