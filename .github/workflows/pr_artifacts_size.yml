@@ -34,7 +34,7 @@ jobs:
           distribution: 'corretto'
           java-version: 11
       - name: Build with Maven
-        run: mvn clean package --file pom.xml -DskipTests
+        run: mvn clean package --file pom.xml -DskipTests artifact:buildinfo
       - name: Get artifacts size & build report
         id: artifacts-size-report
         run: |
