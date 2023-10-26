@@ -18,6 +18,7 @@ compileJava {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
