@@ -18,7 +18,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.amazonaws.xray.entities.Subsegment
-import org.apache.logging.log4j.LogManager
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet
 import software.amazon.cloudwatchlogs.emf.model.Unit
@@ -92,5 +93,5 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
         }
     }
 
-    private val log = LogManager.getLogger(App::class)
+    private val log = LoggerFactory.getLogger(App::class)
 }
