@@ -59,6 +59,7 @@
     </dependencies>
 
     <build>
+        <finalName>helloworld-lambda</finalName>
         <plugins>
             <plugin>
                 <groupId>dev.aspectj</groupId>
