@@ -156,7 +156,9 @@ We support JSON schema version 4, 6, 7 and 201909 (from [jmespath-jackson librar
 
 `@Validation` annotation is used to validate either inbound events or functions' response.
 
-It will fail fast with `ValidationException` if an event or response doesn't conform with given JSON Schema.
+It will fail fast if an event or response doesn't conform with given JSON Schema. For most type of events a `ValidationException` will be thrown. But for 
+specific `APIGatewayProxyRequestEvent` and `APIGatewayV2HTTPEvent`, instead, the `@Validation` annotation will build and return a custom
+400 (BAD_REQUEST) response. Its body will contain the validation error(s) message(s).
 
 While it is easier to specify a json schema file in the classpath (using the notation `"classpath:/path/to/schema.json"`), you can also provide a JSON String containing the schema.
 
