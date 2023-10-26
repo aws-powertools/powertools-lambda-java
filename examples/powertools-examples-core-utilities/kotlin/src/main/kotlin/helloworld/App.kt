@@ -93,5 +93,5 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
         }
     }
 
-    private val log = LoggerFactory.getLogger(App::class)
+    private val log = LoggerFactory.getLogger(this::class.java)
 }
