@@ -224,11 +224,4 @@
             </properties>
         </profile>
     </profiles>
-    <repositories>
-        <repository>
-            <id>dynamodb-local-oregon</id>
-            <name>DynamoDB Local Release Repository</name>
-            <url>https://s3.eu-central-1.amazonaws.com/dynamodb-local-frankfurt/release</url>
-        </repository>
-    </repositories>
 </project>
