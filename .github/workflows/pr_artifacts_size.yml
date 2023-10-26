@@ -3,19 +3,26 @@ name: Artifacts Size
 on:
   pull_request:
     branches:
-      - master
+      - main
+      - v2
     paths:
+      - 'powertools-batch/**'
       - 'powertools-cloudformation/**'
-      - 'powertools-core/**'
-      - 'powertools-serialization/**'
+      - 'powertools-core/**'              # not in v2
+      - 'powertools-common/**'            # v2 only
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
       - 'powertools-logging/**'
-      - 'powertools-sqs/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'               # not in v2
+      - 'powertools-test-suite/**'        # not in v2
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
-      - 'powertools-parameters/**'
-      - 'powertools-idempotency/**'
-      - 'powertools-metrics/**'
       - 'pom.xml'
+      - '.github/workflows/pr_artifacts_size.yml'
 jobs:
   codecheck:
     runs-on: ubuntu-latest
@@ -27,7 +34,7 @@ jobs:
           distribution: 'corretto'
           java-version: 11
       - name: Build with Maven
-        run: mvn clean package --file pom.xml -DskipTests
+        run: mvn clean package --file pom.xml -DskipTests artifact:buildinfo
       - name: Get artifacts size & build report
         id: artifacts-size-report
         run: |
