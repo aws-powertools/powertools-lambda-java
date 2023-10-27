@@ -19,16 +19,17 @@ import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTIO
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
-import org.junit.jupiter.params.ParameterizedTest;
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,11 +59,13 @@ class ValidationE2ET {
 		}
 	}
 
-	@ParameterizedTest
-	@Event(value = "/validation/valid_api_gw_in_out_event.json", type = APIGatewayProxyRequestEvent.class)
-	void test_validInboundApiGWEvent(APIGatewayProxyRequestEvent validEvent) throws IOException {
+	@Test
+	void test_validInboundApiGWEvent() throws IOException {
+		InputStream inputStream = this.getClass().getResourceAsStream("/validation/valid_api_gw_in_out_event.json");
+		String validEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
 		// WHEN
-		InvocationResult invocationResult = invokeFunction(functionName, objectMapper.writeValueAsString(validEvent));
+		InvocationResult invocationResult = invokeFunction(functionName, validEvent);
 
 		// THEN
 		// invocation should pass validation and return 200
@@ -70,12 +73,14 @@ class ValidationE2ET {
 		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
 		assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
 	}
-	
-	@ParameterizedTest
-	@Event(value = "/validation/invalid_api_gw_in_event.json", type = APIGatewayProxyRequestEvent.class)
-	void test_invalidInboundApiGWEvent(APIGatewayProxyRequestEvent validEvent) throws IOException {
+
+	@Test
+	void test_invalidInboundApiGWEvent() throws IOException {
+		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_api_gw_in_event.json");
+		String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
 		// WHEN
-		InvocationResult invocationResult = invokeFunction(functionName, objectMapper.writeValueAsString(validEvent));
+		InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
 		// THEN
 		// invocation should fail inbound validation and return 400
@@ -83,17 +88,20 @@ class ValidationE2ET {
 		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
 		assertThat(validJsonNode.get("body").asText()).contains("$.price: is missing but it is required");
 	}
-	
-	@ParameterizedTest
-	@Event(value = "/validation/invalid_api_gw_out_event.json", type = APIGatewayProxyRequestEvent.class)
-	void test_invalidOutboundApiGWEvent(APIGatewayProxyRequestEvent validEvent) throws IOException {
+
+	@Test
+	void test_invalidOutboundApiGWEvent() throws IOException {
+		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_api_gw_out_event.json");
+		String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
 		// WHEN
-		InvocationResult invocationResult = invokeFunction(functionName, objectMapper.writeValueAsString(validEvent));
+		InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
 		// THEN
 		// invocation should fail outbound validation and return 400
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
 		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-		assertThat(validJsonNode.get("body").asText()).contains("$.price: must have an exclusive maximum value of 1000");
+		assertThat(validJsonNode.get("body").asText())
+				.contains("$.price: must have an exclusive maximum value of 1000");
 	}
 }
