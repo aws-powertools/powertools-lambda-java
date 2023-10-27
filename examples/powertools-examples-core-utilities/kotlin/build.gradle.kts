@@ -17,17 +17,10 @@ dependencies {
     aspect("software.amazon.lambda:powertools-tracing:2.0.0-SNAPSHOT")
     aspect("software.amazon.lambda:powertools-logging-log4j:2.0.0-SNAPSHOT")
     aspect("software.amazon.lambda:powertools-metrics:2.0.0-SNAPSHOT")
-    testImplementation("junit:junit:4.13.2")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 }
 
 tasks.compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-tasks.compileTestKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
     }
