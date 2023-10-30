@@ -8,7 +8,7 @@
         <version>1.0.0</version>
     </parent>
 
-    <artifactId>e2e-test-handler-validation</artifactId>
+    <artifactId>e2e-test-handler-validation-alb-event</artifactId>
     <packaging>jar</packaging>
     <name>A Lambda function using Powertools for AWS Lambda (Java) validation</name>
 
