@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
-class ValidationE2ET {
+class ValidationALBE2ET {
 
 	private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,8 +46,8 @@ class ValidationE2ET {
 	@BeforeAll
 	@Timeout(value = 5, unit = TimeUnit.MINUTES)
 	public static void setup() {
-		infrastructure = Infrastructure.builder().testName(ValidationE2ET.class.getSimpleName())
-				.pathToFunction("validation").build();
+		infrastructure = Infrastructure.builder().testName(ValidationALBE2ET.class.getSimpleName())
+				.pathToFunction("validation-alb-event").build();
 		Map<String, String> outputs = infrastructure.deploy();
 		functionName = outputs.get(FUNCTION_NAME_OUTPUT);
 	}
@@ -60,8 +60,8 @@ class ValidationE2ET {
 	}
 
 	@Test
-	void test_validInboundApiGWEvent() throws IOException {
-		InputStream inputStream = this.getClass().getResourceAsStream("/validation/valid_api_gw_in_out_event.json");
+	void test_validInboundSQSEvent() throws IOException {
+		InputStream inputStream = this.getClass().getResourceAsStream("/validation/valid_alb_in_out_event.json");
 		String validEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
 		// WHEN
@@ -75,23 +75,22 @@ class ValidationE2ET {
 	}
 
 	@Test
-	void test_invalidInboundApiGWEvent() throws IOException {
-		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_api_gw_in_event.json");
+	void test_invalidInboundSQSEvent() throws IOException {
+		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_alb_in_event.json");
 		String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
 		// WHEN
 		InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
 		// THEN
-		// invocation should fail inbound validation and return 400
+		// invocation should fail inbound validation and return an error message
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-		assertThat(validJsonNode.get("body").asText()).contains("$.price: is missing but it is required");
+		assertThat(validJsonNode.get("errorMessage").asText()).contains("$.price: is missing but it is required");
 	}
 
 	@Test
-	void test_invalidOutboundApiGWEvent() throws IOException {
-		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_api_gw_out_event.json");
+	void test_invalidOutboundSQSEvent() throws IOException {
+		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_alb_out_event.json");
 		String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
 		// WHEN
@@ -100,8 +99,6 @@ class ValidationE2ET {
 		// THEN
 		// invocation should fail outbound validation and return 400
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-		assertThat(validJsonNode.get("body").asText())
-				.contains("$.price: must have an exclusive maximum value of 1000");
+		assertThat(validJsonNode.get("errorMessage").asText()).contains("$.price: must have an exclusive maximum value of 1000");
 	}
 }
