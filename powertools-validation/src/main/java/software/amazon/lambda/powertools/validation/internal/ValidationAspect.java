@@ -22,6 +22,10 @@ import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFun
 import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
@@ -91,10 +95,10 @@ public class ValidationAspect {
                     validate(obj, inboundJsonSchema, validation.envelope());
                 } else if (obj instanceof APIGatewayProxyRequestEvent) {
                     APIGatewayProxyRequestEvent event = (APIGatewayProxyRequestEvent) obj;
-                    result = validateAPIGatewayProxyBody(event.getBody(), inboundJsonSchema);
+                    result = validateAPIGatewayProxyBody(event.getBody(), inboundJsonSchema, null, null);
                 } else if (obj instanceof APIGatewayV2HTTPEvent) {
                     APIGatewayV2HTTPEvent event = (APIGatewayV2HTTPEvent) obj;
-                    result = validateAPIGatewayV2HTTPBody(event.getBody(), inboundJsonSchema);
+                    result = validateAPIGatewayV2HTTPBody(event.getBody(), inboundJsonSchema, null, null);
                 } else if (obj instanceof SNSEvent) {
                     SNSEvent event = (SNSEvent) obj;
                     event.getRecords().forEach(record -> validate(record.getSNS().getMessage(), inboundJsonSchema));
@@ -158,12 +162,18 @@ public class ValidationAspect {
         		JsonSchema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
         		
         		Object overridenResponse = null;
+            // The normal behavior of @Validation is to throw an exception if response's validation fails.
+            // but in the case of APIGatewayProxyResponseEvent and APIGatewayV2HTTPResponse we want to return
+            // a 400 response with the validation errors instead of throwing an exception.
         		if (result instanceof APIGatewayProxyResponseEvent) {
         			APIGatewayProxyResponseEvent response = (APIGatewayProxyResponseEvent) result;
-        			overridenResponse = validateAPIGatewayProxyBody(response.getBody(), outboundJsonSchema);
+        			overridenResponse = validateAPIGatewayProxyBody(response.getBody(), outboundJsonSchema, response.getHeaders(),
+                response.getMultiValueHeaders());
         		} else if (result instanceof APIGatewayV2HTTPResponse) {
         			APIGatewayV2HTTPResponse response = (APIGatewayV2HTTPResponse) result;
-        			overridenResponse = validateAPIGatewayV2HTTPBody(response.getBody(), outboundJsonSchema);
+              overridenResponse = validateAPIGatewayV2HTTPBody(response.getBody(), outboundJsonSchema, response.getHeaders(),
+                response.getMultiValueHeaders());
+              // all type of below responses will throw an exception if validation fails
         		} else if (result instanceof APIGatewayV2WebSocketResponse) {
         			APIGatewayV2WebSocketResponse response = (APIGatewayV2WebSocketResponse) result;
         			validate(response.getBody(), outboundJsonSchema);
@@ -196,7 +206,8 @@ public class ValidationAspect {
      * @param inboundJsonSchema validation schema
      * @return null if validation passed, or a 400 response object otherwise
      */
-    private APIGatewayProxyResponseEvent validateAPIGatewayProxyBody(final String body, final JsonSchema jsonSchema) {
+    private APIGatewayProxyResponseEvent validateAPIGatewayProxyBody(final String body, final JsonSchema jsonSchema,
+      final Map<String, String> headers, Map<String, List<String>> multivalueHeaders) {
     	APIGatewayProxyResponseEvent result = null;
     	try {    		
     		validate(body, jsonSchema);
@@ -204,6 +215,8 @@ public class ValidationAspect {
     		LOG.error("There were validation errors: {}", e.getMessage());
     		result = new APIGatewayProxyResponseEvent();
     		result.setBody(e.getMessage());
+        result.setHeaders(headers == null ? Collections.emptyMap() : headers);
+        result.setMultiValueHeaders(multivalueHeaders == null ?  Collections.emptyMap() : multivalueHeaders);
     		result.setStatusCode(400);
     		result.setIsBase64Encoded(false);
     	}
@@ -217,7 +230,8 @@ public class ValidationAspect {
      * @param inboundJsonSchema validation schema
      * @return null if validation passed, or a 400 response object otherwise
      */
-    private APIGatewayV2HTTPResponse validateAPIGatewayV2HTTPBody(final String body, final JsonSchema jsonSchema) {
+    private APIGatewayV2HTTPResponse validateAPIGatewayV2HTTPBody(final String body, final JsonSchema jsonSchema,
+      final Map<String, String> headers, Map<String, List<String>> multivalueHeaders) {
     	APIGatewayV2HTTPResponse result = null;
     	try {    		
     		validate(body, jsonSchema);
@@ -225,6 +239,8 @@ public class ValidationAspect {
     		LOG.error("There were validation errors: {}", e.getMessage());
     		result = new APIGatewayV2HTTPResponse();
     		result.setBody(e.getMessage());
+        result.setHeaders(headers == null ? Collections.emptyMap() : headers);
+        result.setMultiValueHeaders(multivalueHeaders == null ?  Collections.emptyMap() : multivalueHeaders);
     		result.setStatusCode(400);
     		result.setIsBase64Encoded(false);
     	}
