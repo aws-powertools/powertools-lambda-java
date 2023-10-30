@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.validation.internal;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -32,10 +34,15 @@ public class HandledResponseEventsArgumentsProvider implements ArgumentsProvider
 
         String body = "{id";
 
-        final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent().withBody(body);
+        final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent()
+          .withBody(body)
+          .withHeaders(Map.of("header1", "value1,value2,value3"))
+          .withMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
 
         APIGatewayV2HTTPResponse apiGWV2HTTPResponse = new APIGatewayV2HTTPResponse();
         apiGWV2HTTPResponse.setBody(body);
+        apiGWV2HTTPResponse.setHeaders(Map.of("header1", "value1,value2,value3"));
+        apiGWV2HTTPResponse.setMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
 
         APIGatewayV2WebSocketResponse apiGWV2WebSocketResponse = new APIGatewayV2WebSocketResponse();
         apiGWV2WebSocketResponse.setBody(body);

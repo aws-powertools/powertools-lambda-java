@@ -21,9 +21,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.junit.jupiter.api.BeforeEach;
@@ -141,12 +142,16 @@ public class ValidationAspectTest {
         		assertThat(t.getStatusCode()).isEqualTo(400);
         		assertThat(t.getBody()).isNotBlank();
         		assertThat(t.getIsBase64Encoded()).isFalse();
+            assertThat(t.getHeaders()).containsEntry("header1", "value1,value2,value3");
+            assertThat(t.getMultiValueHeaders()).containsEntry("header1", List.of("value1", "value2", "value3"));
         	});        	
         } else if (response instanceof APIGatewayV2HTTPResponse) {
         	assertThat(response).isInstanceOfSatisfying(APIGatewayV2HTTPResponse.class, t -> {
         		assertThat(t.getStatusCode()).isEqualTo(400);
         		assertThat(t.getBody()).isNotBlank();
         		assertThat(t.getIsBase64Encoded()).isFalse();
+            assertThat(t.getHeaders()).containsEntry("header1", "value1,value2,value3");
+            assertThat(t.getMultiValueHeaders()).containsEntry("header1", List.of("value1", "value2", "value3"));
         	});        	
         } else {
         	fail();
@@ -183,9 +188,11 @@ public class ValidationAspectTest {
                 "    \"price\": 42" +
                 "}");
         
+        
         APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
         assertThat(response.getBody()).isEqualTo("valid-test");
         assertThat(response.getStatusCode()).isEqualTo(200);
+        
     }
 
     @Test
@@ -197,10 +204,15 @@ public class ValidationAspectTest {
                 "    \"name\": \"Lampshade\"," +
                 "    \"price\": -2" +
                 "}");
+        event.setHeaders(Map.of("header1", "value1"));
+        event.setMultiValueHeaders(Map.of("header1", List.of("value1")));
+
         // price is negative
         APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
         assertThat(response.getBody()).isNotBlank();
         assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getHeaders()).isEmpty();
+        assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
@@ -227,10 +239,13 @@ public class ValidationAspectTest {
                 "    \"id\": 1," +
                 "    \"name\": \"Lampshade\"" +
                 "}");
+        event.setHeaders(Map.of("header1", "value1"));
        
         APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
         assertThat(response.getBody()).isNotBlank();
         assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getHeaders()).isEmpty();
+        assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
