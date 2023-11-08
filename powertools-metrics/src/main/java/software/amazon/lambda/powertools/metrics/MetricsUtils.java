@@ -178,8 +178,12 @@ public final class MetricsUtils {
 
     private static String defaultNameSpace() {
         MetricsContext context = MetricsLoggerHelper.metricsContext();
-        return "aws-embedded-metrics".equals(context.getNamespace()) ?
-                SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE") : context.getNamespace();
+        if ("aws-embedded-metrics".equals(context.getNamespace())) {
+            String namespace = SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE");
+            return namespace != null ? namespace : "aws-embedded-metrics";
+        } else {
+            return context.getNamespace();
+        }
     }
 
     private static Optional<String> awsRequestId() {
