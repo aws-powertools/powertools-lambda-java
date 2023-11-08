@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency;
+package software.amazon.lambda.powertools.idempotency.dynamodb;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
-import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyFunction;
+import software.amazon.lambda.powertools.idempotency.dynamodb.handlers.IdempotencyFunction;
 
 public class IdempotencyTest extends DynamoDBConfig {
 

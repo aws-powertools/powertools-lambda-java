@@ -25,12 +25,18 @@
     </parent>
 
     <artifactId>powertools-idempotency</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
-    <name>Powertools for AWS Lambda (Java) - Idempotency</name>
+    <name>Powertools for AWS Lambda (Java) library Idempotency</name>
     <description>
 
     </description>
+
+
+    <modules>
+        <module>powertools-idempotency-common</module>
+        <module>powertools-idempotency-dynamodb</module>
+    </modules>
 
     <dependencies>
         <dependency>
@@ -49,20 +55,6 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>dynamodb</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>netty-nio-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>apache-client</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
@@ -106,20 +98,6 @@
             <artifactId>aws-lambda-java-tests</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>DynamoDBLocal</artifactId>
-            <version>[1.12,2.0)</version>
-            <scope>test</scope>
-        </dependency>
-        <!--Needed when building locally on M1 Mac-->
-        <dependency>
-            <groupId>io.github.ganadist.sqlite4java</groupId>
-            <artifactId>libsqlite4java-osx-aarch64</artifactId>
-            <version>1.0.392</version>
-            <scope>test</scope>
-            <type>dylib</type>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -149,22 +127,6 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Automatic-Module-Name>software.amazon.awssdk.enhanced.dynamodb</Automatic-Module-Name>
-                        </manifestEntries>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
