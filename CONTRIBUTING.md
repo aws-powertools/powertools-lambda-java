@@ -55,8 +55,7 @@ We strongly recommend installing the CheckStyle-IDEA plugin and apply the provid
 2. After installing the plugin, open the preferences (`⌘,` on macOS, or `Ctrl+Alt+S` on Windows/Linux) and search for _Code Style_. Click on the gear icon near the scheme and import checkstyle configuration. Click on "Apply" and "OK".
 ![](docs/media/intellij_checkstyle_1.png)
 
-3. Select the code you've created (module, package, class) and reformat code: `⌘⌥L` (macOS), or `Ctrl+Alt+L` (Windows/Linux):
-![](docs/media/intellij_checkstyle_2.png)
+3. Select the code you've created (module, package, class) and reformat code: `⌘⌥L` (macOS), or `Ctrl+Alt+L` (Windows/Linux).
 
 4. Apply the reformat, optimize imports, rearrange and cleanup to your code and only to java files:
 ![](docs/media/intellij_checkstyle_3.png)
