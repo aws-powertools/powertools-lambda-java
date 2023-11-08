@@ -32,7 +32,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
-import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
+import software.amazon.lambda.powertools.idempotency.dynamodb.persistence.DynamoDBPersistenceStore;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 

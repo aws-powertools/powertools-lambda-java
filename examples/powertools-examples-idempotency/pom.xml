@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency</artifactId>
+            <artifactId>powertools-idempotency-dynamodb</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -117,7 +117,7 @@
                         </aspectLibrary>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-idempotency</artifactId>
+                            <artifactId>powertools-idempotency-dynamodb</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                 </configuration>

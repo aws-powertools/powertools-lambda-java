@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.persistence;
+package software.amazon.lambda.powertools.idempotency.dynamodb.persistence;
 
 import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
 import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
@@ -44,6 +44,9 @@ import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
+import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
+import software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore;
 
 /**
  * DynamoDB version of the {@link PersistenceStore}. Will store idempotency data in DynamoDB.<br>

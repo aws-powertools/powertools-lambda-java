@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.persistence;
+package software.amazon.lambda.powertools.idempotency.dynamodb.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -39,10 +39,11 @@ import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 import software.amazon.lambda.powertools.idempotency.Constants;
-import software.amazon.lambda.powertools.idempotency.DynamoDBConfig;
+import software.amazon.lambda.powertools.idempotency.dynamodb.DynamoDBConfig;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 
 /**
  * These test are using DynamoDBLocal and sqlite, see https://nickolasfisher.com/blog/Configuring-an-In-Memory-DynamoDB-instance-with-Java-for-Integration-Testing

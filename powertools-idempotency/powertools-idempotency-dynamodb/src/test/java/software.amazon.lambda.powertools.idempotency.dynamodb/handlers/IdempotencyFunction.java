@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.handlers;
+package software.amazon.lambda.powertools.idempotency.dynamodb.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
@@ -31,7 +31,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
-import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
+import software.amazon.lambda.powertools.idempotency.dynamodb.persistence.DynamoDBPersistenceStore;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class IdempotencyFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
