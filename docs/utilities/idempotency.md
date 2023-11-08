@@ -35,7 +35,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         ...
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency</artifactId>
+            <artifactId>powertools-idempotency-dynamodb</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
         ...
@@ -56,7 +56,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-idempotency</artifactId>
+                             <artifactId>powertools-idempotency-dynamodb</artifactId>
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
@@ -80,7 +80,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         ...
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency</artifactId>
+            <artifactId>powertools-idempotency-dynamodb</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
         ...
@@ -101,7 +101,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-idempotency</artifactId>
+                             <artifactId>powertools-idempotency-dynamodb</artifactId>
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
@@ -131,7 +131,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-idempotency:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-idempotency-dynamodb:{{ powertools.version }}'
         }
         
         sourceCompatibility = 11 // or higher
@@ -151,7 +151,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-idempotency:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-idempotency-dynamodb:{{ powertools.version }}'
         }
         
         sourceCompatibility = 1.8
