@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.core.internal;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -93,7 +94,12 @@ public final class LambdaHandlerProcessor {
     }
 
     public static Optional<String> getXrayTraceId() {
-        final String X_AMZN_TRACE_ID = getenv(LambdaConstants.X_AMZN_TRACE_ID);
+        String X_AMZN_TRACE_ID = getenv(LambdaConstants.X_AMZN_TRACE_ID);
+        // For the Java Lambda 17+, the Trace ID is set as a System Property
+        if (X_AMZN_TRACE_ID == null) {
+            X_AMZN_TRACE_ID = getProperty(LambdaConstants.XRAY_TRACE_HEADER);
+        }
+
         if (X_AMZN_TRACE_ID != null) {
             return of(X_AMZN_TRACE_ID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, ""));
         }

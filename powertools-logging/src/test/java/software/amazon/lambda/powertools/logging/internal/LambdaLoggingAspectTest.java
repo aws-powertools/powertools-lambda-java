@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -243,6 +244,24 @@ class LambdaLoggingAspectTest {
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("service", "testService");
+    }
+
+    @Test
+    void shouldLogxRayTraceIdSystemPropertySet() {
+        String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn(null);
+            mocked.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(ThreadContext.getImmutableContext())
+                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                    .containsEntry("xray_trace_id", xRayTraceId);
+        }
     }
 
     @Test

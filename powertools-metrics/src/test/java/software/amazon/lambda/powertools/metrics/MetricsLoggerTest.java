@@ -18,6 +18,7 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.mockito.Mockito.mockStatic;
+import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -163,6 +164,41 @@ class MetricsLoggerTest {
         assertThatNullPointerException()
                 .isThrownBy(() -> MetricsUtils.defaultDimensionSet(null))
                 .withMessage("Null dimension set not allowed");
+    }
+
+    @Test
+    void shouldUseTraceIdFromSystemPropertyIfEnvVarNotPresent() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
+            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn(null);
+            internalWrapper.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+
+            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
+                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+
+            assertThat(out.toString())
+                    .satisfies(s ->
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        assertThat(logAsJson)
+                                .containsEntry("Metric1", 1.0)
+                                .containsEntry("Dimension1", "Value1")
+                                .containsKey("_aws")
+                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=GlobalName");
+                    });
+        }
     }
 
     private void testLogger(Consumer<Consumer<MetricsLogger>> methodToTest) {
