@@ -95,7 +95,7 @@ public final class LambdaHandlerProcessor {
 
     public static Optional<String> getXrayTraceId() {
         String X_AMZN_TRACE_ID = getenv(LambdaConstants.X_AMZN_TRACE_ID);
-        // For the Java Lambda 17+, the Trace ID is set as a System Property
+        // For the Java Lambda 17+ runtime, the Trace ID is set as a System Property
         if (X_AMZN_TRACE_ID == null) {
             X_AMZN_TRACE_ID = getProperty(LambdaConstants.XRAY_TRACE_HEADER);
         }
