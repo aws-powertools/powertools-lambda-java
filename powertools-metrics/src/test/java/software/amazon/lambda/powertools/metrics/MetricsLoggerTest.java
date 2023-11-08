@@ -112,6 +112,37 @@ class MetricsLoggerTest {
                                 .containsEntry("Dimension1", "Value1")
                                 .containsKey("_aws")
                                 .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=test");
+                    });
+        }
+    }
+
+    @Test
+    void singleMetricsCaptureUtilityWithNullNamespace() {
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
+             MockedStatic<software.amazon.lambda.powertools.core.internal.SystemWrapper> internalWrapper = mockStatic(
+                     software.amazon.lambda.powertools.core.internal.SystemWrapper.class)) {
+            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+            // POWERTOOLS_METRICS_NAMESPACE is not defined
+
+            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
+                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+
+            assertThat(out.toString())
+                    .satisfies(s ->
+                    {
+                        Map<String, Object> logAsJson = readAsJson(s);
+
+                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+
+                        assertThat(aws.get("CloudWatchMetrics"))
+                                .asString()
+                                .contains("Namespace=aws-embedded-metrics");
                     });
         }
     }
