@@ -270,7 +270,7 @@ class LambdaLoggingAspectTest {
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
 
             requestHandler.handleRequest(new Object(), context);
 
