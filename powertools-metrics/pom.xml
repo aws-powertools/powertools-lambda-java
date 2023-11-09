@@ -55,6 +55,10 @@
         </snapshotRepository>
     </distributionManagement>
 
+    <properties>
+        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

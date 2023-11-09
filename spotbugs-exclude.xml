@@ -86,7 +86,7 @@
                 <Field name="pjp"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore$Builder"/>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore$Builder"/>
                 <Field name="dynamoDbClient"/>
             </And>
             <And>
