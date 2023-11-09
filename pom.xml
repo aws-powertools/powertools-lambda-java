@@ -508,7 +508,7 @@
                         </executions>
                         <configuration>
                             <xmlOutput>true</xmlOutput>
-                            <excludeFilterFile>../spotbugs-exclude.xml</excludeFilterFile>
+                            <excludeFilterFile>${project.basedir}/spotbugs-exclude.xml</excludeFilterFile>
                         </configuration>
                     </plugin>
                 </plugins>

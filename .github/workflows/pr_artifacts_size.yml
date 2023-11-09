@@ -11,7 +11,8 @@ on:
       - 'powertools-core/**'              # not in v2
       - 'powertools-common/**'            # v2 only
       - 'powertools-e2e-tests/**'
-      - 'powertools-idempotency/**'
+      - 'powertools-idempotency-core/**'
+      - 'powertools-idempotency-dynamodb/**'
       - 'powertools-large-messages/**'
       - 'powertools-logging/**'
       - 'powertools-metrics/**'
