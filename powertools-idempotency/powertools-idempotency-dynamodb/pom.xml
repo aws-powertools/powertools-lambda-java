@@ -32,6 +32,10 @@
         DynamoDB implementation for the idempotency module
     </description>
 
+    <properties>
+        <parentproject.basedir>${project.parent.parent.basedir}</parentproject.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

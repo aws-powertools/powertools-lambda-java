@@ -32,6 +32,10 @@
         Json schema validation for Lambda events and responses
     </description>
 
+    <properties>
+        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

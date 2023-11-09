@@ -29,6 +29,10 @@
     <artifactId>powertools-logging</artifactId>
     <packaging>jar</packaging>
 
+    <properties>
+        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

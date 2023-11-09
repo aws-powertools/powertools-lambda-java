@@ -25,6 +25,11 @@
     </build>
 
     <artifactId>powertools-batch</artifactId>
+
+    <properties>
+        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
