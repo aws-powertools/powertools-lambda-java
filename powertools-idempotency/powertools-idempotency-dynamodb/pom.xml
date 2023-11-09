@@ -35,7 +35,7 @@
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency-common</artifactId>
+            <artifactId>powertools-idempotency-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

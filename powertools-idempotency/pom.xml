@@ -34,7 +34,7 @@
 
 
     <modules>
-        <module>powertools-idempotency-common</module>
+        <module>powertools-idempotency-core</module>
         <module>powertools-idempotency-dynamodb</module>
     </modules>
 
