@@ -33,10 +33,6 @@
         custom metrics asynchronously easier.
     </description>
 
-    <properties>
-        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>

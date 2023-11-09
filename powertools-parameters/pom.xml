@@ -29,10 +29,6 @@
     <name>Powertools for AWS Lambda (Java) - Parameters</name>
     <description>Set of utilities to retrieve parameters - common interface</description>
 
-    <properties>
-        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>

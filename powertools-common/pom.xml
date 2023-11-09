@@ -30,10 +30,6 @@
     <name>Powertools for AWS Lambda (Java) - Common Internal Utilities</name>
     <description>Internal utilities shared by the Powertools for AWS Lambda (Java) modules. Do not use directly in your project.</description>
 
-    <properties>
-        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>

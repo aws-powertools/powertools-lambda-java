@@ -32,10 +32,6 @@
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
 
-    <properties>
-        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>

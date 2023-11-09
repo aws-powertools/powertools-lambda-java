@@ -31,10 +31,6 @@
 
     <name>Powertools for AWS Lambda (Java) - Large messages</name>
 
-    <properties>
-        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.aspectj</groupId>
