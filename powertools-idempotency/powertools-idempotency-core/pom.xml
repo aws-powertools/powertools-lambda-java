@@ -32,10 +32,6 @@
         Idempotency module common implementation
     </description>
 
-    <properties>
-        <parentproject.basedir>${project.parent.parent.basedir}</parentproject.basedir>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

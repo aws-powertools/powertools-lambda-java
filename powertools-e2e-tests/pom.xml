@@ -32,7 +32,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <constructs.version>10.3.0</constructs.version>
         <cdk.version>2.100.0</cdk.version>
-        <parentproject.basedir>${project.parent.basedir}</parentproject.basedir>
     </properties>
 
     <dependencies>
