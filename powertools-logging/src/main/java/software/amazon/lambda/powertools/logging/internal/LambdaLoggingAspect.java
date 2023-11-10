@@ -66,7 +66,7 @@ public final class LambdaLoggingAspect {
 
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
-    private static final Boolean LOG_EVENT;
+    private static Boolean LOG_EVENT;
 
     private static Level LEVEL_AT_INITIALISATION;
 

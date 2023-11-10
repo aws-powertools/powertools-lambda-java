@@ -14,6 +14,40 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
+import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.ThreadContext;
+import org.json.JSONException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.core.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.handlers.*;
+
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.joining;
@@ -26,56 +60,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
-import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.nio.channels.FileChannel;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.ThreadContext;
-import org.json.JSONException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junitpioneer.jupiter.SetEnvironmentVariable;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import software.amazon.lambda.powertools.core.internal.EnvironmentVariables;
-import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.core.internal.SystemWrapper;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayRestApiCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
-import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledForStream;
-import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledWithCustomMapper;
-import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabledWithClearState;
-import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventBridgeCorrelationId;
 
 class LambdaLoggingAspectTest {
 
@@ -91,6 +75,7 @@ class LambdaLoggingAspectTest {
         openMocks(this);
         ThreadContext.clearAll();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.TRUE, true);
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();
@@ -180,7 +165,6 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "true")
     void shouldLogEventForHandler() throws IOException, JSONException {
         requestHandler = new PowerToolLogEventEnabled();
         S3EventNotification s3EventNotification = s3EventNotification();
@@ -198,27 +182,24 @@ class LambdaLoggingAspectTest {
         assertEquals(expectEvent, event, false);
     }
 
+    /**
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to false, the handler should log anything, despite @Logging(logEvent=true)
+     * @throws IOException
+     */
     @Test
-    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "false")
-    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException, JSONException {
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException, IllegalAccessException {
+        writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.FALSE, true);
+
         requestHandler = new PowerToolLogEventEnabled();
         S3EventNotification s3EventNotification = s3EventNotification();
 
         requestHandler.handleRequest(s3EventNotification, context);
 
-        Map<String, Object> log = parseToMap(Files.lines(Paths.get("target/logfile.json")).collect(joining()));
-
-        String event = (String) log.get("message");
-
-        String expectEvent = new BufferedReader(
-                new InputStreamReader(this.getClass().getResourceAsStream("/s3EventNotification.json")))
-                .lines().collect(joining("\n"));
-
-        assertEquals(expectEvent, event, false);
+        String s =  Files.lines(Paths.get("target/logfile.json")).collect(joining());
+        assertThat(s).isEmpty();
     }
 
     @Test
-    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "true")
     void shouldLogEventForHandlerWithOverriddenObjectMapper() throws IOException, JSONException {
         RequestHandler<S3EventNotification, Object> handler = new PowerToolLogEventEnabledWithCustomMapper();
         S3EventNotification s3EventNotification = s3EventNotification();
@@ -237,7 +218,6 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "true")
     void shouldLogEventForStreamAndLambdaStreamIsValid() throws IOException, JSONException {
         requestStreamHandler = new PowerToolLogEventEnabledForStream();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
