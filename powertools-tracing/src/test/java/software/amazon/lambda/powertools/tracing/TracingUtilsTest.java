@@ -16,16 +16,23 @@ package software.amazon.lambda.powertools.tracing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.assertj.core.api.InstanceOfAssertFactories.list;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 class TracingUtilsTest {
 
@@ -58,6 +65,48 @@ class TracingUtilsTest {
                         entry("numberKey", 10),
                         entry("booleanKey", false)
                 );
+    }
+
+    @Test
+    void shouldEmitNoLogWarnIfValidCharacterInKey() {
+        AWSXRay.beginSubsegment("subSegment");
+        Logger logger = (Logger) LoggerFactory.getLogger(TracingUtils.class);
+
+        // create and start a ListAppender
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+
+        // add the appender to the logger
+        logger.addAppender(listAppender);
+
+        TracingUtils.putAnnotation("stringKey", "val");
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertThat(AWSXRay.getTraceEntity().getAnnotations())
+                .hasSize(1)
+                .contains(
+                        entry("stringKey", "val")
+                );
+        assertThat(logsList.size()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldEmitLogWarnIfInvalidCharacterInKey() {
+        AWSXRay.beginSubsegment("subSegment");
+        Logger logger = (Logger) LoggerFactory.getLogger(TracingUtils.class);
+
+        // create and start a ListAppender
+        ListAppender<ILoggingEvent> listAppender = new ListAppender<>();
+        listAppender.start();
+
+        // add the appender to the logger
+        logger.addAppender(listAppender);
+        String inputKey = "stringKey with spaces";
+        TracingUtils.putAnnotation(inputKey, "val");
+
+        List<ILoggingEvent> logsList = listAppender.list;
+        assertThat(logsList.get(0).getLevel()).isEqualTo(Level.WARN);
+        assertThat(logsList.get(0).getMessage()).isEqualTo("ignoring annotation with unsupported characters in key: {}",inputKey);
     }
 
     @Test
