@@ -200,26 +200,28 @@ You can also explicitly set a service name via **`POWERTOOLS_SERVICE_NAME`** env
 
 Your logs will always include the following keys to your structured logging:
 
-Key | Type | Example | Description
-------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- | -------------------------------------------------
-**timestamp** | String | "2020-05-24 18:17:33,774" | Timestamp of actual log statement
-**level** | String | "INFO" | Logging level
-**coldStart** | Boolean | true| ColdStart value.
-**service** | String | "payment" | Service name defined. "service_undefined" will be used if unknown
-**samplingRate** | int |  0.1 | Debug logging sampling rate in percentage e.g. 10% in this case
-**message** | String |  "Collecting payment" | Log statement value. Unserializable JSON values will be casted to string
-**functionName**| String | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
-**functionVersion**| String | "12"
-**functionMemorySize**| String | "128"
-**functionArn**| String | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73"
-**xray_trace_id**| String | "1-5759e988-bd862e3fe1be46a994272793" | X-Ray Trace ID when Lambda function has enabled Tracing
-**function_request_id**| String | "899856cb-83d1-40d7-8611-9e78f15f32f4"" | AWS Request ID from lambda context
+| Key                     | Type    | Example                                                                                              | Description                                                              |
+|-------------------------|---------|------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| **timestamp**           | String  | "2020-05-24 18:17:33,774"                                                                            | Timestamp of actual log statement                                        |
+| **level**               | String  | "INFO"                                                                                               | Logging level                                                            |
+| **coldStart**           | Boolean | true                                                                                                 | ColdStart value.                                                         |
+| **service**             | String  | "payment"                                                                                            | Service name defined. "service_undefined" will be used if unknown        |
+| **samplingRate**        | int     | 0.1                                                                                                  | Debug logging sampling rate in percentage e.g. 10% in this case          |
+| **message**             | String  | "Collecting payment"                                                                                 | Log statement value. Unserializable JSON values will be casted to string |
+| **functionName**        | String  | "example-powertools-HelloWorldFunction-1P1Z6B39FLU73"                                                |                                                                          |
+| **functionVersion**     | String  | "12"                                                                                                 |                                                                          |
+| **functionMemorySize**  | String  | "128"                                                                                                |                                                                          |
+| **functionArn**         | String  | "arn:aws:lambda:eu-west-1:012345678910:function:example-powertools-HelloWorldFunction-1P1Z6B39FLU73" |                                                                          |
+| **xray_trace_id**       | String  | "1-5759e988-bd862e3fe1be46a994272793"                                                                | X-Ray Trace ID when Lambda function has enabled Tracing                  |
+| **function_request_id** | String  | "899856cb-83d1-40d7-8611-9e78f15f32f4""                                                              | AWS Request ID from lambda context                                       |
 
 ## Capturing context Lambda info
 
 You can enrich your structured logs with key Lambda context information via `logEvent` annotation parameter. 
 You can also explicitly log any incoming event using `logEvent` param. Refer [Override default object mapper](#override-default-object-mapper) 
 to customise what is logged.
+
+Note that the `logEvent` will work only if `POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable is set to `"true"`
 
 !!! warning
     Log event is disabled by default to prevent sensitive info being logged.
