@@ -48,6 +48,10 @@
         </developer>
     </developers>
 
+    <properties>
+        <logback.version>1.2.11</logback.version>
+    </properties>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -115,6 +119,13 @@
             <artifactId>assertj-core</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

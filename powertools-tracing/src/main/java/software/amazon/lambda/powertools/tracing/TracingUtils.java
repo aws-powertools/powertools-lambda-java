@@ -21,12 +21,15 @@ import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class of helper functions to add additional functionality and ease
  * of use.
  */
 public final class TracingUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
 
     /**
@@ -36,6 +39,7 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, String value) {
+        validateAnnotationKey(key);
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
     }
@@ -47,8 +51,15 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, Number value) {
+        validateAnnotationKey(key);
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
+    }
+
+    private static void validateAnnotationKey(String key) {
+        if (!key.matches("^[a-zA-Z0-9_]+$")) {
+            LOG.warn("ignoring annotation with unsupported characters in key: {}", key);
+        }
     }
 
     /**
