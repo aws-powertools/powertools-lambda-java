@@ -58,8 +58,10 @@ import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
+import software.amazon.lambda.powertools.core.internal.EnvironmentVariables;
 import software.amazon.lambda.powertools.core.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.core.internal.SystemWrapper;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolApiGatewayHttpApiCorrelationId;
@@ -178,6 +180,7 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "true")
     void shouldLogEventForHandler() throws IOException, JSONException {
         requestHandler = new PowerToolLogEventEnabled();
         S3EventNotification s3EventNotification = s3EventNotification();
@@ -196,6 +199,26 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "false")
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException, JSONException {
+        requestHandler = new PowerToolLogEventEnabled();
+        S3EventNotification s3EventNotification = s3EventNotification();
+
+        requestHandler.handleRequest(s3EventNotification, context);
+
+        Map<String, Object> log = parseToMap(Files.lines(Paths.get("target/logfile.json")).collect(joining()));
+
+        String event = (String) log.get("message");
+
+        String expectEvent = new BufferedReader(
+                new InputStreamReader(this.getClass().getResourceAsStream("/s3EventNotification.json")))
+                .lines().collect(joining("\n"));
+
+        assertEquals(expectEvent, event, false);
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "true")
     void shouldLogEventForHandlerWithOverriddenObjectMapper() throws IOException, JSONException {
         RequestHandler<S3EventNotification, Object> handler = new PowerToolLogEventEnabledWithCustomMapper();
         S3EventNotification s3EventNotification = s3EventNotification();
@@ -214,6 +237,7 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = EnvironmentVariables.LOGGER.LOG_EVENT, value = "true")
     void shouldLogEventForStreamAndLambdaStreamIsValid() throws IOException, JSONException {
         requestStreamHandler = new PowerToolLogEventEnabledForStream();
         ByteArrayOutputStream output = new ByteArrayOutputStream();

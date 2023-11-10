@@ -54,6 +54,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.powertools.core.internal.EnvironmentVariables;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 
@@ -65,6 +66,7 @@ public final class LambdaLoggingAspect {
 
     private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
+    private static final Boolean LOG_EVENT;
 
     private static Level LEVEL_AT_INITIALISATION;
 
@@ -74,6 +76,12 @@ public final class LambdaLoggingAspect {
         }
 
         LEVEL_AT_INITIALISATION = LOG.getLevel();
+
+        if (System.getenv(EnvironmentVariables.LOGGER.LOG_EVENT) != null) {
+            LOG_EVENT = Boolean.parseBoolean(System.getenv(EnvironmentVariables.LOGGER.LOG_EVENT));
+        } else {
+            LOG_EVENT = false;
+        }
     }
 
     private static void resetLogLevels(Level logLevel) {
@@ -104,7 +112,9 @@ public final class LambdaLoggingAspect {
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
 
-        if (logging.logEvent()) {
+        // Make sure that the environment variable was enabled explicitly
+        // And that the handler was annotated with @Logging(logEvent = true)
+        if (LOG_EVENT && logging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 
