@@ -221,7 +221,7 @@ You can enrich your structured logs with key Lambda context information via `log
 You can also explicitly log any incoming event using `logEvent` param. Refer [Override default object mapper](#override-default-object-mapper) 
 to customise what is logged.
 
-If you want to enable this event logging for all handlers, set `POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable to `"true"`
+When debugging in non-production environments, you can instruct Logger to log the incoming event with `@Logger(logEvent = true)` or via `POWERTOOLS_LOGGER_LOG_EVENT=true` environment variable.
 
 !!! warning
     Log event is disabled by default to prevent sensitive info being logged.
