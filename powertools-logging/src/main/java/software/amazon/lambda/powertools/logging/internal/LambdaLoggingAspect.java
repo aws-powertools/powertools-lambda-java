@@ -63,14 +63,26 @@ public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
 
-    private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
+    private static final String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
+    private static final String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL");
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
 
     private static Level LEVEL_AT_INITIALISATION;
 
     static {
-        if (null != LOG_LEVEL) {
-            resetLogLevels(Level.getLevel(LOG_LEVEL));
+        if (POWERTOOLS_LOG_LEVEL != null) {
+            Level powertoolsLevel = Level.getLevel(POWERTOOLS_LOG_LEVEL);
+            if (LAMBDA_LOG_LEVEL != null) {
+                Level lambdaLevel = Level.getLevel(LAMBDA_LOG_LEVEL);
+                if (powertoolsLevel.intLevel() > lambdaLevel.intLevel()) {
+                    LOG.warn(
+                            "Both POWERTOOLS_LOG_LEVEL and AWS_LAMBDA_LOG_LEVEL are configured with different values (POWERTOOLS_LOG_LEVEL={}, AWS_LAMBDA_LOG_LEVEL={}), logs with level below LAMBDA_LOG_LEVEL will be ignored",
+                            POWERTOOLS_LOG_LEVEL, LAMBDA_LOG_LEVEL);
+                }
+            }
+            resetLogLevels(powertoolsLevel);
+        } else if (LAMBDA_LOG_LEVEL != null) {
+            resetLogLevels(Level.getLevel(LAMBDA_LOG_LEVEL));
         }
 
         LEVEL_AT_INITIALISATION = LOG.getLevel();
