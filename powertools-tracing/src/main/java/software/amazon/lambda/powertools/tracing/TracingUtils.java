@@ -39,7 +39,7 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, String value) {
-        if (!isValidateAnnotationKey(key)) {
+        if (!isValidAnnotationKey(key)) {
             LOG.warn("Ignoring annotation with unsupported characters in key: {}", key);
             return;
         }
@@ -54,7 +54,7 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, Number value) {
-        if (!isValidateAnnotationKey(key)) {
+        if (!isValidAnnotationKey(key)) {
             LOG.warn("Ignoring annotation with unsupported characters in key: {}", key);
             return;
         }
@@ -68,7 +68,7 @@ public final class TracingUtils {
 
      Annotation keys that are added that are invalid are ignored by x-ray.
      **/
-    private static boolean isValidateAnnotationKey(String key) {
+    private static boolean isValidAnnotationKey(String key) {
         return key.matches("^[a-zA-Z0-9_]+$");
     }
 
