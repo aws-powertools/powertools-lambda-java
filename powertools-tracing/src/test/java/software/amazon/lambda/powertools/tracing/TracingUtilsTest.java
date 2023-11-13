@@ -168,7 +168,7 @@ class TracingUtilsTest {
 
         List<ILoggingEvent> logsList = listAppender.list;
         assertThat(logsList.get(0).getLevel()).isEqualTo(Level.WARN);
-        assertThat(logsList.get(0).getMessage()).isEqualTo("ignoring annotation with unsupported characters in key: {}",inputKey);
+        assertThat(logsList.get(0).getMessage()).isEqualTo("Ignoring annotation with unsupported characters in key: {}",inputKey);
     }
 
     @Test

@@ -39,7 +39,10 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, String value) {
-        validateAnnotationKey(key);
+        if (!isValidateAnnotationKey(key)) {
+            LOG.warn("Ignoring annotation with unsupported characters in key: {}", key);
+            return;
+        }
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
     }
@@ -51,15 +54,22 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, Number value) {
-        validateAnnotationKey(key);
+        if (!isValidateAnnotationKey(key)) {
+            LOG.warn("Ignoring annotation with unsupported characters in key: {}", key);
+            return;
+        }
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
     }
 
-    private static void validateAnnotationKey(String key) {
-        if (!key.matches("^[a-zA-Z0-9_]+$")) {
-            LOG.warn("ignoring annotation with unsupported characters in key: {}", key);
-        }
+    /**
+     Make sure that the annotation key is valid according to
+     <a href='https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html#api-segmentdocuments-annotations'>the documentation</a>.
+
+     Annotation keys that are added that are invalid are ignored by x-ray.
+     **/
+    private static boolean isValidateAnnotationKey(String key) {
+        return key.matches("^[a-zA-Z0-9_]+$");
     }
 
     /**
