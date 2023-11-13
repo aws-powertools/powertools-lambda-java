@@ -279,13 +279,13 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 !!! info
     **Explicit parameters take precedence over environment variables.**
 
-| Environment variable                   | Description                                                                            | Utility                   |
-|----------------------------------------|----------------------------------------------------------------------------------------|---------------------------|
-| **POWERTOOLS_SERVICE_NAME**            | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       |
-| **POWERTOOLS_METRICS_NAMESPACE**       | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) |
-| **POWERTOOLS_LOGGER_SAMPLE_RATE**      | Debug log sampling                                                                     | [Logging](./core/logging) |
-| **POWERTOOLS_LOG_LEVEL**               | Sets logging level                                                                     | [Logging](./core/logging) |
-| **POWERTOOLS_LOGGER_LOG_EVENT**        | Enables/Disables whether to log the incoming event when using the aspect               | [Logging](./core/logging) |
-| **POWERTOOLS_TRACER_CAPTURE_RESPONSE** | Enables/Disables tracing mode to capture method response                               | [Tracing](./core/tracing) |
-| **POWERTOOLS_TRACER_CAPTURE_ERROR**    | Enables/Disables tracing mode to capture method error                                  | [Tracing](./core/tracing) |
+| Environment variable | Description | Utility |
+| ------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **POWERTOOLS_SERVICE_NAME** | Sets service name used for tracing namespace, metrics dimension and structured logging | All |
+| **POWERTOOLS_METRICS_NAMESPACE** | Sets namespace used for metrics | [Metrics](./core/metrics) |
+| **POWERTOOLS_LOGGER_SAMPLE_RATE** | Debug log sampling | [Logging](./core/logging) |
+| **POWERTOOLS_LOG_LEVEL** | Sets logging level | [Logging](./core/logging) |
+| **POWERTOOLS_LOGGER_LOG_EVENT** | Enables/Disables whether to log the incoming event when using the aspect | [Logging](./core/logging) |
+| **POWERTOOLS_TRACER_CAPTURE_RESPONSE** | Enables/Disables tracing mode to capture method response | [Tracing](./core/tracing) |
+| **POWERTOOLS_TRACER_CAPTURE_ERROR** | Enables/Disables tracing mode to capture method error | [Tracing](./core/tracing) |
 
