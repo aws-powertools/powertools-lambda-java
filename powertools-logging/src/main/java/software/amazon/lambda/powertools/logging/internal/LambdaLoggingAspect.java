@@ -112,9 +112,9 @@ public final class LambdaLoggingAspect {
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
 
-        // Make sure that the environment variable was enabled explicitly
-        // And that the handler was annotated with @Logging(logEvent = true)
-        if (LOG_EVENT && logging.logEvent()) {
+        // Check that the environment variable was enabled explicitly
+        // Or that the handler was annotated with @Logging(logEvent = true)
+        if (LOG_EVENT || logging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 

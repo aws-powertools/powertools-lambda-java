@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
 import org.json.JSONException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -54,6 +55,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
@@ -75,7 +77,6 @@ class LambdaLoggingAspectTest {
         openMocks(this);
         ThreadContext.clearAll();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
-        writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.TRUE, true);
         setupContext();
         requestHandler = new PowerLogToolEnabled();
         requestStreamHandler = new PowerLogToolEnabledForStream();
@@ -103,7 +104,7 @@ class LambdaLoggingAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowerLogToolEnabledForStream();
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(ThreadContext.getImmutableContext())
@@ -119,14 +120,14 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldSetColdStartFlag() throws IOException {
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("coldStart", "true");
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(ThreadContext.getImmutableContext())
@@ -183,20 +184,48 @@ class LambdaLoggingAspectTest {
     }
 
     /**
-     * If POWERTOOLS_LOGGER_LOG_EVENT was set to false, the handler should log anything, despite @Logging(logEvent=true)
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to true, the handler should log, despite @Logging(logEvent=false)
+     *
      * @throws IOException
      */
     @Test
-    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException, IllegalAccessException {
-        writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.FALSE, true);
+    void shouldLogEventForHandlerWhenEnvVariableSetToTrue() throws IOException, IllegalAccessException, JSONException {
+        try {
+            writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.TRUE, true);
 
-        requestHandler = new PowerToolLogEventEnabled();
+            requestHandler = new PowerToolLogEventDisabled();
+            S3EventNotification s3EventNotification = s3EventNotification();
+
+            requestHandler.handleRequest(s3EventNotification, context);
+
+            Map<String, Object> log = parseToMap(Files.lines(Paths.get("target/logfile.json")).collect(joining()));
+
+            String event = (String) log.get("message");
+
+            String expectEvent = new BufferedReader(
+                    new InputStreamReader(this.getClass().getResourceAsStream("/s3EventNotification.json")))
+                    .lines().collect(joining("\n"));
+
+            assertEquals(expectEvent, event, false);
+        } finally {
+            writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.FALSE, true);
+        }
+    }
+
+    /**
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to false and @Logging(logEvent=false), the handler shouldn't log
+     *
+     * @throws IOException
+     */
+    @Test
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException {
+        requestHandler = new PowerToolLogEventDisabled();
         S3EventNotification s3EventNotification = s3EventNotification();
 
         requestHandler.handleRequest(s3EventNotification, context);
 
-        String s =  Files.lines(Paths.get("target/logfile.json")).collect(joining());
-        assertThat(s).isEmpty();
+        Assertions.assertEquals(0,
+                Files.lines(Paths.get("target/logfile.json")).collect(joining()).length());
     }
 
     @Test
