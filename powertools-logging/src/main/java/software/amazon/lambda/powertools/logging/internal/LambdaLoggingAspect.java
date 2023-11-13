@@ -33,6 +33,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,6 +43,7 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +56,6 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.lambda.powertools.core.internal.EnvironmentVariables;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
 
@@ -77,8 +78,9 @@ public final class LambdaLoggingAspect {
 
         LEVEL_AT_INITIALISATION = LOG.getLevel();
 
-        if (System.getenv(EnvironmentVariables.LOGGER.LOG_EVENT) != null) {
-            LOG_EVENT = Boolean.parseBoolean(System.getenv(EnvironmentVariables.LOGGER.LOG_EVENT));
+        String logEvent = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT");
+        if (logEvent != null) {
+            LOG_EVENT = Boolean.parseBoolean(logEvent);
         } else {
             LOG_EVENT = false;
         }
