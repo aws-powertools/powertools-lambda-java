@@ -68,12 +68,6 @@
             <scope>test</scope>
             <type>dylib</type>
         </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <version>${aspectj.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -105,11 +99,9 @@
                             <artifactId>powertools-idempotency-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
-                    `
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
                             <goal>test-compile</goal>
@@ -117,11 +109,6 @@
                     </execution>
                 </executions>
                 <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjrt</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
                     <dependency>
                         <groupId>org.aspectj</groupId>
                         <artifactId>aspectjtools</artifactId>
