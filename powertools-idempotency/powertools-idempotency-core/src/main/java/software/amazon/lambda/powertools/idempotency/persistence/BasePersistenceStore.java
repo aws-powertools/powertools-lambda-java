@@ -55,7 +55,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     protected boolean payloadValidationEnabled = false;
     private String functionName = "";
     private boolean configured = false;
-    private long expirationInSeconds = 60 * 60; // 1 hour default
+    private long expirationInSeconds = 60 * 60L; // 1 hour default
     private boolean useLocalCache = false;
     private LRUCache<String, DataRecord> cache;
     private String eventKeyJMESPath;

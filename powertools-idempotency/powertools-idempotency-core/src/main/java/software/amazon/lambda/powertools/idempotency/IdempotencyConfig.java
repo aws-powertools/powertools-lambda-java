@@ -93,7 +93,7 @@ public class IdempotencyConfig {
 
         private int localCacheMaxItems = 256;
         private boolean useLocalCache = false;
-        private long expirationInSeconds = 60 * 60; // 1 hour
+        private long expirationInSeconds = 60 * 60L; // 1 hour
         private String eventKeyJMESPath;
         private String payloadValidationJMESPath;
         private boolean throwOnNoIdempotencyKey = false;
