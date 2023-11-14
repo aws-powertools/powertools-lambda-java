@@ -28,7 +28,6 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
-import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
@@ -314,7 +313,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
          * @return an instance of the {@link DynamoDBPersistenceStore}
          */
         public DynamoDBPersistenceStore build() {
-            if (StringUtils.isEmpty(tableName)) {
+            if (tableName == null || "".equals(tableName)) {
                 throw new IllegalArgumentException("Table name is not specified");
             }
             return new DynamoDBPersistenceStore(tableName, keyAttr, staticPkValue, sortKeyAttr, expiryAttr,

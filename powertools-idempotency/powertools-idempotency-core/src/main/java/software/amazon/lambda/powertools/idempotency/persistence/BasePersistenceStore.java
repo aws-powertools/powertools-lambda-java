@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import io.burt.jmespath.Expression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
@@ -74,7 +73,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     public void configure(IdempotencyConfig config, String functionName) {
         String funcEnv = System.getenv(LAMBDA_FUNCTION_NAME_ENV);
         this.functionName = funcEnv != null ? funcEnv : "testFunction";
-        if (!StringUtils.isEmpty(functionName)) {
+        if (functionName != null && !functionName.isEmpty()) {
             this.functionName += "." + functionName;
         }
 
@@ -340,7 +339,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     private void validatePayload(JsonNode data, DataRecord dataRecord) throws IdempotencyValidationException {
         if (payloadValidationEnabled) {
             String dataHash = getHashedPayload(data);
-            if (!StringUtils.equals(dataHash, dataRecord.getPayloadHash())) {
+            if (!isEqual(dataRecord.getPayloadHash(), dataHash)) {
                 throw new IdempotencyValidationException("Payload does not match stored record for this event key");
             }
         }
@@ -402,5 +401,13 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     void configure(IdempotencyConfig config, String functionName, LRUCache<String, DataRecord> cache) {
         this.configure(config, functionName);
         this.cache = cache;
+    }
+
+    private static boolean isEqual(String dataRecordPayload, String dataHash) {
+        if (dataHash != null && dataRecordPayload != null) {
+            return dataHash.length() != dataRecordPayload.length() ? false : dataHash.equals(dataRecordPayload);
+        } else {
+            return false;
+        }
     }
 }
