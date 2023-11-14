@@ -47,6 +47,13 @@ public final class LambdaHandlerProcessor {
         return placedOnRequestHandler(pjp) || placedOnStreamHandler(pjp);
     }
 
+    /**
+     * The class needs to implement RequestHandler interface
+     * The function needs to have exactly two arguments
+     * The second argument needs to be of type com.amazonaws.services.lambda.runtime.Context
+     * @param pjp
+     * @return
+     */
     public static boolean placedOnRequestHandler(final ProceedingJoinPoint pjp) {
         return RequestHandler.class.isAssignableFrom(pjp.getSignature().getDeclaringType())
                 && pjp.getArgs().length == 2
