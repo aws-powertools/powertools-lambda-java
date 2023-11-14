@@ -48,20 +48,6 @@
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
         </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-serialization</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
-            <version>${aws.sdk.version}</version>
-        </dependency>
-
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -27,7 +27,7 @@
     <artifactId>powertools-idempotency-core</artifactId>
     <packaging>jar</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Idempotency - Common</name>
+    <name>Powertools for AWS Lambda (Java) library Idempotency - Core</name>
     <description>
         Idempotency module common implementation
     </description>
@@ -36,15 +36,6 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-serialization</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>aws-lambda-java-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
-            <version>${aws.sdk.version}</version>
         </dependency>
         <!-- Test dependencies -->
     </dependencies>
