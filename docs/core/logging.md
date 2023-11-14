@@ -217,10 +217,6 @@ Key | Type | Example | Description
 
 ## Capturing context Lambda info
 
-You can enrich your structured logs with key Lambda context information via `logEvent` annotation parameter. 
-You can also explicitly log any incoming event using `logEvent` param. Refer [Override default object mapper](#override-default-object-mapper) 
-to customise what is logged.
-
 If you want to enable this event logging for all handlers, set `POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable to `"true"`
 
 !!! warning
