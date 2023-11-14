@@ -28,6 +28,7 @@ import static software.amazon.lambda.powertools.core.internal.LambdaHandlerProce
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
+import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LAMBDA_LOG_LEVEL;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonPointer;
@@ -61,10 +62,9 @@ import software.amazon.lambda.powertools.logging.LoggingUtils;
 @DeclarePrecedence("*, software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
-    private static final Random SAMPLER = new Random();
-
     private static final String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
-    private static final String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL");
+
+    private static final Random SAMPLER = new Random();
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
 
     private static Level LEVEL_AT_INITIALISATION;
@@ -75,8 +75,7 @@ public final class LambdaLoggingAspect {
             if (LAMBDA_LOG_LEVEL != null) {
                 Level lambdaLevel = Level.getLevel(LAMBDA_LOG_LEVEL);
                 if (powertoolsLevel.intLevel() > lambdaLevel.intLevel()) {
-                    LOG.warn(
-                            "Both POWERTOOLS_LOG_LEVEL and AWS_LAMBDA_LOG_LEVEL are configured with different values (POWERTOOLS_LOG_LEVEL={}, AWS_LAMBDA_LOG_LEVEL={}), logs with level below LAMBDA_LOG_LEVEL will be ignored",
+                    LOG.warn("Current log level ({}) does not match AWS Lambda Advanced Logging Controls minimum log level ({}). This can lead to data loss, consider adjusting them.",
                             POWERTOOLS_LOG_LEVEL, LAMBDA_LOG_LEVEL);
                 }
             }

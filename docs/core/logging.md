@@ -265,7 +265,7 @@ to customise what is logged.
     }
     ```
 
-### Customising  fields in logs
+### Customising fields in logs
 
 - Utility by default emits `timestamp` field in the logs in format `yyyy-MM-dd'T'HH:mm:ss.SSSZz` and in system default timezone. 
 If you need to customize format and timezone, you can do so by configuring `log4j2.component.properties` and configuring properties as shown in example below:
@@ -598,6 +598,48 @@ via `samplingRate` attribute on annotation.
                     POWERTOOLS_LOGGER_SAMPLE_RATE: 0.5
     ```
 
+## AWS Lambda Advanced Logging Controls
+With AWS [Lambda Advanced Logging Controls (ALC)](), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. 
+Regardless of the output format setting in Lambda, Powertools for AWS Lambda will always output JSON formatted logging messages.
+
+When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. 
+For example, if you set the minimum log level to `WARN`, you will only receive `WARN` and `ERROR` messages in your AWS CloudWatch Logs, all other log levels will be discarded by Lambda.
+
+```mermaid
+sequenceDiagram
+    participant Lambda service
+    participant Lambda function
+    participant Application Logger
+
+    Note over Lambda service: AWS_LAMBDA_LOG_LEVEL="WARN"
+    Lambda service->>Lambda function: Invoke (event)
+    Lambda function->>Lambda function: Calls handler
+    Lambda function->>Application Logger: logger.warn("Something happened")
+    Lambda function-->>Application Logger: logger.debug("Something happened")
+    Lambda function-->>Application Logger: logger.info("Something happened")
+    
+    Lambda service->>Lambda service: DROP INFO and DEBUG logs
+
+    Lambda service->>CloudWatch Logs: Ingest error logs
+```
+
+Logger will automatically listen for the `AWS_LAMBDA_LOG_FORMAT` and `AWS_LAMBDA_LOG_LEVEL` environment variables, and change behaviour if they’re found to ensure as much compatibility as possible.
+
+### Priority of log level settings in Powertools for AWS Lambda
+
+When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see AWS Lambda service documentation for more details.
+
+We prioritise log level settings in this order:
+
+1. `AWS_LAMBDA_LOG_LEVEL` environment variable
+2. `POWERTOOLS_LOG_LEVEL` environment variable
+
+In the event you have set `POWERTOOLS_LOG_LEVEL` to a level lower than the ACL setting, Powertools for AWS Lambda will output a warning log message informing you that your messages will be discarded by Lambda.
+
+### Timestamp format
+
+When the Advanced Logging Controls feature is enabled, Powertools for AWS Lambda must comply with the timestamp format required by Lambda, which is [RFC3339](https://www.rfc-editor.org/rfc/rfc3339). 
+In this case the format will be `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`.
 
 ## Upgrade to JsonTemplateLayout from deprecated LambdaJsonLayout configuration in log4j2.xml
 

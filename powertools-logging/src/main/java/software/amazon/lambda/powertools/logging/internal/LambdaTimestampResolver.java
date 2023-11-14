@@ -14,6 +14,9 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LAMBDA_LOG_FORMAT;
+import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LOG_DATE_RFC3339_FORMAT;
+
 import java.util.Locale;
 import java.util.TimeZone;
 import org.apache.logging.log4j.core.LogEvent;
@@ -33,8 +36,6 @@ import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
  * TODO: remove in v2 an replace with the good pattern in LambdaJsonLayout.json
  */
 public class LambdaTimestampResolver implements EventResolver {
-
-    private static final String DATE_RFC3339_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     private final EventResolver internalResolver;
 
@@ -91,8 +92,7 @@ public class LambdaTimestampResolver implements EventResolver {
         }
 
         private static String getLambdaTimestampFormatOrDefault() {
-            String logFormat = System.getenv("AWS_LAMBDA_LOG_FORMAT");
-            return "JSON".equals(logFormat) ? DATE_RFC3339_FORMAT :
+            return "JSON".equals(LAMBDA_LOG_FORMAT) ? LOG_DATE_RFC3339_FORMAT :
                     JsonTemplateLayoutDefaults.getTimestampFormatPattern();
         }
 
