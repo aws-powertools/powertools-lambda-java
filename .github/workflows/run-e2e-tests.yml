@@ -34,7 +34,7 @@ jobs:
     strategy:
       max-parallel: 3
       matrix:
-        java: [ 8, 11, 17 ]
+        java: [ 8, 11, 17, 21 ]
     name: End-to-end tests java${{ matrix.java }}
     env:
       JAVA_VERSION: ${{ matrix.java }}

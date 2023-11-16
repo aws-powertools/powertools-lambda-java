@@ -523,6 +523,8 @@ public class Infrastructure {
                 runtime = JavaRuntime.JAVA11;
             } else if (javaVersion.startsWith("17")) {
                 runtime = JavaRuntime.JAVA17;
+            } else if (javaVersion.startsWith("21")) {
+                runtime = JavaRuntime.JAVA21;
             } else {
                 throw new IllegalArgumentException("Unsupported Java version " + javaVersion);
             }
