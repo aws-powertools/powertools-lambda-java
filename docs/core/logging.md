@@ -599,7 +599,7 @@ via `samplingRate` attribute on annotation.
     ```
 
 ## AWS Lambda Advanced Logging Controls
-With AWS [Lambda Advanced Logging Controls (ALC)](), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. 
+With AWS [Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced), you can control the output format of your logs as either `TEXT` or `JSON` and specify the minimum accepted log level for your application. 
 Regardless of the output format setting in Lambda, Powertools for AWS Lambda will always output JSON formatted logging messages.
 
 When you have this feature enabled, log messages that don’t meet the configured log level are discarded by Lambda. 
@@ -627,7 +627,7 @@ Logger will automatically listen for the `AWS_LAMBDA_LOG_FORMAT` and `AWS_LAMBDA
 
 ### Priority of log level settings in Powertools for AWS Lambda
 
-When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see AWS Lambda service documentation for more details.
+When the Advanced Logging Controls feature is enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level) for more details.
 
 We prioritise log level settings in this order:
 
@@ -638,7 +638,7 @@ In the event you have set `POWERTOOLS_LOG_LEVEL` to a level lower than the ACL s
 
 ### Timestamp format
 
-When the Advanced Logging Controls feature is enabled, Powertools for AWS Lambda must comply with the timestamp format required by Lambda, which is [RFC3339](https://www.rfc-editor.org/rfc/rfc3339). 
+When the Advanced Logging Controls feature is enabled, Powertools for AWS Lambda must comply with the timestamp format required by AWS Lambda, which is [RFC3339](https://www.rfc-editor.org/rfc/rfc3339). 
 In this case the format will be `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`.
 
 ## Upgrade to JsonTemplateLayout from deprecated LambdaJsonLayout configuration in log4j2.xml
