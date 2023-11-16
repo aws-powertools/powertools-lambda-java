@@ -18,6 +18,7 @@ compileJava {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -27,8 +28,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2.2'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2'
-    aspect 'software.amazon.lambda:powertools-tracing:1.17.0'
-    aspect 'software.amazon.lambda:powertools-logging:1.17.0'
-    aspect 'software.amazon.lambda:powertools-metrics:1.17.0'
+    aspect 'software.amazon.lambda:powertools-tracing:1.18.0'
+    aspect 'software.amazon.lambda:powertools-logging:1.18.0'
+    aspect 'software.amazon.lambda:powertools-metrics:1.18.0'
 }
 
