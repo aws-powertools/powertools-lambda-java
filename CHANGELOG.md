@@ -10,8 +10,34 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.18.0] - 2023-11-16
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
+### Added
 
+* feat: add support for [Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced) (#1514) by @jeromevdl
+* feat: Add support for POWERTOOLS_LOGGER_LOG_EVENT (#1510) by @AlexeySoshin
+
+### Maintenance
+
+* fix: json schema 403 error (#1457) by @jeromevdl
+* fix: array jmespath fail in idempotency module (#1420) by @jeromevdl
+* chore: java21 support in our build (#1488) by @jeromevdl
+* chore: Addition of Warn Message If Invalid Annotation Key While Tracing #1511 (#1512) by @jdoherty
+* fix: null namespace should fallback to default namespace (#1506) by @jeromevdl
+* fix: get trace id from system property when env var is not set (#1503) by @mriccia
+* chore: artifacts size on good branches (#1493) by @jeromevdl
+* fix: enforce jackson databind version (#1472) by @jeromevdl
+* chore: add missing projects and improve workflow (#1487) by @jeromevdl
+* chore: Reporting size of the jars in GitHub comments (#1196) by @jeromevdl
+* Deps: Bump third party dependencies to the latest versions.
+
+### Documentation
+
+* docs(customer-reference): add Vertex Pharmaceuticals as a customer reference (#1486) by @scottgerring
+* docs: Adding Kotlin example. (#1454) by @jasoniharris
+* docs: Terraform example (#1478) by @skal111
+* docs: Add Serveless Framework example (#1363) by @AlexeySoshin
+* docs: Fix link to SQS large message migration guide (#1422) by @scottgerring
+* docs(logging): correct log example keys (#1411) by @walmsles
+* docs: Update gradle configuration readme (#1359) by @scottgerring
 
 ## [1.17.0] - 2023-08-21
 
