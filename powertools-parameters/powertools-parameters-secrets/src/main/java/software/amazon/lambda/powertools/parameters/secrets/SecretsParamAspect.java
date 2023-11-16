@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.parameters.secrets;
 
+import java.util.function.Supplier;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -23,6 +24,8 @@ import org.aspectj.lang.reflect.FieldSignature;
 @Aspect
 public class SecretsParamAspect {
 
+    private static Supplier<SecretsProvider> providerBuilder = () -> SecretsProvider.builder()
+            .build();
 
     @Pointcut("get(* *) && @annotation(secretsParam)")
     public void getParam(SecretsParam secretsParam) {
@@ -32,8 +35,7 @@ public class SecretsParamAspect {
     public Object injectParam(final ProceedingJoinPoint joinPoint, final SecretsParam secretsParam) {
         System.out.println("GET IT");
 
-        SecretsProvider provider = SecretsProvider.builder()
-                .build();
+        SecretsProvider provider = providerBuilder.get();
 
         if (secretsParam.transformer().isInterface()) {
             // No transformation

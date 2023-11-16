@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.parameters.ssm;
 
+import java.util.function.Supplier;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -23,6 +24,9 @@ import org.aspectj.lang.reflect.FieldSignature;
 @Aspect
 public class SSMParamAspect {
 
+    // This supplier produces a new SSMProvider each time it is called
+    private static Supplier<SSMProvider> providerBuilder = () -> SSMProvider.builder()
+            .build();
 
     @Pointcut("get(* *) && @annotation(secretsParam)")
     public void getParam(SSMParam secretsParam) {
@@ -32,8 +36,7 @@ public class SSMParamAspect {
     public Object injectParam(final ProceedingJoinPoint joinPoint, final SSMParam SSMParam) {
         System.out.println("GET IT");
 
-        SSMProvider provider = SSMProvider.builder()
-                .build();
+        SSMProvider provider = providerBuilder.get();
 
         if (SSMParam.transformer().isInterface()) {
             // No transformation

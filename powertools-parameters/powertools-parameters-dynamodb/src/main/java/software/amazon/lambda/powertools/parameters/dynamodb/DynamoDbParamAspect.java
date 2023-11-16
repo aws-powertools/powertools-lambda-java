@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.parameters.dynamodb;
 
+import java.util.function.Function;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -23,6 +24,10 @@ import org.aspectj.lang.reflect.FieldSignature;
 @Aspect
 public class DynamoDbParamAspect {
 
+    private static Function<String, DynamoDbProvider> providerBuilder =
+            (String table) -> DynamoDbProvider.builder()
+                    .withTable(table)
+                    .build();
 
     @Pointcut("get(* *) && @annotation(ddbConfigParam)")
     public void getParam(DynamoDbParam ddbConfigParam) {
@@ -32,9 +37,7 @@ public class DynamoDbParamAspect {
     public Object injectParam(final ProceedingJoinPoint joinPoint, final DynamoDbParam ddbConfigParam) {
         System.out.println("GET IT");
 
-        DynamoDbProvider provider = DynamoDbProvider.builder()
-                .withTable(ddbConfigParam.table())
-                .build();
+        DynamoDbProvider provider = providerBuilder.apply(ddbConfigParam.table());
 
         if (ddbConfigParam.transformer().isInterface()) {
             // No transformation

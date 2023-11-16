@@ -12,34 +12,34 @@
  *
  */
 
-package software.amazon.lambda.powertools.parameters.appconfig;
+package software.amazon.lambda.powertools.parameters.dynamodb;
 
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class AppConfigParamAspectTest {
+public class DynamoDbParamAspectTest {
 
     @Test
     public void parameterInjectedByProvider() throws Exception {
-        // Setup our aspect to return a mocked AppConfigProvider
-        String environment = "myEnvironment";
-        String appName = "myApp";
+        // Setup our aspect to return a mocked DynamoDbProvider
+        String tableName = "my-test-tablename";
         String key = "myKey";
         String value = "myValue";
-        AppConfigProvider provider = Mockito.mock(AppConfigProvider.class);
-        BiFunction<String, String, AppConfigProvider> providerBuilder = (String env, String app) -> {
-            if (env.equals(environment) && app.equals(appName)) {
+        DynamoDbProvider provider = Mockito.mock(DynamoDbProvider.class);
+
+        Function<String, DynamoDbProvider> providerBuilder = (String table) -> {
+            if (table.equals(tableName)) {
                 return provider;
             }
             throw new RuntimeException("Whoops! Asked for an app/env that we weren't configured for");
         };
-        writeStaticField(AppConfigParametersAspect.class, "providerBuilder", providerBuilder, true);
+        writeStaticField(DynamoDbParamAspect.class, "providerBuilder", providerBuilder, true);
 
-        // Setup our mocked AppConfigProvider to return a value for our test data
+        // Setup our mocked DynamoDbProvider to return a value for our test data
         Mockito.when(provider.get(key)).thenReturn(value);
 
         // Create an instance of a class and let the AppConfigParametersAspect inject it
@@ -48,7 +48,7 @@ public class AppConfigParamAspectTest {
     }
 
     class MyInjectedClass {
-        @AppConfigParam(application = "myApp", environment = "myEnvironment", key = "myKey")
+        @DynamoDbParam(table = "my-test-tablename", key = "myKey")
         public String myParameter;
     }
 
