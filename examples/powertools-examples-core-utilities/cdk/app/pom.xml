@@ -2,12 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <name>Powertools for AWS Lambda (Java) library Examples - Core Utilities (logging, tracing, metrics) with CDK</name>
     <groupId>software.amazon.lambda.examples</groupId>
+    <!-- TODO TODO TODO this should build from SNAPSHOT, but it doesn't, because the snapshots
+    don't appear in the docker environment CDK builds it in in our CDK tests. How to procede? V2 blocker -->
     <version>1.17.0</version>
     <artifactId>powertools-examples-core-utilities-cdk</artifactId>
     <packaging>jar</packaging>
-
-    <name>Powertools for AWS Lambda (Java) library Examples - Core Utilities (logging, tracing, metrics) with CDK</name>
 
     <properties>
         <log4j.version>2.20.0</log4j.version>
@@ -40,7 +41,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
-            <version>3.11.2</version>
+            <version>3.11.3</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -56,13 +57,6 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <version>${aspectj.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -118,8 +112,10 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <transformers>
-                                <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
+                                <transformer
+                                        implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>

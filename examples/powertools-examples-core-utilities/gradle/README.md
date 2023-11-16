@@ -8,7 +8,7 @@ You can also use `sam init` to create a new Gradle-powered Powertools applicatio
 and then **Hello World Example with Powertools for AWS Lambda**, **Java 17** runtime, and finally **gradle**.
 
 
-For general information on the deployed example itself, you can refer to the parent [README](../../powertools-examples-core/README.md)
+For general information on the deployed example itself, you can refer to the parent [README](../README.md)
 
 ## Configuration
 SAM uses [template.yaml](template.yaml) to define the application's AWS resources.

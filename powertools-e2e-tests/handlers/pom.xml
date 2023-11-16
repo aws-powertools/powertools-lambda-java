@@ -132,11 +132,11 @@
                         </execution>
                     </executions>
                     <dependencies>
-                      <dependency>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
-                        <version>0.1.0</version>
-                       </dependency>
+                        <dependency>
+                            <groupId>org.apache.logging.log4j</groupId>
+                            <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
+                            <version>0.1.0</version>
+                        </dependency>
                     </dependencies>
                 </plugin>
                 <plugin>

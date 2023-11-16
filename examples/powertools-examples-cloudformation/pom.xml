@@ -14,9 +14,10 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <lambda.core.version>1.2.3</lambda.core.version>
-        <lambda.events.version>3.11.2</lambda.events.version>
-        <aws.sdk.version>2.20.136</aws.sdk.version>
+        <lambda.events.version>3.11.3</lambda.events.version>
+        <aws.sdk.version>2.21.0</aws.sdk.version>
         <aspectj.version>1.9.20</aspectj.version>
+
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -95,6 +96,9 @@
             <artifactId>log4j-jcl</artifactId>
             <version>${log4j.version}</version>
         </dependency>
+
+
+
     </dependencies>
 
     <build>
@@ -140,6 +144,7 @@
                         <goal>shade</goal>
                     </goals>
                     <configuration>
+                        <createDependencyReducedPom>false</createDependencyReducedPom>
                         <transformers>
                             <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
                         </transformers>

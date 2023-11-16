@@ -30,8 +30,8 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <constructs.version>10.2.69</constructs.version>
-        <cdk.version>2.93.0</cdk.version>
+        <constructs.version>10.3.0</constructs.version>
+        <cdk.version>2.100.0</cdk.version>
     </properties>
 
     <dependencies>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>amazon-sqs-java-extended-client-lib</artifactId>
-            <version>2.0.3</version>
+            <version>2.0.4</version>
             <scope>test</scope>
         </dependency>
 
