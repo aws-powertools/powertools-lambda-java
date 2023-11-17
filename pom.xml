@@ -83,6 +83,7 @@
         <lambda.events.version>3.11.3</lambda.events.version>
         <lambda.serial.version>1.1.2</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
@@ -530,34 +531,6 @@
             </build>
         </profile>
 
-        <!-- https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md -->
-        <profile>
-            <id>aspectj197</id>
-            <activation>
-                <jdk>[1.8,16]</jdk>
-            </activation>
-            <properties>
-                <aspectj.version>1.9.7</aspectj.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>aspectj1920</id>
-            <activation>
-                <jdk>[17,20]</jdk>
-            </activation>
-            <properties>
-                <aspectj.version>1.9.20.1</aspectj.version>
-            </properties>
-        </profile>
-        <profile>
-            <id>aspectj1921</id>
-            <activation>
-                <jdk>[21,)</jdk>
-            </activation>
-            <properties>
-                <aspectj.version>1.9.21-SNAPSHOT</aspectj.version>
-            </properties>
-        </profile>
         <profile>
             <id>jdk16</id>
             <activation>
