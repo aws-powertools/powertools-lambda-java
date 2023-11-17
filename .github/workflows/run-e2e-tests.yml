@@ -44,7 +44,7 @@ jobs:
       # to test the Java21 runtime, but we can't yet use the JDK21 compiler.
       # https://github.com/eclipse-aspectj/aspectj/issues/260#issuecomment-1815920274
       JAVA_VERSION: ${{ (matrix.java == 21 && '17') || matrix.java }}
-      JAVA_RUNTIME_VERSION: ${{ matrix.java }}
+      JAVA_LAMBDA_RUNTIME_VERSION: ${{ matrix.java }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
