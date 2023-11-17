@@ -75,7 +75,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <log4j.version>2.20.0</log4j.version>
         <jackson.version>2.15.3</jackson.version>
-        <aspectj.version>1.9.7</aspectj.version>
         <aws.sdk.version>2.21.0</aws.sdk.version>
         <aws.xray.recorder.version>2.14.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.3</payloadoffloading-common.version>
@@ -515,6 +514,35 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+
+        <!-- https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md -->
+        <profile>
+            <id>aspectj197</id>
+            <activation>
+                <jdk>[1.8,16]</jdk>
+            </activation>
+            <properties>
+                <aspectj.version>1.9.7</aspectj.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>aspectj1920</id>
+            <activation>
+                <jdk>[17,20]</jdk>
+            </activation>
+            <properties>
+                <aspectj.version>1.9.20.1</aspectj.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>aspectj1921</id>
+            <activation>
+                <jdk>[21,)</jdk>
+            </activation>
+            <properties>
+                <aspectj.version>1.9.21-SNAPSHOT</aspectj.version>
+            </properties>
         </profile>
         <profile>
             <id>jdk16</id>
