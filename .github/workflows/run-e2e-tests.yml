@@ -32,7 +32,7 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 3
+      max-parallel: 4
       matrix:
         java: [ 8, 11, 17, 21 ]
     name: End-to-end tests java${{ matrix.java }}
