@@ -204,6 +204,7 @@ public class Infrastructure {
     private Stack createStackWithLambda() {
         boolean createTableForAsyncTests = false;
         Stack stack = new Stack(app, stackName);
+
         List<String> packagingInstruction = Arrays.asList(
                 "/bin/sh",
                 "-c",
@@ -515,7 +516,7 @@ public class Infrastructure {
             String javaVersion = System.getenv(environmentVariableName); // must be set in GitHub actions
             JavaRuntime ret = null;
             if (javaVersion == null) {
-                throw new IllegalArgumentException("JAVA_VERSION is not set");
+                throw new IllegalArgumentException(environmentVariableName + " is not set");
             }
             if (javaVersion.startsWith("8")) {
                 ret = JavaRuntime.JAVA8AL2;
