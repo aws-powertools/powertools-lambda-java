@@ -114,6 +114,7 @@ public class Infrastructure {
     private final String queue;
     private final String kinesisStream;
     private final String largeMessagesBucket;
+    private final JavaRuntime lambdaRuntimeVersion;
     private String ddbStreamsTableName;
     private String functionName;
     private Object cfnTemplate;
@@ -124,6 +125,7 @@ public class Infrastructure {
         this.tracing = builder.tracing;
         this.envVar = builder.environmentVariables;
         this.runtime = builder.runtime;
+        this.lambdaRuntimeVersion = builder.lambdaRuntimeVersion;
         this.timeout = builder.timeoutInSeconds;
         this.pathToFunction = builder.pathToFunction;
         this.idempotencyTable = builder.idemPotencyTable;
@@ -204,6 +206,7 @@ public class Infrastructure {
     private Stack createStackWithLambda() {
         boolean createTableForAsyncTests = false;
         Stack stack = new Stack(app, stackName);
+
         List<String> packagingInstruction = Arrays.asList(
                 "/bin/sh",
                 "-c",
@@ -247,7 +250,7 @@ public class Infrastructure {
                 .handler("software.amazon.lambda.powertools.e2e.Function::handleRequest")
                 .memorySize(1024)
                 .timeout(Duration.seconds(timeout))
-                .runtime(runtime.getCdkRuntime())
+                .runtime(lambdaRuntimeVersion.getCdkRuntime())
                 .environment(envVar)
                 .tracing(tracing ? Tracing.ACTIVE : Tracing.DISABLED)
                 .build();
@@ -504,29 +507,34 @@ public class Infrastructure {
         private String queue;
         private String kinesisStream;
         private String ddbStreamsTableName;
+        private JavaRuntime lambdaRuntimeVersion;
 
         private Builder() {
-            getJavaRuntime();
+            runtime = mapRuntimeVersion("JAVA_VERSION");
+            lambdaRuntimeVersion = mapRuntimeVersion("JAVA_LAMBDA_RUNTIME_VERSION");
         }
 
-        /**
-         * Retrieve the java runtime to use for the lambda function.
-         */
-        private void getJavaRuntime() {
-            String javaVersion = System.getenv("JAVA_VERSION"); // must be set in GitHub actions
+
+
+        private JavaRuntime mapRuntimeVersion(String environmentVariableName) {
+            String javaVersion = System.getenv(environmentVariableName); // must be set in GitHub actions
+            JavaRuntime ret = null;
             if (javaVersion == null) {
-                throw new IllegalArgumentException("JAVA_VERSION is not set");
+                throw new IllegalArgumentException("JAVA_LAMBDA_RUNTIME_VERSION is not set");
             }
             if (javaVersion.startsWith("8")) {
-                runtime = JavaRuntime.JAVA8AL2;
+                ret = JavaRuntime.JAVA8AL2;
             } else if (javaVersion.startsWith("11")) {
-                runtime = JavaRuntime.JAVA11;
+                ret = JavaRuntime.JAVA11;
             } else if (javaVersion.startsWith("17")) {
-                runtime = JavaRuntime.JAVA17;
+                ret = JavaRuntime.JAVA17;
+            } else if (javaVersion.startsWith("21")) {
+                ret = JavaRuntime.JAVA21;
             } else {
                 throw new IllegalArgumentException("Unsupported Java version " + javaVersion);
             }
-            LOG.debug("Java Version set to {}, using runtime {}", javaVersion, runtime.getRuntime());
+            LOG.debug("Java Version set to {}, using runtime variable {}", ret, javaVersion);
+            return ret;
         }
 
         public Infrastructure build() {
