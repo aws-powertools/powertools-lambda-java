@@ -210,7 +210,7 @@ public class Infrastructure {
                 "cd " + pathToFunction +
                         " && timeout -s SIGKILL 5m mvn clean install -ff " +
                         " -Dmaven.test.skip=true " +
-                        " -Dmaven.resources.skip=true " +
+                        //" -Dmaven.resources.skip=true " +
                         " -Dmaven.compiler.source=" + runtime.getMvnProperty() +
                         " -Dmaven.compiler.target=" + runtime.getMvnProperty() +
                         " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/"
