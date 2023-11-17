@@ -13,11 +13,9 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the 
 [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). 
 
-Note: [AspectJ does not yet support Java 21](https://github.com/eclipse-aspectj/aspectj/issues/260). 
-With Java 21, you can use Powertools features that do not need AspectJ such as 
-[Batch Processing](https://docs.powertools.aws.dev/lambda-java/guides/batch-processing.html) as you normally would. 
-If you need aspect features you should use the JDK 17 compiler and target either the Java 17 or Java 21
-runtimes at deployment Lambda. 
+[AspectJ does not yet support Java 21](https://github.com/eclipse-aspectj/aspectj/issues/260).
+If you need aspect features such as `@Logging` you should use the JDK 17 compiler and target either the Java 17 or Java 21
+Lambda runtimes.
 
 ### Installation
 
