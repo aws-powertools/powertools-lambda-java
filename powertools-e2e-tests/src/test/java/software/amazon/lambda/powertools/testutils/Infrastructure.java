@@ -513,7 +513,7 @@ public class Infrastructure {
          * Retrieve the java runtime to use for the lambda function.
          */
         private void getJavaRuntime() {
-            String javaVersion = System.getenv("JAVA_VERSION"); // must be set in GitHub actions
+            String javaVersion = System.getenv("JAVA_RUNTIME_VERSION"); // must be set in GitHub actions
             if (javaVersion == null) {
                 throw new IllegalArgumentException("JAVA_VERSION is not set");
             }

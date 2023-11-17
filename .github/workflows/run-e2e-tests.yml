@@ -37,8 +37,14 @@ jobs:
         java: [ 8, 11, 17, 21 ]
     name: End-to-end tests java${{ matrix.java }}
     env:
-      JAVA_VERSION: ${{ matrix.java }}
       AWS_DEFAULT_REGION: eu-west-1
+
+      # If matrix.version is 21, use 17, otherwise use matrix.version
+      # This is because AspectJ does not yet support weaving with Java21; we want
+      # to test the Java21 runtime, but we can't yet use the JDK21 compiler.
+      # https://github.com/eclipse-aspectj/aspectj/issues/260#issuecomment-1815920274
+      JAVA_VERSION: ${{ (matrix.java == 21 && '17') || matrix.java }}
+      JAVA_RUNTIME_VERSION: $ {{ matrix.java }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
@@ -48,11 +54,8 @@ jobs:
         uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
         with:
           distribution: 'corretto'
-          # If matrix.version is 21, use 17, otherwise use matrix.version
-          # This is because AspectJ does not yet support weaving with Java21; we want
-          # to test the Java21 runtime, but we can't yet use the JDK21 compiler.
-          # https://github.com/eclipse-aspectj/aspectj/issues/260#issuecomment-1815920274
-          java-version: ${{ matrix.java == 21 && '17' || matrix.java }}
+          # See comment above on JAVA_VERSION env var
+          java-version: ${{ (matrix.java == 21 && '17') || matrix.java }}
           cache: maven
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
