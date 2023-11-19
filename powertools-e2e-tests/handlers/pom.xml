@@ -205,23 +205,9 @@
                 <jdk>[21,)</jdk>
             </activation>
             <properties>
-                <aspectj.version>1.9.21-SNAPSHOT</aspectj.version>
+                <aspectj.version>1.9.21.M1</aspectj.version>
             </properties>
         </profile>
     </profiles>
-
-    <repositories>
-        <repository>
-            <id>ossrh-snapshots</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
 
 </project>
