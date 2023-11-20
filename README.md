@@ -9,14 +9,6 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 **[📜Documentation](https://docs.powertools.aws.dev/lambda-java/)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
 
-### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the 
-[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). 
-
-AspectJ does not yet support Java 21 [[1]](https://github.com/eclipse-aspectj/aspectj/issues/260), [[2]](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md).
-If you need to use aspects - either  Powertools features leveraging aspects or other libraries - you should use the JDK 17 compiler and target either the Java 17 or Java 21
-Lambda runtimes. 
-
 ### Installation
 
 Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
@@ -195,6 +187,39 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
         targetCompatibility = 1.8
 ```
 </details>
+
+#### Java Compatibility
+Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the
+[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+
+For the following modules, Powertools for AWS Lambda (Java) leverages the **aspectj** library to provide annotations:
+- Logging
+- Metrics
+- Tracing
+- Parameters
+- Idempotency
+- Validation
+- Large messages
+
+It's important to notice the [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md) between this library and the JDK:
+
+| JDK version | aspectj version |
+|-------------|-----------------|
+| `1.8`       | `1.9.7`         |
+| `11-17`     | `1.9.20.1`      |
+| `21`        | `1.9.21`        |
+
+_Note: 1.9.21 is not yet available and Java 21 not yet officialy supported by aspectj, but you can already use the `1.9.21.M1`_
+
+You may need to add the good version of `aspectjrt` to your dependencies based on the jdk used for building your function:
+
+```xml
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjrt</artifactId>
+    <version>1.9.??</version>
+</dependency>
+```
 
 ## Examples
 
