@@ -15,14 +15,6 @@ Powertools for AWS Lambda (Java) is a suite of utilities for AWS Lambda Function
     Check out [this detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/) with a practical example. To dive deeper, 
     the [Powertools for AWS Lambda (Java) workshop](https://catalog.us-east-1.prod.workshops.aws/workshops/a7011c82-e4af-4a52-80fa-fcd61f1dacd9/en-US/introduction) is a great next step.
 
-???+ tip "Java Compatability"
-    Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the
-    [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
-
-    AspectJ does not yet support Java 21 [[1]](https://github.com/eclipse-aspectj/aspectj/issues/260), [[2]](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md).
-    If you need to use aspects - either  Powertools features leveraging aspects or other libraries - you should use the JDK 17 compiler and target either the Java 17 or Java 21
-    Lambda runtimes. 
-
 ## Tenets
 
 This project separates core utilities that will be available in other runtimes vs general utilities that might not be available across all runtimes.
@@ -281,6 +273,41 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     `org.codehaus.mojo:aspectj-maven-plugin` does not support Java 17. 
     Under the hood, `org.codehaus.mojo:aspectj-maven-plugin` is based on AspectJ 1.9.7, 
     while `dev.aspectj:aspectj-maven-plugin` is based on AspectJ 1.9.8, compiled for Java 11+.
+
+### Java Compatibility
+Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the
+[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+
+For the following modules, Powertools for AWS Lambda (Java) leverages the **aspectj** library to provide annotations:
+- Logging
+- Metrics
+- Tracing
+- Parameters
+- Idempotency
+- Validation
+- Large messages
+
+
+You may need to add the good version of `aspectjrt` to your dependencies based on the jdk used for building your function:
+
+```xml
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjrt</artifactId>
+    <version>1.9.??</version>
+</dependency>
+```
+
+Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md) between this library and the JDK:
+
+| JDK version | aspectj version |
+|-------------|-----------------|
+| `1.8`       | `1.9.7`         |
+| `11-17`     | `1.9.20.1`      |
+| `21`        | `1.9.21`        |
+
+_Note: 1.9.21 is not yet available and Java 21 not yet officially supported by aspectj, but you can already use the `1.9.21.M1`_
+
 
 ## Environment variables
 
