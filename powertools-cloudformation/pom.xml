@@ -76,6 +76,10 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
@@ -107,14 +111,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>dev.aspectj</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>${aspectj-maven-plugin.version}</version>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>

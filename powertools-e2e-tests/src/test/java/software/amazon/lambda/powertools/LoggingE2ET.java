@@ -46,6 +46,7 @@ public class LoggingE2ET {
     public static void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(LoggingE2ET.class.getSimpleName())
+                .tracing(true)
                 .pathToFunction("logging")
                 .environmentVariables(
                         Stream.of(new String[][] {
@@ -83,6 +84,7 @@ public class LoggingE2ET {
         assertThat(jsonNode.get("message").asText()).isEqualTo("New Order");
         assertThat(jsonNode.get("orderId").asText()).isEqualTo(orderId);
         assertThat(jsonNode.get("coldStart").asBoolean()).isTrue();
+        assertThat(jsonNode.get("xray_trace_id").asText()).isNotBlank();
         assertThat(jsonNode.get("function_request_id").asText()).isEqualTo(invocationResult1.getRequestId());
 
         // second call should not be cold start

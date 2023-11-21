@@ -11,6 +11,14 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 **[📜Documentation](https://docs.powertools.aws.dev/lambda-java/)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
 
+### Java Compatibility
+Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the 
+[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html). 
+
+AspectJ does not yet support Java 21 [[1]](https://github.com/eclipse-aspectj/aspectj/issues/260), [[2]](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md).
+If you need to use aspects - either  Powertools features leveraging aspects or other libraries - you should use the JDK 17 compiler and target either the Java 17 or Java 21
+Lambda runtimes. 
+
 ### Installation
 
 Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
@@ -22,17 +30,17 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </dependency>
     ...
 </dependencies>
@@ -192,7 +200,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 
 ## Examples
 
-See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.17.0/examples)** for example projects showcasing usage of different utilities.
+See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.18.0/examples)** for example projects showcasing usage of different utilities.
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
