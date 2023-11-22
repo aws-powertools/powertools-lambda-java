@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.parameters;
 
-import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
@@ -25,7 +24,6 @@ import static org.mockito.MockitoAnnotations.openMocks;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +43,7 @@ import software.amazon.awssdk.services.ssm.model.Parameter;
 import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
-public class ParamManagerIntegrationTest {
+public class ParamProvidersIntegrationTest {
 
     @Mock
     SsmClient ssmClient;

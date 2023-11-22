@@ -25,7 +25,7 @@ import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-class DynamoDbProviderBuilder {
+public class DynamoDbProviderBuilder {
     private DynamoDbClient client;
     private String table;
     private CacheManager cacheManager;
