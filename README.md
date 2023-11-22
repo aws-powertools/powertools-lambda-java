@@ -11,28 +11,28 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 **[📜Documentation](https://docs.powertools.aws.dev/lambda-java/)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
 
-### Installation
+## Installation
 
 Powertools for AWS Lambda (Java) is available in Maven Central. You can use your favourite dependency management tool to install it
 
-#### Maven:
+### Maven:
 ```xml
 <dependencies>
     ...
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.17.0</version>
+        <version>1.18.0</version>
     </dependency>
     ...
 </dependencies>
@@ -190,9 +190,36 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 ```
 </details>
 
+### Java Compatibility
+Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the
+[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+For the modules that provide annotations, Powertools for AWS Lambda (Java) leverages the **aspectj** library.
+You may need to add the good version of `aspectjrt` to your dependencies based on the JDK used for building your function:
+
+```xml
+<dependency>
+    <groupId>org.aspectj</groupId>
+    <artifactId>aspectjrt</artifactId>
+    <version>1.9.??</version>
+</dependency>
+```
+
+<details>
+    <summary><b>JDK - aspectj dependency matrix</b></summary>
+
+| JDK version | aspectj version |
+|-------------|-----------------|
+| `1.8`       | `1.9.7`         |
+| `11-17`     | `1.9.20.1`      |
+| `21`        | `1.9.21`        |
+
+More info [here](https://github.com/aws-powertools/powertools-lambda-java/pull/1519/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R191).
+
+</details>
+
 ## Examples
 
-See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.17.0/examples)** for example projects showcasing usage of different utilities.
+See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.18.0/examples)** for example projects showcasing usage of different utilities.
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 

@@ -12,17 +12,17 @@
  *
  */
 
-package software.amazon.lambda.powertools.common.internal;
+package software.amazon.lambda.powertools.logging.handlers;
 
-public class SystemWrapper {
-    private SystemWrapper() {
-    }
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import software.amazon.lambda.powertools.logging.Logging;
 
-    public static String getenv(String name) {
-        return System.getenv(name);
-    }
+public class PowerToolLogEventDisabled implements RequestHandler<Object, Object> {
 
-    public static String getProperty(String name) {
-        return System.getProperty(name);
+    @Logging(logEvent = false)
+    @Override
+    public Object handleRequest(Object input, Context context) {
+        return null;
     }
 }

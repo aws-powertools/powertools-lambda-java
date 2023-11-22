@@ -217,9 +217,7 @@ Key | Type | Example | Description
 
 ## Capturing context Lambda info
 
-You can enrich your structured logs with key Lambda context information via `logEvent` annotation parameter. 
-You can also explicitly log any incoming event using `logEvent` param. Refer [Override default object mapper](#override-default-object-mapper) 
-to customise what is logged.
+When debugging in non-production environments, you can instruct Logger to log the incoming event with `@Logger(logEvent = true)` or via `POWERTOOLS_LOGGER_LOG_EVENT=true` environment variable.
 
 !!! warning
     Log event is disabled by default to prevent sensitive info being logged.
@@ -265,7 +263,7 @@ to customise what is logged.
     }
     ```
 
-### Customising  fields in logs
+### Customising fields in logs
 
 - Utility by default emits `timestamp` field in the logs in format `yyyy-MM-dd'T'HH:mm:ss.SSSZz` and in system default timezone. 
 If you need to customize format and timezone, you can do so by configuring `log4j2.component.properties` and configuring properties as shown in example below:
@@ -598,6 +596,54 @@ via `samplingRate` attribute on annotation.
                     POWERTOOLS_LOGGER_SAMPLE_RATE: 0.5
     ```
 
+## AWS Lambda Advanced Logging Controls (ALC)
+
+!!!question "When is it useful?"
+    When you want to set a logging policy to drop informational or verbose logs for one or all AWS Lambda functions, regardless of runtime and logger used.
+
+<!-- markdownlint-disable MD013 -->
+With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced){target="_blank"}, you can enforce a minimum log level that Lambda will accept from your application code.
+
+When enabled, you should keep `Logger` and ALC log level in sync to avoid data loss.
+
+Here's a sequence diagram to demonstrate how ALC will drop both `INFO` and `DEBUG` logs emitted from `Logger`, when ALC log level is stricter than `Logger`.
+<!-- markdownlint-enable MD013 -->
+
+```mermaid
+sequenceDiagram
+    participant Lambda service
+    participant Lambda function
+    participant Application Logger
+
+    Note over Lambda service: AWS_LAMBDA_LOG_LEVEL="WARN"
+    Note over Application Logger: POWERTOOLS_LOG_LEVEL="DEBUG"
+
+    Lambda service->>Lambda function: Invoke (event)
+    Lambda function->>Lambda function: Calls handler
+    Lambda function->>Application Logger: logger.error("Something happened")
+    Lambda function-->>Application Logger: logger.debug("Something happened")
+    Lambda function-->>Application Logger: logger.info("Something happened")
+    Lambda service--xLambda service: DROP INFO and DEBUG logs
+    Lambda service->>CloudWatch Logs: Ingest error logs
+```
+
+### Priority of log level settings in Powertools for AWS Lambda
+
+We prioritise log level settings in this order:
+
+1. `AWS_LAMBDA_LOG_LEVEL` environment variable
+2. `POWERTOOLS_LOG_LEVEL` environment variable
+
+If you set `Logger` level lower than ALC, we will emit a warning informing you that your messages will be discarded by Lambda.
+
+> **NOTE**
+>
+> With ALC enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level){target="_blank"} for more details.
+
+### Timestamp format
+
+When the Advanced Logging Controls feature is enabled, Powertools for AWS Lambda must comply with the timestamp format required by AWS Lambda, which is [RFC3339](https://www.rfc-editor.org/rfc/rfc3339). 
+In this case the format will be `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'`.
 
 ## Upgrade to JsonTemplateLayout from deprecated LambdaJsonLayout configuration in log4j2.xml
 

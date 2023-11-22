@@ -12,17 +12,16 @@
  *
  */
 
-package software.amazon.lambda.powertools.common.internal;
+package software.amazon.lambda.powertools.logging.internal;
 
-public class SystemWrapper {
-    private SystemWrapper() {
-    }
+public class LoggingConstants {
+    public static final String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL");
 
-    public static String getenv(String name) {
-        return System.getenv(name);
-    }
+    public static final String LAMBDA_LOG_FORMAT = System.getenv("AWS_LAMBDA_LOG_FORMAT");
 
-    public static String getProperty(String name) {
-        return System.getProperty(name);
+    public static final String LOG_DATE_RFC3339_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
+    private LoggingConstants() {
+        // constants
     }
 }
