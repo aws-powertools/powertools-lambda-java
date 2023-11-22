@@ -63,6 +63,20 @@
                 <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
                 <Field name="transformationManager"/>
             </And>
+
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProviderBuilder"/>
+                <Field name="client"/>
+            </And>
+
         </Or>
     </Match>
     <Match>
