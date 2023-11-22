@@ -28,11 +28,13 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.objectMapper;
+import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LAMBDA_LOG_LEVEL;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonPointer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import java.io.OutputStreamWriter;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -61,19 +64,37 @@ import software.amazon.lambda.powertools.logging.LoggingUtils;
 @DeclarePrecedence("*, software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LogManager.getLogger(LambdaLoggingAspect.class);
-    private static final Random SAMPLER = new Random();
+    private static final String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
 
-    private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
+    private static final Random SAMPLER = new Random();
     private static final String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE");
+    private static Boolean LOG_EVENT;
 
     private static Level LEVEL_AT_INITIALISATION;
 
     static {
-        if (null != LOG_LEVEL) {
-            resetLogLevels(Level.getLevel(LOG_LEVEL));
+        if (POWERTOOLS_LOG_LEVEL != null) {
+            Level powertoolsLevel = Level.getLevel(POWERTOOLS_LOG_LEVEL);
+            if (LAMBDA_LOG_LEVEL != null) {
+                Level lambdaLevel = Level.getLevel(LAMBDA_LOG_LEVEL);
+                if (powertoolsLevel.intLevel() > lambdaLevel.intLevel()) {
+                    LOG.warn("Current log level ({}) does not match AWS Lambda Advanced Logging Controls minimum log level ({}). This can lead to data loss, consider adjusting them.",
+                            POWERTOOLS_LOG_LEVEL, LAMBDA_LOG_LEVEL);
+                }
+            }
+            resetLogLevels(powertoolsLevel);
+        } else if (LAMBDA_LOG_LEVEL != null) {
+            resetLogLevels(Level.getLevel(LAMBDA_LOG_LEVEL));
         }
 
         LEVEL_AT_INITIALISATION = LOG.getLevel();
+
+        String logEvent = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT");
+        if (logEvent != null) {
+            LOG_EVENT = Boolean.parseBoolean(logEvent);
+        } else {
+            LOG_EVENT = false;
+        }
     }
 
     private static void resetLogLevels(Level logLevel) {
@@ -104,7 +125,9 @@ public final class LambdaLoggingAspect {
 
         getXrayTraceId().ifPresent(xRayTraceId -> appendKey("xray_trace_id", xRayTraceId));
 
-        if (logging.logEvent()) {
+        // Check that the environment variable was enabled explicitly
+        // Or that the handler was annotated with @Logging(logEvent = true)
+        if (LOG_EVENT || logging.logEvent()) {
             proceedArgs = logEvent(pjp);
         }
 

@@ -1,6 +1,6 @@
 {
   "timestamp": {
-    "$resolver": "timestamp"
+    "$resolver": "lambda-timestamp"
   },
   "instant": {
     "epochSecond": {

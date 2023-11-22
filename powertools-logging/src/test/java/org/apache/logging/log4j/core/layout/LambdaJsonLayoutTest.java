@@ -16,6 +16,7 @@ package org.apache.logging.log4j.core.layout;
 
 import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 import static org.mockito.Mockito.when;
@@ -32,8 +33,12 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.Map;
 import org.apache.logging.log4j.Level;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
@@ -42,7 +47,6 @@ import software.amazon.lambda.powertools.logging.handlers.PowerLogToolSamplingEn
 import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 
 class LambdaJsonLayoutTest {
-
     private RequestHandler<Object, Object> handler = new PowerLogToolEnabled();
 
     @Mock
@@ -71,6 +75,31 @@ class LambdaJsonLayoutTest {
                         .containsKey("timestamp")
                         .containsKey("message")
                         .containsKey("service"));
+    }
+
+    @Test
+    void shouldLogWithRFC3339TimestampFormat_WhenLambdaLoggingIsJSON() throws Exception {
+        // Given: AWS_LAMBDA_LOG_FORMAT=JSON defined in pom.xml
+
+        // When
+        handler.handleRequest("test", context);
+
+        // Then
+        assertThat(Files.lines(Paths.get("target/logfile.json")))
+                .hasSize(1)
+                .allSatisfy(line -> assertThat(parseToMap(line))
+                        .extracting("timestamp", as(InstanceOfAssertFactories.STRING))
+                        .satisfies(s -> assertThat(hasDateFormat(s, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")).isTrue()));
+    }
+
+    private boolean hasDateFormat(String timestamp, String format) {
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern(format).withResolverStyle(ResolverStyle.STRICT);
+        try {
+            dtf.parse(timestamp);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 
     @Test

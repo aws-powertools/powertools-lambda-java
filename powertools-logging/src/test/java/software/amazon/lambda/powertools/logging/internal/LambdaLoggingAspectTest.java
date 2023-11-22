@@ -24,6 +24,7 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
 import static org.skyscreamer.jsonassert.JSONAssert.assertEquals;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -54,6 +55,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
 import org.json.JSONException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -67,6 +69,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerLogToolEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolDisabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventEnabledWithCustomMapper;
@@ -115,7 +118,7 @@ class LambdaLoggingAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowerLogToolEnabledForStream();
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(ThreadContext.getImmutableContext())
@@ -131,14 +134,14 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldSetColdStartFlag() throws IOException {
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(ThreadContext.getImmutableContext())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry("coldStart", "true");
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(ThreadContext.getImmutableContext())
@@ -194,6 +197,51 @@ class LambdaLoggingAspectTest {
         assertEquals(expectEvent, event, false);
     }
 
+    /**
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to true, the handler should log, despite @Logging(logEvent=false)
+     *
+     * @throws IOException
+     */
+    @Test
+    void shouldLogEventForHandlerWhenEnvVariableSetToTrue() throws IOException, IllegalAccessException, JSONException {
+        try {
+            writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.TRUE, true);
+
+            requestHandler = new PowerToolLogEventDisabled();
+            S3EventNotification s3EventNotification = s3EventNotification();
+
+            requestHandler.handleRequest(s3EventNotification, context);
+
+            Map<String, Object> log = parseToMap(Files.lines(Paths.get("target/logfile.json")).collect(joining()));
+
+            String event = (String) log.get("message");
+
+            String expectEvent = new BufferedReader(
+                    new InputStreamReader(this.getClass().getResourceAsStream("/s3EventNotification.json")))
+                    .lines().collect(joining("\n"));
+
+            assertEquals(expectEvent, event, false);
+        } finally {
+            writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", Boolean.FALSE, true);
+        }
+    }
+
+    /**
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to false and @Logging(logEvent=false), the handler shouldn't log
+     *
+     * @throws IOException
+     */
+    @Test
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException {
+        requestHandler = new PowerToolLogEventDisabled();
+        S3EventNotification s3EventNotification = s3EventNotification();
+
+        requestHandler.handleRequest(s3EventNotification, context);
+
+        Assertions.assertEquals(0,
+                Files.lines(Paths.get("target/logfile.json")).collect(joining()).length());
+    }
+
     @Test
     void shouldLogEventForHandlerWithOverriddenObjectMapper() throws IOException, JSONException {
         RequestHandler<S3EventNotification, Object> handler = new PowerToolLogEventEnabledWithCustomMapper();
@@ -246,12 +294,30 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    void shouldLogxRayTraceIdSystemPropertySet() {
+        String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn(null);
+            mocked.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(ThreadContext.getImmutableContext())
+                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                    .containsEntry("xray_trace_id", xRayTraceId);
+        }
+    }
+
+    @Test
     void shouldLogxRayTraceIdEnvVarSet() {
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
 
             requestHandler.handleRequest(new Object(), context);
 
