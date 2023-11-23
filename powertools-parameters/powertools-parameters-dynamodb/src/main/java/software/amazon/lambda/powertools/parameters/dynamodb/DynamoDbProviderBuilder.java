@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.parameters.dynamodb;
 
+import java.time.temporal.ChronoUnit;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
@@ -30,6 +31,10 @@ public class DynamoDbProviderBuilder {
     private String table;
     private CacheManager cacheManager;
     private TransformationManager transformationManager;
+
+    // Allows the user to override default max age
+    private int maxAge;
+    private ChronoUnit unit;
 
     static DynamoDbClient createClient() {
         return DynamoDbClient.builder()

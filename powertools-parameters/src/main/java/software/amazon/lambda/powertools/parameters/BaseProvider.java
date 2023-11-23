@@ -69,7 +69,7 @@ public abstract class BaseProvider implements ParamProvider {
      * @param unit   Unit of time
      * @return the provider itself in order to chain calls (eg. <pre>provider.defaultMaxAge(10, SECONDS).get("key")</pre>).
      */
-    protected BaseProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
+    public BaseProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
         Duration duration = Duration.of(maxAge, unit);
         cacheManager.setDefaultExpirationTime(duration);
         return this;

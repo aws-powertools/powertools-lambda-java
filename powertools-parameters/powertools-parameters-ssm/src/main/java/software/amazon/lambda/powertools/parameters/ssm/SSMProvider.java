@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.parameters.ssm;
 
-import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import software.amazon.awssdk.services.ssm.SsmClient;
@@ -25,7 +24,6 @@ import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
-import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
 /**
  * AWS System Manager Parameter Store Provider <br/><br/>
@@ -107,33 +105,6 @@ public class SSMProvider extends BaseProvider {
                 .withDecryption(decrypt)
                 .build();
         return client.getParameter(request).parameter().value();
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SSMProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
-        super.defaultMaxAge(maxAge, unit);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SSMProvider withMaxAge(int maxAge, ChronoUnit unit) {
-        super.withMaxAge(maxAge, unit);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SSMProvider withTransformation(Class<? extends Transformer> transformerClass) {
-        super.withTransformation(transformerClass);
-        return this;
     }
 
     /**

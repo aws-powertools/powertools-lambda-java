@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.parameters.secrets;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Map;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
@@ -24,7 +23,6 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueReques
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
-import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
 /**
  * AWS Secrets Manager Parameter Provider<br/><br/>
@@ -100,32 +98,6 @@ public class SecretsProvider extends BaseProvider {
         throw new UnsupportedOperationException("Impossible to get multiple values from AWS Secrets Manager");
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SecretsProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
-        super.defaultMaxAge(maxAge, unit);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SecretsProvider withMaxAge(int maxAge, ChronoUnit unit) {
-        super.withMaxAge(maxAge, unit);
-        return this;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public SecretsProvider withTransformation(Class<? extends Transformer> transformerClass) {
-        super.withTransformation(transformerClass);
-        return this;
-    }
 
     // For test purpose only
     SecretsManagerClient getClient() {
