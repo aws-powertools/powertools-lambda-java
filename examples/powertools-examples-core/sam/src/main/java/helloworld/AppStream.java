@@ -35,6 +35,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
 
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import software.amazon.lambda.powertools.tracing.TracingUtils;
+
 public class AppStream implements RequestStreamHandler {
     private static final ObjectMapper mapper = new ObjectMapper();
     private final static Logger log = LogManager.getLogger(AppStream.class);
@@ -45,17 +48,15 @@ public class AppStream implements RequestStreamHandler {
     public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(input, Charset.forName("US-ASCII")));
         PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, Charset.forName("US-ASCII"))));
-        int nextChar;
         try {
-            while ((nextChar = reader.read()) != -1) {
-                output.write(nextChar);
-            }
+            APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
+                    .withStatusCode(200)
+                    .withBody("output_body");
+            output.write(response.toString().getBytes());
         } catch (IOException e) {
             log.error("Something has gone wrong: ", e);
         } finally {
             reader.close();
-            String finalString = writer.toString();
-            log.info("Final string result: " + finalString);
             writer.close();
         }
     }

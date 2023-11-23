@@ -44,13 +44,12 @@ Resources:
       Environment:
         Variables:
           POWERTOOLS_LOGGER_SAMPLE_RATE: 0.7
-
-  HelloWorldStreamFunctionUrl:
-    Type: AWS::Lambda::Url
-    Properties:
-      TargetFunctionArn: !Ref HelloWorldStreamFunction
-      AuthType: AWS_IAM
-      InvokeMode: RESPONSE_STREAM
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /hellostream
+            Method: get
 
 Outputs:
   # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
