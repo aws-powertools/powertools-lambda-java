@@ -73,6 +73,9 @@ public final class LambdaLoggingAspect {
     private static Level LEVEL_AT_INITIALISATION;
 
     static {
+
+        LEVEL_AT_INITIALISATION = LOG.getLevel();
+
         if (POWERTOOLS_LOG_LEVEL != null) {
             Level powertoolsLevel = Level.getLevel(POWERTOOLS_LOG_LEVEL);
             if (LAMBDA_LOG_LEVEL != null) {
@@ -86,8 +89,6 @@ public final class LambdaLoggingAspect {
         } else if (LAMBDA_LOG_LEVEL != null) {
             resetLogLevels(Level.getLevel(LAMBDA_LOG_LEVEL));
         }
-
-        LEVEL_AT_INITIALISATION = LOG.getLevel();
 
         String logEvent = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT");
         if (logEvent != null) {
