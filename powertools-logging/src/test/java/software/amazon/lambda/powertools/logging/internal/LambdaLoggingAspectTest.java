@@ -14,12 +14,15 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
@@ -36,6 +39,7 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
@@ -46,11 +50,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import org.json.JSONException;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -60,6 +67,7 @@ import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.handlers.PowerToolLogEventDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayRestApiCorrelationId;
@@ -127,7 +135,7 @@ class LambdaLoggingAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowertoolsLogEnabledForStream();
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(MDC.getCopyOfContextMap())
@@ -143,14 +151,14 @@ class LambdaLoggingAspectTest {
 
     @Test
     void shouldSetColdStartFlag() throws IOException {
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(FUNCTION_COLD_START.getName(), "true");
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(MDC.getCopyOfContextMap())
@@ -192,6 +200,47 @@ class LambdaLoggingAspectTest {
         Boolean debugEnabled = handler.handleRequest(new Object(), context);
 
         assertThat(debugEnabled).isTrue();
+    }
+
+    /**
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to true, the handler should log, despite @Logging(logEvent=false)
+     *
+     * @throws IOException
+     */
+    @Test
+    void shouldLogEventForHandlerWhenEnvVariableSetToTrue() throws IOException, IllegalAccessException, JSONException {
+        try {
+            writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", "true", true);
+
+            requestHandler = new PowerToolLogEventDisabled();
+
+            SQSEvent.SQSMessage message = new SQSEvent.SQSMessage();
+            message.setBody("body");
+            message.setMessageId("1234abcd");
+            message.setAwsRegion("eu-west-1");
+
+            requestHandler.handleRequest(message, context);
+
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains("\"body\":\"body\"").contains("\"messageId\":\"1234abcd\"").contains("\"awsRegion\":\"eu-west-1\"");
+        } finally {
+            writeStaticField(LambdaLoggingAspect.class, "LOG_EVENT", "false", true);
+        }
+    }
+
+    /**
+     * If POWERTOOLS_LOGGER_LOG_EVENT was set to false and @Logging(logEvent=false), the handler shouldn't log
+     *
+     * @throws IOException
+     */
+    @Test
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException {
+        requestHandler = new PowerToolLogEventDisabled();
+
+        requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
+
+        Assertions.assertEquals(0,
+                Files.lines(Paths.get("target/logfile.json")).collect(joining()).length());
     }
 
     @Test
@@ -270,13 +319,31 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    void shouldLogxRayTraceIdSystemPropertySet() {
+        String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
+
+        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
+                    .thenReturn(null);
+            mocked.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+
+            requestHandler.handleRequest(new Object(), context);
+
+            assertThat(MDC.getCopyOfContextMap())
+                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                    .containsEntry("xray_trace_id", xRayTraceId);
+        }
+    }
+
+    @Test
     void shouldLogxRayTraceIdEnvVarSet() {
         // GIVEN
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
             mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"");
+                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
 
             // WHEN
             requestHandler.handleRequest(new Object(), context);
@@ -294,7 +361,7 @@ class LambdaLoggingAspectTest {
         requestHandler = new PowertoolsLogEvent();
 
         // WHEN
-        requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
+        requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
 
         // THEN
         File logFile = new File("target/logfile.json");
@@ -308,7 +375,7 @@ class LambdaLoggingAspectTest {
         requestHandler = new PowertoolsLogEnabled();
 
         // WHEN
-        requestHandler.handleRequest(Collections.singletonList("ListOfOneElement"), context);
+        requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
 
         // THEN
         File logFile = new File("target/logfile.json");
@@ -426,5 +493,4 @@ class LambdaLoggingAspectTest {
         resetLogLevels.invoke(null, level);
         writeStaticField(LambdaLoggingAspect.class, "LEVEL_AT_INITIALISATION", level, true);
     }
-
 }

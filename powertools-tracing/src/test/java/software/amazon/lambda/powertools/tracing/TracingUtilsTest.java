@@ -28,7 +28,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class TracingUtilsTest {
-
     @BeforeEach
     void setUp() {
         AWSXRay.beginSegment("test");
@@ -121,6 +120,24 @@ class TracingUtilsTest {
                     assertThat(subsegment.getMetadata())
                             .hasSize(1);
                 });
+    }
+
+    @Test
+    void shouldNotAddAnnotationIfInvalidCharacterInKey() {
+        AWSXRay.beginSubsegment("subSegment");
+        String inputKey = "stringKey with spaces";
+        TracingUtils.putAnnotation(inputKey, "val");
+        AWSXRay.getCurrentSubsegmentOptional()
+                .ifPresent(segment -> assertThat(segment.getAnnotations()).size().isEqualTo(0));
+    }
+
+    @Test
+    void shouldAddAnnotationIfValidCharactersInKey() {
+        AWSXRay.beginSubsegment("subSegment");
+        String inputKey = "validKey";
+        TracingUtils.putAnnotation(inputKey, "val");
+        AWSXRay.getCurrentSubsegmentOptional()
+                .ifPresent(segment -> assertThat(segment.getAnnotations()).size().isEqualTo(1));
     }
 
     @Test

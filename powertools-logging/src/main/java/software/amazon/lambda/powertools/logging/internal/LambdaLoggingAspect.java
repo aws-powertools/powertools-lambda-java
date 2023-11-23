@@ -30,6 +30,7 @@ import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
+import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LAMBDA_LOG_LEVEL;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,6 +43,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -65,22 +67,47 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 @DeclarePrecedence("*, software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect")
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LoggerFactory.getLogger(LambdaLoggingAspect.class);
+    private static final String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
+
     private static final Random SAMPLER = new Random();
-    private static final String LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL");
-    private static final LoggingManager loggingManager;
+    private static String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
 
     private static String LOG_EVENT = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT"); /* not final for test purpose */
-    public static String SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
-    private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
+
+    private static Level LEVEL_AT_INITIALISATION;
+
+    private static final LoggingManager loggingManager;
 
     static {
         loggingManager = getLoggingManagerFromServiceLoader();
 
         LEVEL_AT_INITIALISATION = loggingManager.getLogLevel(LOG);
 
-        if (null != LOG_LEVEL) {
-            resetLogLevels(Level.valueOf(LOG_LEVEL));
+        if (POWERTOOLS_LOG_LEVEL != null) {
+            Level powertoolsLevel = getLevel(POWERTOOLS_LOG_LEVEL);
+            if (LAMBDA_LOG_LEVEL != null) {
+                Level lambdaLevel = getLevel(LAMBDA_LOG_LEVEL);
+                if (powertoolsLevel.toInt() < lambdaLevel.toInt()) {
+                    LOG.warn("Current log level ({}) does not match AWS Lambda Advanced Logging Controls minimum log level ({}). This can lead to data loss, consider adjusting them.",
+                            POWERTOOLS_LOG_LEVEL, LAMBDA_LOG_LEVEL);
+                }
+            }
+            resetLogLevels(powertoolsLevel);
+        } else if (LAMBDA_LOG_LEVEL != null) {
+            resetLogLevels(getLevel(LAMBDA_LOG_LEVEL));
         }
+    }
+
+    private static Level getLevel(String level) {
+        if (Arrays.stream(Level.values()).anyMatch(slf4jLevel -> slf4jLevel.name().equals(level))) {
+            return Level.valueOf(level);
+        } else {
+            if ("FATAL".equals(level)) {
+                return Level.ERROR;
+            }
+        }
+        // default to INFO if incorrect value
+        return Level.INFO;
     }
 
     /**
@@ -101,11 +128,13 @@ public final class LambdaLoggingAspect {
         }
         if (loggingManagerList.isEmpty()) {
             throw new IllegalStateException("No LoggingManager was found on the classpath, "
-                    + "make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
+                    +
+                    "make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
         } else if (loggingManagerList.size() > 1) {
             throw new IllegalStateException(
                     "Multiple LoggingManagers were found on the classpath: " + loggingManagerList
-                            + ", make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
+                            +
+                            ", make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
         } else {
             loggingManager = loggingManagerList.get(0);
         }
