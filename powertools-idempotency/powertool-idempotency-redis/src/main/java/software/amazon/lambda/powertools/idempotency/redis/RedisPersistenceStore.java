@@ -95,11 +95,10 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
      * @return
      */
     private static JedisClientConfig getJedisClientConfig() {
-        JedisClientConfig config = DefaultJedisClientConfig.builder()
+        return DefaultJedisClientConfig.builder()
                 .user(System.getenv().get(Constants.REDIS_USER))
                 .password(System.getenv().get(Constants.REDIS_SECRET))
                 .build();
-        return config;
     }
 
     JedisClientConfig config = getJedisClientConfig();
@@ -117,53 +116,53 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
     }
 
     /**
-     * Store's the given idempotency record in the redis store. If there
-     * is an existing record that has expired - either due to the
-     * cache expiry or due to the in_progress_expiry - the record
+     * Store's the given idempotency dataRecord in the redis store. If there
+     * is an existing dataRecord that has expired - either due to the
+     * cache expiry or due to the in_progress_expiry - the dataRecord
      * will be overwritten and the idempotent operation can continue.
      *
      * <b>Note: This method writes only expiry and status information - not
      * the results of the operation itself.</b>
      *
-     * @param record DataRecord instance to store
+     * @param dataRecord DataRecord instance to store
      * @param now
      * @throws IdempotencyItemAlreadyExistsException
      */
     @Override
-    public void putRecord(DataRecord record, Instant now) {
+    public void putRecord(DataRecord dataRecord, Instant now) {
 
         String inProgressExpiry = null;
-        if (record.getInProgressExpiryTimestamp().isPresent()) {
-            inProgressExpiry = String.valueOf(record.getInProgressExpiryTimestamp().getAsLong());
+        if (dataRecord.getInProgressExpiryTimestamp().isPresent()) {
+            inProgressExpiry = String.valueOf(dataRecord.getInProgressExpiryTimestamp().getAsLong());
         }
 
-        LOG.debug("Putting record for idempotency key: {}", record.getIdempotencyKey());
+        LOG.debug("Putting dataRecord for idempotency key: {}", dataRecord.getIdempotencyKey());
 
-        Object execRes = putItemOnCondition(record, now, inProgressExpiry);
+        Object execRes = putItemOnCondition(dataRecord, now, inProgressExpiry);
 
         if (execRes == null) {
-            String msg = String.format("Failed to put record for already existing idempotency key: %s",
-                    getKey(record.getIdempotencyKey()));
+            String msg = String.format("Failed to put dataRecord for already existing idempotency key: %s",
+                    getKey(dataRecord.getIdempotencyKey()));
             LOG.debug(msg);
             throw new IdempotencyItemAlreadyExistsException(msg);
         } else {
-            LOG.debug("Record for idempotency key is set: {}", record.getIdempotencyKey());
-            jedisPool.expireAt(getKey(record.getIdempotencyKey()), record.getExpiryTimestamp());
+            LOG.debug("Record for idempotency key is set: {}", dataRecord.getIdempotencyKey());
+            jedisPool.expireAt(getKey(dataRecord.getIdempotencyKey()), dataRecord.getExpiryTimestamp());
         }
     }
 
-    private Object putItemOnCondition(DataRecord record, Instant now, String inProgressExpiry) {
+    private Object putItemOnCondition(DataRecord dataRecord, Instant now, String inProgressExpiry) {
         // if item with key exists
         String redisHashExistsExpression = "redis.call('exists', KEYS[1]) == 0";
         // if expiry timestamp is exceeded for existing item
         String itemExpiredExpression = "redis.call('hget', KEYS[1], KEYS[2]) < ARGV[1]";
-        // if item status attribute exists and has value is INPROGRESS
+        // if item status field exists and has value is INPROGRESS
         // and the in-progress-expiry timestamp is still valid
         String itemIsInProgressExpression = "(redis.call('hexists', KEYS[1], KEYS[4]) ~= 0" +
                 " and redis.call('hget', KEYS[1], KEYS[4]) < ARGV[2]" +
                 " and redis.call('hget', KEYS[1], KEYS[3]) == ARGV[3])";
 
-        // insert item and attributes
+        // insert item and fields
         String insertItemExpression = "return redis.call('hset', KEYS[1], KEYS[2], ARGV[4], KEYS[3], ARGV[5])";
 
         // only insert in-progress-expiry if it is set
@@ -176,41 +175,40 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
                 redisHashExistsExpression, itemExpiredExpression,
                 itemIsInProgressExpression, insertItemExpression);
 
-        List params = new ArrayList<>();
-        params.add(getKey(record.getIdempotencyKey()));
-        params.add(  this.expiryAttr);
-        params.add(this.statusAttr);
-        params.add(this.inProgressExpiryAttr);
-        params.add(String.valueOf(now.getEpochSecond()));
-        params.add(String.valueOf(now.toEpochMilli()));
-        params.add(INPROGRESS.toString());
-        params.add(String.valueOf(record.getExpiryTimestamp()));
-        params.add(record.getStatus().toString());
+        List<String> fields = new ArrayList<>();
+        fields.add(getKey(dataRecord.getIdempotencyKey()));
+        fields.add(this.expiryAttr);
+        fields.add(this.statusAttr);
+        fields.add(this.inProgressExpiryAttr);
+        fields.add(String.valueOf(now.getEpochSecond()));
+        fields.add(String.valueOf(now.toEpochMilli()));
+        fields.add(INPROGRESS.toString());
+        fields.add(String.valueOf(dataRecord.getExpiryTimestamp()));
+        fields.add(dataRecord.getStatus().toString());
 
         if (inProgressExpiry != null) {
-            params.add(inProgressExpiry);
+            fields.add(inProgressExpiry);
         }
 
-        String []arr = new String[params.size()];
-        Object execRes = jedisPool.eval(luaScript, 4, (String[]) params.toArray(arr));
-        return execRes;
+        String[] arr = new String[fields.size()];
+        return jedisPool.eval(luaScript, 4, (String[]) fields.toArray(arr));
     }
 
     @Override
-    public void updateRecord(DataRecord record) {
-        LOG.debug("Updating record for idempotency key: {}", record.getIdempotencyKey());
+    public void updateRecord(DataRecord dataRecord) {
+        LOG.debug("Updating dataRecord for idempotency key: {}", dataRecord.getIdempotencyKey());
 
         Map<String, String> item = new HashMap<>();
-        item.put(this.dataAttr, record.getResponseData());
-        item.put(this.expiryAttr, String.valueOf(record.getExpiryTimestamp()));
-        item.put(this.statusAttr, String.valueOf(record.getStatus().toString()));
+        item.put(this.dataAttr, dataRecord.getResponseData());
+        item.put(this.expiryAttr, String.valueOf(dataRecord.getExpiryTimestamp()));
+        item.put(this.statusAttr, String.valueOf(dataRecord.getStatus().toString()));
 
         if (payloadValidationEnabled) {
-            item.put(this.validationAttr, record.getPayloadHash());
+            item.put(this.validationAttr, dataRecord.getPayloadHash());
         }
 
-        jedisPool.hset(getKey(record.getIdempotencyKey()), item);
-        jedisPool.expireAt(getKey(record.getIdempotencyKey()), record.getExpiryTimestamp());
+        jedisPool.hset(getKey(dataRecord.getIdempotencyKey()), item);
+        jedisPool.expireAt(getKey(dataRecord.getIdempotencyKey()), dataRecord.getExpiryTimestamp());
     }
 
     @Override
@@ -252,7 +250,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
 
     /**
      * Use this builder to get an instance of {@link RedisPersistenceStore}.<br/>
-     * With this builder you can configure the characteristics of the Redis hash attributes.<br/>
+     * With this builder you can configure the characteristics of the Redis hash fields.<br/>
      * You can also set a custom {@link JedisPool}.
      */
     public static class Builder {
@@ -293,7 +291,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         /**
          * Redis name for hash key (optional), by default "id"
          *
-         * @param keyAttr name of the key attribute of the hash
+         * @param keyAttr name of the key field of the hash
          * @return the builder instance (to chain operations)
          */
         public Builder withKeyAttr(String keyAttr) {
@@ -302,9 +300,9 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         /**
-         * Redis attribute name for expiry timestamp (optional), by default "expiration"
+         * Redis field name for expiry timestamp (optional), by default "expiration"
          *
-         * @param expiryAttr name of the expiry attribute in the hash
+         * @param expiryAttr name of the expiry field in the hash
          * @return the builder instance (to chain operations)
          */
         public Builder withExpiryAttr(String expiryAttr) {
@@ -313,9 +311,9 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         /**
-         * Redis attribute name for in progress expiry timestamp (optional), by default "in-progress-expiration"
+         * Redis field name for in progress expiry timestamp (optional), by default "in-progress-expiration"
          *
-         * @param inProgressExpiryAttr name of the attribute in the hash
+         * @param inProgressExpiryAttr name of the field in the hash
          * @return the builder instance (to chain operations)
          */
         public Builder withInProgressExpiryAttr(String inProgressExpiryAttr) {
@@ -324,9 +322,9 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         /**
-         * Redis attribute name for status (optional), by default "status"
+         * Redis field name for status (optional), by default "status"
          *
-         * @param statusAttr name of the status attribute in the hash
+         * @param statusAttr name of the status field in the hash
          * @return the builder instance (to chain operations)
          */
         public Builder withStatusAttr(String statusAttr) {
@@ -335,9 +333,9 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         /**
-         * Redis attribute name for response data (optional), by default "data"
+         * Redis field name for response data (optional), by default "data"
          *
-         * @param dataAttr name of the data attribute in the hash
+         * @param dataAttr name of the data field in the hash
          * @return the builder instance (to chain operations)
          */
         public Builder withDataAttr(String dataAttr) {
@@ -346,9 +344,9 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         /**
-         * Redis attribute name for validation (optional), by default "validation"
+         * Redis field name for validation (optional), by default "validation"
          *
-         * @param validationAttr name of the validation attribute in the hash
+         * @param validationAttr name of the validation field in the hash
          * @return the builder instance (to chain operations)
          */
         public Builder withValidationAttr(String validationAttr) {
