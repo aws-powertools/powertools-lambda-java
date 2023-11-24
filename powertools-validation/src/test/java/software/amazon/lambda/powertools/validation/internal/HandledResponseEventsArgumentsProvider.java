@@ -24,32 +24,30 @@ import org.junit.jupiter.params.provider.ArgumentsProvider;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2WebSocketResponse;
-import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerResponseEvent;
 
+/**
+ * Provides test arguments that are used in unit tests.
+ * It creates API Gateway response arguments that can be used to confirm
+ * that @Validation validates responses and returns a response's headers even
+ * when validation fails
+ */
 public class HandledResponseEventsArgumentsProvider implements ArgumentsProvider {
-    
-    @Override
-    public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 
-        String body = "{id";
+  @Override
+  public Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 
-        final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent()
-          .withBody(body)
-          .withHeaders(Map.of("header1", "value1,value2,value3"))
-          .withMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
+    String body = "{id";
 
-        APIGatewayV2HTTPResponse apiGWV2HTTPResponse = new APIGatewayV2HTTPResponse();
-        apiGWV2HTTPResponse.setBody(body);
-        apiGWV2HTTPResponse.setHeaders(Map.of("header1", "value1,value2,value3"));
-        apiGWV2HTTPResponse.setMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
+    final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent()
+        .withBody(body)
+        .withHeaders(Map.of("header1", "value1,value2,value3"))
+        .withMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
 
-        APIGatewayV2WebSocketResponse apiGWV2WebSocketResponse = new APIGatewayV2WebSocketResponse();
-        apiGWV2WebSocketResponse.setBody(body);
+    APIGatewayV2HTTPResponse apiGWV2HTTPResponse = new APIGatewayV2HTTPResponse();
+    apiGWV2HTTPResponse.setBody(body);
+    apiGWV2HTTPResponse.setHeaders(Map.of("header1", "value1,value2,value3"));
+    apiGWV2HTTPResponse.setMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
 
-        ApplicationLoadBalancerResponseEvent albResponseEvent = new ApplicationLoadBalancerResponseEvent();
-        albResponseEvent.setBody(body);
-
-        return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse).map(Arguments::of);
-    }
+    return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse).map(Arguments::of);
+  }
 }

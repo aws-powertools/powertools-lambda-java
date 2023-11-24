@@ -21,20 +21,16 @@ import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRespo
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 
 import software.amazon.lambda.powertools.validation.Validation;
-public class Function implements RequestHandler<ApplicationLoadBalancerRequestEvent, ApplicationLoadBalancerResponseEvent> {
-//	@Validation(inboundSchema = "classpath:/validation/inbound_schema.json", outboundSchema = "classpath:/validation/outbound_schema.json")
-//	public String handleRequest(SQSEvent input, Context context) {
-//		return "OK";
-//	}
-	
-	
-	@Validation(inboundSchema = "classpath:/validation/inbound_schema.json", outboundSchema = "classpath:/validation/outbound_schema.json")
-//	@Validation(inboundSchema = "classpath:/validation/inbound_schema.json")
-	public ApplicationLoadBalancerResponseEvent handleRequest(ApplicationLoadBalancerRequestEvent input, Context context) {
-		ApplicationLoadBalancerResponseEvent response = new ApplicationLoadBalancerResponseEvent();
-		response.setBody(input.getBody());
-		response.setStatusCode(200);
-		response.setIsBase64Encoded(false);
-		return response;
-	}
+
+public class Function
+    implements RequestHandler<ApplicationLoadBalancerRequestEvent, ApplicationLoadBalancerResponseEvent> {
+  @Validation(inboundSchema = "classpath:/validation/inbound_schema.json", outboundSchema = "classpath:/validation/outbound_schema.json")
+  public ApplicationLoadBalancerResponseEvent handleRequest(ApplicationLoadBalancerRequestEvent input,
+      Context context) {
+    ApplicationLoadBalancerResponseEvent response = new ApplicationLoadBalancerResponseEvent();
+    response.setBody(input.getBody());
+    response.setStatusCode(200);
+    response.setIsBase64Encoded(false);
+    return response;
+  }
 }
