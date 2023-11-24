@@ -16,18 +16,15 @@ import static software.amazon.lambda.powertools.idempotency.persistence.DataReco
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPooled;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
@@ -171,7 +168,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
 
         // only insert in-progress-expiry if it is set
         if (inProgressExpiry != null) {
-            insertItemExpression.replace(")", ", KEYS[4], ARGV[6])");
+            insertItemExpression = insertItemExpression.replace(")", ", KEYS[4], ARGV[6])");
         }
 
         // if redisHashExistsExpression or itemExpiredExpression or itemIsInProgressExpression then insertItemExpression
