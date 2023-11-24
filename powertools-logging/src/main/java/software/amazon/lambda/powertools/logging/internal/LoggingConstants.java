@@ -14,12 +14,14 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
-public class LoggingConstants {
-    public static final String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL");
+class LoggingConstants {
+    static String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL"); /* not final for test purpose */
 
-    public static final String LAMBDA_LOG_FORMAT = System.getenv("AWS_LAMBDA_LOG_FORMAT");
+    static String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL"); /* not final for test purpose */
 
-    public static final String LOG_DATE_RFC3339_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+    static String POWERTOOLS_SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
+
+    static String POWERTOOLS_LOG_EVENT = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT"); /* not final for test purpose */
 
     private LoggingConstants() {
         // constants

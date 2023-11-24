@@ -26,6 +26,8 @@ public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
     @Override
     @Logging
     public Object handleRequest(Object input, Context context) {
+        LOG.error("Test error event");
+        LOG.warn("Test warn event");
         LOG.info("Test event");
         LOG.debug("Test debug event");
         return null;

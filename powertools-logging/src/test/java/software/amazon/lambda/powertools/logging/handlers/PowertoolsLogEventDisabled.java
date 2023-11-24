@@ -18,7 +18,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class PowerToolLogEventDisabled implements RequestHandler<Object, Object> {
+public class PowertoolsLogEventDisabled implements RequestHandler<Object, Object> {
 
     @Logging
     @Override
