@@ -36,6 +36,7 @@
     <modules>
         <module>powertools-idempotency-core</module>
         <module>powertools-idempotency-dynamodb</module>
+        <module>powertool-idempotency-redis</module>
     </modules>
 
     <dependencies>
