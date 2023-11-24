@@ -12,24 +12,11 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.exceptions;
+package software.amazon.lambda.powertools.idempotency.redis;
 
-/**
- * Exception thrown when trying to store an item which already exists.
- */
-public class IdempotencyItemAlreadyExistsException extends RuntimeException {
-    private static final long serialVersionUID = 9027152772149436500L;
-
-    public IdempotencyItemAlreadyExistsException() {
-        super();
-    }
-
-    public IdempotencyItemAlreadyExistsException(String msg, Throwable e) {
-        super(msg, e);
-    }
-
-    public IdempotencyItemAlreadyExistsException(String msg) {
-        super(msg);
-    }
-
+public class Constants {
+    public static final String REDIS_HOST = "REDIS_HOST";
+    public static final String REDIS_PORT = "REDIS_PORT";
+    public static final String REDIS_USER = "REDIS_USER";
+    public static final String REDIS_SECRET = "REDIS_SECRET";
 }
