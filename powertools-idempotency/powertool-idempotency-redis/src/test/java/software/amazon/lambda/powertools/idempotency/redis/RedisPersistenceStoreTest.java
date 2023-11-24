@@ -23,6 +23,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -69,6 +70,25 @@ public class RedisPersistenceStoreTest {
         assertThat(entry).isNotNull();
         assertThat(entry.get("status")).isEqualTo("COMPLETED");
         assertThat(entry.get("expiration")).isEqualTo(String.valueOf(expiry));
+        assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
+    }
+
+    @Test
+    public void putRecord_shouldCreateItemInRedisWithInProgressExpiration() {
+        Instant now = Instant.now();
+        long ttl = 3600;
+        long expiry = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
+        OptionalLong progressExpiry = OptionalLong.of(now.minus(30, ChronoUnit.SECONDS).toEpochMilli());
+        redisPersistenceStore.putRecord(
+                new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null, progressExpiry), now);
+
+        Map<String, String> entry = jedisPool.hgetAll("idempotency:id:key");
+        long ttlInRedis = jedisPool.ttl("idempotency:id:key");
+
+        assertThat(entry).isNotNull();
+        assertThat(entry.get("status")).isEqualTo("COMPLETED");
+        assertThat(entry.get("expiration")).isEqualTo(String.valueOf(expiry));
+        assertThat(entry.get("in-progress-expiration")).isEqualTo(String.valueOf(progressExpiry.getAsLong()));
         assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
     }
 
