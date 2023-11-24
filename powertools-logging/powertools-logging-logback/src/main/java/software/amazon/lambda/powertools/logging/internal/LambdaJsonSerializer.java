@@ -114,7 +114,9 @@ public class LambdaJsonSerializer {
         sortedMap.forEach((k, v) -> {
             if ((PowertoolsLoggedFields.stringValues().contains(k) && includePowertoolsInfo)
                     || !PowertoolsLoggedFields.stringValues().contains(k)) {
-                serializeAttribute(builder, k, v);
+                if (!k.equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) || !v.equals("0.0")) { // do not log sampling rate when 0
+                    serializeAttribute(builder, k, v);
+                }
             }
         });
     }

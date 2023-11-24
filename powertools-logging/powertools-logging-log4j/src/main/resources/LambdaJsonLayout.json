@@ -59,7 +59,7 @@
   "timestamp": {
     "$resolver": "timestamp",
     "pattern": {
-      "format": "yyyy-MM-dd'T'HH:mm:ss.SSSZz"
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
     }
   },
   "xray_trace_id": {

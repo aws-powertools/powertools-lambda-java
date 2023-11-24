@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
 @Order(1)
@@ -56,7 +55,6 @@ class PowerToolsResolverFactoryTest {
         } catch (NoSuchFileException e) {
             // file may not exist on the first launch
         }
-        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", null, true);
     }
 
     @AfterEach
@@ -66,15 +64,13 @@ class PowerToolsResolverFactoryTest {
     }
 
     @Test
-    void shouldLogInJsonFormat() throws IllegalAccessException {
-         writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "0.000000001", true);
-
+    void shouldLogInJsonFormat() {
         PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
         handler.handleRequest("Input", context);
 
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":\"1\",\"sampling_rate\":1.0E-9,\"service\":\"testLog4j\",\"timestamp\":")
+                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":\"1\",\"service\":\"testLog4j\",\"timestamp\":")
                 .contains("\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
     }
 

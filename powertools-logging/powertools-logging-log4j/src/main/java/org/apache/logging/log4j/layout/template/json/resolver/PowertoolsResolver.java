@@ -14,6 +14,19 @@
 
 package org.apache.logging.log4j.layout.template.json.resolver;
 
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_NAME;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_REQUEST_ID;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SAMPLING_RATE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
+
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
@@ -47,7 +60,7 @@ final class PowertoolsResolver implements EventResolver {
     private static final EventResolver FUNCTION_NAME_RESOLVER =
             (final LogEvent logEvent, final JsonWriter jsonWriter) -> {
                 final String functionName =
-                        logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_NAME.getName());
+                        logEvent.getContextData().getValue(FUNCTION_NAME.getName());
                 jsonWriter.writeString(functionName);
             };
 
@@ -168,48 +181,29 @@ final class PowertoolsResolver implements EventResolver {
 
     private final EventResolver internalResolver;
 
+    private static final Map<String, EventResolver> eventResolverMap = Stream.of(new Object[][] {
+            { SERVICE.getName(), SERVICE_RESOLVER },
+            { FUNCTION_NAME.getName(), FUNCTION_NAME_RESOLVER },
+            { FUNCTION_VERSION.getName(), FUNCTION_VERSION_RESOLVER },
+            { FUNCTION_ARN.getName(), FUNCTION_ARN_RESOLVER },
+            { FUNCTION_MEMORY_SIZE.getName(), FUNCTION_MEMORY_RESOLVER },
+            { FUNCTION_REQUEST_ID.getName(), FUNCTION_REQ_RESOLVER },
+            { FUNCTION_COLD_START.getName(), COLD_START_RESOLVER },
+            { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
+            { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
+            { "region", REGION_RESOLVER },
+            { "account_id", ACCOUNT_ID_RESOLVER },
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1]));
+
+
     PowertoolsResolver(final TemplateResolverConfig config) {
         final String fieldName = config.getString("field");
         if (fieldName == null) {
             internalResolver = NON_POWERTOOLS_FIELD_RESOLVER;
         } else {
-            switch (fieldName) {
-                case "service":
-                    internalResolver = SERVICE_RESOLVER;
-                    break;
-                case "function_name":
-                    internalResolver = FUNCTION_NAME_RESOLVER;
-                    break;
-                case "function_version":
-                case "service_version":
-                    internalResolver = FUNCTION_VERSION_RESOLVER;
-                    break;
-                case "function_arn":
-                    internalResolver = FUNCTION_ARN_RESOLVER;
-                    break;
-                case "function_memory_size":
-                    internalResolver = FUNCTION_MEMORY_RESOLVER;
-                    break;
-                case "function_request_id":
-                    internalResolver = FUNCTION_REQ_RESOLVER;
-                    break;
-                case "cold_start":
-                    internalResolver = COLD_START_RESOLVER;
-                    break;
-                case "xray_trace_id":
-                    internalResolver = XRAY_TRACE_RESOLVER;
-                    break;
-                case "region":
-                    internalResolver = REGION_RESOLVER;
-                    break;
-                case "account_id":
-                    internalResolver = ACCOUNT_ID_RESOLVER;
-                    break;
-                case "sampling_rate":
-                    internalResolver = SAMPLING_RATE_RESOLVER;
-                    break;
-                default:
-                    throw new IllegalArgumentException("unknown field: " + fieldName);
+            internalResolver = eventResolverMap.get(fieldName);
+            if (internalResolver == null) {
+                throw new IllegalArgumentException("unknown field: " + fieldName);
             }
         }
     }

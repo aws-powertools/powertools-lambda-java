@@ -58,7 +58,6 @@ class LambdaJsonEncoderTest {
         openMocks(this);
         MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
-        writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", null, true);
         setupContext();
         // Make sure file is cleaned up before running tests
         try {
@@ -74,10 +73,8 @@ class LambdaJsonEncoderTest {
     }
 
     @Test
-    void shouldLogInJsonFormat() throws IllegalAccessException {
+    void shouldLogInJsonFormat() {
         // GIVEN
-          writeStaticField(LambdaLoggingAspect.class, "SAMPLING_RATE", "0.000000001", true);
-
         PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
 
         // WHEN
@@ -86,7 +83,7 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"sampling_rate\":\"1.0E-9\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
+                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);

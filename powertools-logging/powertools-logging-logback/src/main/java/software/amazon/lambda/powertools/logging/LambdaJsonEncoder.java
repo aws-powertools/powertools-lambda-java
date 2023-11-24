@@ -33,7 +33,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
 
     private final ThrowableProxyConverter throwableProxyConverter = new ThrowableProxyConverter();
     protected ThrowableHandlingConverter throwableConverter = null;
-    protected String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZz";
+    protected String timestampFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     protected String timestampFormatTimezoneId = null;
     private boolean includeThreadInfo = false;
     private boolean includePowertoolsInfo = true;
@@ -88,7 +88,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     }
 
     /**
-     * Specify the format of the timestamp (default is <b>yyyy-MM-dd'T'HH:mm:ss.SSSZz</b>):
+     * Specify the format of the timestamp (default is <b>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</b>):
      * <br/>
      * <pre>{@code
      *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">

@@ -36,7 +36,7 @@
   },
   "service.version": {
     "$resolver": "powertools",
-    "field": "service_version"
+    "field": "function_version"
   },
   "log.logger": {
     "$resolver": "logger",
