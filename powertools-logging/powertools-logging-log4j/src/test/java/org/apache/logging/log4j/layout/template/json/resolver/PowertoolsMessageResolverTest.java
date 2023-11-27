@@ -31,12 +31,14 @@ import java.util.Arrays;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsJsonMessage;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
+@Order(2)
 class PowertoolsMessageResolverTest {
 
     @Mock
