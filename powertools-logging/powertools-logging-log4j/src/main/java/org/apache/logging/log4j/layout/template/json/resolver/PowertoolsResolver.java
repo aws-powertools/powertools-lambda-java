@@ -24,11 +24,15 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SAMPLING_RATE;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
+import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
@@ -147,17 +151,56 @@ final class PowertoolsResolver implements EventResolver {
             (final LogEvent logEvent, final JsonWriter jsonWriter) ->
                     jsonWriter.writeString(SystemWrapper.getenv(LambdaConstants.AWS_REGION_ENV));
 
+    public static final String LAMBDA_ARN_REGEX =
+            "^arn:(aws|aws-us-gov|aws-cn):lambda:[a-zA-Z0-9-]+:\\d{12}:function:[a-zA-Z0-9-_]+(:[a-zA-Z0-9-_]+)?$";
+
     private static final EventResolver ACCOUNT_ID_RESOLVER = new EventResolver() {
         @Override
         public boolean isResolvable(LogEvent logEvent) {
             final String arn = logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_ARN.getName());
-            return null != arn && !arn.isEmpty();
+            return null != arn && !arn.isEmpty() && arn.matches(LAMBDA_ARN_REGEX);
         }
 
         @Override
         public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
             final String arn = logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_ARN.getName());
             jsonWriter.writeString(arn.split(":")[4]);
+        }
+    };
+
+    /**
+     * Use a custom message resolver to permit to log json string in json format without escaped quotes.
+     */
+    private static final EventResolver MESSAGE_RESOLVER = new EventResolver() {
+        private final ObjectMapper mapper = new ObjectMapper()
+                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+        public boolean isValidJson(String json) {
+            if (!(json.startsWith("{") || json.startsWith("["))) {
+                return false;
+            }
+            try {
+                mapper.readTree(json);
+            } catch (JacksonException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public boolean isResolvable(LogEvent logEvent) {
+            final Message msg = logEvent.getMessage();
+            return null != msg && null != msg.getFormattedMessage();
+        }
+
+        @Override
+        public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
+            String message = logEvent.getMessage().getFormattedMessage();
+            if (isValidJson(message)) {
+                jsonWriter.writeRawString(message);
+            } else {
+                jsonWriter.writeString(message);
+            }
         }
     };
 
@@ -193,6 +236,7 @@ final class PowertoolsResolver implements EventResolver {
             { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
             { "region", REGION_RESOLVER },
             { "account_id", ACCOUNT_ID_RESOLVER },
+            { "message", MESSAGE_RESOLVER }
     }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1]));
 
 

@@ -12,8 +12,8 @@
     "field": "name"
   },
   "message": {
-    "$resolver": "message",
-    "stringified": true
+    "$resolver": "powertools",
+    "field": "message"
   },
   "error.type": {
     "$resolver": "exception",

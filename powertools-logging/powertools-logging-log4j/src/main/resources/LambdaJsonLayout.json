@@ -4,8 +4,8 @@
     "field": "name"
   },
   "message": {
-    "$resolver": "message",
-    "stringified": true
+    "$resolver": "powertools",
+    "field": "message"
   },
   "error": {
     "message": {
