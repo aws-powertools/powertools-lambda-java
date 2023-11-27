@@ -24,7 +24,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>1.18.0-SNAPSHOT</version>
+        <version>1.19.0-SNAPSHOT</version>
     </parent>
 
     <name>Powertools for AWS Lambda (Java) library Logging</name>
@@ -136,6 +136,16 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <environmentVariables>
+                        <AWS_LAMBDA_LOG_FORMAT>JSON</AWS_LAMBDA_LOG_FORMAT>
+                    </environmentVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>
