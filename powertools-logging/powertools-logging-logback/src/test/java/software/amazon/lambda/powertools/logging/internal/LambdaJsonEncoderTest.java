@@ -25,6 +25,7 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.pattern.RootCauseFirstThrowableProxyConverter;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -33,6 +34,8 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.TimeZone;
 import org.junit.jupiter.api.AfterEach;
@@ -44,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.LambdaJsonEncoder;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsJsonMessage;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
 @Order(2)
@@ -84,6 +88,30 @@ class LambdaJsonEncoderTest {
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
                         "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
+    }
+
+    @Test
+    void shouldLogJsonMessageWithoutEscapedStrings() {
+        // GIVEN
+        PowertoolsJsonMessage requestHandler = new PowertoolsJsonMessage();
+        SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
+        msg.setMessageId("1212abcd");
+        msg.setBody("plop");
+        msg.setEventSource("eb");
+        msg.setAwsRegion("eu-west-1");
+        SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
+        attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
+        msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
+
+        // WHEN
+        requestHandler.handleRequest(msg, context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile))
+                .contains("\"message\":{\"messageId\":\"1212abcd\",\"receiptHandle\":null,\"body\":\"plop\",\"md5OfBody\":null,\"md5OfMessageAttributes\":null,\"eventSourceArn\":null,\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"attributes\":null,\"messageAttributes\":{\"keyAttribute\":{\"stringValue\":null,\"binaryValue\":null,\"stringListValues\":[\"val1\",\"val2\",\"val3\"],\"binaryListValues\":null,\"dataType\":null}}}")
+                .contains("\"message\":\"1212abcd\"")
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);

@@ -24,7 +24,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
 
 /**
  * This class will serialize the log events in json.<br/>
@@ -83,8 +82,7 @@ public class LambdaJsonSerializer {
     }
 
     public static void serializeFormattedMessage(StringBuilder builder, String formattedMessage) {
-        serializeAttribute(builder, FORMATTED_MESSAGE_ATTR_NAME,
-                formattedMessage.replace("\"", Matcher.quoteReplacement("\\\"")));
+        serializeAttribute(builder, FORMATTED_MESSAGE_ATTR_NAME, formattedMessage);
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {

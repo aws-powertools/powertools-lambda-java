@@ -14,6 +14,10 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 /**
  * Json tools to serialize attributes manually, to avoid using further dependencies (jackson, gson...)
  */
@@ -33,7 +37,11 @@ public class JsonUtils {
             if (isString) {
                 builder.append("\"");
             }
-            builder.append(value);
+            if (isString) {
+                builder.append(value.replace("\"", "\\\"")); // escape quotes in string
+            } else {
+                builder.append(value);
+            }
             if (isString) {
                 builder.append("\"");
             }
@@ -73,7 +81,22 @@ public class JsonUtils {
         if ("true".equals(str) || "false".equals(str)) {
             return false; // boolean
         }
-        return !isNumeric(str); // number
+        return !isNumeric(str) && !isJson(str); // number
+    }
+
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+    private static boolean isJson(String str) {
+        if (!(str.startsWith("{") || str.startsWith("["))) {
+            return false;
+        }
+        try {
+            mapper.readTree(str);
+        } catch (JacksonException e) {
+            return false;
+        }
+        return true;
     }
 
     /**
