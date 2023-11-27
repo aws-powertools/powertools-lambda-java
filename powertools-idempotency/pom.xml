@@ -91,10 +91,6 @@
             <artifactId>url-connection-client</artifactId>
             <version>${aws.sdk.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
