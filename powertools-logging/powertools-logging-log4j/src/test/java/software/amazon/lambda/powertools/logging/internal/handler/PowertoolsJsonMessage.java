@@ -31,6 +31,8 @@ public class PowertoolsJsonMessage implements RequestHandler<SQSEvent.SQSMessage
     public String handleRequest(SQSEvent.SQSMessage input, Context context) {
         try {
             LOG.debug(JsonConfig.get().getObjectMapper().writeValueAsString(input));
+            LOG.debug("{}", input.getMessageId());
+            LOG.warn("Message body = {} and id = \"{}\"", input.getBody(), input.getMessageId());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

@@ -81,9 +81,11 @@ class PowertoolsMessageResolverTest {
 
         // THEN
         File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains("\"message\":{\"messageId\":\"1212abcd\",\"receiptHandle\":null,\"body\":\"plop\",\"md5OfBody\":null,\"md5OfMessageAttributes\":null,\"eventSourceArn\":null,\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"attributes\":null,\"messageAttributes\":{\"keyAttribute\":{\"stringValue\":null,\"binaryValue\":null,\"stringListValues\":[\"val1\",\"val2\",\"val3\"],\"binaryListValues\":null,\"dataType\":null}}}");
+        assertThat(contentOf(logFile))
+                .contains("\"message\":{\"messageId\":\"1212abcd\",\"receiptHandle\":null,\"body\":\"plop\",\"md5OfBody\":null,\"md5OfMessageAttributes\":null,\"eventSourceArn\":null,\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"attributes\":null,\"messageAttributes\":{\"keyAttribute\":{\"stringValue\":null,\"binaryValue\":null,\"stringListValues\":[\"val1\",\"val2\",\"val3\"],\"binaryListValues\":null,\"dataType\":null}}}")
+                .contains("\"message\":\"1212abcd\"")
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
     }
-
 
     @Test
     void shouldLogStringMessageWhenNotJson() {

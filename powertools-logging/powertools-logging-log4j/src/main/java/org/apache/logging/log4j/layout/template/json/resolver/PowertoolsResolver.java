@@ -259,7 +259,6 @@ final class PowertoolsResolver implements EventResolver {
 
     @Override
     public boolean isResolvable(LogEvent value) {
-        ReadOnlyStringMap contextData = value.getContextData();
-        return null != contextData && !contextData.isEmpty() && internalResolver.isResolvable(value);
+        return value != null && value.getContextData() != null && internalResolver.isResolvable(value);
     }
 }
