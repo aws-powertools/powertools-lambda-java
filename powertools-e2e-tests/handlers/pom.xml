@@ -30,7 +30,8 @@
         <module>logging</module>
         <module>tracing</module>
         <module>metrics</module>
-        <module>idempotency</module>
+        <module>idempotency-dynamodb</module>
+        <module>idempotency-redis</module>
         <module>parameters</module>
     </modules>
 
@@ -61,7 +62,12 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-idempotency</artifactId>
+                <artifactId>powertools-idempotency-dynamodb</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-idempotency-redis</artifactId>
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
