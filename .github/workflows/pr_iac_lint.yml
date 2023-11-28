@@ -1,0 +1,45 @@
+name: Validate IaC
+
+on:
+  pull_request:
+    branches:
+      - main
+      - v2
+    paths:
+      - 'examples/**'
+jobs:
+  linter:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ["sam", "gradle", "kotlin"]
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
+      - name: Setup java JDK
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'corretto'
+          java-version: 11
+      - name: Run SAM validator to check syntax of IaC templates - Java
+        working-directory: examples/powertools-examples-core/${{ matrix.project }}
+        run: |
+          sam build
+          sam validate --lint
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 #v2.0.3
+      - name: Run Terraform validator to check syntax of IaC templates and produce a plan of changes
+        working-directory: examples/powertools-examples-core/terraform
+        run: |
+          mvn install
+          terraform -version
+          terraform init -backend=false
+          terraform validate
+          terraform plan
+      - name: Setup Terraform lint
+        uses: terraform-linters/setup-tflint@a5a1af8c6551fb10c53f1cd4ba62359f1973746f # v3.1.1
+      - name: Run Terraform lint to check for best practices, errors, deprecated syntax etc.
+        working-directory: examples/powertools-examples-core/terraform
+        run: |
+          tflint --version
+          tflint --init
+          tflint -f compact
