@@ -62,7 +62,6 @@ public class SecretsProviderTest {
         String expectedValue = "Value1";
         GetSecretValueResponse response = GetSecretValueResponse.builder().secretString(expectedValue).build();
         Mockito.when(client.getSecretValue(paramCaptor.capture())).thenReturn(response);
-        provider.defaultMaxAge(1, ChronoUnit.DAYS);
         provider.withMaxAge(2, ChronoUnit.DAYS);
 
         String value = provider.getValue(key);

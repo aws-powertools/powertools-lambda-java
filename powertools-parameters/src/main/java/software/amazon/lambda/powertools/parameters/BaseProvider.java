@@ -61,24 +61,9 @@ public abstract class BaseProvider implements ParamProvider {
     protected abstract Map<String, String> getMultipleValues(String path);
 
     /**
-     * (Optional) Set the default max age for the cache of all parameters. Override the default 5 seconds.<br/>
-     * If for some parameters, you need to set a different maxAge, use {@link #withMaxAge(int, ChronoUnit)}.<br />
-     * Use {@link #withMaxAge(int, ChronoUnit)} after {#defaultMaxAge(int, ChronoUnit)} in the chain.
-     *
-     * @param maxAge Maximum time to cache the parameter, before calling the underlying parameter store.
-     * @param unit   Unit of time
-     * @return the provider itself in order to chain calls (eg. <pre>provider.defaultMaxAge(10, SECONDS).get("key")</pre>).
-     */
-    public BaseProvider defaultMaxAge(int maxAge, ChronoUnit unit) {
-        Duration duration = Duration.of(maxAge, unit);
-        cacheManager.setDefaultExpirationTime(duration);
-        return this;
-    }
-
-    /**
      * (Optional) Builder method to call before {@link #get(String)} or {@link #get(String, Class)}
      * to set cache max age for the parameter to get.<br/><br/>
-     * The max age is reset to default (either 5 or a custom value set with {@link #defaultMaxAge}) after each get,
+     * The max age is reset to default (either 5 or a custom value that may be set on the CacheManager) after each get,
      * so you need to use this method for each parameter to cache with non-default max age.<br/><br/>
      *
      * <b>Not Thread Safe</b>: calling this method simultaneously by several threads

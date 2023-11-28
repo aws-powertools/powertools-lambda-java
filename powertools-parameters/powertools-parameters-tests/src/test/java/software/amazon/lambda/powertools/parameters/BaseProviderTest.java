@@ -25,6 +25,7 @@ import static software.amazon.lambda.powertools.parameters.transform.Transformer
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HashMap;
@@ -136,8 +137,10 @@ public class BaseProviderTest {
     }
 
     @Test
+    // TODO Scott - remove this, or change to mutating the CacheManager first?
     public void get_customDefaultTTL_cached_shouldGetFromCache() {
-        provider.defaultMaxAge(12, ChronoUnit.MINUTES).get("foobar");
+        provider.cacheManager.setDefaultExpirationTime(Duration.of(12, MINUTES));
+        provider.get("foobar");
         getFromStore = false;
 
         provider.setClock(offset(clock, of(10, MINUTES)));
@@ -148,7 +151,6 @@ public class BaseProviderTest {
 
     @Test
     public void get_customDefaultTTL_expired_shouldGetValue() {
-        provider.defaultMaxAge(2, ChronoUnit.MINUTES).get("barbaz");
         getFromStore = false;
 
         provider.setClock(offset(clock, of(3, MINUTES)));
@@ -159,9 +161,7 @@ public class BaseProviderTest {
 
     @Test
     public void get_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
-        provider.defaultMaxAge(12, ChronoUnit.MINUTES)
-                .withMaxAge(5, SECONDS)
-                .get("foobaz");
+        provider.get("foobaz");
         getFromStore = false;
 
         provider.setClock(offset(clock, of(4, SECONDS)));
@@ -172,8 +172,7 @@ public class BaseProviderTest {
 
     @Test
     public void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
-        provider.defaultMaxAge(2, ChronoUnit.MINUTES)
-                .withMaxAge(5, SECONDS)
+        provider.withMaxAge(5, SECONDS)
                 .get("bariton");
         getFromStore = false;
 
@@ -274,8 +273,9 @@ public class BaseProviderTest {
     public void getObject_customDefaultTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
-        provider.defaultMaxAge(12, ChronoUnit.MINUTES)
-                .withTransformation(json)
+        provider.cacheManager.setDefaultExpirationTime(Duration.of(12, MINUTES));
+
+        provider.withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
@@ -286,11 +286,11 @@ public class BaseProviderTest {
     }
 
     @Test
+    // TODO Scott
     public void getObject_customDefaultTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
-        provider.defaultMaxAge(2, ChronoUnit.MINUTES)
-                .withTransformation(json)
+        provider.withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
@@ -301,10 +301,10 @@ public class BaseProviderTest {
     }
 
     @Test
+    // TODO Scott
     public void getObject_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
-        provider.defaultMaxAge(12, ChronoUnit.MINUTES)
-                .withMaxAge(5, SECONDS)
+        provider.withMaxAge(5, SECONDS)
                 .withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
@@ -316,11 +316,11 @@ public class BaseProviderTest {
     }
 
     @Test
+    // TODO Scott
     public void getObject_customDefaultTTLAndTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
-        provider.defaultMaxAge(2, ChronoUnit.MINUTES)
-                .withMaxAge(5, SECONDS)
+        provider.withMaxAge(5, SECONDS)
                 .withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;

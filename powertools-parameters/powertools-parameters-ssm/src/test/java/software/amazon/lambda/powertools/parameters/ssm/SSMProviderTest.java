@@ -197,7 +197,6 @@ public class SSMProviderTest {
         Parameter parameter = Parameter.builder().value(expectedValue).build();
         GetParameterResponse result = GetParameterResponse.builder().parameter(parameter).build();
         Mockito.when(client.getParameter(paramCaptor.capture())).thenReturn(result);
-        provider.defaultMaxAge(1, ChronoUnit.DAYS);
         provider.withMaxAge(2, ChronoUnit.DAYS);
         provider.recursive();
     }

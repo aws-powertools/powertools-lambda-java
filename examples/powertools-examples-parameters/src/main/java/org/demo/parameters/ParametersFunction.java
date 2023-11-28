@@ -54,7 +54,7 @@ public class ParametersFunction implements RequestHandler<APIGatewayProxyRequest
             .builder()
             .build();
 
-    String simpleValue = ssmProvider.defaultMaxAge(30, SECONDS).get("/powertools-java/sample/simplekey");
+    String simpleValue = ssmProvider.withMaxAge(30, SECONDS).get("/powertools-java/sample/simplekey");
     String listValue = ssmProvider.withMaxAge(60, SECONDS).get("/powertools-java/sample/keylist");
     MyObject jsonObj = ssmProvider.withTransformation(json).get("/powertools-java/sample/keyjson", MyObject.class);
     Map<String, String> allValues = ssmProvider.getMultiple("/powertools-java/sample");
