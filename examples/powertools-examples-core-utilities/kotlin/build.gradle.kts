@@ -21,19 +21,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 }
 
-tasks.compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+kotlin {
+    jvmToolchain(11)
 }
-
-tasks.compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
-}
-
-// If using JDK 11 or higher, use the following instead:
-//kotlin {
-//    jvmToolchain(11)
-//}
