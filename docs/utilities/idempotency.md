@@ -159,10 +159,12 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     ```
 
 ### Required resources
-
 Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your Lambda functions will need read and write access to it.
+As of now, [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) and [Redis](https://redis.io/) are the supported persistnce layers.
 
-As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
+#### Using Amazon DynamoDB as persistent storage layer
+
+If you are using Amazon DynamoDB  you'll need to create a table.
 
 **Default table configuration**
 
@@ -214,6 +216,34 @@ Resources:
     result returned by your Lambda is less than 1kb, you can expect 2 WCUs per invocation. For retried invocations, you will
     see 1WCU and 1RCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
     estimate the cost.
+
+#### Using Redis as persistent storage layer
+
+If you are using Redis you'll need to provide the Redis host, port, user and password as AWS Lambda environment variables.
+In the following example, you can see a SAM template for deploying an AWS Lambda function by specifying the required environment variables.
+If you don't provide a custom [Redis client](# Customizing Redis client) you can omit the environment variables declaration.
+
+!!! warning "Warning: Avoid including a plain text secret in your template"
+This can infer security implications
+
+!!! warning "Warning: Large responses with Redis persistence layer"
+When using this utility with Redis your function's responses must be [smaller than 512MB].
+Persisting larger items cannot might cause exceptions.
+
+```yaml hl_lines="9-12" title="AWS Serverless Application Model (SAM) example"
+Resources:
+  IdempotencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: helloworld.App::handleRequest
+      Environment:
+        Variables:
+          REDIS_HOST: %redis-host%
+          REDIS_PORT: %redis-port%
+          REDIS_USER: %redis-user%
+          REDIS_SECRET: %redis-secret%
+```
 
 ### Idempotent annotation
 
@@ -635,6 +665,29 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 | **SortKeyAttr**    |          |                                      | Sort key of the table (if table is configured with a sort key).                                        |
 | **StaticPkValue**  |          | `idempotency#{LAMBDA_FUNCTION_NAME}` | Static value to use as the partition key. Only used when **SortKeyAttr** is set.                       |
 
+#### RedisPersistenceStore
+
+The redis persistence store has as a prerequisite to install a Redis datastore(https://redis.io/docs/about/) in Standalone mode.
+
+We are using [Redis hashes](https://redis.io/docs/data-types/hashes/) to store the idempotency fields and values.
+There are some predefined fields that you can see listed in the following table. The predefined fields have some default values.
+
+
+You can alter the field names by passing these parameters when initializing the persistence layer:
+
+| Parameter          | Required | Default                              | Description                                                                                            |
+|--------------------|----------|--------------------------------------|--------------------------------------------------------------------------------------------------------|
+| **KeyPrefixName**  | Y        | `idempotency`                        | The redis hash key prefix                                                                              |
+| **KeyAttr**        | Y        | `id`                                 | The redis hash key field name                                                                          |
+| **ExpiryAttr**     |          | `expiration`                         | Unix timestamp of when record expires                                                                  |
+| **StatusAttr**     |          | `status`                             | Stores status of the Lambda execution during and after invocation                                      |
+| **DataAttr**       |          | `data`                               | Stores results of successfully idempotent methods                                                      |
+| **ValidationAttr** |          | `validation`                         | Hashed representation of the parts of the event used for validation                                    |
+
+
+!!! Tip "Tip: You can share the same prefix and key for all functions"
+You can reuse the same prefix and key to store idempotency state. We add your function name in addition to the idempotency key as a hash key.
+
 ## Advanced
 
 ### Customizing the default behavior
@@ -882,6 +935,39 @@ When creating the `DynamoDBPersistenceStore`, you can set a custom [`DynamoDbCli
         .httpClient(UrlConnectionHttpClient.builder().build())
         .region(Region.of(System.getenv(AWS_REGION_ENV)))
         .build();
+    ```
+
+### Customizing Redis client
+
+The `RedisPersistenceStore` uses the JedisPooled java client to connect to the Redis Server.
+When creating the `RedisPersistenceStore`, you can set a custom [`JedisPooled`](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/JedisPooled.html) client:
+
+=== "Custom JedisPooled with connection timeout"
+
+    ```java hl_lines="2-6 11"
+    public App() {
+        JedisPooled jedisPooled = new JedisPooled(new HostAndPort("host",6789), DefaultJedisClientConfig.builder()
+                .user("user")
+                .password("secret")
+                .connectionTimeoutMillis(3000)
+                .build())
+
+        Idempotency.config().withPersistenceStore(
+          RedisPersistenceStore.builder()
+                .withKeyPrefixName("items-idempotency")
+                .withJedisPooled(jedisPooled)
+                .build()
+      ).configure();
+    }
+    ```
+
+!!! info "Default configuration is the following:"
+
+    ```java
+    DefaultJedisClientConfig.builder()
+    .user(System.getenv(Constants.REDIS_USER))
+    .password(System.getenv(Constants.REDIS_SECRET))
+    .build();
     ```
 
 ### Using a DynamoDB table with a composite primary key
