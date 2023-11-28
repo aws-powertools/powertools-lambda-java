@@ -29,7 +29,7 @@ import org.junit.jupiter.api.Timeout;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
-public class IdempotencyE2ET {
+public class IdempotencyDynamoDBE2ET {
     private static Infrastructure infrastructure;
     private static String functionName;
 
@@ -38,7 +38,7 @@ public class IdempotencyE2ET {
     public static void setup() {
         String random = UUID.randomUUID().toString().substring(0, 6);
         infrastructure = Infrastructure.builder()
-                .testName(IdempotencyE2ET.class.getSimpleName())
+                .testName(IdempotencyDynamoDBE2ET.class.getSimpleName())
                 .pathToFunction("idempotency")
                 .idempotencyTable("idempo" + random)
                 .build();

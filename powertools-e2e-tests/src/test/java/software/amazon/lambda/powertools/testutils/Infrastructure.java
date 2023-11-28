@@ -45,7 +45,11 @@ import software.amazon.awscdk.services.appconfig.CfnDeployment;
 import software.amazon.awscdk.services.appconfig.CfnDeploymentStrategy;
 import software.amazon.awscdk.services.appconfig.CfnEnvironment;
 import software.amazon.awscdk.services.appconfig.CfnHostedConfigurationVersion;
-import software.amazon.awscdk.services.dynamodb.*;
+import software.amazon.awscdk.services.dynamodb.Attribute;
+import software.amazon.awscdk.services.dynamodb.AttributeType;
+import software.amazon.awscdk.services.dynamodb.BillingMode;
+import software.amazon.awscdk.services.dynamodb.StreamViewType;
+import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.kinesis.Stream;
 import software.amazon.awscdk.services.kinesis.StreamMode;
@@ -114,6 +118,10 @@ public class Infrastructure {
     private final String queue;
     private final String kinesisStream;
     private final String largeMessagesBucket;
+    private final String redisHost;
+    private final String redisPort;
+    private final String redisUser;
+    private final String redisSecret;
     private String ddbStreamsTableName;
     private String functionName;
     private Object cfnTemplate;
@@ -127,6 +135,10 @@ public class Infrastructure {
         this.timeout = builder.timeoutInSeconds;
         this.pathToFunction = builder.pathToFunction;
         this.idempotencyTable = builder.idemPotencyTable;
+        this.redisHost = builder.redisHost;
+        this.redisPort = builder.redisPort;
+        this.redisUser = builder.redisUser;
+        this.redisSecret = builder.redisSecret;
         this.appConfig = builder.appConfig;
         this.queue = builder.queue;
         this.kinesisStream = builder.kinesisStream;
@@ -271,6 +283,13 @@ public class Infrastructure {
             function.addEnvironment("IDEMPOTENCY_TABLE", idempotencyTable);
 
             table.grantReadWriteData(function);
+        }
+
+        if (!StringUtils.isEmpty(redisHost)) {
+            function.addEnvironment("REDIS_HOST", redisHost);
+            function.addEnvironment("REDIS_PORT", redisPort);
+            function.addEnvironment("REDIS_USER", redisUser);
+            function.addEnvironment("REDIS_SECRET", redisSecret);
         }
 
         if (!StringUtils.isEmpty(queue)) {
@@ -504,6 +523,10 @@ public class Infrastructure {
         private String queue;
         private String kinesisStream;
         private String ddbStreamsTableName;
+        private String redisHost;
+        private String redisPort;
+        private String redisUser;
+        private String redisSecret;
 
         private Builder() {
             runtime = mapRuntimeVersion("JAVA_VERSION");
@@ -559,6 +582,26 @@ public class Infrastructure {
 
         public Builder idempotencyTable(String tableName) {
             this.idemPotencyTable = tableName;
+            return this;
+        }
+
+        public Builder redisHost(String redisHost) {
+            this.redisHost = redisHost;
+            return this;
+        }
+
+        public Builder redisPort(String redisPort) {
+            this.redisPort = redisPort;
+            return this;
+        }
+
+        public Builder redisUser(String redisUser) {
+            this.redisUser = redisUser;
+            return this;
+        }
+
+        public Builder redisSecret(String redisSecret) {
+            this.redisSecret = redisSecret;
             return this;
         }
 

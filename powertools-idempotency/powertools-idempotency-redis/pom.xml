@@ -23,7 +23,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>powertool-idempotency-redis</artifactId>
+    <artifactId>powertools-idempotency-redis</artifactId>
     <name>Powertools for AWS Lambda (Java) library Idempotency - Redis</name>
     <description>
         Redis implementation for the idempotency module

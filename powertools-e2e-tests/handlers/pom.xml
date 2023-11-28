@@ -33,9 +33,10 @@
         <module>tracing</module>
         <module>metrics</module>
         <module>batch</module>
-        <module>idempotency</module>
         <module>largemessage</module>
         <module>largemessage_idempotent</module>
+        <module>idempotency-dynamodb</module>
+        <module>idempotency-redis</module>
         <module>parameters</module>
         <module>validation-alb-event</module>
         <module>validation-apigw-event</module>
@@ -72,7 +73,12 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-idempotency</artifactId>
+                <artifactId>powertools-idempotency-dynamodb</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-idempotency-redis</artifactId>
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
@@ -160,7 +166,6 @@
                     <artifactId>aspectj-maven-plugin</artifactId>
                     <version>${aspectj.plugin.version}</version>
                     <configuration>
-                        <verbose>true</verbose>
                         <source>${maven.compiler.source}</source>
                         <target>${maven.compiler.target}</target>
                         <complianceLevel>${maven.compiler.target}</complianceLevel>
@@ -169,6 +174,7 @@
                     </configuration>
                     <executions>
                         <execution>
+                            <phase>process-sources</phase>
                             <goals>
                                 <goal>compile</goal>
                                 <goal>test-compile</goal>
