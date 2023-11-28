@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -33,10 +33,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.nio.charset.Charset;
-
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import software.amazon.lambda.powertools.tracing.TracingUtils;
 
 public class AppStream implements RequestStreamHandler {
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -45,19 +41,15 @@ public class AppStream implements RequestStreamHandler {
     @Override
     @Logging(logEvent = true)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-    public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(input, Charset.forName("US-ASCII")));
-        PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, Charset.forName("US-ASCII"))));
-        try {
-            APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
-                    .withStatusCode(200)
-                    .withBody("output_body");
-            output.write(response.toString().getBytes());
+    public void handleRequest(InputStream input, OutputStream output, Context context) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8)))) {
+
+            log.info("Received: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(reader)));
+
+            writer.write("{\"body\": \"" + System.currentTimeMillis() + "\"} ");
         } catch (IOException e) {
             log.error("Something has gone wrong: ", e);
-        } finally {
-            reader.close();
-            writer.close();
         }
     }
 }
