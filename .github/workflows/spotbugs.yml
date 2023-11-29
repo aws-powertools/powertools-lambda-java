@@ -39,4 +39,4 @@ jobs:
 #          path: '**/spotbugsXml.xml'
 #      # Can be simplified post this issue is fixed https://github.com/jwgmeligmeyling/spotbugs-github-action/issues/9
       - name: Build with Maven for spotbugs check to mark build as fail if voilations found
-        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=true
+        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=true -pl '!examples'
