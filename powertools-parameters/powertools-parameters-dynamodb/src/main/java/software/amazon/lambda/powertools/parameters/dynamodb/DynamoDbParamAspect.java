@@ -20,9 +20,11 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
+import software.amazon.lambda.powertools.parameters.BaseParamAspect;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
 
 @Aspect
-public class DynamoDbParamAspect {
+public class DynamoDbParamAspect extends BaseParamAspect {
 
     private static Function<String, DynamoDbProvider> providerBuilder =
             (String table) -> DynamoDbProvider.builder()
@@ -37,25 +39,8 @@ public class DynamoDbParamAspect {
     public Object injectParam(final ProceedingJoinPoint joinPoint, final DynamoDbParam ddbConfigParam) {
         System.out.println("GET IT");
 
-        DynamoDbProvider provider = providerBuilder.apply(ddbConfigParam.table());
-
-        if (ddbConfigParam.transformer().isInterface()) {
-            // No transformation
-            return provider.get(ddbConfigParam.key());
-        } else {
-            FieldSignature s = (FieldSignature) joinPoint.getSignature();
-            if (String.class.isAssignableFrom(s.getFieldType())) {
-                // Basic transformation
-                return provider
-                        .withTransformation(ddbConfigParam.transformer())
-                        .get(ddbConfigParam.key());
-            } else {
-                // Complex transformation
-                return provider
-                        .withTransformation(ddbConfigParam.transformer())
-                        .get(ddbConfigParam.key(), s.getFieldType());
-            }
-        }
+        BaseProvider provider = providerBuilder.apply(ddbConfigParam.table());
+        return getAndTransform(ddbConfigParam.key(), ddbConfigParam.transformer(), provider, (FieldSignature)joinPoint.getSignature());
     }
 
 }

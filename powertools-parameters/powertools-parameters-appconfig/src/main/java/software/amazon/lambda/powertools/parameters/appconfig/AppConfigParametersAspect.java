@@ -20,9 +20,10 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
+import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 
 @Aspect
-public class AppConfigParametersAspect {
+public class AppConfigParametersAspect extends BaseParamAspect {
 
     private static BiFunction<String, String, AppConfigProvider> providerBuilder =
         (String env, String app) -> AppConfigProvider.builder()
@@ -37,28 +38,12 @@ public class AppConfigParametersAspect {
 
     @Around("getParam(appConfigParamAnnotation)")
     public Object injectParam(final ProceedingJoinPoint joinPoint, final AppConfigParam appConfigParamAnnotation) {
-        System.out.println("GET IT");
 
         AppConfigProvider provider = providerBuilder.apply
                 (appConfigParamAnnotation.environment(), appConfigParamAnnotation.application());
 
-        if (appConfigParamAnnotation.transformer().isInterface()) {
-            // No transformation
-            return provider.get(appConfigParamAnnotation.key());
-        } else {
-            FieldSignature s = (FieldSignature) joinPoint.getSignature();
-            if (String.class.isAssignableFrom(s.getFieldType())) {
-                // Basic transformation
-                return provider
-                        .withTransformation(appConfigParamAnnotation.transformer())
-                        .get(appConfigParamAnnotation.key());
-            } else {
-                // Complex transformation
-                return provider
-                        .withTransformation(appConfigParamAnnotation.transformer())
-                        .get(appConfigParamAnnotation.key(), s.getFieldType());
-            }
-        }
+        return getAndTransform(appConfigParamAnnotation.key(), appConfigParamAnnotation.transformer(), provider,
+                (FieldSignature) joinPoint.getSignature());
     }
 
 }

@@ -20,9 +20,10 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
+import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 
 @Aspect
-public class SecretsParamAspect {
+public class SecretsParamAspect extends BaseParamAspect {
 
     private static Supplier<SecretsProvider> providerBuilder = () -> SecretsProvider.builder()
             .build();
@@ -36,24 +37,7 @@ public class SecretsParamAspect {
         System.out.println("GET IT");
 
         SecretsProvider provider = providerBuilder.get();
-
-        if (secretsParam.transformer().isInterface()) {
-            // No transformation
-            return provider.get(secretsParam.key());
-        } else {
-            FieldSignature s = (FieldSignature) joinPoint.getSignature();
-            if (String.class.isAssignableFrom(s.getFieldType())) {
-                // Basic transformation
-                return provider
-                        .withTransformation(secretsParam.transformer())
-                        .get(secretsParam.key());
-            } else {
-                // Complex transformation
-                return provider
-                        .withTransformation(secretsParam.transformer())
-                        .get(secretsParam.key(), s.getFieldType());
-            }
-        }
+        return getAndTransform(secretsParam.key(), secretsParam.transformer(), provider, (FieldSignature)joinPoint.getSignature());
     }
 
 }

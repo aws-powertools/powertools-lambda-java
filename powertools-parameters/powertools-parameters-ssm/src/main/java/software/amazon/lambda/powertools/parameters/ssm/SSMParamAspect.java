@@ -20,9 +20,11 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
+import software.amazon.lambda.powertools.parameters.BaseParamAspect;
+import software.amazon.lambda.powertools.parameters.BaseProvider;
 
 @Aspect
-public class SSMParamAspect {
+public class SSMParamAspect extends BaseParamAspect {
 
     // This supplier produces a new SSMProvider each time it is called
     private static Supplier<SSMProvider> providerBuilder = () -> SSMProvider.builder()
@@ -37,24 +39,7 @@ public class SSMParamAspect {
         System.out.println("GET IT");
 
         SSMProvider provider = providerBuilder.get();
-
-        if (SSMParam.transformer().isInterface()) {
-            // No transformation
-            return provider.get(SSMParam.key());
-        } else {
-            FieldSignature s = (FieldSignature) joinPoint.getSignature();
-            if (String.class.isAssignableFrom(s.getFieldType())) {
-                // Basic transformation
-                return provider
-                        .withTransformation(SSMParam.transformer())
-                        .get(SSMParam.key());
-            } else {
-                // Complex transformation
-                return provider
-                        .withTransformation(SSMParam.transformer())
-                        .get(SSMParam.key(), s.getFieldType());
-            }
-        }
+        return getAndTransform(SSMParam.key(), SSMParam.transformer(), provider, (FieldSignature)joinPoint.getSignature());
     }
 
 }
