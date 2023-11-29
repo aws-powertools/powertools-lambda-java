@@ -31,7 +31,6 @@ public class DynamoDbProviderBuilder {
     private String table;
     private CacheManager cacheManager;
     private TransformationManager transformationManager;
-    private ChronoUnit unit;
 
     static DynamoDbClient createClient() {
         return DynamoDbClient.builder()
