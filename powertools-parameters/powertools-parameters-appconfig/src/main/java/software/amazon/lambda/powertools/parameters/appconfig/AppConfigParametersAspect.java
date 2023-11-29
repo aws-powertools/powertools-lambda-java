@@ -30,7 +30,7 @@ import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 @Aspect
 public class AppConfigParametersAspect extends BaseParamAspect {
 
-    private static final BiFunction<String, String, AppConfigProvider> providerBuilder =
+    private static BiFunction<String, String, AppConfigProvider> providerBuilder =
             (String env, String app) -> AppConfigProvider.builder()
                     .withEnvironment(env)
                     .withApplication(app)

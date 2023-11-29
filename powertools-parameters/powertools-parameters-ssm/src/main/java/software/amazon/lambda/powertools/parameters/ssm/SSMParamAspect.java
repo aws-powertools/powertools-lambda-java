@@ -31,7 +31,7 @@ import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 public class SSMParamAspect extends BaseParamAspect {
 
     // This supplier produces a new SSMProvider each time it is called
-    private static final Supplier<SSMProvider> providerBuilder = () -> SSMProvider.builder()
+    private static Supplier<SSMProvider> providerBuilder = () -> SSMProvider.builder()
             .build();
 
     @Pointcut("get(* *) && @annotation(secretsParam)")
