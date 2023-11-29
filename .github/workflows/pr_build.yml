@@ -67,7 +67,7 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         if: ${{ matrix.java == '8' }} # If 8 exclude the examples directory
-        run: mvn -B install --file pom.xml -pl '!examples'
+        run: mvn -B install --file pom.xml -pl '!software.amazon.lambda:powertools-examples'
       - name: Build with Maven
         if: ${{ ! matrix.java == '8' }} # If not 8 don't exclude the examples directory
         run: mvn -B install --file pom.xml
