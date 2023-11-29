@@ -57,7 +57,8 @@ public class SecretsProvider extends BaseProvider {
      *
      * @param client custom client you would like to use.
      */
-    SecretsProvider(CacheManager cacheManager, TransformationManager transformationManager, SecretsManagerClient client) {
+    SecretsProvider(CacheManager cacheManager, TransformationManager transformationManager,
+                    SecretsManagerClient client) {
         super(cacheManager, transformationManager);
         this.client = client;
     }

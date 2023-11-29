@@ -153,7 +153,8 @@ public class SSMProviderTest {
         provider.get("/prod/app1/key2");
         provider.get("/prod/app1/key3");
 
-        Mockito.verify(client, Mockito.times(1)).getParametersByPath(ArgumentMatchers.any(GetParametersByPathRequest.class));
+        Mockito.verify(client, Mockito.times(1))
+                .getParametersByPath(ArgumentMatchers.any(GetParametersByPathRequest.class));
 
     }
 

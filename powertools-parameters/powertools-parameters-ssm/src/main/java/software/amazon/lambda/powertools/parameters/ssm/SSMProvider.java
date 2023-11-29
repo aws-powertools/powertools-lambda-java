@@ -75,7 +75,7 @@ public class SSMProvider extends BaseProvider {
      * <p>
      * Use the {@link SSMProviderBuilder} to create an instance of it.
      *
-     * @param client custom client you would like to use.
+     * @param client                custom client you would like to use.
      * @param transformationManager Null, or a transformation manager
      */
     SSMProvider(CacheManager cacheManager, TransformationManager transformationManager, SsmClient client) {

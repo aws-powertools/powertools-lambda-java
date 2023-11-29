@@ -30,11 +30,11 @@ import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 @Aspect
 public class AppConfigParametersAspect extends BaseParamAspect {
 
-    private static BiFunction<String, String, AppConfigProvider> providerBuilder =
-        (String env, String app) -> AppConfigProvider.builder()
-                .withEnvironment(env)
-                .withApplication(app)
-                .build();
+    private static final BiFunction<String, String, AppConfigProvider> providerBuilder =
+            (String env, String app) -> AppConfigProvider.builder()
+                    .withEnvironment(env)
+                    .withApplication(app)
+                    .build();
 
 
     @Pointcut("get(* *) && @annotation(appConfigParamAnnotation)")

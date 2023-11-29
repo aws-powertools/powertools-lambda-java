@@ -37,7 +37,6 @@ public @interface AppConfigParam {
 
     /**
      * <b>Mandatory</b>. Provide an environment to the {@link AppConfigProvider}
-     *
      */
     String environment();
 

@@ -30,7 +30,7 @@ import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 @Aspect
 public class SecretsParamAspect extends BaseParamAspect {
 
-    private static Supplier<SecretsProvider> providerBuilder = () -> SecretsProvider.builder()
+    private static final Supplier<SecretsProvider> providerBuilder = () -> SecretsProvider.builder()
             .build();
 
     @Pointcut("get(* *) && @annotation(secretsParam)")
@@ -42,7 +42,8 @@ public class SecretsParamAspect extends BaseParamAspect {
         System.out.println("GET IT");
 
         SecretsProvider provider = providerBuilder.get();
-        return getAndTransform(secretsParam.key(), secretsParam.transformer(), provider, (FieldSignature)joinPoint.getSignature());
+        return getAndTransform(secretsParam.key(), secretsParam.transformer(), provider,
+                (FieldSignature) joinPoint.getSignature());
     }
 
 }

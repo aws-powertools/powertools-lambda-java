@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.parameters.dynamodb;
 
-import java.time.temporal.ChronoUnit;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;

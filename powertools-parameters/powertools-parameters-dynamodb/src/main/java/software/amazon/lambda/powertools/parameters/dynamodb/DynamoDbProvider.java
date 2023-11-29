@@ -40,7 +40,8 @@ public class DynamoDbProvider extends BaseProvider {
     private final DynamoDbClient client;
     private final String tableName;
 
-    DynamoDbProvider(CacheManager cacheManager, TransformationManager transformationManager, DynamoDbClient client, String tableName) {
+    DynamoDbProvider(CacheManager cacheManager, TransformationManager transformationManager, DynamoDbClient client,
+                     String tableName) {
         super(cacheManager, transformationManager);
         this.client = client;
         this.tableName = tableName;
@@ -74,7 +75,7 @@ public class DynamoDbProvider extends BaseProvider {
         // If we don't have an item at the key, we should return null.
         if (resp.hasItem() && !resp.item().values().isEmpty()) {
             if (!resp.item().containsKey("value")) {
-                throw new DynamoDbProviderSchemaException("Missing 'value': " + resp.item().toString());
+                throw new DynamoDbProviderSchemaException("Missing 'value': " + resp.item());
             }
             return resp.item().get("value").s();
         }
@@ -103,10 +104,10 @@ public class DynamoDbProvider extends BaseProvider {
                 .peek((i) ->
                 {
                     if (!i.containsKey("sk")) {
-                        throw new DynamoDbProviderSchemaException("Missing 'sk': " + i.toString());
+                        throw new DynamoDbProviderSchemaException("Missing 'sk': " + i);
                     }
                     if (!i.containsKey("value")) {
-                        throw new DynamoDbProviderSchemaException("Missing 'value': " + i.toString());
+                        throw new DynamoDbProviderSchemaException("Missing 'value': " + i);
                     }
                 })
                 .collect(

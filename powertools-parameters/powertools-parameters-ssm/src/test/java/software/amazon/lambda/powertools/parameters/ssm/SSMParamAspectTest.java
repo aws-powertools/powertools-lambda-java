@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+
 public class SSMParamAspectTest {
 
     // This class tests the SSM Param aspect in the same fashion

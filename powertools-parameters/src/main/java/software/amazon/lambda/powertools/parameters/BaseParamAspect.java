@@ -28,11 +28,10 @@ public abstract class BaseParamAspect {
      * Gets the parameter value from the provider and transforms it if necessary. This transformation
      * is generic across all parameter providers.
      *
-     * @param key The key of the parameter to get
-     * @param transformer The transformer to use to transform the parameter value
-     * @param provider A concrete instance of the parameter provider to retrieve the value from
+     * @param key            The key of the parameter to get
+     * @param transformer    The transformer to use to transform the parameter value
+     * @param provider       A concrete instance of the parameter provider to retrieve the value from
      * @param fieldSignature The signature of the field that the parameter is being injected into
-     *
      * @return The value of the parameter, transformed if necessary
      */
     protected Object getAndTransform(String key, Class<? extends Transformer> transformer, BaseProvider provider,

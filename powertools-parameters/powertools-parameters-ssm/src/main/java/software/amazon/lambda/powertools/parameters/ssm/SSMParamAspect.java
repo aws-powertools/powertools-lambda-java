@@ -21,7 +21,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.FieldSignature;
 import software.amazon.lambda.powertools.parameters.BaseParamAspect;
-import software.amazon.lambda.powertools.parameters.BaseProvider;
 
 /**
  * Provides the SSM parameter store parameter aspect. This aspect is responsible for injecting
@@ -32,19 +31,20 @@ import software.amazon.lambda.powertools.parameters.BaseProvider;
 public class SSMParamAspect extends BaseParamAspect {
 
     // This supplier produces a new SSMProvider each time it is called
-    private static Supplier<SSMProvider> providerBuilder = () -> SSMProvider.builder()
+    private static final Supplier<SSMProvider> providerBuilder = () -> SSMProvider.builder()
             .build();
 
     @Pointcut("get(* *) && @annotation(secretsParam)")
     public void getParam(SSMParam secretsParam) {
     }
 
-    @Around("getParam(SSMParam)")
-    public Object injectParam(final ProceedingJoinPoint joinPoint, final SSMParam SSMParam) {
+    @Around("getParam(ssmPaam)")
+    public Object injectParam(final ProceedingJoinPoint joinPoint, final SSMParam ssmPaam) {
         System.out.println("GET IT");
 
         SSMProvider provider = providerBuilder.get();
-        return getAndTransform(SSMParam.key(), SSMParam.transformer(), provider, (FieldSignature)joinPoint.getSignature());
+        return getAndTransform(ssmPaam.key(), ssmPaam.transformer(), provider,
+                (FieldSignature) joinPoint.getSignature());
     }
 
 }

@@ -46,7 +46,8 @@ public class AppConfigProvider extends BaseProvider {
     private final String environment;
     private final HashMap<String, EstablishedSession> establishedSessions = new HashMap<>();
 
-    AppConfigProvider(CacheManager cacheManager, TransformationManager transformationManager, AppConfigDataClient client, String environment, String application) {
+    AppConfigProvider(CacheManager cacheManager, TransformationManager transformationManager,
+                      AppConfigDataClient client, String environment, String application) {
         super(cacheManager, transformationManager);
         this.client = client;
         this.application = application;

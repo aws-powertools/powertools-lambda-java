@@ -31,7 +31,7 @@ import software.amazon.lambda.powertools.parameters.BaseProvider;
 @Aspect
 public class DynamoDbParamAspect extends BaseParamAspect {
 
-    private static Function<String, DynamoDbProvider> providerBuilder =
+    private static final Function<String, DynamoDbProvider> providerBuilder =
             (String table) -> DynamoDbProvider.builder()
                     .withTable(table)
                     .build();
@@ -45,7 +45,8 @@ public class DynamoDbParamAspect extends BaseParamAspect {
         System.out.println("GET IT");
 
         BaseProvider provider = providerBuilder.apply(ddbConfigParam.table());
-        return getAndTransform(ddbConfigParam.key(), ddbConfigParam.transformer(), provider, (FieldSignature)joinPoint.getSignature());
+        return getAndTransform(ddbConfigParam.key(), ddbConfigParam.transformer(), provider,
+                (FieldSignature) joinPoint.getSignature());
     }
 
 }
