@@ -23,6 +23,11 @@ import org.aspectj.lang.reflect.FieldSignature;
 import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 
+/**
+ * Provides the DynamoDB parameter aspect. This aspect is responsible for injecting
+ * parameters from DynamoDB into fields annotated with @DynamoDbParam. See the
+ * README and Powertools for Lambda (Java) documentation for information on using this feature.
+ */
 @Aspect
 public class DynamoDbParamAspect extends BaseParamAspect {
 

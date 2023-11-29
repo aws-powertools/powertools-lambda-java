@@ -31,9 +31,6 @@ public class DynamoDbProviderBuilder {
     private String table;
     private CacheManager cacheManager;
     private TransformationManager transformationManager;
-
-    // Allows the user to override default max age
-    private int maxAge;
     private ChronoUnit unit;
 
     static DynamoDbClient createClient() {

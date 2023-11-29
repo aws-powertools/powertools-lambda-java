@@ -23,6 +23,11 @@ import org.aspectj.lang.reflect.FieldSignature;
 import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 
+/**
+ * Provides the SSM parameter store parameter aspect. This aspect is responsible for injecting
+ * parameters from SSM Parameter Store into fields annotated with @SSMParam. See the
+ * README and Powertools for Lambda (Java) documentation for information on using this feature.
+ */
 @Aspect
 public class SSMParamAspect extends BaseParamAspect {
 
