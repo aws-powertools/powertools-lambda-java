@@ -79,12 +79,33 @@ jobs:
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         working-directory: examples/powertools-examples-core/kotlin
         run: ./gradlew build
+      - name: Setup Terraform
+        if: ${{ matrix.java == '11' }}
+        uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 #v2.0.3
       - name: Setup AWS credentials
         if: ${{ matrix.java == '11' }}
         uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
+      - name: Terraform validate
+        working-directory: examples/powertools-examples-core/terraform
+        if: ${{ matrix.java == '11' }}
+        run: |
+          terraform -version
+          terraform init -backend=false
+          terraform validate
+          terraform plan
+      - name: Setup Terraform lint
+        if: ${{ matrix.java == '11' }}
+        uses: terraform-linters/setup-tflint@a5a1af8c6551fb10c53f1cd4ba62359f1973746f # v3.1.1
+      - name: Terraform lint
+        working-directory: examples/powertools-examples-core/terraform
+        if: ${{ matrix.java == '11' }}
+        run: |
+          tflint --version
+          tflint --init
+          tflint -f compact
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         if: ${{ matrix.java == '11' }} # publish results once
