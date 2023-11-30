@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.validation.internal;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -38,15 +40,24 @@ public class HandledResponseEventsArgumentsProvider implements ArgumentsProvider
 
     String body = "{id";
 
+    Map<String, String> headers = new HashMap<>();
+    headers.put("header1", "value1,value2,value3");
+    Map<String, List<String>> headersList = new HashMap<>();
+    List<String> headerValues = new ArrayList<>();
+    headerValues.add("value1");
+    headerValues.add("value2");
+    headerValues.add("value3");
+    headersList.put("header1", headerValues);
+    
     final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent()
         .withBody(body)
-        .withHeaders(Map.of("header1", "value1,value2,value3"))
-        .withMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
+        .withHeaders(headers)
+        .withMultiValueHeaders(headersList);
 
     APIGatewayV2HTTPResponse apiGWV2HTTPResponse = new APIGatewayV2HTTPResponse();
     apiGWV2HTTPResponse.setBody(body);
-    apiGWV2HTTPResponse.setHeaders(Map.of("header1", "value1,value2,value3"));
-    apiGWV2HTTPResponse.setMultiValueHeaders(Map.of("header1", List.of("value1", "value2", "value3")));
+    apiGWV2HTTPResponse.setHeaders(headers);
+    apiGWV2HTTPResponse.setMultiValueHeaders(headersList);
 
     return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse).map(Arguments::of);
   }

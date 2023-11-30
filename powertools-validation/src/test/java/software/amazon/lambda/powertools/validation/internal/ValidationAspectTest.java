@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -137,13 +139,19 @@ public class ValidationAspectTest {
 
         Object response = validationAspect.around(pjp, validation);
         assertThat(response).isInstanceOfAny(APIGatewayProxyResponseEvent.class, APIGatewayV2HTTPResponse.class);
+
+        List<String> headerValues = new ArrayList<>();
+        headerValues.add("value1");
+        headerValues.add("value2");
+        headerValues.add("value3");
+
         if (response instanceof APIGatewayProxyResponseEvent) {
         	assertThat(response).isInstanceOfSatisfying(APIGatewayProxyResponseEvent.class, t -> {
         		assertThat(t.getStatusCode()).isEqualTo(400);
         		assertThat(t.getBody()).isNotBlank();
         		assertThat(t.getIsBase64Encoded()).isFalse();
             assertThat(t.getHeaders()).containsEntry("header1", "value1,value2,value3");
-            assertThat(t.getMultiValueHeaders()).containsEntry("header1", List.of("value1", "value2", "value3"));
+            assertThat(t.getMultiValueHeaders()).containsEntry("header1", headerValues);
         	});        	
         } else if (response instanceof APIGatewayV2HTTPResponse) {
         	assertThat(response).isInstanceOfSatisfying(APIGatewayV2HTTPResponse.class, t -> {
@@ -151,7 +159,7 @@ public class ValidationAspectTest {
         		assertThat(t.getBody()).isNotBlank();
         		assertThat(t.getIsBase64Encoded()).isFalse();
             assertThat(t.getHeaders()).containsEntry("header1", "value1,value2,value3");
-            assertThat(t.getMultiValueHeaders()).containsEntry("header1", List.of("value1", "value2", "value3"));
+            assertThat(t.getMultiValueHeaders()).containsEntry("header1", headerValues);
         	});        	
         } else {
         	fail();
@@ -198,21 +206,29 @@ public class ValidationAspectTest {
     @Test
     public void validate_inputKO_schemaInClasspath_shouldThrowValidationException() {
     	GenericSchemaV7APIGatewayProxyRequestEventHandler handler = new GenericSchemaV7APIGatewayProxyRequestEventHandler();
-        APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
-        event.setBody("{" +
-                "    \"id\": 1," +
-                "    \"name\": \"Lampshade\"," +
-                "    \"price\": -2" +
-                "}");
-        event.setHeaders(Map.of("header1", "value1"));
-        event.setMultiValueHeaders(Map.of("header1", List.of("value1")));
 
-        // price is negative
-        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
-        assertThat(response.getBody()).isNotBlank();
-        assertThat(response.getStatusCode()).isEqualTo(400);
-        assertThat(response.getHeaders()).isEmpty();
-        assertThat(response.getMultiValueHeaders()).isEmpty();
+      Map<String, String> headers = new HashMap<>();
+      headers.put("header1", "value1");
+      Map<String, List<String>> headersList = new HashMap<>();
+      List<String> headerValues = new ArrayList<>();
+      headerValues.add("value1");
+      headersList.put("header1", headerValues);
+
+      APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
+      event.setBody("{" +
+              "    \"id\": 1," +
+              "    \"name\": \"Lampshade\"," +
+              "    \"price\": -2" +
+              "}");
+      event.setHeaders(headers);
+      event.setMultiValueHeaders(headersList);
+
+      // price is negative
+      APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
+      assertThat(response.getBody()).isNotBlank();
+      assertThat(response.getStatusCode()).isEqualTo(400);
+      assertThat(response.getHeaders()).isEmpty();
+      assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
@@ -234,18 +250,18 @@ public class ValidationAspectTest {
     @Test
     public void validate_inputKO_schemaInString_shouldThrowValidationException() {
     	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
-        APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
-        event.setBody("{" +
-                "    \"id\": 1," +
-                "    \"name\": \"Lampshade\"" +
-                "}");
-        event.setHeaders(Map.of("header1", "value1"));
-       
-        APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
-        assertThat(response.getBody()).isNotBlank();
-        assertThat(response.getStatusCode()).isEqualTo(400);
-        assertThat(response.getHeaders()).isEmpty();
-        assertThat(response.getMultiValueHeaders()).isEmpty();
+      APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
+      event.setBody("{" +
+              "    \"id\": 1," +
+              "    \"name\": \"Lampshade\"" +
+              "}");
+      event.setHeaders(Map.of("header1", "value1"));
+      
+      APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
+      assertThat(response.getBody()).isNotBlank();
+      assertThat(response.getStatusCode()).isEqualTo(400);
+      assertThat(response.getHeaders()).isEmpty();
+      assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
