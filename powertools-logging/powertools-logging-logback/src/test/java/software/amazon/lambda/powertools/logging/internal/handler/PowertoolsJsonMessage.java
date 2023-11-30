@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class PowertoolsJsonMessage implements RequestHandler<SQSEvent.SQSMessage, String> {
@@ -30,6 +31,8 @@ public class PowertoolsJsonMessage implements RequestHandler<SQSEvent.SQSMessage
     @Logging(clearState = true)
     public String handleRequest(SQSEvent.SQSMessage input, Context context) {
         try {
+            LoggingUtils.logMessagesAsJson(true);
+            LoggingUtils.setCorrelationId(input.getMessageId());
             LOG.debug(JsonConfig.get().getObjectMapper().writeValueAsString(input));
             LOG.debug("{}", input.getMessageId());
             LOG.warn("Message body = {} and id = \"{}\"", input.getBody(), input.getMessageId());

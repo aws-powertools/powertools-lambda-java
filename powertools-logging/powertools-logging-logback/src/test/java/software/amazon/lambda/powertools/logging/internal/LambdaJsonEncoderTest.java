@@ -14,11 +14,13 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -26,6 +28,7 @@ import ch.qos.logback.classic.pattern.RootCauseFirstThrowableProxyConverter;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -39,6 +42,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.TimeZone;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -49,6 +53,7 @@ import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.LambdaJsonEncoder;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsJsonMessage;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 @Order(2)
 class LambdaJsonEncoderTest {
@@ -56,6 +61,11 @@ class LambdaJsonEncoderTest {
 
     @Mock
     private Context context;
+
+    @BeforeAll
+    private static void init() {
+        JsonConfig.get().getObjectMapper().setSerializationInclusion(NON_NULL);
+    }
 
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
@@ -109,9 +119,10 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"message\":{\"messageId\":\"1212abcd\",\"receiptHandle\":null,\"body\":\"plop\",\"md5OfBody\":null,\"md5OfMessageAttributes\":null,\"eventSourceArn\":null,\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"attributes\":null,\"messageAttributes\":{\"keyAttribute\":{\"stringValue\":null,\"binaryValue\":null,\"stringListValues\":[\"val1\",\"val2\",\"val3\"],\"binaryListValues\":null,\"dataType\":null}}}")
+                .contains("\"message\":{\"messageId\":\"1212abcd\",\"body\":\"plop\",\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}}}")
                 .contains("\"message\":\"1212abcd\"")
-                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"")
+                .doesNotContain(LOG_MESSAGES_AS_JSON);
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);
@@ -145,6 +156,40 @@ class LambdaJsonEncoderTest {
 
         // THEN (no powertools info in logs)
         assertThat(result).doesNotContain("cold_start", "function_arn", "function_memory_size", "function_name", "function_request_id", "function_version", "sampling_rate", "service");
+    }
+
+    @Test
+    void shouldLogMessagesAsJsonWhenEnabledInLogbackConfig() throws JsonProcessingException {
+        // GIVEN
+        LambdaJsonEncoder encoder = new LambdaJsonEncoder();
+        encoder.setLogMessagesAsJson(true);
+
+        SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
+        msg.setMessageId("1212abcd");
+        msg.setBody("plop");
+        msg.setEventSource("eb");
+        msg.setAwsRegion("eu-west-1");
+        SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
+        attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
+        msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
+
+        // WHEN
+        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, JsonConfig.get().getObjectMapper().writeValueAsString(msg), null, null);
+        byte[] encoded = encoder.encode(loggingEvent);
+        String result = new String(encoded, StandardCharsets.UTF_8);
+
+        // THEN (logged as JSON)
+        assertThat(result)
+                .contains("\"message\":{\"messageId\":\"1212abcd\",\"body\":\"plop\",\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}}}");
+
+        // WHEN (disabling logging as json)
+        encoder.setLogMessagesAsJson(false);
+        encoded = encoder.encode(loggingEvent);
+        result = new String(encoded, StandardCharsets.UTF_8);
+
+        // THEN (logged as String)
+        assertThat(result)
+                .contains("\"message\":\"{\\\"messageId\\\":\\\"1212abcd\\\",\\\"body\\\":\\\"plop\\\",\\\"eventSource\\\":\\\"eb\\\",\\\"awsRegion\\\":\\\"eu-west-1\\\",\\\"messageAttributes\\\":{\\\"keyAttribute\\\":{\\\"stringListValues\\\":[\\\"val1\\\",\\\"val2\\\",\\\"val3\\\"]}}}\"");
     }
 
     @Test

@@ -14,6 +14,8 @@
 
 package org.apache.logging.log4j.layout.template.json.resolver;
 
+import static java.lang.Boolean.TRUE;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -171,9 +173,14 @@ final class PowertoolsResolver implements EventResolver {
     /**
      * Use a custom message resolver to permit to log json string in json format without escaped quotes.
      */
-    private static final EventResolver MESSAGE_RESOLVER = new EventResolver() {
+    private static final class MessageResolver implements EventResolver {
         private final ObjectMapper mapper = new ObjectMapper()
                 .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+        private final boolean logMessagesAsJsonGlobal;
+
+        public MessageResolver(boolean logMessagesAsJson) {
+            this.logMessagesAsJsonGlobal = logMessagesAsJson;
+        }
 
         public boolean isValidJson(String json) {
             if (!(json.startsWith("{") || json.startsWith("["))) {
@@ -196,13 +203,21 @@ final class PowertoolsResolver implements EventResolver {
         @Override
         public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
             String message = logEvent.getMessage().getFormattedMessage();
-            if (isValidJson(message)) {
+
+            String logMessagesAsJsonLocal = logEvent.getContextData().getValue(LOG_MESSAGES_AS_JSON);
+            Boolean logMessagesAsJson = null;
+            if (logMessagesAsJsonLocal != null) {
+                logMessagesAsJson = Boolean.parseBoolean(logMessagesAsJsonLocal);
+            }
+
+            if (((logMessagesAsJsonGlobal && logMessagesAsJson == null) || TRUE.equals(logMessagesAsJson))
+                    && isValidJson(message)) {
                 jsonWriter.writeRawString(message);
             } else {
                 jsonWriter.writeString(message);
             }
         }
-    };
+    }
 
     private static final EventResolver NON_POWERTOOLS_FIELD_RESOLVER =
             (LogEvent logEvent, JsonWriter jsonWriter) -> {
@@ -213,7 +228,7 @@ final class PowertoolsResolver implements EventResolver {
                 // Inject all the context information.
                 ReadOnlyStringMap contextData = logEvent.getContextData();
                 contextData.forEach((key, value) -> {
-                    if (!PowertoolsLoggedFields.stringValues().contains(key)) {
+                    if (!PowertoolsLoggedFields.stringValues().contains(key) && !LOG_MESSAGES_AS_JSON.equals(key)) {
                         jsonWriter.writeSeparator();
                         jsonWriter.writeString(key);
                         stringBuilder.append(':');
@@ -235,8 +250,7 @@ final class PowertoolsResolver implements EventResolver {
             { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
             { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
             { "region", REGION_RESOLVER },
-            { "account_id", ACCOUNT_ID_RESOLVER },
-            { "message", MESSAGE_RESOLVER }
+            { "account_id", ACCOUNT_ID_RESOLVER }
     }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1]));
 
 
@@ -245,7 +259,15 @@ final class PowertoolsResolver implements EventResolver {
         if (fieldName == null) {
             internalResolver = NON_POWERTOOLS_FIELD_RESOLVER;
         } else {
-            internalResolver = eventResolverMap.get(fieldName);
+            boolean logMessagesAsJson = false;
+            if (config.exists("asJson")) {
+                logMessagesAsJson = config.getBoolean("asJson");
+            }
+            if ("message".equals(fieldName)) {
+                internalResolver = new MessageResolver(logMessagesAsJson);
+            } else {
+                internalResolver = eventResolverMap.get(fieldName);
+            }
             if (internalResolver == null) {
                 throw new IllegalArgumentException("unknown field: " + fieldName);
             }

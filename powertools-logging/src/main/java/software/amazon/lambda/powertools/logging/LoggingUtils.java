@@ -24,6 +24,9 @@ import org.slf4j.MDC;
  * {@see Logging}
  */
 public final class LoggingUtils {
+
+    public static final String LOG_MESSAGES_AS_JSON = "PowertoolsLogMessagesAsJson";
+
     private LoggingUtils() {
     }
 
@@ -75,5 +78,14 @@ public final class LoggingUtils {
      */
     public static void setCorrelationId(String value) {
         MDC.put("correlation_id", value);
+    }
+
+    /**
+     * When set to true, will log messages as JSON (without escaping string).
+     * Useful to log events or big JSON objects.
+     * @param value boolean to specify if yes or no messages should be logged as JSON (default is false)
+     */
+    public static void logMessagesAsJson(boolean value) {
+        MDC.put(LOG_MESSAGES_AS_JSON, String.valueOf(value));
     }
 }

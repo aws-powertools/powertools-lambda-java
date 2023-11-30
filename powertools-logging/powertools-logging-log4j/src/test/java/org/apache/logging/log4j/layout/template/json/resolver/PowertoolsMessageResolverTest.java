@@ -35,6 +35,7 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.slf4j.MDC;
+import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsJsonMessage;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
@@ -66,7 +67,7 @@ class PowertoolsMessageResolverTest {
     }
 
     @Test
-    void shouldLogJsonMessageWithoutEscapedStrings() {
+    void shouldLogJsonMessageWithoutEscapedStringsWhenSettingLogAsJson() {
         // GIVEN
         PowertoolsJsonMessage requestHandler = new PowertoolsJsonMessage();
         SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
@@ -86,7 +87,9 @@ class PowertoolsMessageResolverTest {
         assertThat(contentOf(logFile))
                 .contains("\"message\":{\"messageId\":\"1212abcd\",\"receiptHandle\":null,\"body\":\"plop\",\"md5OfBody\":null,\"md5OfMessageAttributes\":null,\"eventSourceArn\":null,\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"attributes\":null,\"messageAttributes\":{\"keyAttribute\":{\"stringValue\":null,\"binaryValue\":null,\"stringListValues\":[\"val1\",\"val2\",\"val3\"],\"binaryListValues\":null,\"dataType\":null}}}")
                 .contains("\"message\":\"1212abcd\"")
-                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
+                .contains("\"message\":\"{\\\"key\\\":\\\"value\\\"}\"")
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"")
+                .doesNotContain(LoggingUtils.LOG_MESSAGES_AS_JSON);
     }
 
     @Test

@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools.logging;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -37,6 +38,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     protected String timestampFormatTimezoneId = null;
     private boolean includeThreadInfo = false;
     private boolean includePowertoolsInfo = true;
+    private boolean logMessagesAsJsonGlobal;
 
     @Override
     public byte[] headerBytes() {
@@ -57,7 +59,11 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         StringBuilder builder = new StringBuilder(256);
         LambdaJsonSerializer.serializeObjectStart(builder);
         LambdaJsonSerializer.serializeLogLevel(builder, event.getLevel());
-        LambdaJsonSerializer.serializeFormattedMessage(builder, event.getFormattedMessage());
+        LambdaJsonSerializer.serializeFormattedMessage(
+                builder,
+                event.getFormattedMessage(),
+                logMessagesAsJsonGlobal,
+                event.getMDCPropertyMap().get(LOG_MESSAGES_AS_JSON));
         IThrowableProxy throwableProxy = event.getThrowableProxy();
         if (throwableProxy != null) {
             if (throwableConverter != null) {
@@ -88,7 +94,8 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     }
 
     /**
-     * Specify the format of the timestamp (default is <b>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</b>):
+     * Specify the format of the timestamp (default is <b>yyyy-MM-dd'T'HH:mm:ss.SSS'Z'</b>).
+     * Note that if you use the Lambda Advanced Logging Configuration, you should keep the default format.
      * <br/>
      * <pre>{@code
      *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
@@ -183,5 +190,20 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      */
     public void setIncludePowertoolsInfo(boolean includePowertoolsInfo) {
         this.includePowertoolsInfo = includePowertoolsInfo;
+    }
+
+    /**
+     * Specify if messages should be logged as JSON, without escaping string (default is <b>false</b>):
+     * <br/>
+     * <pre>{@code
+     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *         <logMessagesAsJson>true</logMessagesAsJson>
+     *     </encoder>
+     * }</pre>
+     *
+     * @param logMessagesAsJson if messages should be looged as JSON (non escaped quotes)
+     */
+    public void setLogMessagesAsJson(boolean logMessagesAsJson) {
+        this.logMessagesAsJsonGlobal = logMessagesAsJson;
     }
 }

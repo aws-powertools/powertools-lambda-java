@@ -236,6 +236,7 @@ public final class LambdaLoggingAspect {
 
     private Object[] logEvent(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
+        LoggingUtils.logMessagesAsJson(true);
 
         if (placedOnRequestHandler(pjp)) {
             Logger log = logger(pjp);
@@ -245,6 +246,7 @@ public final class LambdaLoggingAspect {
             args = logFromInputStream(pjp);
         }
 
+        LoggingUtils.logMessagesAsJson(false);
         return args;
     }
 

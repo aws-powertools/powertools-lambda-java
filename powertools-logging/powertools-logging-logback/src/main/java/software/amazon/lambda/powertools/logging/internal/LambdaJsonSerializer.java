@@ -14,9 +14,15 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
+import static java.lang.Boolean.TRUE;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
 import static software.amazon.lambda.powertools.logging.internal.JsonUtils.serializeAttribute;
+import static software.amazon.lambda.powertools.logging.internal.JsonUtils.serializeMessage;
 
 import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -81,8 +87,16 @@ public class LambdaJsonSerializer {
         serializeAttribute(builder, LEVEL_ATTR_NAME, level.toString(), false);
     }
 
-    public static void serializeFormattedMessage(StringBuilder builder, String formattedMessage) {
-        serializeAttribute(builder, FORMATTED_MESSAGE_ATTR_NAME, formattedMessage);
+    public static void serializeFormattedMessage(StringBuilder builder, String message,
+                                                 boolean logMessagesAsJsonGlobal, String logMessagesAsJsonLocal) {
+        Boolean logMessagesAsJson = null;
+        if (logMessagesAsJsonLocal != null) {
+            logMessagesAsJson = Boolean.parseBoolean(logMessagesAsJsonLocal);
+        }
+
+        boolean logAsJson = ((logMessagesAsJsonGlobal && logMessagesAsJson == null) || TRUE.equals(logMessagesAsJson))
+                && isValidJson(message);
+        serializeMessage(builder, FORMATTED_MESSAGE_ATTR_NAME, message, logAsJson);
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {
@@ -110,13 +124,29 @@ public class LambdaJsonSerializer {
                                            boolean includePowertoolsInfo) {
         TreeMap<String, String> sortedMap = new TreeMap<>(mdc);
         sortedMap.forEach((k, v) -> {
-            if ((PowertoolsLoggedFields.stringValues().contains(k) && includePowertoolsInfo)
-                    || !PowertoolsLoggedFields.stringValues().contains(k)) {
-                if (!k.equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) || !v.equals("0.0")) { // do not log sampling rate when 0
-                    serializeAttribute(builder, k, v);
-                }
+            if ((includePowertoolsInfo || !PowertoolsLoggedFields.stringValues().contains(k))  // do not log already logged powertools info
+                    && !(k.equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && v.equals("0.0"))  // do not log sampling rate when 0
+                    && !LOG_MESSAGES_AS_JSON.equals(k)) // do not log internal keys
+            {
+                serializeAttribute(builder, k, v);
             }
         });
+
+    }
+
+    private static final ObjectMapper mapper = new ObjectMapper()
+            .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
+
+    private static boolean isValidJson(String str) {
+        if (!(str.startsWith("{") || str.startsWith("["))) {
+            return false;
+        }
+        try {
+            mapper.readTree(str);
+        } catch (JacksonException e) {
+            return false;
+        }
+        return true;
     }
 
 }
