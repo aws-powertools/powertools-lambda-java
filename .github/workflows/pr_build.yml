@@ -72,11 +72,11 @@ jobs:
         if: ${{  matrix.java != '8' }} # If not 8 don't exclude the examples directory
         run: mvn -B install --file pom.xml
       - name: Build Gradle Example - Java
-        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        if: ${{ matrix.java != '8' }}
         working-directory: examples/powertools-examples-core-utilities/gradle
         run: ./gradlew build
       - name: Build Gradle Example - Kotlin
-        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        if: ${{ matrix.java != '8' }}
         working-directory: examples/powertools-examples-core-utilities/kotlin
         run: ./gradlew build
       - name: Setup Terraform
