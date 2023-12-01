@@ -207,43 +207,43 @@ public class ValidationAspectTest {
     public void validate_inputKO_schemaInClasspath_shouldThrowValidationException() {
     	GenericSchemaV7APIGatewayProxyRequestEventHandler handler = new GenericSchemaV7APIGatewayProxyRequestEventHandler();
 
-      Map<String, String> headers = new HashMap<>();
-      headers.put("header1", "value1");
-      Map<String, List<String>> headersList = new HashMap<>();
-      List<String> headerValues = new ArrayList<>();
-      headerValues.add("value1");
-      headersList.put("header1", headerValues);
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header1", "value1");
+        Map<String, List<String>> headersList = new HashMap<>();
+        List<String> headerValues = new ArrayList<>();
+        headerValues.add("value1");
+        headersList.put("header1", headerValues);
 
-      APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
-      event.setBody("{" +
+        APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
+        event.setBody("{" +
               "    \"id\": 1," +
               "    \"name\": \"Lampshade\"," +
               "    \"price\": -2" +
               "}");
-      event.setHeaders(headers);
-      event.setMultiValueHeaders(headersList);
+        event.setHeaders(headers);
+        event.setMultiValueHeaders(headersList);
 
-      // price is negative
-      APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
-      assertThat(response.getBody()).isNotBlank();
-      assertThat(response.getStatusCode()).isEqualTo(400);
-      assertThat(response.getHeaders()).isEmpty();
-      assertThat(response.getMultiValueHeaders()).isEmpty();
+        // price is negative
+        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isNotBlank();
+        assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getHeaders()).isEmpty();
+        assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
     public void validate_inputOK_schemaInString_shouldValidate() {
     	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
-      APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
-      event.setBody("{" +
+        APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
+        event.setBody("{" +
               "    \"id\": 1," +
               "    \"name\": \"Lampshade\"," +
               "    \"price\": 42" +
               "}");
       
-      APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
-      assertThat(response.getBody()).isEqualTo("valid-test");
-      assertThat(response.getStatusCode()).isEqualTo(200);
+        APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isEqualTo("valid-test");
+        assertThat(response.getStatusCode()).isEqualTo(200);
     }
 
     
@@ -251,21 +251,21 @@ public class ValidationAspectTest {
     public void validate_inputKO_schemaInString_shouldThrowValidationException() {
     	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
 
-      Map<String, String> headers = new HashMap<>();
-      headers.put("header1", "value1");
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header1", "value1");
 
-      APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
-      event.setBody("{" +
+        APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
+        event.setBody("{" +
               "    \"id\": 1," +
               "    \"name\": \"Lampshade\"" +
               "}");
-      event.setHeaders(headers);
-      
-      APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
-      assertThat(response.getBody()).isNotBlank();
-      assertThat(response.getStatusCode()).isEqualTo(400);
-      assertThat(response.getHeaders()).isEmpty();
-      assertThat(response.getMultiValueHeaders()).isEmpty();
+        event.setHeaders(headers);
+
+        APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isNotBlank();
+        assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getHeaders()).isEmpty();
+        assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
