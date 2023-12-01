@@ -23,6 +23,10 @@ class LoggingConstants {
 
     static String POWERTOOLS_LOG_EVENT = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT"); /* not final for test purpose */
 
+    static String POWERTOOLS_LOG_RESPONSE = System.getenv("POWERTOOLS_LOGGER_LOG_RESPONSE"); /* not final for test purpose */
+
+    static String POWERTOOLS_LOG_ERROR = System.getenv("POWERTOOLS_LOGGER_LOG_ERROR"); /* not final for test purpose */
+
     private LoggingConstants() {
         // constants
     }

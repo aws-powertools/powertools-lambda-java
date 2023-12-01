@@ -68,7 +68,6 @@ import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
-import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayRestApiCorrelationId;
@@ -78,9 +77,13 @@ import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogDisabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabledForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogError;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEvent;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventBridgeCorrelationId;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventForStream;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogResponse;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogResponseForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogSamplingDisabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogSamplingEnabled;
 
@@ -521,6 +524,95 @@ class LambdaLoggingAspectTest {
 
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains("{\"key\":\"value\"}");
+    }
+
+    @Test
+    void shouldLogResponseForHandlerWithLogResponseAnnotation() {
+        // GIVEN
+        requestHandler = new PowertoolsLogResponse();
+
+        // WHEN
+        requestHandler.handleRequest("input", context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).contains("Hola mundo");
+    }
+
+    @Test
+    void shouldLogResponseForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
+        try {
+            // GIVEN
+            LoggingConstants.POWERTOOLS_LOG_RESPONSE = "true";
+
+            requestHandler = new PowertoolsLogEnabled();
+
+            // WHEN
+            requestHandler.handleRequest("input", context);
+
+            // THEN
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains("Bonjour le monde");
+        } finally {
+            writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_RESPONSE", "false", true);
+        }
+    }
+
+    @Test
+    void shouldLogResponseForStreamHandler() throws IOException {
+        // GIVEN
+        requestStreamHandler = new PowertoolsLogResponseForStream();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        String input = "<user><firstName>Bob</firstName><lastName>The Sponge</lastName></user>";
+
+        // WHEN
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), output, context);
+
+        // THEN
+        assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
+                .isEqualTo(input);
+
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).contains(input);
+    }
+
+    @Test
+    void shouldLogErrorForHandlerWithLogErrorAnnotation() {
+        // GIVEN
+        requestHandler = new PowertoolsLogError();
+
+        // WHEN
+        try {
+            requestHandler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).contains("This is an error");
+    }
+
+    @Test
+    void shouldLogErrorForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
+        try {
+            // GIVEN
+            LoggingConstants.POWERTOOLS_LOG_ERROR = "true";
+
+            requestHandler = new PowertoolsLogEnabled(true);
+
+            // WHEN
+            try {
+                requestHandler.handleRequest("input", context);
+            } catch (Exception e) {
+                // ignore
+            }
+            // THEN
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile)).contains("Something went wrong");
+        } finally {
+            writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_ERROR", "false", true);
+        }
     }
 
     @ParameterizedTest

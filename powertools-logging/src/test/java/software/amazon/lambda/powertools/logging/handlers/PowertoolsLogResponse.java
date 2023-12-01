@@ -16,37 +16,13 @@ package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
-    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
-    private final boolean throwError;
-
-    public PowertoolsLogEnabled(boolean throwError) {
-        this.throwError = throwError;
-    }
-
-    public PowertoolsLogEnabled() {
-        this(false);
-    }
+public class PowertoolsLogResponse implements RequestHandler<Object, Object> {
 
     @Override
-    @Logging
+    @Logging(logResponse = true)
     public Object handleRequest(Object input, Context context) {
-        if (throwError) {
-            throw new RuntimeException("Something went wrong");
-        }
-        LOG.error("Test error event");
-        LOG.warn("Test warn event");
-        LOG.info("Test event");
-        LOG.debug("Test debug event");
-        return "Bonjour le monde";
-    }
-
-    @Logging
-    public void anotherMethod() {
-        System.out.println("test");
+        return "Hola mundo";
     }
 }

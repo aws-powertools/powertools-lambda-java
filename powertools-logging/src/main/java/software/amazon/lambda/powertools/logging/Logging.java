@@ -64,10 +64,24 @@ import java.lang.annotation.Target;
 public @interface Logging {
 
     /**
-     * Set to true if you want to log the event received by the Lambda function handler.
+     * Set to true if you want to log the event received by the Lambda function handler.<br/>
      * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_EVENT' environment variable
      */
     boolean logEvent() default false;
+
+    /**
+     * Set to true if you want to log the response sent by the Lambda function handler.<br/>
+     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_RESPONE' environment variable
+     */
+    boolean logResponse() default false;
+
+    /**
+     * Set to true if you want to log the exception thrown by the Lambda function handler.
+     * It is already logged by AWS Lambda but with no context information. Setting this to true
+     * will log the exception and all the powertools additional fields, for more context.<br/>
+     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_ERROR' environment variable
+     */
+    boolean logError() default false;
 
     /**
      * Sampling rate to change log level to DEBUG. (values must be >=0.0, <=1.0)
