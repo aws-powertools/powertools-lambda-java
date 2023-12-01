@@ -35,11 +35,6 @@ public class ResponseEventsArgumentsProvider implements ArgumentsProvider {
 
         String body = "{id";
 
-        final APIGatewayProxyResponseEvent apiGWProxyResponseEvent = new APIGatewayProxyResponseEvent().withBody(body);
-
-        APIGatewayV2HTTPResponse apiGWV2HTTPResponse = new APIGatewayV2HTTPResponse();
-        apiGWV2HTTPResponse.setBody(body);
-
         APIGatewayV2WebSocketResponse apiGWV2WebSocketResponse = new APIGatewayV2WebSocketResponse();
         apiGWV2WebSocketResponse.setBody(body);
 
@@ -53,7 +48,7 @@ public class ResponseEventsArgumentsProvider implements ArgumentsProvider {
                 KinesisAnalyticsInputPreprocessingResponse.Result.Ok, buffer));
         kaipResponse.setRecords(records);
 
-        return Stream.of(apiGWProxyResponseEvent, apiGWV2HTTPResponse, apiGWV2WebSocketResponse, albResponseEvent,
+        return Stream.of(apiGWV2WebSocketResponse, albResponseEvent,
                 kaipResponse).map(Arguments::of);
     }
 }
