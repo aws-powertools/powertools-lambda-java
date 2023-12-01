@@ -30,9 +30,13 @@
         <module>logging</module>
         <module>tracing</module>
         <module>metrics</module>
+        <module>batch</module>
         <module>idempotency</module>
+        <module>largemessage</module>
+        <module>largemessage_idempotent</module>
         <module>parameters</module>
-        <module>validation</module>
+        <module>validation-alb-event</module>
+        <module>validation-apigw-event</module>
     </modules>
 
     <dependencyManagement>
