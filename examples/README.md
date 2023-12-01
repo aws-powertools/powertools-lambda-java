@@ -63,8 +63,6 @@ If you're not using SAM, you can look for examples for other tools under [powert
 
 You can find more examples in the https://github.com/aws/aws-sam-cli-app-templates project:
 
-* [Java 8 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java8/hello-pt-maven)
-* [Java 8 on Amazon Linux 2 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java8.al2/hello-pt-maven)
 * [Java 11 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java11/hello-pt-maven)
 * [Java 17 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java17/hello-pt-maven)
 * [Java 17 + Gradle](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java17/hello-pt-gradle)

@@ -15,7 +15,7 @@ started with SAM in [the examples directory](../README.md)
 
 To test the validation, we can POST a JSON object shaped like our schema: 
 ```bash
- curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/hello/ -H "Content-Type: application/json" -d '{"address": "https://checkip.amazonaws.com"}'
+ curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/hello/ -H "Content-Type: application/json" -d '{"id": 123,"name":"The Hitchhikers Guide to the Galaxy","price":10.99}'
 ```
 
 If we break the schema - for instance, by removing one of the compulsory fields, 
