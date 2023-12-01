@@ -17,11 +17,31 @@ package software.amazon.lambda.powertools.validation.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.amazonaws.services.lambda.runtime.events.ActiveMQEvent;
@@ -40,25 +60,15 @@ import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
 import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
 import com.networknt.schema.SpecVersion;
-import java.io.IOException;
-import java.util.stream.Stream;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.ArgumentsSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+
 import software.amazon.lambda.powertools.validation.Validation;
 import software.amazon.lambda.powertools.validation.ValidationConfig;
 import software.amazon.lambda.powertools.validation.ValidationException;
-import software.amazon.lambda.powertools.validation.handlers.GenericSchemaV7Handler;
+import software.amazon.lambda.powertools.validation.handlers.GenericSchemaV7APIGatewayProxyRequestEventHandler;
+import software.amazon.lambda.powertools.validation.handlers.GenericSchemaV7StringHandler;
 import software.amazon.lambda.powertools.validation.handlers.SQSWithCustomEnvelopeHandler;
 import software.amazon.lambda.powertools.validation.handlers.SQSWithWrongEnvelopeHandler;
-import software.amazon.lambda.powertools.validation.handlers.ValidationInboundStringHandler;
+import software.amazon.lambda.powertools.validation.handlers.ValidationInboundAPIGatewayV2HTTPEventHandler;
 import software.amazon.lambda.powertools.validation.model.MyCustomEvent;
 
 
@@ -99,7 +109,7 @@ public class ValidationAspectTest {
 
     @ParameterizedTest
     @ArgumentsSource(ResponseEventsArgumentsProvider.class)
-    public void testValidateOutboundJsonSchema(Object object) throws Throwable {
+    void testValidateOutboundJsonSchemaWithExceptions(Object object) throws Throwable {
         when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
@@ -113,6 +123,47 @@ public class ValidationAspectTest {
         {
             validationAspect.around(pjp, validation);
         });
+    }
+    
+    @ParameterizedTest
+    @ArgumentsSource(HandledResponseEventsArgumentsProvider.class)
+    void testValidateOutboundJsonSchemaWithHandledExceptions(Object object) throws Throwable {
+        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(pjp.getSignature()).thenReturn(signature);
+        when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
+        Object[] args = {new Object(), context};
+        when(pjp.getArgs()).thenReturn(args);
+        when(pjp.proceed(args)).thenReturn(object);
+        when(validation.inboundSchema()).thenReturn("");
+        when(validation.outboundSchema()).thenReturn("classpath:/schema_v7.json");
+
+        Object response = validationAspect.around(pjp, validation);
+        assertThat(response).isInstanceOfAny(APIGatewayProxyResponseEvent.class, APIGatewayV2HTTPResponse.class);
+
+        List<String> headerValues = new ArrayList<>();
+        headerValues.add("value1");
+        headerValues.add("value2");
+        headerValues.add("value3");
+
+        if (response instanceof APIGatewayProxyResponseEvent) {
+        	assertThat(response).isInstanceOfSatisfying(APIGatewayProxyResponseEvent.class, t -> {
+        		assertThat(t.getStatusCode()).isEqualTo(400);
+        		assertThat(t.getBody()).isNotBlank();
+        		assertThat(t.getIsBase64Encoded()).isFalse();
+            assertThat(t.getHeaders()).containsEntry("header1", "value1,value2,value3");
+            assertThat(t.getMultiValueHeaders()).containsEntry("header1", headerValues);
+        	});        	
+        } else if (response instanceof APIGatewayV2HTTPResponse) {
+        	assertThat(response).isInstanceOfSatisfying(APIGatewayV2HTTPResponse.class, t -> {
+        		assertThat(t.getStatusCode()).isEqualTo(400);
+        		assertThat(t.getBody()).isNotBlank();
+        		assertThat(t.getIsBase64Encoded()).isFalse();
+            assertThat(t.getHeaders()).containsEntry("header1", "value1,value2,value3");
+            assertThat(t.getMultiValueHeaders()).containsEntry("header1", headerValues);
+        	});        	
+        } else {
+        	fail();
+        }
     }
 
     @Test
@@ -137,50 +188,84 @@ public class ValidationAspectTest {
 
     @Test
     public void validate_inputOK_schemaInClasspath_shouldValidate() {
-        GenericSchemaV7Handler<APIGatewayProxyRequestEvent> handler = new GenericSchemaV7Handler();
+    	GenericSchemaV7APIGatewayProxyRequestEventHandler handler = new GenericSchemaV7APIGatewayProxyRequestEventHandler();
         APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
         event.setBody("{" +
                 "    \"id\": 1," +
                 "    \"name\": \"Lampshade\"," +
                 "    \"price\": 42" +
                 "}");
-        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
+        
+        
+        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isEqualTo("valid-test");
+        assertThat(response.getStatusCode()).isEqualTo(200);
+        
     }
 
     @Test
     public void validate_inputKO_schemaInClasspath_shouldThrowValidationException() {
-        GenericSchemaV7Handler<APIGatewayProxyRequestEvent> handler = new GenericSchemaV7Handler();
+    	GenericSchemaV7APIGatewayProxyRequestEventHandler handler = new GenericSchemaV7APIGatewayProxyRequestEventHandler();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header1", "value1");
+        Map<String, List<String>> headersList = new HashMap<>();
+        List<String> headerValues = new ArrayList<>();
+        headerValues.add("value1");
+        headersList.put("header1", headerValues);
+
         APIGatewayProxyRequestEvent event = new APIGatewayProxyRequestEvent();
         event.setBody("{" +
-                "    \"id\": 1," +
-                "    \"name\": \"Lampshade\"," +
-                "    \"price\": -2" +
-                "}");
+              "    \"id\": 1," +
+              "    \"name\": \"Lampshade\"," +
+              "    \"price\": -2" +
+              "}");
+        event.setHeaders(headers);
+        event.setMultiValueHeaders(headersList);
+
         // price is negative
-        assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> handler.handleRequest(event, context));
+        APIGatewayProxyResponseEvent response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isNotBlank();
+        assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getHeaders()).isEmpty();
+        assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
     public void validate_inputOK_schemaInString_shouldValidate() {
-        ValidationInboundStringHandler handler = new ValidationInboundStringHandler();
+    	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
         APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
         event.setBody("{" +
-                "    \"id\": 1," +
-                "    \"name\": \"Lampshade\"," +
-                "    \"price\": 42" +
-                "}");
-        assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
+              "    \"id\": 1," +
+              "    \"name\": \"Lampshade\"," +
+              "    \"price\": 42" +
+              "}");
+      
+        APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isEqualTo("valid-test");
+        assertThat(response.getStatusCode()).isEqualTo(200);
     }
 
+    
     @Test
     public void validate_inputKO_schemaInString_shouldThrowValidationException() {
-        ValidationInboundStringHandler handler = new ValidationInboundStringHandler();
+    	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("header1", "value1");
+
         APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
         event.setBody("{" +
-                "    \"id\": 1," +
-                "    \"name\": \"Lampshade\"" +
-                "}");
-        assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> handler.handleRequest(event, context));
+              "    \"id\": 1," +
+              "    \"name\": \"Lampshade\"" +
+              "}");
+        event.setHeaders(headers);
+
+        APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
+        assertThat(response.getBody()).isNotBlank();
+        assertThat(response.getStatusCode()).isEqualTo(400);
+        assertThat(response.getHeaders()).isEmpty();
+        assertThat(response.getMultiValueHeaders()).isEmpty();
     }
 
     @Test
@@ -189,7 +274,7 @@ public class ValidationAspectTest {
                 LambdaEventSerializers.serializerFor(SQSEvent.class, ClassLoader.getSystemClassLoader());
         SQSEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/sqs.json"));
 
-        GenericSchemaV7Handler handler = new GenericSchemaV7Handler();
+        GenericSchemaV7StringHandler<Object> handler = new GenericSchemaV7StringHandler<>();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 
@@ -219,7 +304,7 @@ public class ValidationAspectTest {
                 LambdaEventSerializers.serializerFor(KinesisEvent.class, ClassLoader.getSystemClassLoader());
         KinesisEvent event = pojoSerializer.fromJson(this.getClass().getResourceAsStream("/kinesis.json"));
 
-        GenericSchemaV7Handler handler = new GenericSchemaV7Handler();
+        GenericSchemaV7StringHandler<Object> handler = new GenericSchemaV7StringHandler<>();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 
@@ -229,7 +314,7 @@ public class ValidationAspectTest {
         Object event = ValidationConfig.get().getObjectMapper()
                 .readValue(this.getClass().getResourceAsStream(jsonResource), eventClass);
 
-        GenericSchemaV7Handler<Object> handler = new GenericSchemaV7Handler();
+        GenericSchemaV7StringHandler<Object> handler = new GenericSchemaV7StringHandler<>();
         assertThat(handler.handleRequest(event, context)).isEqualTo("OK");
     }
 }
