@@ -234,28 +234,32 @@ public class ValidationAspectTest {
     @Test
     public void validate_inputOK_schemaInString_shouldValidate() {
     	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
-        APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
-        event.setBody("{" +
-                "    \"id\": 1," +
-                "    \"name\": \"Lampshade\"," +
-                "    \"price\": 42" +
-                "}");
-        
-        APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
-        assertThat(response.getBody()).isEqualTo("valid-test");
-        assertThat(response.getStatusCode()).isEqualTo(200);
+      APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
+      event.setBody("{" +
+              "    \"id\": 1," +
+              "    \"name\": \"Lampshade\"," +
+              "    \"price\": 42" +
+              "}");
+      
+      APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
+      assertThat(response.getBody()).isEqualTo("valid-test");
+      assertThat(response.getStatusCode()).isEqualTo(200);
     }
 
     
     @Test
     public void validate_inputKO_schemaInString_shouldThrowValidationException() {
     	ValidationInboundAPIGatewayV2HTTPEventHandler handler = new ValidationInboundAPIGatewayV2HTTPEventHandler();
+
+      Map<String, String> headers = new HashMap<>();
+      headers.put("header1", "value1");
+
       APIGatewayV2HTTPEvent event = new APIGatewayV2HTTPEvent();
       event.setBody("{" +
               "    \"id\": 1," +
               "    \"name\": \"Lampshade\"" +
               "}");
-      event.setHeaders(Map.of("header1", "value1"));
+      event.setHeaders(headers);
       
       APIGatewayV2HTTPResponse response = handler.handleRequest(event, context);
       assertThat(response.getBody()).isNotBlank();
