@@ -41,9 +41,9 @@ public class AppStream implements RequestStreamHandler {
     @Override
     @Logging(logEvent = true)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-    // RequestStreamHandler used from the AWS Lambda runtime for handling streaming events as it can process the input
-    // and output streams directly. Preferred when output data is represented as a stream of bytes,
-    // rather than a simple HTTP request-response model.
+    // RequestStreamHandler can be used instead of RequestHandler for cases when you'd like to deserialize request body or serialize response body yourself, instead of allowing that to happen automatically
+    // Note that you still need to return a proper JSON for API Gateway to handle 
+    // See Lambda Response format for examples: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
     public void handleRequest(InputStream input, OutputStream output, Context context) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
              PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8)))) {
