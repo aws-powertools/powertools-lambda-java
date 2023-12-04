@@ -22,10 +22,6 @@ import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFun
 import static software.amazon.lambda.powertools.validation.ValidationUtils.getJsonSchema;
 import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
@@ -47,6 +43,9 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.networknt.schema.JsonSchema;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
