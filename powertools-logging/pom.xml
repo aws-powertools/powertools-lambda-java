@@ -27,7 +27,7 @@
     <packaging>jar</packaging>
 
     <name>Powertools for AWS Lambda (Java) library Logging</name>
-    <description>Set of utility for better logging - common</description>
+    <description>Set of utilities to improve Lambda function handler logging - common</description>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>

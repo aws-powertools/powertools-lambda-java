@@ -28,7 +28,6 @@ import software.amazon.lambda.powertools.logging.internal.LambdaJsonSerializer;
 /**
  * Custom encoder for logback that encodes logs in JSON format.
  * It does not use a JSON library but a custom serializer ({@link LambdaJsonSerializer})
- * to reduce the weight of the library.
  */
 public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
 

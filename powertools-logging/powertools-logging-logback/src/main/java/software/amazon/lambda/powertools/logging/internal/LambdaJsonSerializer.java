@@ -34,8 +34,7 @@ import java.util.TreeMap;
 /**
  * This class will serialize the log events in json.<br/>
  * <p>
- * Inspired from the ElasticSearch Serializer co.elastic.logging.EcsJsonSerializer, this class doesn't use
- * any JSON (de)serialization library (Jackson, Gson, etc.) to avoid the dependency
+ * Inspired from the ElasticSearch Serializer co.elastic.logging.EcsJsonSerializer
  */
 public class LambdaJsonSerializer {
     protected static final String TIMESTAMP_ATTR_NAME = "timestamp";
