@@ -35,7 +35,7 @@ import software.amazon.lambda.powertools.logging.internal.LambdaEcsSerializer;
 
 
 /**
- * This class will encode the logback event into the format expected by the ECS service (ElasticSearch).
+ * This class will encode the logback event into the format expected by the Elastic Common Schema (ECS) service (for Elasticsearch).
  * <br/>
  * Inspired from <code>co.elastic.logging.logback.EcsEncoder</code>, this class doesn't use
  * any JSON (de)serialization library (Jackson, Gson, etc.) or Elastic library to avoid the dependency.

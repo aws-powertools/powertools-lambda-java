@@ -41,7 +41,7 @@ public class LogbackLoggingManager implements LoggingManager {
      */
     @Override
     @SuppressWarnings("java:S4792")
-    public void resetLogLevel(org.slf4j.event.Level logLevel) {
+    public void setLogLevel(org.slf4j.event.Level logLevel) {
         List<Logger> loggers = loggerContext.getLoggerList();
         for (Logger logger : loggers) {
             logger.setLevel(Level.convertAnSLF4JLevel(logLevel));

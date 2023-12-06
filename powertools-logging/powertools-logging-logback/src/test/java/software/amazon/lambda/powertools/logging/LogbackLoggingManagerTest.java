@@ -46,7 +46,7 @@ class LogbackLoggingManagerTest {
     @Order(2)
     void resetLogLevel() {
         LogbackLoggingManager manager = new LogbackLoggingManager();
-        manager.resetLogLevel(ERROR);
+        manager.setLogLevel(ERROR);
 
         Level logLevel = manager.getLogLevel(LOG);
         assertThat(logLevel).isEqualTo(ERROR);

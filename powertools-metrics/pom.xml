@@ -27,7 +27,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <name>Powertools for AWS Lambda (Java) library Metrics</name>
+    <name>Powertools for AWS Lambda (Java) - Metrics</name>
     <description>
         A suite of utilities for AWS Lambda Functions that make creating custom metrics via AWS Embedded Metric Format
         asynchronously easier.

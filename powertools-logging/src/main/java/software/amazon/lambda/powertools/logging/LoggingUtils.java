@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.logging;
 
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
+
 import java.util.Arrays;
 import java.util.Map;
 import org.slf4j.MDC;
@@ -77,7 +79,15 @@ public final class LoggingUtils {
      * @param value The value of the correlation id
      */
     public static void setCorrelationId(String value) {
-        MDC.put("correlation_id", value);
+        MDC.put(CORRELATION_ID.getName(), value);
+    }
+
+    /**
+     * Get correlation id attribute. Maybe null.
+     * @return correlation id set `@Logging(correlationIdPath="JMESPATH Expression")` or `LoggingUtils.setCorrelationId("value")`
+     */
+    public static String getCorrelationId() {
+        return MDC.get(CORRELATION_ID.getName());
     }
 
     /**

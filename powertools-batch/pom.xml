@@ -10,7 +10,7 @@
     </parent>
 
     <description>A suite of utilities that makes batch message processing using AWS Lambda easier.</description>
-    <name>Powertools for AWS Lambda (Java) library batch messages</name>
+    <name>Powertools for AWS Lambda (Java) - Batch messages</name>
 
     <build>
         <plugins>

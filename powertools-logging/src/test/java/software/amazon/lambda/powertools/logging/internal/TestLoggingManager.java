@@ -21,7 +21,7 @@ public class TestLoggingManager implements LoggingManager {
     }
 
     @Override
-    public void resetLogLevel(Level logLevel) {
+    public void setLogLevel(Level logLevel) {
         loggerFactory.getLoggers().forEach((key, logger) -> ((TestLogger) logger).setLogLevel(logLevel.toString()));
     }
 

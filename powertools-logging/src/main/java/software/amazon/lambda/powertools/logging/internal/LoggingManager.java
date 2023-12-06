@@ -23,8 +23,9 @@ import org.slf4j.event.Level;
  *     <li>Accessing to all loggers and change their Level</li>
  *     <li>Retrieving the log Level of a Logger</li>
  * </ul>
+ *
  * <p>
- * Implementations are provided in submodules and loaded thanks to a {@link java.util.ServiceLoader}
+ * This interface is used for these operations and implementations are provided in submodules and loaded thanks to a {@link java.util.ServiceLoader}
  * (define a file named <code>software.amazon.lambda.powertools.logging.internal.LoggingManager</code>
  * in <code>src/main/resources/META-INF/services</code> with the qualified name of the implementation).
  */
@@ -34,7 +35,7 @@ public interface LoggingManager {
      *
      * @param logLevel the log Level (slf4j) to apply
      */
-    void resetLogLevel(Level logLevel);
+    void setLogLevel(Level logLevel);
 
     /**
      * Retrieve the log Level of a specific logger

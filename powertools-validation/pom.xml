@@ -27,7 +27,7 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <name>Powertools for AWS Lambda (Java) validation library</name>
+    <name>Powertools for AWS Lambda (Java) - Validation</name>
     <description>
         Json schema validation for Lambda events and responses
     </description>

@@ -38,7 +38,7 @@ class Log4jLoggingManagerTest {
 
         // When
         Log4jLoggingManager manager = new Log4jLoggingManager();
-        manager.resetLogLevel(ERROR);
+        manager.setLogLevel(ERROR);
 
         Level rootLevel = manager.getLogLevel(ROOT);
         Level logLevel = manager.getLogLevel(LOG);

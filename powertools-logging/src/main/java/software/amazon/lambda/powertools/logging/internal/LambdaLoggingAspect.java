@@ -147,7 +147,7 @@ public final class LambdaLoggingAspect {
     }
 
     private static void resetLogLevels(Level logLevel) {
-        LOGGING_MANAGER.resetLogLevel(logLevel);
+        LOGGING_MANAGER.setLogLevel(logLevel);
     }
 
     @SuppressWarnings({"EmptyMethod"})
@@ -195,7 +195,7 @@ public final class LambdaLoggingAspect {
         } catch (Throwable t) {
             if (logging.logError() || "true".equals(POWERTOOLS_LOG_ERROR)) {
                 // logging the exception with additional context
-                logger(pjp).error(MarkerFactory.getMarker("FATAL"), "Exception", t);
+                logger(pjp).error(MarkerFactory.getMarker("FATAL"), "Exception in Lambda Handler", t);
             }
             throw t;
         } finally {

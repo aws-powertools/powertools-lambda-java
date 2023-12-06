@@ -27,7 +27,7 @@
     <artifactId>powertools-serialization</artifactId>
     <packaging>jar</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Serialization Utilities</name>
+    <name>Powertools for AWS Lambda (Java) - Serialization Utilities</name>
     <description>
 
     </description>

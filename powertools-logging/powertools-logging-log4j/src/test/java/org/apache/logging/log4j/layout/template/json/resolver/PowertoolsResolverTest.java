@@ -40,7 +40,7 @@ class PowertoolsResolverTest {
     @ParameterizedTest
     @EnumSource(value = PowertoolsLoggedFields.class,
             mode = EnumSource.Mode.EXCLUDE,
-            names = {"FUNCTION_MEMORY_SIZE", "SAMPLING_RATE", "FUNCTION_COLD_START"})
+            names = {"FUNCTION_MEMORY_SIZE", "SAMPLING_RATE", "FUNCTION_COLD_START", "CORRELATION_ID"})
     void shouldResolveFunctionStringInfo(PowertoolsLoggedFields field) {
         String result = resolveField(field.getName(), "value");
         assertThat(result).isEqualTo("\"value\"");

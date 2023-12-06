@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Fields added in the logs by Powertools
+ * Fields added in the logs by Powertools.
+ * Same as <a href="https://docs.powertools.aws.dev/lambda/python/latest/core/logger/#standard-structured-keys">python</a>
  */
 public enum PowertoolsLoggedFields {
     FUNCTION_NAME("function_name"),
@@ -33,6 +34,7 @@ public enum PowertoolsLoggedFields {
     FUNCTION_COLD_START("cold_start"),
     FUNCTION_TRACE_ID("xray_trace_id"),
     SAMPLING_RATE("sampling_rate"),
+    CORRELATION_ID("correlation_id"),
     SERVICE("service");
 
     private final String name;

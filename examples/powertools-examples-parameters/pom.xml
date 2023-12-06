@@ -5,12 +5,13 @@
     <version>2.0.0-SNAPSHOT</version>
     <artifactId>powertools-examples-parameters</artifactId>
     <packaging>jar</packaging>
-    <name>Powertools for AWS Lambda (Java) library Examples - Parameters</name>
+    <name>Powertools for AWS Lambda (Java) - Examples - Parameters</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <aspectj.version>1.9.20</aspectj.version>
+        <log4j.version>2.20.0</log4j.version>
     </properties>
 
     <dependencies>
@@ -18,6 +19,16 @@
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging-log4j</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

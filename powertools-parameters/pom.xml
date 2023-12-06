@@ -26,7 +26,7 @@
 
     <artifactId>powertools-parameters</artifactId>
 
-    <name>Powertools for AWS Lambda (Java) library Parameters</name>
+    <name>Powertools for AWS Lambda (Java) - Parameters</name>
 
     <description>
         Set of utilities to retrieve parameters from Secrets Manager or SSM Parameter Store

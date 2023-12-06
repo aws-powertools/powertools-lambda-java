@@ -29,7 +29,7 @@
     <artifactId>powertools-large-messages</artifactId>
     <packaging>jar</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Large messages</name>
+    <name>Powertools for AWS Lambda (Java) - Large messages</name>
 
     <issueManagement>
         <system>GitHub Issues</system>

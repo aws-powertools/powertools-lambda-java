@@ -29,8 +29,7 @@ import java.io.PrintStream;
 /**
  * This class encapsulates the user's choice of output target.
  *
- * @author Ceki G&uuml;lc&uuml;
- *
+ * @see <a href="https://www.slf4j.org/xref/org/slf4j/simple/OutputChoice.html">...</a>
  */
 class OutputChoice {
 
