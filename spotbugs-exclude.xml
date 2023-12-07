@@ -94,7 +94,7 @@
         <Or>
             <And>
                 <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="defaultObjectMapper"/>
+                <Method name="setObjectMapper"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
@@ -115,7 +115,7 @@
         <Or>
             <And>
                 <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="objectMapper"/>
+                <Method name="getObjectMapper"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>

@@ -21,25 +21,6 @@
             </And>
         </Or>
     </Match>
-    <!--Functionally needed-->
-    <Match>
-        <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
-        <Or>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="defaultObjectMapper"/>
-            </And>
-        </Or>
-    </Match>
-    <Match>
-        <Bug pattern="MS_EXPOSE_REP"/>
-        <Or>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="objectMapper"/>
-            </And>
-        </Or>
-    </Match>
     <!--False positive https://github.com/spotbugs/spotbugs/issues/1539-->
     <Match>
         <Bug pattern="DMI_RANDOM_USED_ONLY_ONCE"/>

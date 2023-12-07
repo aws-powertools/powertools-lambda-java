@@ -114,9 +114,9 @@ public final class LoggingUtils {
     }
 
     public static ObjectMapper getObjectMapper() {
-        if (null == objectMapper) {
-            objectMapper = JsonConfig.get().getObjectMapper();
+        if (null == LoggingUtils.objectMapper) {
+            LoggingUtils.objectMapper = JsonConfig.get().getObjectMapper();
         }
-        return objectMapper;
+        return LoggingUtils.objectMapper;
     }
 }
