@@ -29,8 +29,7 @@ import java.util.regex.Matcher;
 /**
  * This class will serialize the log events in ecs format (ElasticSearch).<br/>
  * <p>
- * Inspired from the ElasticSearch Serializer <code>co.elastic.logging.EcsJsonSerializer</code>, this class doesn't use
- * any JSON (de)serialization library (Jackson, Gson, etc.) to avoid the dependency
+ * Inspired from the ElasticSearch Serializer <code>co.elastic.logging.EcsJsonSerializer</code>
  */
 public class LambdaEcsSerializer {
     protected static final String TIMESTAMP_ATTR_NAME = "@timestamp";
