@@ -23,9 +23,8 @@ import org.slf4j.MDC;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 /**
- * A class of helper functions to add additional functionality to Logging.
- * <p>
- * {@see Logging}
+ * A class of helper functions to add functionality to Logging.
+ * Adding/removing keys is based on <a href="https://www.slf4j.org/manual.html#mdc">MDC</a>, which is ThreadSafe.
  */
 public final class LoggingUtils {
 
@@ -105,7 +104,9 @@ public final class LoggingUtils {
 
     /**
      * Sets the instance of ObjectMapper object which is used for serialising event when
-     * {@code @Logging(logEvent = true)}.
+     * {@code @Logging(logEvent = true, logResponse = true)}.
+     *
+     * Not Thread Safe, the object mapper is static, changing it in different threads can lead to unexpected behaviour
      *
      * @param objectMapper Custom implementation of object mapper to be used for logging serialised event
      */
@@ -114,7 +115,7 @@ public final class LoggingUtils {
     }
 
     public static ObjectMapper getObjectMapper() {
-        if (null == LoggingUtils.objectMapper) {
+        if (LoggingUtils.objectMapper == null) {
             LoggingUtils.objectMapper = JsonConfig.get().getObjectMapper();
         }
         return LoggingUtils.objectMapper;

@@ -16,11 +16,14 @@ package software.amazon.lambda.powertools.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 
 class LoggingUtilsTest {
@@ -88,10 +91,24 @@ class LoggingUtilsTest {
 
     @Test
     void shouldAddCorrelationIdToLoggingContext() {
-        LoggingUtils.setCorrelationId("correlationID_12345");
+        String id = "correlationID_12345";
+        LoggingUtils.setCorrelationId(id);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
-                .containsEntry("correlation_id", "correlationID_12345");
+                .containsEntry("correlation_id", id);
+
+        assertThat(LoggingUtils.getCorrelationId()).isEqualTo(id);
+    }
+
+    @Test
+    void shouldGetObjectMapper() {
+        assertThat(LoggingUtils.getObjectMapper()).isNotNull();
+        assertThat(LoggingUtils.getObjectMapper()).isEqualTo(JsonConfig.get().getObjectMapper());
+
+        ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        LoggingUtils.setObjectMapper(mapper);
+        assertThat(LoggingUtils.getObjectMapper()).isEqualTo(mapper);
+
     }
 }

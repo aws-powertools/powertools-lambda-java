@@ -303,7 +303,8 @@ public final class LambdaLoggingAspect {
             try {
                 byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
                 args[0] = new ByteArrayInputStream(bytes);
-                log.info("{}", new String(bytes, UTF_8)); // do not log asJson as it can be something else (String, XML...)
+                // do not log asJson as it can be something else (String, XML...)
+                log.info("{}", new String(bytes, UTF_8));
             } catch (IOException e) {
                 LOG.warn("Failed to log event from supplied input stream.", e);
             }
@@ -325,7 +326,7 @@ public final class LambdaLoggingAspect {
         Logger log = logger(pjp);
         if (log.isInfoEnabled()) {
             LoggingUtils.logMessagesAsJson(true);
-            // we do not log with asJson as it can be something else (string, xml, ...)
+            // we do not log with asJson as it can be something else (String, XML, ...)
             log.info("{}", new String(bytes, UTF_8));
             LoggingUtils.logMessagesAsJson(false);
         }
