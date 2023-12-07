@@ -10,7 +10,6 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <log4j.version>2.20.0</log4j.version>
     </properties>
 
     <dependencies>
@@ -18,16 +17,6 @@
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-logging-log4j</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j2-impl</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>

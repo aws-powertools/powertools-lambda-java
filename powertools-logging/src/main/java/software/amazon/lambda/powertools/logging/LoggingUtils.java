@@ -16,9 +16,11 @@ package software.amazon.lambda.powertools.logging;
 
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.Map;
 import org.slf4j.MDC;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 /**
  * A class of helper functions to add additional functionality to Logging.
@@ -28,6 +30,8 @@ import org.slf4j.MDC;
 public final class LoggingUtils {
 
     public static final String LOG_MESSAGES_AS_JSON = "PowertoolsLogMessagesAsJson";
+
+    private static ObjectMapper objectMapper;
 
     private LoggingUtils() {
     }
@@ -97,5 +101,22 @@ public final class LoggingUtils {
      */
     public static void logMessagesAsJson(boolean value) {
         MDC.put(LOG_MESSAGES_AS_JSON, String.valueOf(value));
+    }
+
+    /**
+     * Sets the instance of ObjectMapper object which is used for serialising event when
+     * {@code @Logging(logEvent = true)}.
+     *
+     * @param objectMapper Custom implementation of object mapper to be used for logging serialised event
+     */
+    public static void setObjectMapper(ObjectMapper objectMapper) {
+        LoggingUtils.objectMapper = objectMapper;
+    }
+
+    public static ObjectMapper getObjectMapper() {
+        if (null == objectMapper) {
+            objectMapper = JsonConfig.get().getObjectMapper();
+        }
+        return objectMapper;
     }
 }

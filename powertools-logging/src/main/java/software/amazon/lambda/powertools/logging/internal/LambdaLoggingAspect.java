@@ -336,12 +336,12 @@ public final class LambdaLoggingAspect {
                                           final boolean isOnRequestHandler,
                                           final boolean isOnRequestStreamHandler) {
         if (isOnRequestHandler) {
-            JsonNode jsonNode = JsonConfig.get().getObjectMapper().valueToTree(proceedArgs[0]);
+            JsonNode jsonNode = LoggingUtils.getObjectMapper().valueToTree(proceedArgs[0]);
             setCorrelationIdFromNode(correlationIdPath, jsonNode);
         } else if (isOnRequestStreamHandler) {
             try {
                 byte[] bytes = bytesFromInputStreamSafely((InputStream) proceedArgs[0]);
-                JsonNode jsonNode = JsonConfig.get().getObjectMapper().readTree(bytes);
+                JsonNode jsonNode = LoggingUtils.getObjectMapper().readTree(bytes);
                 proceedArgs[0] = new ByteArrayInputStream(bytes);
 
                 setCorrelationIdFromNode(correlationIdPath, jsonNode);
@@ -380,7 +380,7 @@ public final class LambdaLoggingAspect {
 
     private Optional<String> asJson(final Object target) {
         try {
-            return ofNullable(JsonConfig.get().getObjectMapper().writeValueAsString(target));
+            return ofNullable(LoggingUtils.getObjectMapper().writeValueAsString(target));
         } catch (JsonProcessingException e) {
             LOG.error("Failed logging object of type {}", target.getClass(), e);
             return empty();
