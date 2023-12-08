@@ -137,7 +137,6 @@ public class BaseProviderTest {
     }
 
     @Test
-    // TODO Scott - remove this, or change to mutating the CacheManager first?
     public void get_customDefaultTTL_cached_shouldGetFromCache() {
         provider.cacheManager.setDefaultExpirationTime(Duration.of(12, MINUTES));
         provider.get("foobar");
@@ -151,6 +150,7 @@ public class BaseProviderTest {
 
     @Test
     public void get_customDefaultTTL_expired_shouldGetValue() {
+        provider.cacheManager.setDefaultExpirationTime(Duration.of(2, MINUTES));
         getFromStore = false;
 
         provider.setClock(offset(clock, of(3, MINUTES)));
@@ -172,8 +172,10 @@ public class BaseProviderTest {
 
     @Test
     public void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
-        provider.withMaxAge(5, SECONDS)
-                .get("bariton");
+
+        provider.cacheManager.setDefaultExpirationTime(Duration.ofSeconds(5));
+
+        provider.get("bariton");
         getFromStore = false;
 
         provider.setClock(offset(clock, of(6, SECONDS)));
@@ -286,9 +288,10 @@ public class BaseProviderTest {
     }
 
     @Test
-    // TODO Scott
     public void getObject_customDefaultTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.cacheManager.setDefaultExpirationTime(Duration.of(2, MINUTES));
 
         provider.withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
@@ -301,11 +304,12 @@ public class BaseProviderTest {
     }
 
     @Test
-    // TODO Scott
     public void getObject_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
-        provider.withMaxAge(5, SECONDS)
-                .withTransformation(json)
+
+        provider.cacheManager.setDefaultExpirationTime(Duration.ofSeconds(5));
+
+        provider.withTransformation(json)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 
@@ -316,9 +320,10 @@ public class BaseProviderTest {
     }
 
     @Test
-    // TODO Scott
     public void getObject_customDefaultTTLAndTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
+
+        provider.cacheManager.setDefaultExpirationTime(Duration.ofMinutes(2));
 
         provider.withMaxAge(5, SECONDS)
                 .withTransformation(json)

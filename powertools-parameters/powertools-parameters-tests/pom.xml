@@ -13,7 +13,7 @@
     <artifactId>powertools-parameters-tests</artifactId>
     <description>Powertools parameters tests that cut across all the parameters providers</description>
     <properties>
-        <!-- Don't deploy the examples -->
+        <!-- Don't deploy the tests -->
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
@@ -21,16 +21,19 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-parameters-ssm</artifactId>
+            <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-parameters-secrets</artifactId>
+            <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-parameters-dynamodb</artifactId>
+            <scope>test</scope>
             <version>${project.version}</version>
         </dependency>
 

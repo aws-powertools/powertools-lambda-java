@@ -25,6 +25,9 @@ import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+/**
+ * Builder for the {@link SSMProvider}
+ */
 public class SSMProviderBuilder {
     private SsmClient client;
     private CacheManager cacheManager;
@@ -73,7 +76,7 @@ public class SSMProviderBuilder {
     }
 
     /**
-     * <b>Mandatory</b>. Provide a CacheManager to the {@link SSMProvider}
+     * Provide a CacheManager to the {@link SSMProvider}
      *
      * @param cacheManager the manager that will handle the cache of parameters
      * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
