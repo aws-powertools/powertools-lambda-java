@@ -7,12 +7,12 @@ Logging provides an opinionated logger with output structured as JSON.
 
 ## Key features
 
-* Leverages standard logging libraries: _SLF4J_ as the API, and _log4j2_ or _logback_ for the implementation
-* Capture key fields from Lambda context, cold start and structures logging output as JSON
-* Log Lambda event when instructed, disabled by default
-* Log Lambda response when instructed, disabled by default
-* Log sampling enables DEBUG log level for a percentage of requests (disabled by default)
-* Append additional keys to structured log at any point in time
+* Leverages standard logging libraries: [_SLF4J_](https://www.slf4j.org/){target="_blank"} as the API, and [_log4j2_](https://logging.apache.org/log4j/2.x/){target="_blank"} or [_logback_](https://logback.qos.ch/){target="_blank"} for the implementation
+* Captures key fields from Lambda context, cold start and structures logging output as JSON
+* Optionally logs Lambda request
+* Optionally logs Lambda response
+* Optionally supports log sampling by including a configurable percentage of DEBUG logs in logging output
+* Allows additional keys to be appended to the structured log at any point in time
 
 
 ## Getting started
@@ -21,7 +21,7 @@ Logging provides an opinionated logger with output structured as JSON.
     You can find complete examples in the [project repository](https://github.com/aws-powertools/powertools-lambda-java/tree/v2/examples/powertools-examples-core-utilities){target="_blank"}.
 
 ### Installation
-Depending on your preferences, you might choose to use _log4j2_ or _logback_. In both case you need to configure _aspectj_
+Depending on preference, you must choose to use either _log4j2_ or _logback_ as your log provider. In both cases you need to configure _aspectj_
 to weave the code and make sure the annotation is processed.
 
 #### Maven
@@ -167,7 +167,7 @@ The logging module requires two settings:
 | Environment variable      | Setting           | Description                                                                                                 |
 |---------------------------|-------------------|-------------------------------------------------------------------------------------------------------------|
 | `POWERTOOLS_LOG_LEVEL`    | **Logging level** | Sets how verbose Logger should be. If not set, will use the [Logging configuration](#logging-configuration) |
-| `POWERTOOLS_SERVICE_NAME` | **Service**       | Sets service key that will be present across all log statements (Default is `service_undefined`)            |
+| `POWERTOOLS_SERVICE_NAME` | **Service**       | Sets service key that will be included in all log statements (Default is `service_undefined`)            |
 
 Here is an example using AWS Serverless Application Model (SAM):
 
@@ -190,7 +190,7 @@ There are some other environment variables which can be set to modify Logging's 
 
 | Environment variable            | Type     | Description                                                                                                             |  
 |---------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------|  
-| `POWERTOOLS_LOGGER_SAMPLE_RATE` | float    | Configure the sampling rate to set the log level at `DEBUG`. See [sampling rage](#sampling-debug-logs)                  |  
+| `POWERTOOLS_LOGGER_SAMPLE_RATE` | float    | Configure the sampling rate at which `DEBUG` logs should be included. See [sampling rate](#sampling-debug-logs)                  |  
 | `POWERTOOLS_LOG_EVENT`          | boolean  | Specify if the incoming Lambda event should be logged. See [Logging event](#logging-incoming-event)                     |  
 | `POWERTOOLS_LOG_RESPONSE`       | boolean  | Specify if the Lambda response should be logged. See [logging response](#logging-handler-response)                      |  
 | `POWERTOOLS_LOG_ERROR`          | boolean  | Specify if a Lambda uncaught exception should be logged. See [logging exception](#logging-handler-uncaught-exception  ) |  
@@ -249,7 +249,7 @@ You can leverage the standard configuration files (_log4j2.xml_ or _logback.xml_
 Log level is generally configured in the `log4j2.xml` or `logback.xml`. But this level is static and needs a redeployment of the function to be changed.
 Powertools for AWS Lambda permits to change this level dynamically thanks to an environment variable `POWERTOOLS_LOG_LEVEL`.
 
-We support the following log levels (SLF4J levels): `TRACE` (0), `DEBUG` (10), `INFO` (20), `WARN` (30), `ERROR` (40).
+We support the following log levels (SLF4J levels): `TRACE`, `DEBUG`, `INFO`, `WARN`, `ERROR`.
 If the level is set to `CRITICAL` (supported in log4j but not logback), we revert it back to `ERROR`.
 If the level is set to any other value, we set it to the default value (`INFO`).
 
@@ -408,7 +408,7 @@ You can also achieve this more broadly for all JSON messages (see advanced confi
 ## Additional structured keys
 
 ### Logging Lambda context information
-The following keys will also be added to your structured logs (unless [configured otherwise](#more-customization-1)):
+The following keys will also be added to all your structured logs (unless [configured otherwise](#more-customization-1)):
 
 | Key                      | Type    | Example                                                                                | Description                        |
 |--------------------------|---------|----------------------------------------------------------------------------------------|------------------------------------|
@@ -529,7 +529,7 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
 	}
     ```
 
-** setCorrelationId method**
+**setCorrelationId method**
 
 You can also use `LoggingUtils.setCorrelationId()` method to inject it anywhere else in your code. 
 
@@ -581,7 +581,7 @@ You can also use `LoggingUtils.setCorrelationId()` method to inject it anywhere 
 ???+ tip
     You can retrieve correlation IDs via `LoggingUtils.getCorrelationId()` method if needed.
  
-** Known correlation IDs **
+**Known correlation IDs**
 
 To ease routine tasks like extracting correlation ID from popular event sources,
 we provide [built-in JMESPath expressions](#built-in-correlation-id-expressions).
@@ -800,7 +800,7 @@ this means that custom keys can be persisted across invocations. If you want all
 
 ## Sampling debug logs
 
-You can dynamically set a percentage of your logs to **DEBUG** level via env var `POWERTOOLS_LOGGER_SAMPLE_RATE` or
+You can dynamically set a percentage of your logs to`DEBUG` level to be included in the logger output, regardless of configured log leve, using the`POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable or
 via `samplingRate` attribute on the `@Logging` annotation.
 
 !!! info
@@ -866,7 +866,7 @@ Log4j2 configuration is done in _log4j2.xml_ and  leverages `JsonTemplateLayout`
     </Console>
 ```
 
-The `JsonTemplateLayout` is configured with the provided template:
+The `JsonTemplateLayout` is automatically configured with the provided template:
 
 ??? example "LambdaJsonLayout.json"
     ```json
