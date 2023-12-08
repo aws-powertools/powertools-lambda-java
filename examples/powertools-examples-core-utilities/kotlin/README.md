@@ -1,7 +1,7 @@
 #  Powertools for AWS Lambda (Kotlin) - Core Utilities Example
 
 This project demonstrates the Lambda for Powertools Kotlin module deployed using [Serverless Application Model](https://aws.amazon.com/serverless/sam/) with
-[Gradle](https://gradle.org/) running the build. This example is configured for Java 1.8 only; in order to use a newer version, check out the Gradle 
+[Gradle](https://gradle.org/) running the build. This example is configured for Java 11 only; in order to use a newer version, check out the Gradle 
 configuration guide [in the main project README](../../../README.md).
 
 You can also use `sam init` to create a new Gradle-powered Powertools application - choose to use the **AWS Quick Start Templates**,

@@ -28,7 +28,7 @@ jobs:
         uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
         with:
           distribution: 'corretto'
-          java-version: 8
+          java-version: 11
           # https://github.com/jwgmeligmeyling/spotbugs-github-action/issues/6
           # https://github.blog/2020-08-03-github-actions-improvements-for-fork-and-pull-request-workflows/
           # Avoid complexity of git action with publishing report. Just build with spotbugs profile.

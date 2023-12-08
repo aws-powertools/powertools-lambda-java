@@ -17,10 +17,12 @@ package software.amazon.lambda.powertools.validation.handlers;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
+
 import software.amazon.lambda.powertools.validation.Validation;
 
 
-public class ValidationInboundStringHandler implements RequestHandler<APIGatewayV2HTTPEvent, String> {
+public class ValidationInboundAPIGatewayV2HTTPEventHandler implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
 
     private static final String schema = "{\n" +
             "  \"$schema\": \"http://json-schema.org/draft-07/schema\",\n" +
@@ -80,7 +82,10 @@ public class ValidationInboundStringHandler implements RequestHandler<APIGateway
 
     @Override
     @Validation(inboundSchema = schema)
-    public String handleRequest(APIGatewayV2HTTPEvent input, Context context) {
-        return "OK";
+    public APIGatewayV2HTTPResponse handleRequest(APIGatewayV2HTTPEvent input, Context context) {
+    	APIGatewayV2HTTPResponse response = new APIGatewayV2HTTPResponse();
+    	response.setBody("valid-test");
+    	response.setStatusCode(200);
+        return response;
     }
 }
