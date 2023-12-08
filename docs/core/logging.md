@@ -403,12 +403,12 @@ You can use `LoggingUtils.logMessagesAsJson(true)` to enable this programmatical
 	}
     ```
 
-You can also achieve this more broadly for all JSON messages (see advanced configuration for [log4j](#log-messages-as-json-1) & [logback](#log-messages-as-json-2)).
+You can also achieve this more broadly for all JSON messages (see advanced configuration for [log4j](#log-messages-as-json_1) & [logback](#log-messages-as-json_2)).
 
 ## Additional structured keys
 
 ### Logging Lambda context information
-The following keys will also be added to all your structured logs (unless [configured otherwise](#more-customization-1)):
+The following keys will also be added to all your structured logs (unless [configured otherwise](#more-customization_1)):
 
 | Key                      | Type    | Example                                                                                | Description                        |
 |--------------------------|---------|----------------------------------------------------------------------------------------|------------------------------------|
@@ -419,71 +419,6 @@ The following keys will also be added to all your structured logs (unless [confi
 | **function_arn**         | String  | "arn:aws:lambda:eu-west-1:012345678910:function:example-PaymentFunction-1P1Z6B39FLU73" | ARN of the function                |
 | **function_request_id**  | String  | "899856cb-83d1-40d7-8611-9e78f15f32f4""                                                | AWS Request ID from lambda context |
 
-
-### Logging incoming event
-
-When debugging in non-production environments, you can instruct the `@Logging` annotation to log the incoming event with `logEvent` param or via `POWERTOOLS_LOGGER_LOG_EVENT` env var.
-
-???+ warning
-    This is disabled by default to prevent sensitive info being logged
-
-=== "AppLogEvent.java"
-    
-    ```java hl_lines="5"
-       public class AppLogEvent implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogEvent.class);
-        
-        @Logging(logEvent = true)
-        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-            // ...
-        }
-    }
-    ```
-
-### Logging handler response
-
-When debugging in non-production environments, you can instruct the `@Logging` annotation to log the response with `logResponse` param or via `POWERTOOLS_LOGGER_LOG_RESPONSE` env var.
-
-???+ warning
-    This is disabled by default to prevent sensitive info being logged
-
-=== "AppLogResponse.java"
-
-    ```java hl_lines="5"
-    public class AppLogResponse implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogResponse.class);
-        
-        @Logging(logResponse = true)
-        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-            // ...
-        }
-    }
-    ```
-
-### Logging handler uncaught exception
-By default, AWS Lambda logs any uncaught exception that might happen in the handler. However, this log is not structured
-and does not contain any additional context. You can instruct the `@Logging` annotation to log this kind of exception 
-with `logError` param or via `POWERTOOLS_LOGGER_LOG_ERROR` env var.
-
-???+ warning
-    This is disabled by default to prevent double logging
-
-=== "AppLogResponse.java"
-
-    ```java hl_lines="5"
-    public class AppLogError implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogError.class);
-        
-        @Logging(logError = true)
-        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-            // ...
-        }
-    }
-    ```
-
 ### Logging additional keys
 
 #### Logging a correlation ID
@@ -492,12 +427,12 @@ You can set a correlation ID using the `correlationIdPath` attribute of the `@Lo
 by passing a [JMESPath expression](https://jmespath.org/tutorial.html){target="_blank"}, 
 including our custom [JMESPath Functions](../utilities/serialization.md#built-in-functions).
 
-=== "AppCorrelationId.java"
+=== "AppCorrelationIdPath.java"
 
     ```java hl_lines="5"
-    public class AppCorrelationId implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    public class AppCorrelationIdPath implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppCorrelationId.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppCorrelationIdPath.class);
     
         @Logging(correlationIdPath = "headers.my_request_id_header")
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
@@ -507,7 +442,7 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
         }
     }
     ```
-=== "Example Event"
+=== "Example HTTP Event"
 
 	```json hl_lines="3"
 	{
@@ -517,7 +452,7 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
 	}
 	```
 
-=== "Example CloudWatch Logs"
+=== "CloudWatch Logs"
 
     ```json hl_lines="6"
 	{
@@ -533,12 +468,12 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
 
 You can also use `LoggingUtils.setCorrelationId()` method to inject it anywhere else in your code. 
 
-=== "AppCorrelationId.java"
+=== "AppSetCorrelationId.java"
 
     ```java hl_lines="8"
-    public class AppCorrelationId implements RequestHandler<ScheduledEvent, String> {
+    public class AppSetCorrelationId implements RequestHandler<ScheduledEvent, String> {
     
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppCorrelationId.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppSetCorrelationId.class);
     
         @Logging
         public String handleRequest(final ScheduledEvent event, final Context context) {
@@ -550,7 +485,7 @@ You can also use `LoggingUtils.setCorrelationId()` method to inject it anywhere 
     }
     ```
 
-=== "Example Event"
+=== "Example Schedule Event"
 
 	```json hl_lines="2"
     {
@@ -567,7 +502,7 @@ You can also use `LoggingUtils.setCorrelationId()` method to inject it anywhere 
     }
 	```
 
-=== "Example CloudWatch Logs"
+=== "CloudWatch Logs with correlation id"
 
     ```json hl_lines="6"
 	{
@@ -795,6 +730,70 @@ this means that custom keys can be persisted across invocations. If you want all
 ???+ tip "Additional keys are based on the MDC"
     `clearState` is based on `MDC.clear()`. State clearing is automatically done at the end of the execution of the handler if set to `true`.
 
+
+## Logging incoming event
+
+When debugging in non-production environments, you can instruct the `@Logging` annotation to log the incoming event with `logEvent` param or via `POWERTOOLS_LOGGER_LOG_EVENT` env var.
+
+???+ warning
+    This is disabled by default to prevent sensitive info being logged
+
+=== "AppLogEvent.java"
+
+    ```java hl_lines="5"
+       public class AppLogEvent implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogEvent.class);
+        
+        @Logging(logEvent = true)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            // ...
+        }
+    }
+    ```
+
+## Logging handler response
+
+When debugging in non-production environments, you can instruct the `@Logging` annotation to log the response with `logResponse` param or via `POWERTOOLS_LOGGER_LOG_RESPONSE` env var.
+
+???+ warning
+    This is disabled by default to prevent sensitive info being logged
+
+=== "AppLogResponse.java"
+
+    ```java hl_lines="5"
+    public class AppLogResponse implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogResponse.class);
+        
+        @Logging(logResponse = true)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            // ...
+        }
+    }
+    ```
+
+## Logging handler uncaught exception
+By default, AWS Lambda logs any uncaught exception that might happen in the handler. However, this log is not structured
+and does not contain any additional context. You can instruct the `@Logging` annotation to log this kind of exception
+with `logError` param or via `POWERTOOLS_LOGGER_LOG_ERROR` env var.
+
+???+ warning
+    This is disabled by default to prevent double logging
+
+=== "AppLogResponse.java"
+
+    ```java hl_lines="5"
+    public class AppLogError implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogError.class);
+        
+        @Logging(logError = true)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            // ...
+        }
+    }
+    ```
 
 # Advanced
 
