@@ -71,7 +71,7 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-parameters</artifactId>
+                <artifactId>powertools-parameters-appconfig</artifactId>
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
