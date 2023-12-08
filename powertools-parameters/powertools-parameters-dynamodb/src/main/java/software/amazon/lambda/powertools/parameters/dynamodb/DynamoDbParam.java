@@ -20,12 +20,32 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+/**
+ * Inject a parameter from the DynamoDB Parameter Store into a field. You can also use
+ * {@code DynamoDbProviderBuilder} to obtain DynamoDB values directly, rather than injecting them implicitly.
+ *
+ * Usage:
+ * <pre>
+ * @SSMParam(key = "my-param", table = "my-table")
+ * String myParameter;
+ * </pre>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface DynamoDbParam {
+    /**
+     * <b>Mandatory</b>. Partition key from the DynamoDB table
+     */
     String key();
 
+    /**
+     * <b>Mandatory</b>. Table name for the DynamoDB table
+     * @return
+     */
     String table();
 
+    /**
+     * <b>Optional</b> Provide a Transformer to transform the returned parameter values.
+     */
     Class<? extends Transformer> transformer() default Transformer.class;
 }

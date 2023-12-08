@@ -64,6 +64,13 @@ public class AppConfigProvider extends BaseProvider {
     }
 
     /**
+     * Create a AppConfigProvider with all default settings.
+     */
+    public static AppConfigProvider create() {
+        return new AppConfigProviderBuilder().build();
+    }
+
+    /**
      * Retrieve the parameter value from the AppConfig parameter store.<br />
      *
      * @param key key of the parameter. This ties back to AppConfig's 'profile' concept

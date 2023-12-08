@@ -20,10 +20,28 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+/**
+ * Inject a parameter from the SSM Parameter Store into a field. You can also use
+ * {@code SSMProviderBuilder} to obtain SSM values directly, rather than injecting them implicitly.
+ *
+ * Usage:
+ * <pre>
+ * @SSMParam(key = "/my/parameter")
+ * String myParameter;
+ * </pre>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface SSMParam {
+    /**
+     * <b>Mandatory</b>. Key from the SSM parameter store
+     * @return
+     */
     String key();
 
+
+    /**
+     * <b>Optional</b>. a transfer to apply to the value
+     */
     Class<? extends Transformer> transformer() default Transformer.class;
 }

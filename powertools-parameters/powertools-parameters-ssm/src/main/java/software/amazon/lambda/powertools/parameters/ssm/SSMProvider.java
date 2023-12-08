@@ -93,6 +93,13 @@ public class SSMProvider extends BaseProvider {
     }
 
     /**
+     * Create a SSMProvider with all default settings.
+     */
+    public static SSMProvider create() {
+        return new SSMProviderBuilder().build();
+    }
+
+    /**
      * Retrieve the parameter value from the AWS System Manager Parameter Store.
      *
      * @param key key of the parameter

@@ -73,6 +73,13 @@ public class SecretsProvider extends BaseProvider {
     }
 
     /**
+     * Create a SecretsProvider with all default settings.
+     */
+    public static SecretsProvider create() {
+        return new SecretsProviderBuilder().build();
+    }
+
+    /**
      * Retrieve the parameter value from the AWS Secrets Manager.
      *
      * @param key key of the parameter

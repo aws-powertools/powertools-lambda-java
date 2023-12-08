@@ -29,6 +29,11 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
  * @see AppConfigProviderBuilder
  * @see <a href="https://docs.aws.amazon.com/appconfig>AWS AppConfig</a>
  * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/parameters/">Powertools for AWS Lambda (Java) parameters documentation</a>
+ *
+ * <pre>
+ * @AppConfigParam(key = "my-param", environment = "my-env", application = "my-app")
+ * String appConfigParam;
+ * </pre>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

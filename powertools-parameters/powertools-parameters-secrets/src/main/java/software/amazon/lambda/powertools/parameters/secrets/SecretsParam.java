@@ -20,10 +20,27 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
+/**
+ * Inject a parameter from the Secrets Manager into a field. You can also use
+ * {@code SecretsProviderBuilder} to obtain Secrets Manager values directly, rather than
+ * injecting them implicitly.
+ *
+ * <pre>
+ * @SecretsParam(key = "my-secret")
+ * String mySecret;
+ * </pre>
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface SecretsParam {
+    /**
+     * <b>Mandatory</b>. key from the secrets manager store.
+     * @return
+     */
     String key();
 
+    /**
+     * <b>Optional</b>. a transfer to apply to the value
+     */
     Class<? extends Transformer> transformer() default Transformer.class;
 }

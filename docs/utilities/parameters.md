@@ -456,9 +456,7 @@ by calling `setDefaultExpirationTime(duration, unit)` on the `CacheManager`.
         
         public void CustomizeCache() {
     
-            AppConfigProvider paramProvider = AppConfigProvider
-                    .builder()
-                    .build();
+            AppConfigProvider paramProvider = AppConfigProvider.create();
     
             // Cache for 20 seconds, rather than the default 5.
             return paramProvider.withMaxAge(20, ChronoUnit.SECONDS)
