@@ -57,13 +57,6 @@ public class DynamoDbProvider extends BaseProvider {
     }
 
     /**
-     * Create a DynamoDbProvider with all default settings.
-     */
-    public static DynamoDbProvider create() {
-        return new DynamoDbProviderBuilder().build();
-    }
-
-    /**
      * Return a single value from the DynamoDB parameter provider.
      *
      * @param key key of the parameter
