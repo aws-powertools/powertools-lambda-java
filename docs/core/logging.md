@@ -752,6 +752,9 @@ When debugging in non-production environments, you can instruct the `@Logging` a
     }
     ```
 
+???+ note
+    If you use this on a RequestStreamHandler, Powertools must duplicate input streams in order to log them.
+
 ## Logging handler response
 
 When debugging in non-production environments, you can instruct the `@Logging` annotation to log the response with `logResponse` param or via `POWERTOOLS_LOGGER_LOG_RESPONSE` env var.
@@ -772,6 +775,9 @@ When debugging in non-production environments, you can instruct the `@Logging` a
         }
     }
     ```
+
+???+ note
+    If you use this on a RequestStreamHandler, Powertools must duplicate output streams in order to log them.
 
 ## Logging handler uncaught exception
 By default, AWS Lambda logs any uncaught exception that might happen in the handler. However, this log is not structured
