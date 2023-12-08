@@ -4,7 +4,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>e2e-test-handlers-parent</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
     <packaging>pom</packaging>
     <name>Handlers for End-to-End tests</name>
     <description>Fake handlers that use Powertools for AWS Lambda (Java).</description>

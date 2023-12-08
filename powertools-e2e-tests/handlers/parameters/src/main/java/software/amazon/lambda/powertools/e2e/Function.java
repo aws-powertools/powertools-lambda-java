@@ -24,7 +24,12 @@ public class Function implements RequestHandler<Input, String> {
 
     @Logging
     public String handleRequest(Input input, Context context) {
-        AppConfigProvider provider = ParamManager.getAppConfigProvider(input.getEnvironment(), input.getApp());
+        AppConfigProvider provider = AppConfigProvider.builder()
+                .withApplication(input.getApp())
+                .withEnvironment(input.getEnvironment())
+                .build();
+
+        //(input.getEnvironment(), input.getApp());
         return provider.get(input.getKey());
 
     }

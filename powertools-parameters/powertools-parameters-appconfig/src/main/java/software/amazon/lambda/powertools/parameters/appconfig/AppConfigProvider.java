@@ -63,12 +63,6 @@ public class AppConfigProvider extends BaseProvider {
         return new AppConfigProviderBuilder();
     }
 
-    /**
-     * Create a AppConfigProvider with all default settings.
-     */
-    public static AppConfigProvider create() {
-        return new AppConfigProviderBuilder().build();
-    }
 
     /**
      * Retrieve the parameter value from the AppConfig parameter store.<br />
