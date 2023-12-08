@@ -1122,11 +1122,11 @@ Use `LambdaEcsLayout.json` as `eventTemplateUri` when configuring `JsonTemplateL
 
 ### Logback configuration
 
-=== "logback.xml"
-
 Use the `LambdaEcsEncoder` rather than the `LambdaJsonEncoder` when configuring the appender:
 
-    ```xml
+=== "logback.xml"
+
+    ```xml hl_lines="3"
     <configuration>
         <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
