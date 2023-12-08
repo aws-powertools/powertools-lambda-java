@@ -24,7 +24,7 @@ import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 
 /**
  * Provides the AppConfig parameter aspect. This aspect is responsible for injecting
- * parameters from AppConfig into fields annotated with @AppConfigParam. See the
+ * parameters from AWS AppConfig into fields annotated with @AppConfigParam. See the
  * README and Powertools for Lambda (Java) documentation for information on using this feature.
  */
 @Aspect
