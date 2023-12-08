@@ -40,7 +40,6 @@ public class SSMParamAspect extends BaseParamAspect {
 
     @Around("getParam(ssmPaam)")
     public Object injectParam(final ProceedingJoinPoint joinPoint, final SSMParam ssmPaam) {
-        System.out.println("GET IT");
 
         SSMProvider provider = providerBuilder.get();
         return getAndTransform(ssmPaam.key(), ssmPaam.transformer(), provider,
