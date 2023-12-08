@@ -193,7 +193,13 @@ You can retrieve parameters either using annotations or by using the `xParamProv
 provider directly. The latter is useful if you need to configure the underlying SDK client, for example to use
 a different region or credentials, the former is simpler to use.
 
-### Using Annotations
+## Built-in provider classes
+
+This section describes the built-in provider classes for each parameter store, providing
+examples showing how to inject parameters using annotations, and how to use the provider
+interface. In cases where a provider supports extra features, these will also be described.
+
+### Secrets Manager
 
 === "Secrets Manager: @SecretsParam"
 
@@ -215,66 +221,6 @@ a different region or credentials, the former is simpler to use.
         }
     }
     ```
-
-=== "SSM Parameters Store: @SSMParam"
-
-    ```java hl_lines="8 9"
-    import com.amazonaws.services.lambda.runtime.Context;
-    import com.amazonaws.services.lambda.runtime.RequestHandler;
-    import software.amazon.lambda.powertools.parameters.ssm.SSMParam;
-
-    public class ParametersFunction implements RequestHandler<String, String> {
-
-        // Annotation-style injection from SSM Parameter Store
-        @SSMParam(key = "/powertools-java/param")
-        String ssmParam;
-
-        public string handleRequest(String request, Context context) {
-            return ssmParam; // Request handler simply returns our configuration value
-        }
-    }
-    ```
-
-=== "DynamoDB: @DyanmoDbParam"
-
-    ```java hl_lines="8 9"
-    import com.amazonaws.services.lambda.runtime.Context;
-    import com.amazonaws.services.lambda.runtime.RequestHandler;
-    import software.amazon.lambda.powertools.parameters.dynamodb.DynamoDBParam;
-
-    public class ParametersFunction implements RequestHandler<String, String> {
-
-        // Annotation-style injection from DynamoDB
-        @DynamoDbParam(table = "my-test-tablename", key = "myKey")
-        String ddbParam;
-
-        public string handleRequest(String request, Context context) {
-            return ddbParam;  // Request handler simply returns our configuration value
-        }
-    }
-    ```
-
-=== "AppConfig: @AppConfigParam"
-
-    ```java hl_lines="8 9"
-    import com.amazonaws.services.lambda.runtime.Context;
-    import com.amazonaws.services.lambda.runtime.RequestHandler;
-    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigParam;
-
-    public class ParametersFunction implements RequestHandler<String, String> {
-    
-        // Annotation-style injection from AppConfig
-        @AppConfigParam(application = "my-app", environment = "my-env", key = "myKey")
-        String appConfigParam;
-
-        public string handleRequest(String request, Context context) {
-            return appConfigParam; // Request handler simply returns our configuration value
-        }
-    }
-    ```
-
-
-### Using the `ParamProvider` classes
 
 === "Secrets Manager"
 
@@ -306,7 +252,36 @@ a different region or credentials, the former is simpler to use.
     }
     ```
 
-=== "Systems Manager"
+### SSM Parameter Store
+
+The AWS Systems Manager Parameter Store provider supports two additional arguments for the `get()` and `getMultiple()` methods:
+
+| Option     | Default | Description |
+|---------------|---------|-------------|
+| **withDecryption()**   | `False` | Will automatically decrypt the parameter. |
+| **recursive()** | `False`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
+
+
+=== "SSM Parameter Store: @SSMParam"
+
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.ssm.SSMParam;
+
+    public class ParametersFunction implements RequestHandler<String, String> {
+
+        // Annotation-style injection from SSM Parameter Store
+        @SSMParam(key = "/powertools-java/param")
+        String ssmParam;
+
+        public string handleRequest(String request, Context context) {
+            return ssmParam; // Request handler simply returns our configuration value
+        }
+    }
+    ```
+
+=== "SSM"
 
     ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -334,6 +309,46 @@ a different region or credentials, the former is simpler to use.
 
             // Return the result
             return value;
+        }
+    }
+    ```
+
+=== "SSM: Additional Options"
+
+    ```java hl_lines="9 12"
+    import software.amazon.lambda.powertools.parameters.SSMProvider;
+    import software.amazon.lambda.powertools.parameters.ParamManager;
+
+    public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        // Get an instance of the SSM Provider
+        SSMProvider ssmProvider = ParamManager.getSsmProvider();
+    
+        // Retrieve a single parameter and decrypt it
+        String value = ssmProvider.withDecryption().get("/my/parameter");
+    
+        // Retrieve multiple parameters recursively from a path prefix
+        Map<String, String> values = ssmProvider.recursive().getMultiple("/my/path/prefix");
+    
+    }
+    ```
+
+### DynamoDB
+
+=== "DynamoDB: @DyanmoDbParam"
+
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.dynamodb.DynamoDBParam;
+
+    public class ParametersFunction implements RequestHandler<String, String> {
+
+        // Annotation-style injection from DynamoDB
+        @DynamoDbParam(table = "my-test-tablename", key = "myKey")
+        String ddbParam;
+
+        public string handleRequest(String request, Context context) {
+            return ddbParam;  // Request handler simply returns our configuration value
         }
     }
     ```
@@ -366,6 +381,27 @@ a different region or credentials, the former is simpler to use.
     
             // Return the result
             return value;
+        }
+    }
+    ```
+
+### AppConfig
+
+=== "AppConfig: @AppConfigParam"
+
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigParam;
+
+    public class ParametersFunction implements RequestHandler<String, String> {
+    
+        // Annotation-style injection from AppConfig
+        @AppConfigParam(application = "my-app", environment = "my-env", key = "myKey")
+        String appConfigParam;
+
+        public string handleRequest(String request, Context context) {
+            return appConfigParam; // Request handler simply returns our configuration value
         }
     }
     ```
@@ -521,6 +557,20 @@ For example, if you wish to deserialize XML into an object.
                             .withTransformation(XmlTransformer.class)
                             .get("/my/parameter/xml", MyObj.class);
     ```
+
+### Fluent API
+
+To simplify the use of the library, you can chain all method calls before a get.
+
+=== "Fluent API call"
+
+    ```java
+        ssmProvider
+          .defaultMaxAge(10, SECONDS)     // will set 10 seconds as the default cache TTL
+          .withMaxAge(1, MINUTES)         // will set the cache TTL for this value at 1 minute
+          .withTransformation(json)       // json is a static import from Transformer.json
+          .withDecryption()               // enable decryption of the parameter value
+          .get("/my/param", MyObj.class); // finally get the value
 
 ### Create your own Provider
 You can create your own custom parameter store provider by implementing a handful of classes: 
