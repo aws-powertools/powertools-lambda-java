@@ -63,7 +63,7 @@ public class AppConfigProviderBuilder {
     }
 
     /**
-     * Set custom {@link AppConfigProvider} to pass to the {@link AppConfigDataClient}. <br/>
+     * Set custom {@link AppConfigDataClient} to pass to the {@link AppConfigProvider}. <br/>
      * Use it if you want to customize the region or any other part of the client.
      *
      * @param client Custom client

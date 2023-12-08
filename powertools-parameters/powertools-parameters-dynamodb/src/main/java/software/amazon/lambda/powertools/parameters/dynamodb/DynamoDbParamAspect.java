@@ -24,7 +24,7 @@ import software.amazon.lambda.powertools.parameters.BaseParamAspect;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 
 /**
- * Provides the DynamoDB parameter aspect. This aspect is responsible for injecting
+ * Provides the Amazon DynamoDB parameter aspect. This aspect is responsible for injecting
  * parameters from DynamoDB into fields annotated with @DynamoDbParam. See the
  * README and Powertools for Lambda (Java) documentation for information on using this feature.
  */
@@ -42,7 +42,6 @@ public class DynamoDbParamAspect extends BaseParamAspect {
 
     @Around("getParam(ddbConfigParam)")
     public Object injectParam(final ProceedingJoinPoint joinPoint, final DynamoDbParam ddbConfigParam) {
-        System.out.println("GET IT");
 
         BaseProvider provider = providerBuilder.apply(ddbConfigParam.table());
         return getAndTransform(ddbConfigParam.key(), ddbConfigParam.transformer(), provider,

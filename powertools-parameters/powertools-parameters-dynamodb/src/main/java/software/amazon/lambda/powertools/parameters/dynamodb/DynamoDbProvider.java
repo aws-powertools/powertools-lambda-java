@@ -30,7 +30,7 @@ import software.amazon.lambda.powertools.parameters.dynamodb.exception.DynamoDbP
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 /**
- * Implements a {@link ParamProvider} on top of DynamoDB. The schema of the table
+ * Implements a {@link ParamProvider} on top of Amazon DynamoDB. The schema of the table
  * is described in the Powertools for AWS Lambda (Java) documentation.
  *
  * @see <a href="https://docs.powertools.aws.dev/lambda-java/utilities/parameters">Parameters provider documentation</a>
