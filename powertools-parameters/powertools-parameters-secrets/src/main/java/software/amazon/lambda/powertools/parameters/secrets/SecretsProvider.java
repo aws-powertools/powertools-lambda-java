@@ -29,7 +29,7 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
  *
  * <u>Samples:</u>
  * <pre>
- *     SecretsProvider provider = ParamManager.getSecretsProvider();
+ *     SecretsProvider provider = SecretsProvider.builder().build();
  *
  *     String value = provider.get("key");
  *     System.out.println(value);

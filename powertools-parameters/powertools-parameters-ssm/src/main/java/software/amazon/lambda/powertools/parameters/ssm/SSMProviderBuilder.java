@@ -50,7 +50,6 @@ public class SSMProviderBuilder {
      */
     public SSMProvider build() {
         if (cacheManager == null) {
-            // TODO - do we want to share this somehow?
             cacheManager = new CacheManager();
         }
         SSMProvider provider;

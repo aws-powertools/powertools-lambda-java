@@ -22,9 +22,13 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.ParamProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+/**
+ * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
+ */
 public class AppConfigProviderBuilder {
     private AppConfigDataClient client;
     private CacheManager cacheManager;
@@ -97,7 +101,7 @@ public class AppConfigProviderBuilder {
     }
 
     /**
-     * <b>Mandatory</b>. Provide a CacheManager to the {@link AppConfigProvider}
+     * Provide a CacheManager to the {@link AppConfigProvider}
      *
      * @param cacheManager the manager that will handle the cache of parameters
      * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)

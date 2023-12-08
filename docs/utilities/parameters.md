@@ -564,7 +564,6 @@ To simplify the use of the library, you can chain all method calls before a get.
 
     ```java
         ssmProvider
-          .defaultMaxAge(10, SECONDS)     // will set 10 seconds as the default cache TTL
           .withMaxAge(1, MINUTES)         // will set the cache TTL for this value at 1 minute
           .withTransformation(json)       // json is a static import from Transformer.json
           .withDecryption()               // enable decryption of the parameter value
@@ -694,9 +693,7 @@ You can create your own custom parameter store provider by implementing a handfu
         }
     
         @Around("getParam(customConfigParam)")
-        public Object injectParam(final ProceedingJoinPoint joinPoint, final CustomProviderParam customConfigParam) {
-            System.out.println("GET IT");
-    
+        public Object injectParam(final ProceedingJoinPoint joinPoint, final CustomProviderParam customConfigParam) { 
             BaseProvider provider = CustomProvider.builder().build();
 
             return getAndTransform(customConfigParam.key(), ddbConfigParam.transformer(), provider,

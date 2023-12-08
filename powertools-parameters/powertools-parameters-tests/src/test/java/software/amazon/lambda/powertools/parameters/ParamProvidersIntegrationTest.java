@@ -62,8 +62,6 @@ public class ParamProvidersIntegrationTest {
     @BeforeEach
     public void setup() throws IllegalAccessException {
         openMocks(this);
-
-        //writeStaticField(ParamManager.class, "providers", new ConcurrentHashMap<>(), true);
     }
 
     @Test

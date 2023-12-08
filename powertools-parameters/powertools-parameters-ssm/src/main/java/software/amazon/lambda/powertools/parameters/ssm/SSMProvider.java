@@ -30,7 +30,7 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
  *
  * <u>Samples:</u>
  * <pre>
- *     SSMProvider provider = ParamManager.getSsmProvider();
+ *     SSMProvider provider = SSMProvider.builder().build();
  *
  *     String value = provider.get("key");
  *     System.out.println(value);
@@ -166,7 +166,7 @@ public class SSMProvider extends BaseProvider {
             res.parameters().forEach(parameter ->
             {
                 /* Standardize the parameter name
-                   The parameter name returned by SSM will contained the full path.
+                   The parameter name returned by SSM will contain the full path.
                    However, for readability, we should return only the part after
                    the path.
                  */

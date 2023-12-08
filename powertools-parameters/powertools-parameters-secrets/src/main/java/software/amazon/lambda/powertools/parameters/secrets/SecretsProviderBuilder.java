@@ -22,9 +22,13 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.ParamProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+/**
+ * Implements a {@link ParamProvider} on top of the SecretsManager service. SecretsManager provides
+ */
 public class SecretsProviderBuilder {
 
     private SecretsManagerClient client;
@@ -74,7 +78,7 @@ public class SecretsProviderBuilder {
     }
 
     /**
-     * <b>Mandatory</b>. Provide a CacheManager to the {@link SecretsProvider}
+     * Provide a CacheManager to the {@link SecretsProvider}
      *
      * @param cacheManager the manager that will handle the cache of parameters
      * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)

@@ -79,17 +79,4 @@
 
         </Or>
     </Match>
-    <Match>
-        <Bug pattern="MS_EXPOSE_REP"/>
-        <Or>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
-                <Method name="getCacheManager"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
-                <Method name="getTransformationManager"/>
-            </And>
-        </Or>
-    </Match>
 </FindBugsFilter>

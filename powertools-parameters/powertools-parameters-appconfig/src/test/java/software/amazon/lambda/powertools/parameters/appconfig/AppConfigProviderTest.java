@@ -14,7 +14,9 @@
 
 package software.amazon.lambda.powertools.parameters.appconfig;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -188,7 +190,7 @@ public class AppConfigProviderTest {
     public void getMultipleValuesThrowsException() {
 
         // Act & Assert
-        Assertions.assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
+        assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
                 .withMessage("Retrieving multiple parameter values is not supported with the AWS App Config Provider");
     }
 
@@ -196,7 +198,7 @@ public class AppConfigProviderTest {
     public void testAppConfigProviderBuilderMissingEnvironment_throwsException() {
 
         // Act & Assert
-        Assertions.assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                         .withCacheManager(new CacheManager())
                         .withApplication(applicationName)
                         .withClient(client)
@@ -208,7 +210,7 @@ public class AppConfigProviderTest {
     public void testAppConfigProviderBuilderMissingApplication_throwsException() {
 
         // Act & Assert
-        Assertions.assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
+        assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                         .withCacheManager(new CacheManager())
                         .withEnvironment(environmentName)
                         .withClient(client)

@@ -173,9 +173,9 @@ public class BaseProviderTest {
     @Test
     public void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
 
-        provider.cacheManager.setDefaultExpirationTime(Duration.ofSeconds(5));
+        provider.cacheManager.setDefaultExpirationTime(Duration.ofMinutes(2));
 
-        provider.get("bariton");
+        provider.withMaxAge(5, SECONDS).get("bariton");
         getFromStore = false;
 
         provider.setClock(offset(clock, of(6, SECONDS)));
@@ -310,6 +310,7 @@ public class BaseProviderTest {
         provider.cacheManager.setDefaultExpirationTime(Duration.ofSeconds(5));
 
         provider.withTransformation(json)
+                .withMaxAge(5, SECONDS)
                 .get("foo", ObjectToDeserialize.class);
         getFromStore = false;
 

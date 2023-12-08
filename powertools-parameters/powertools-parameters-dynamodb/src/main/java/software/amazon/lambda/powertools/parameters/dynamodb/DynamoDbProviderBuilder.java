@@ -22,9 +22,13 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
+import software.amazon.lambda.powertools.parameters.ParamProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+/**
+ * Implements a {@link ParamProvider} on top of the DynamoDB service. DynamoDB provides
+ */
 public class DynamoDbProviderBuilder {
     private DynamoDbClient client;
     private String table;
@@ -75,7 +79,7 @@ public class DynamoDbProviderBuilder {
     }
 
     /**
-     * <b>Mandatory</b>. Provide a CacheManager to the {@link DynamoDbProvider}
+     * Provide a CacheManager to the {@link DynamoDbProvider}
      *
      * @param cacheManager the manager that will handle the cache of parameters
      * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
