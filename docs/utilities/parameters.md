@@ -222,7 +222,7 @@ interface. In cases where a provider supports extra features, these will also be
     }
     ```
 
-=== "Secrets Manager"
+=== "Secrets Manager: SecretsProvider"
 
     ```java hl_lines="12-15 19"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -281,7 +281,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "SSM"
+=== "SSM Parameter Store: SSMProvider"
 
     ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -313,7 +313,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "SSM: Additional Options"
+=== "SSM Parameter Store: Additional Options"
 
     ```java hl_lines="9 12"
     import software.amazon.lambda.powertools.parameters.SSMProvider;
@@ -353,7 +353,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "DynamoDB"
+=== "DynamoDB: DynamoDbProvider"
 
     ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -406,7 +406,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "AppConfig"
+=== "AppConfig: AppConfigProvider"
 
     ```java hl_lines="12-15 19-20"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -439,11 +439,11 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 ## Advanced configuration
 
 ### Caching
-Each provider uses the CacheManager to cache parameter values. When a value is retrieved using from the provider, a 
+Each provider uses the `CacheManager` to cache parameter values. When a value is retrieved using from the provider, a 
 custom cache duration can be provided using `withMaxAge(duration, unit)`. 
 
-If this is not specified, the default value set on the CacheManager itself will be used. This default can be customized
-by calling `setDefaultExpirationTime(duration, unit)` on the CacheManager.
+If this is not specified, the default value set on the `CacheManager` itself will be used. This default can be customized
+by calling `setDefaultExpirationTime(duration, unit)` on the `CacheManager`.
 
 === "Customize Cache - Per Item"
 
@@ -523,11 +523,9 @@ Base64 and JSON transformations are provided. For more complex transformation, y
                         .get("/my/parameter/json", MyObj.class);
     ```
 
-### Decrypt Values
 
 
-
-### Create your own Transformer
+#### Create your own Transformer
 
 You can write your own transformer, by implementing the `Transformer` interface and the `applyTransformation()` method.
 For example, if you wish to deserialize XML into an object.
@@ -584,9 +582,9 @@ You can create your own custom parameter store provider by implementing a handfu
     import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
     
     /**
-    Our custom parameter provider itself. This does the heavy lifting of retrieving
-    parameters from whatever our underlying parameter store might be.
-    */
+     * Our custom parameter provider itself. This does the heavy lifting of retrieving
+     * parameters from whatever our underlying parameter store might be.
+    **/
     public class CustomProvider extends BaseProvider {
     
         public CustomProvider(CacheManager cacheManager, TransformationManager transformationManager) {
@@ -613,8 +611,8 @@ You can create your own custom parameter store provider by implementing a handfu
 
     ```java
     /**
-    Provides a builder-style interface to configure our @{link CustomProvider}.
-    */
+     * Provides a builder-style interface to configure our @{link CustomProvider}.
+    **/
     public class CustomProviderBuilder {
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
@@ -665,10 +663,10 @@ You can create your own custom parameter store provider by implementing a handfu
     import software.amazon.lambda.powertools.parameters.transform.Transformer;
     
     /**
-    Aspect to inject a parameter from our custom provider. Note that if you
-    want to implement a provider _without_ an Aspect and field injection, you can
-    skip implementing both this and the {@link CustomProviderAspect} class.
-    */
+     * Aspect to inject a parameter from our custom provider. Note that if you
+     * want to implement a provider _without_ an Aspect and field injection, you can
+     * skip implementing both this and the {@link CustomProviderAspect} class.
+    **/
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface CustomProviderParam {
@@ -685,9 +683,9 @@ You can create your own custom parameter store provider by implementing a handfu
     ```java
 
     /**
-    Aspect to inject a parameter from our custom provider where the {@link CustomProviderParam}
-    annotation is used.
-    */
+     * Aspect to inject a parameter from our custom provider where the {@link CustomProviderParam}
+     * annotation is used.
+    **/
     @Aspect
     public class CustomProviderAspect extends BaseParamAspect {
     
