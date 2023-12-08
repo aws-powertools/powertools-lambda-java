@@ -20,13 +20,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.UnifiedJedis;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
@@ -34,7 +37,7 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore;
 
 /**
- * Redis version of the {@link PersistenceStore}. Will store idempotency data in Redis.<br>
+ * Redis version of the {@link PersistenceStore}. Stores idempotency data in Redis standalone or cluster mode.<br>
  * Use the {@link Builder} to create a new instance.
  */
 public class RedisPersistenceStore extends BasePersistenceStore implements PersistenceStore {
@@ -47,7 +50,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
     private final String statusAttr;
     private final String dataAttr;
     private final String validationAttr;
-    private final JedisPooled jedisPool;
+    private final UnifiedJedis jedisClient;
 
     /**
      * Private: use the {@link Builder} to instantiate a new {@link RedisPersistenceStore}
@@ -59,7 +62,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
                                   String statusAttr,
                                   String dataAttr,
                                   String validationAttr,
-                                  JedisPooled jedisPool) {
+                                  UnifiedJedis jedisClient) {
         this.keyPrefixName = keyPrefixName;
         this.keyAttr = keyAttr;
         this.expiryAttr = expiryAttr;
@@ -68,25 +71,19 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         this.dataAttr = dataAttr;
         this.validationAttr = validationAttr;
 
-        if (jedisPool != null) {
-            this.jedisPool = jedisPool;
+        if (jedisClient != null) {
+            this.jedisClient = jedisClient;
         } else {
-            String idempotencyDisabledEnv = System.getenv().get(software.amazon.lambda.powertools.idempotency.Constants.IDEMPOTENCY_DISABLED_ENV);
+            String idempotencyDisabledEnv =
+                    System.getenv(software.amazon.lambda.powertools.idempotency.Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null || "false".equalsIgnoreCase(idempotencyDisabledEnv)) {
-                HostAndPort address = new HostAndPort(System.getenv().get(Constants.REDIS_HOST),
-                        Integer.parseInt(System.getenv().get(Constants.REDIS_PORT)));
-                JedisClientConfig config = getJedisClientConfig();
-                this.jedisPool = new JedisPooled(address, config);
+                this.jedisClient = getJedisClient(System.getenv(Constants.REDIS_HOST), Integer.parseInt(System.getenv(Constants.REDIS_PORT)));
             } else {
                 // we do not want to create a Jedis connection pool if idempotency is disabled
                 // null is ok as idempotency won't be called
-                this.jedisPool = null;
+                this.jedisClient = null;
             }
         }
-    }
-
-    public static Builder builder() {
-        return new Builder();
     }
 
     /**
@@ -95,24 +92,42 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
      * @return
      */
     private static JedisClientConfig getJedisClientConfig() {
+        String redisSecret = "";
+        String redisSecretEnv = System.getenv(Constants.REDIS_SECRET);
+        if (redisSecretEnv != null) {
+            redisSecret = redisSecretEnv;
+        }
         return DefaultJedisClientConfig.builder()
-                .user(System.getenv().get(Constants.REDIS_USER))
-                .password(System.getenv().get(Constants.REDIS_SECRET))
+                .user(System.getenv(Constants.REDIS_USER))
+                .password(System.getenv(redisSecret))
                 .build();
     }
 
-    JedisClientConfig config = getJedisClientConfig();
+    public static Builder builder() {
+        return new Builder();
+    }
 
+     UnifiedJedis getJedisClient(String redisHost, Integer redisPort) {
+        HostAndPort address = new HostAndPort(redisHost, redisPort);
+        JedisClientConfig config = getJedisClientConfig();
+        String isClusterMode = System.getenv(Constants.REDIS_CLUSTER_MODE);
+        if (isClusterMode != null && "true".equalsIgnoreCase(isClusterMode)) {
+            return new JedisCluster(address, getJedisClientConfig(), 5, new GenericObjectPoolConfig<>());
+        } else {
+            return new JedisPooled(address, config);
+        }
+    }
 
     @Override
     public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
 
-        Map<String, String> item = jedisPool.hgetAll(getKey(idempotencyKey));
+        String hashKey = getKey(idempotencyKey);
+        Map<String, String> item = jedisClient.hgetAll(hashKey);
         if (item.isEmpty()) {
             throw new IdempotencyItemNotFoundException(idempotencyKey);
         }
-        item.put(this.keyAttr, idempotencyKey);
-        return itemToRecord(item);
+        item.put(hashKey, idempotencyKey);
+        return itemToRecord(item, idempotencyKey);
     }
 
     /**
@@ -136,18 +151,18 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
             inProgressExpiry = String.valueOf(dataRecord.getInProgressExpiryTimestamp().getAsLong());
         }
 
-        LOG.debug("Putting dataRecord for idempotency key: {}", dataRecord.getIdempotencyKey());
+        LOG.info("Putting dataRecord for idempotency key: {}", dataRecord.getIdempotencyKey());
 
         Object execRes = putItemOnCondition(dataRecord, now, inProgressExpiry);
 
         if (execRes == null) {
             String msg = String.format("Failed to put dataRecord for already existing idempotency key: %s",
                     getKey(dataRecord.getIdempotencyKey()));
-            LOG.debug(msg);
+            LOG.info(msg);
             throw new IdempotencyItemAlreadyExistsException(msg);
         } else {
-            LOG.debug("Record for idempotency key is set: {}", dataRecord.getIdempotencyKey());
-            jedisPool.expireAt(getKey(dataRecord.getIdempotencyKey()), dataRecord.getExpiryTimestamp());
+            LOG.info("Record for idempotency key is set: {}", dataRecord.getIdempotencyKey());
+            jedisClient.expireAt(getKey(dataRecord.getIdempotencyKey()), dataRecord.getExpiryTimestamp());
         }
     }
 
@@ -176,10 +191,11 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
                 itemIsInProgressExpression, insertItemExpression);
 
         List<String> fields = new ArrayList<>();
-        fields.add(getKey(dataRecord.getIdempotencyKey()));
-        fields.add(this.expiryAttr);
-        fields.add(this.statusAttr);
-        fields.add(this.inProgressExpiryAttr);
+        String hashKey = getKey(dataRecord.getIdempotencyKey());
+        fields.add(hashKey);
+        fields.add(prependField(hashKey, this.expiryAttr));
+        fields.add(prependField(hashKey, this.statusAttr));
+        fields.add(prependField(hashKey, this.inProgressExpiryAttr));
         fields.add(String.valueOf(now.getEpochSecond()));
         fields.add(String.valueOf(now.toEpochMilli()));
         fields.add(INPROGRESS.toString());
@@ -191,41 +207,60 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         String[] arr = new String[fields.size()];
-        return jedisPool.eval(luaScript, 4, (String[]) fields.toArray(arr));
+        return jedisClient.eval(luaScript, 4, fields.toArray(arr));
     }
 
     @Override
     public void updateRecord(DataRecord dataRecord) {
         LOG.debug("Updating dataRecord for idempotency key: {}", dataRecord.getIdempotencyKey());
+        String hashKey = getKey(dataRecord.getIdempotencyKey());
 
         Map<String, String> item = new HashMap<>();
-        item.put(this.dataAttr, dataRecord.getResponseData());
-        item.put(this.expiryAttr, String.valueOf(dataRecord.getExpiryTimestamp()));
-        item.put(this.statusAttr, String.valueOf(dataRecord.getStatus().toString()));
+        item.put(prependField(hashKey, this.dataAttr), dataRecord.getResponseData());
+        item.put(prependField(hashKey, this.expiryAttr), String.valueOf(dataRecord.getExpiryTimestamp()));
+        item.put(prependField(hashKey, this.statusAttr), String.valueOf(dataRecord.getStatus().toString()));
 
         if (payloadValidationEnabled) {
-            item.put(this.validationAttr, dataRecord.getPayloadHash());
+            item.put(prependField(hashKey, this.validationAttr), dataRecord.getPayloadHash());
         }
 
-        jedisPool.hset(getKey(dataRecord.getIdempotencyKey()), item);
-        jedisPool.expireAt(getKey(dataRecord.getIdempotencyKey()), dataRecord.getExpiryTimestamp());
+        jedisClient.hset(hashKey, item);
+        jedisClient.expireAt(hashKey, dataRecord.getExpiryTimestamp());
     }
+
 
     @Override
     public void deleteRecord(String idempotencyKey) {
         LOG.debug("Deleting record for idempotency key: {}", idempotencyKey);
-        jedisPool.del(getKey(idempotencyKey));
+        jedisClient.del(getKey(idempotencyKey));
     }
 
     /**
      * Get the key to use for requests
      * Sets a keyPrefixName for hash name and a keyAttr for hash key
+     * The key will be used in multi-key operations, therefore we need to
+     * include it into curly braces to instruct the redis cluster which part
+     * of the key will be used for hash and should be stored and looked-up in the same slot.
      *
      * @param idempotencyKey
      * @return
+     * @see <a href="https://redis.io/docs/reference/cluster-spec/#key-distribution-model">Redis Key distribution model</a>
      */
     private String getKey(String idempotencyKey) {
-        return this.keyPrefixName + ":" + this.keyAttr + ":" + idempotencyKey;
+        return "{" + this.keyPrefixName + ":" + this.keyAttr + ":" + idempotencyKey + "}";
+    }
+
+    /**
+     * Prepend each field key with the unique prefix that will be used for calculating the hash slot
+     * it will be stored in case of cluster mode Redis deployement
+     *
+     * @param hashKey
+     * @param field
+     * @return
+     * @see <a href="https://redis.io/docs/reference/cluster-spec/#key-distribution-model">Redis Key distribution model</a>
+     */
+    private String prependField(String hashKey, String field) {
+        return hashKey + ":" + field;
     }
 
     /**
@@ -234,24 +269,22 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
      * @param item Item from redis response
      * @return DataRecord instance
      */
-    private DataRecord itemToRecord(Map<String, String> item) {
-        // data and validation payload may be null
-        String data = item.get(this.dataAttr);
-        String validation = item.get(this.validationAttr);
-        return new DataRecord(item.get(keyAttr),
-                DataRecord.Status.valueOf(item.get(this.statusAttr)),
-                Long.parseLong(item.get(this.expiryAttr)),
-                data,
-                validation,
-                item.get(this.inProgressExpiryAttr) != null ?
-                        OptionalLong.of(Long.parseLong(item.get(this.inProgressExpiryAttr))) :
+    private DataRecord itemToRecord(Map<String, String> item, String idempotencyKey) {
+        String hashKey = getKey(idempotencyKey);
+        return new DataRecord(item.get(getKey(idempotencyKey)),
+                DataRecord.Status.valueOf(item.get(prependField(hashKey, this.statusAttr))),
+                Long.parseLong(item.get(prependField(hashKey, this.expiryAttr))),
+                item.get(prependField(hashKey, this.dataAttr)),
+                item.get(prependField(hashKey, this.validationAttr)),
+                item.get(prependField(hashKey, this.inProgressExpiryAttr)) != null ?
+                        OptionalLong.of(Long.parseLong(item.get(prependField(hashKey, this.inProgressExpiryAttr)))) :
                         OptionalLong.empty());
     }
 
     /**
      * Use this builder to get an instance of {@link RedisPersistenceStore}.<br/>
      * With this builder you can configure the characteristics of the Redis hash fields.<br/>
-     * You can also set a custom {@link JedisPool}.
+     * You can also set a custom {@link UnifiedJedis} client.
      */
     public static class Builder {
         private String keyPrefixName = "idempotency";
@@ -261,7 +294,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         private String statusAttr = "status";
         private String dataAttr = "data";
         private String validationAttr = "validation";
-        private JedisPooled jedisPool;
+        private UnifiedJedis jedisPool;
 
         /**
          * Initialize and return a new instance of {@link RedisPersistenceStore}.<br/>
@@ -355,13 +388,16 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
 
         /**
-         * Custom {@link JedisPool} used to query DynamoDB (optional).<br/>
+         * Custom {@link UnifiedJedis} used to query Redis (optional).<br/>
+         * This will be cast to either {@link JedisPool} or {@link JedisCluster}
+         * depending on the mode of the Redis deployment and instructed by
+         * the value of {@link Constants#REDIS_CLUSTER_MODE} environment variable.<br/>
          *
-         * @param jedisPool the {@link JedisPool} instance to use
+         * @param jedisClient the {@link UnifiedJedis} instance to use
          * @return the builder instance (to chain operations)
          */
-        public Builder withJedisPooled(JedisPooled jedisPool) {
-            this.jedisPool = jedisPool;
+        public Builder withJedisClient(UnifiedJedis jedisClient) {
+            this.jedisPool = jedisClient;
             return this;
         }
     }

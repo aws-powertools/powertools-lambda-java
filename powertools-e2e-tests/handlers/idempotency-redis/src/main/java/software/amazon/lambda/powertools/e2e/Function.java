@@ -21,7 +21,6 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.TimeZone;
-import redis.clients.jedis.JedisPooled;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
@@ -30,19 +29,13 @@ import software.amazon.lambda.powertools.logging.Logging;
 
 
 public class Function implements RequestHandler<Input, String> {
-
     public Function() {
-        this(new JedisPooled(System.getenv().get("REDIS_HOST"), Integer.parseInt(System.getenv().get("REDIS_PORT")), System.getenv().get("REDIS_USER"), System.getenv().get("REDIS_SECRET")));
-    }
-
-    public Function(JedisPooled client) {
         Idempotency.config().withConfig(
                         IdempotencyConfig.builder()
                                 .withExpiration(Duration.of(10, ChronoUnit.SECONDS))
                                 .build())
                 .withPersistenceStore(
                         RedisPersistenceStore.builder()
-                                .withJedisPooled(client)
                                 .build()
                 ).configure();
     }

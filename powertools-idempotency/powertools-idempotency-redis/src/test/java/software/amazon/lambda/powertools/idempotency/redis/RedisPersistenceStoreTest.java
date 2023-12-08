@@ -19,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static software.amazon.lambda.powertools.idempotency.redis.Constants.REDIS_HOST;
 import static software.amazon.lambda.powertools.idempotency.redis.Constants.REDIS_PORT;
 
+import com.github.fppt.jedismock.server.ServiceOptions;
+import java.io.IOException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPooled;
 import redis.embedded.RedisServer;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -64,15 +67,54 @@ public class RedisPersistenceStoreTest {
         long expiry = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
         redisPersistenceStore.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
 
-        Map<String, String> entry = jedisPool.hgetAll("idempotency:id:key");
-        long ttlInRedis = jedisPool.ttl("idempotency:id:key");
+        Map<String, String> entry = jedisPool.hgetAll("{idempotency:id:key}");
+        long ttlInRedis = jedisPool.ttl("{idempotency:id:key}");
 
         assertThat(entry).isNotNull();
-        assertThat(entry.get("status")).isEqualTo("COMPLETED");
-        assertThat(entry.get("expiration")).isEqualTo(String.valueOf(expiry));
+        assertThat(entry.get("{idempotency:id:key}:status")).isEqualTo("COMPLETED");
+        assertThat(entry.get("{idempotency:id:key}:expiration")).isEqualTo(String.valueOf(expiry));
         assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
     }
 
+    @Test
+    void putRecord_shouldCreateItemInRedisClusterMode() throws IOException {
+        com.github.fppt.jedismock.RedisServer redisCluster = com.github.fppt.jedismock.RedisServer
+                .newRedisServer()
+                .setOptions(ServiceOptions.defaultOptions().withClusterModeEnabled())
+                .start();
+        Instant now = Instant.now();
+        long ttl = 3600;
+        long expiry = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
+        JedisPooled jp = new JedisPooled(redisCluster.getHost(), redisCluster.getBindPort());
+        RedisPersistenceStore store = new RedisPersistenceStore.Builder().withJedisClient(jp).build();
+
+        store.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
+
+        Map<String, String> entry = jp.hgetAll("{idempotency:id:key}");
+        long ttlInRedis = jp.ttl("{idempotency:id:key}");
+
+        assertThat(entry).isNotNull();
+        assertThat(entry.get("{idempotency:id:key}:status")).isEqualTo("COMPLETED");
+        assertThat(entry.get("{idempotency:id:key}:expiration")).isEqualTo(String.valueOf(expiry));
+        assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
+    }
+
+    @SetEnvironmentVariable(key = Constants.REDIS_CLUSTER_MODE, value = "true")
+    @Test
+    void putRecord_JedisClientInstanceOfJedisCluster() throws IOException {
+        com.github.fppt.jedismock.RedisServer redisCluster = com.github.fppt.jedismock.RedisServer
+                .newRedisServer()
+                .setOptions(ServiceOptions.defaultOptions().withClusterModeEnabled())
+                .start();
+        assertThat(redisPersistenceStore.getJedisClient(redisCluster.getHost(), redisCluster.getBindPort()) instanceof JedisCluster).isTrue();
+        redisCluster.stop();
+    }
+
+    @SetEnvironmentVariable(key = Constants.REDIS_CLUSTER_MODE, value = "false")
+    @Test
+    void putRecord_JedisClientInstanceOfJedisPooled() {
+        assertThat(redisPersistenceStore.getJedisClient(System.getenv(REDIS_HOST), Integer.parseInt(System.getenv(REDIS_PORT))) instanceof JedisCluster).isFalse();
+    }
     @Test
     void putRecord_shouldCreateItemInRedisWithInProgressExpiration() {
         Instant now = Instant.now();
@@ -82,13 +124,14 @@ public class RedisPersistenceStoreTest {
         redisPersistenceStore.putRecord(
                 new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null, progressExpiry), now);
 
-        Map<String, String> redisItem = jedisPool.hgetAll("idempotency:id:key");
-        long ttlInRedis = jedisPool.ttl("idempotency:id:key");
+        Map<String, String> redisItem = jedisPool.hgetAll("{idempotency:id:key}");
+        long ttlInRedis = jedisPool.ttl("{idempotency:id:key}");
 
         assertThat(redisItem).isNotNull();
-        assertThat(redisItem).containsEntry("status", "COMPLETED");
-        assertThat(redisItem).containsEntry("expiration", String.valueOf(expiry));
-        assertThat(redisItem).containsEntry("in-progress-expiration", String.valueOf(progressExpiry.getAsLong()));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:status", "COMPLETED");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:in-progress-expiration",
+                String.valueOf(progressExpiry.getAsLong()));
         assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
     }
 
@@ -96,14 +139,14 @@ public class RedisPersistenceStoreTest {
     void putRecord_shouldCreateItemInRedis_withExistingJedisClient() {
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        RedisPersistenceStore store = new RedisPersistenceStore.Builder().withJedisPooled(jedisPool).build();
+        RedisPersistenceStore store = new RedisPersistenceStore.Builder().withJedisClient(jedisPool).build();
         store.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
 
-        Map<String, String> redisItem = jedisPool.hgetAll("idempotency:id:key");
+        Map<String, String> redisItem = jedisPool.hgetAll("{idempotency:id:key}");
 
         assertThat(redisItem).isNotNull();
-        assertThat(redisItem).containsEntry("status", "COMPLETED");
-        assertThat(redisItem).containsEntry("expiration", String.valueOf(expiry));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:status", "COMPLETED");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:expiration", String.valueOf(expiry));
     }
 
     @Test
@@ -112,13 +155,13 @@ public class RedisPersistenceStoreTest {
         Map<String, String> item = new HashMap<>();
         Instant now = Instant.now();
         long expiry = now.minus(30, ChronoUnit.SECONDS).getEpochSecond();
-        item.put("expiration", String.valueOf(expiry));
-        item.put("status", DataRecord.Status.COMPLETED.toString());
-        item.put("data", "Fake Data");
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        item.put("{idempotency:id:key}:status", DataRecord.Status.COMPLETED.toString());
+        item.put("{idempotency:id:key}:data", "Fake Data");
 
         long ttl = 3600;
         long expiry2 = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
-        jedisPool.hset("idempotency:id:key", item);
+        jedisPool.hset("{idempotency:id:key}", item);
         redisPersistenceStore.putRecord(
                 new DataRecord("key",
                         DataRecord.Status.INPROGRESS,
@@ -127,12 +170,12 @@ public class RedisPersistenceStoreTest {
                         null
                 ), now);
 
-        Map<String, String> redisItem = jedisPool.hgetAll("idempotency:id:key");
-        long ttlInRedis = jedisPool.ttl("idempotency:id:key");
+        Map<String, String> redisItem = jedisPool.hgetAll("{idempotency:id:key}");
+        long ttlInRedis = jedisPool.ttl("{idempotency:id:key}");
 
         assertThat(redisItem).isNotNull();
-        assertThat(redisItem).containsEntry("status", "INPROGRESS");
-        assertThat(redisItem).containsEntry("expiration", String.valueOf(expiry2));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:status", "INPROGRESS");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:expiration", String.valueOf(expiry2));
         assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
     }
 
@@ -143,11 +186,11 @@ public class RedisPersistenceStoreTest {
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
         long progressExpiry = now.minus(30, ChronoUnit.SECONDS).toEpochMilli();
-        item.put("expiration", String.valueOf(expiry));
-        item.put("status", DataRecord.Status.INPROGRESS.toString());
-        item.put("data", "Fake Data");
-        item.put("in-progress-expiration", String.valueOf(progressExpiry));
-        jedisPool.hset("idempotency:id:key", item);
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        item.put("{idempotency:id:key}:status", DataRecord.Status.INPROGRESS.toString());
+        item.put("{idempotency:id:key}:data", "Fake Data");
+        item.put("{idempotency:id:key}:in-progress-expiration", String.valueOf(progressExpiry));
+        jedisPool.hset("{idempotency:id:key}", item);
 
         long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         redisPersistenceStore.putRecord(
@@ -158,11 +201,11 @@ public class RedisPersistenceStoreTest {
                         null
                 ), now);
 
-        Map<String, String> redisItem = jedisPool.hgetAll("idempotency:id:key");
+        Map<String, String> redisItem = jedisPool.hgetAll("{idempotency:id:key}");
 
         assertThat(redisItem).isNotNull();
-        assertThat(redisItem).containsEntry("status", "INPROGRESS");
-        assertThat(redisItem).containsEntry("expiration", String.valueOf(expiry2));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:status", "INPROGRESS");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:expiration", String.valueOf(expiry2));
     }
 
     @Test
@@ -171,11 +214,11 @@ public class RedisPersistenceStoreTest {
         Map<String, String> item = new HashMap<>();
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
-        item.put("expiration", String.valueOf(expiry)); // not expired
-        item.put("status", DataRecord.Status.COMPLETED.toString());
-        item.put("data", "Fake Data");
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry)); // not expired
+        item.put("{idempotency:id:key}:status", DataRecord.Status.COMPLETED.toString());
+        item.put("{idempotency:id:key}:data", "Fake Data");
 
-        jedisPool.hset("idempotency:id:key", item);
+        jedisPool.hset("{idempotency:id:key}", item);
 
         long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         DataRecord dataRecord = new DataRecord("key",
@@ -190,12 +233,12 @@ public class RedisPersistenceStoreTest {
                 }
         ).isInstanceOf(IdempotencyItemAlreadyExistsException.class);
 
-        Map<String, String> entry = jedisPool.hgetAll("idempotency:id:key");
+        Map<String, String> entry = jedisPool.hgetAll("{idempotency:id:key}");
 
         assertThat(entry).isNotNull();
-        assertThat(entry.get("status")).isEqualTo("COMPLETED");
-        assertThat(entry.get("expiration")).isEqualTo(String.valueOf(expiry));
-        assertThat(entry.get("data")).isEqualTo("Fake Data");
+        assertThat(entry.get("{idempotency:id:key}:status")).isEqualTo("COMPLETED");
+        assertThat(entry.get("{idempotency:id:key}:expiration")).isEqualTo(String.valueOf(expiry));
+        assertThat(entry.get("{idempotency:id:key}:data")).isEqualTo("Fake Data");
     }
 
     @Test
@@ -205,11 +248,11 @@ public class RedisPersistenceStoreTest {
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond(); // not expired
         long progressExpiry = now.plus(30, ChronoUnit.SECONDS).toEpochMilli(); // not expired
-        item.put("expiration", String.valueOf(expiry));
-        item.put("status", DataRecord.Status.INPROGRESS.toString());
-        item.put("data", "Fake Data");
-        item.put("in-progress-expiration", String.valueOf(progressExpiry));
-        jedisPool.hset("idempotency:id:key", item);
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        item.put("{idempotency:id:key}:status", DataRecord.Status.INPROGRESS.toString());
+        item.put("{idempotency:id:key}:data", "Fake Data");
+        item.put("{idempotency:id:key}:in-progress-expiration", String.valueOf(progressExpiry));
+        jedisPool.hset("{idempotency:id:key}", item);
 
         long expiry2 = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         DataRecord dataRecord = new DataRecord("key",
@@ -222,12 +265,12 @@ public class RedisPersistenceStoreTest {
                 dataRecord, now))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
 
-        Map<String, String> redisItem = jedisPool.hgetAll("idempotency:id:key");
+        Map<String, String> redisItem = jedisPool.hgetAll("{idempotency:id:key}");
 
         assertThat(redisItem).isNotNull();
-        assertThat(redisItem).containsEntry("status", "INPROGRESS");
-        assertThat(redisItem).containsEntry("expiration", String.valueOf(expiry));
-        assertThat(redisItem).containsEntry("data", "Fake Data");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:status", "INPROGRESS");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:data", "Fake Data");
     }
 
     @Test
@@ -236,10 +279,10 @@ public class RedisPersistenceStoreTest {
         Map<String, String> item = new HashMap<>();
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
-        item.put("expiration", String.valueOf(expiry));
-        item.put("status", DataRecord.Status.COMPLETED.toString());
-        item.put("data", ("Fake Data"));
-        jedisPool.hset("idempotency:id:key", item);
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        item.put("{idempotency:id:key}:status", DataRecord.Status.COMPLETED.toString());
+        item.put("{idempotency:id:key}:data", ("Fake Data"));
+        jedisPool.hset("{idempotency:id:key}", item);
 
         DataRecord record = redisPersistenceStore.getRecord("key");
 
@@ -260,9 +303,9 @@ public class RedisPersistenceStoreTest {
         Map<String, String> item = new HashMap<>();
         Instant now = Instant.now();
         long expiry = now.plus(360, ChronoUnit.SECONDS).getEpochSecond();
-        item.put("expiration", String.valueOf(expiry));
-        item.put("status", DataRecord.Status.INPROGRESS.toString());
-        jedisPool.hset("idempotency:id:key", item);
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        item.put("{idempotency:id:key}:status", DataRecord.Status.INPROGRESS.toString());
+        jedisPool.hset("{idempotency:id:key}", item);
         // enable payload validation
         redisPersistenceStore.configure(IdempotencyConfig.builder().withPayloadValidationJMESPath("path").build(),
                 null);
@@ -272,13 +315,13 @@ public class RedisPersistenceStoreTest {
         DataRecord record = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, "Fake result", "hash");
         redisPersistenceStore.updateRecord(record);
 
-        Map<String, String> redisItem = jedisPool.hgetAll("idempotency:id:key");
-        long ttlInRedis = jedisPool.ttl("idempotency:id:key");
+        Map<String, String> redisItem = jedisPool.hgetAll("{idempotency:id:key}");
+        long ttlInRedis = jedisPool.ttl("{idempotency:id:key}");
 
-        assertThat(redisItem).containsEntry("status", "COMPLETED");
-        assertThat(redisItem).containsEntry("expiration", String.valueOf(expiry));
-        assertThat(redisItem).containsEntry("data", "Fake result");
-        assertThat(redisItem).containsEntry("validation", "hash");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:status", "COMPLETED");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:data", "Fake result");
+        assertThat(redisItem).containsEntry("{idempotency:id:key}:validation", "hash");
         assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
     }
 
@@ -287,13 +330,13 @@ public class RedisPersistenceStoreTest {
         Map<String, String> item = new HashMap<>();
         Instant now = Instant.now();
         long expiry = now.plus(360, ChronoUnit.SECONDS).getEpochSecond();
-        item.put("expiration", String.valueOf(expiry));
-        item.put("status", DataRecord.Status.INPROGRESS.toString());
-        jedisPool.hset("idempotency:id:key", item);
+        item.put("{idempotency:id:key}:expiration", String.valueOf(expiry));
+        item.put("{idempotency:id:key}:status", DataRecord.Status.INPROGRESS.toString());
+        jedisPool.hset("{idempotency:id:key}", item);
 
         redisPersistenceStore.deleteRecord("key");
 
-        Map<String, String> items = jedisPool.hgetAll("idempotency:id:key");
+        Map<String, String> items = jedisPool.hgetAll("{idempotency:id:key}");
 
         assertThat(items).isEmpty();
     }
@@ -304,7 +347,7 @@ public class RedisPersistenceStoreTest {
         try {
             RedisPersistenceStore persistenceStore = RedisPersistenceStore.builder()
                     .withKeyPrefixName("items-idempotency")
-                    .withJedisPooled(jedisPool)
+                    .withJedisClient(jedisPool)
                     .withDataAttr("result")
                     .withExpiryAttr("expiry")
                     .withKeyAttr("key")
@@ -323,14 +366,16 @@ public class RedisPersistenceStoreTest {
             // PUT
             persistenceStore.putRecord(record, now);
 
-            Map<String, String> redisItem = jedisPool.hgetAll("items-idempotency:key:mykey");
+            Map<String, String> redisItem = jedisPool.hgetAll("{items-idempotency:key:mykey}");
 
             // GET
             DataRecord recordInDb = persistenceStore.getRecord("mykey");
 
             assertThat(redisItem).isNotNull();
-            assertThat(redisItem).containsEntry("state", recordInDb.getStatus().toString());
-            assertThat(redisItem).containsEntry("expiry", String.valueOf(recordInDb.getExpiryTimestamp()));
+            assertThat(redisItem).containsEntry("{items-idempotency:key:mykey}:state",
+                    recordInDb.getStatus().toString());
+            assertThat(redisItem).containsEntry("{items-idempotency:key:mykey}:expiry",
+                    String.valueOf(recordInDb.getExpiryTimestamp()));
 
             // UPDATE
             DataRecord updatedRecord = new DataRecord(
@@ -346,10 +391,10 @@ public class RedisPersistenceStoreTest {
 
             // DELETE
             persistenceStore.deleteRecord("mykey");
-            assertThat(jedisPool.hgetAll("items-idempotency:key:mykey").size()).isZero();
+            assertThat(jedisPool.hgetAll("{items-idempotency:key:mykey}").size()).isZero();
 
         } finally {
-            jedisPool.del("items-idempotency:key:mykey");
+            jedisPool.del("{items-idempotency:key:mykey}");
         }
     }
 
@@ -362,7 +407,7 @@ public class RedisPersistenceStoreTest {
 
     @AfterEach
     void emptyDB() {
-        jedisPool.del("idempotency:id:key");
+        jedisPool.del("{idempotency:id:key}");
     }
 
 }
