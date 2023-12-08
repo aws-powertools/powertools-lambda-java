@@ -278,14 +278,13 @@ a different region or credentials, the former is simpler to use.
 
 === "Secrets Manager"
 
-    ```java hl_lines="13-16 20-25"
+    ```java hl_lines="12-15 19"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
     
     import com.amazonaws.services.lambda.runtime.Context;
     import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
     import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
-    import java.time.temporal.ChronoUnit;
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
@@ -298,12 +297,7 @@ a different region or credentials, the former is simpler to use.
     
         public String handleRequest(String input, Context context) {
             // Retrieve a single secret
-            String value = secretsProvider
-                    // Transform parameter from base64
-                    .withTransformation(base64)
-                    // By default values are cached for 5 seconds, specify 10 seconds instead.
-                    .withMaxAge(10, ChronoUnit.SECONDS)
-                    .get("/my/secret");
+            String value = secretsProvider.get("/my/secret");
     
             // Because this is a secret, we probably don't want to return it! Return something indicating
             // we could access it instead.
@@ -314,14 +308,13 @@ a different region or credentials, the former is simpler to use.
 
 === "Systems Manager"
 
-    ```java hl_lines="13-16 20-27"
+    ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
     
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import software.amazon.awssdk.services.ssm.SsmClient;
     import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
-    import java.time.temporal.ChronoUnit;
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
@@ -335,10 +328,6 @@ a different region or credentials, the former is simpler to use.
         public String handleRequest(String input, Context context) {
             // Retrieve a single secret
             String value = ssmProvider
-                    // Transform parameter from base64
-                    .withTransformation(base64)
-                    // By default values are cached for 5 seconds, specify 10 seconds instead.
-                    .withMaxAge(10, ChronoUnit.SECONDS)
                     .get("/my/secret");
                     // We might instead want to retrieve multiple secrets at once, returning a Map of key/value pairs
                     // .getMultiple("/my/secret/path");
@@ -351,14 +340,13 @@ a different region or credentials, the former is simpler to use.
 
 === "DynamoDB"
 
-    ```java hl_lines="13-16 20-27"
+    ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
     
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
     import software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProvider;
-    import java.time.temporal.ChronoUnit;
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
@@ -372,10 +360,6 @@ a different region or credentials, the former is simpler to use.
         public String handleRequest(String input, Context context) {
             // Retrieve a single secret
             String value = ddbProvider
-                    // Transform parameter from base64
-                    .withTransformation(base64)
-                    // By default values are cached for 5 seconds, specify 10 seconds instead.
-                    .withMaxAge(10, ChronoUnit.SECONDS)
                     .get("/my/secret");
                     // We might instead want to retrieve multiple values at once, returning a Map of key/value pairs
                     // .getMultiple("my-partition-key-value");
@@ -388,14 +372,13 @@ a different region or credentials, the former is simpler to use.
 
 === "AppConfig"
 
-    ```java hl_lines="13-16 20-25"
+    ```java hl_lines="12-15 19-20"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
     
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
     import software.amazon.lambda.powertools.parameters.appconfig.AppConfigProvider;
-    import java.time.temporal.ChronoUnit;
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
@@ -409,10 +392,6 @@ a different region or credentials, the former is simpler to use.
         public String handleRequest(String input, Context context) {
             // Retrieve a single secret
             String value = appConfigProvider
-                    // Transform parameter from base64
-                    .withTransformation(base64)
-                    // By default values are cached for 5 seconds, specify 10 seconds instead.
-                    .withMaxAge(10, ChronoUnit.SECONDS)
                     .get("/my/secret");
     
             // Return the result
@@ -423,14 +402,38 @@ a different region or credentials, the former is simpler to use.
 
 ## Advanced configuration
 
-### Default cache timeout
-Each provider uses the CacheManager to cache parameter values. By default, values are cached for 5 seconds. If you
-wish to customize this, you can provide a custom `CacheManager` to your provider with an appropriate timeout configured.
-`CacheManager` instances can also be shared between providers.
+### Caching
+Each provider uses the CacheManager to cache parameter values. When a value is retrieved using from the provider, a 
+custom cache duration can be provided using `withMaxAge(duration, unit)`. 
 
-=== "Customize Cache"
+If this is not specified, the default value set on the CacheManager itself will be used. This default can be customized
+by calling `setDefaultExpirationTime(duration, unit)` on the CacheManager.
 
-    ```java hl_lines="9 10 14 19"
+=== "Customize Cache - Per Item"
+
+    ```java hl_lines="14 15"
+    import java.time.Duration;
+    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+    
+    public class CustomizeCacheTimeout {
+        
+        public void CustomizeCache() {
+    
+            AppConfigProvider paramProvider = AppConfigProvider
+                    .builder()
+                    .build();
+    
+            // Cache for 20 seconds, rather than the default 5.
+            return paramProvider.withMaxAge(20, ChronoUnit.SECONDS)
+                    .get("my-param");
+        }
+    }
+    ```
+
+=== "Customize Cache - Change Default"
+
+    ```java hl_lines="9 10 14 19 22-25"
     import java.time.Duration;
     import software.amazon.lambda.powertools.parameters.appconfig.AppConfigProvider;
     import software.amazon.lambda.powertools.parameters.cache.CacheManager;
@@ -448,9 +451,15 @@ wish to customize this, you can provide a custom `CacheManager` to your provider
                     .withClient(AppConfigDataClient.builder().build())
                     .build();
     
-            // We can override the default per `get` 
-            paramProvider.withMaxAge(20, ChronoUnit.SECONDS)
-                    .get("my-param");
+            // Will use the default specified above - 10 seconds 
+            String myParam1 = paramProvider.get("myParam1");
+
+            // Will override the default above 
+            String myParam2 = paramProvider
+                .withMaxAge(20, ChronoUnit.SECONDS)
+                .get("myParam2"); 
+
+            return myParam2;
         }
     }
     ```
@@ -478,6 +487,10 @@ Base64 and JSON transformations are provided. For more complex transformation, y
                         .get("/my/parameter/json", MyObj.class);
     ```
 
+### Decrypt Values
+
+
+
 ### Create your own Transformer
 
 You can write your own transformer, by implementing the `Transformer` interface and the `applyTransformation()` method.
@@ -485,7 +498,7 @@ For example, if you wish to deserialize XML into an object.
 
 === "XmlTransformer.java"
 
-    ```java hl_lines="1"
+    ```java
     public class XmlTransformer<T> implements Transformer<T> {
     
         private final XmlMapper mapper = new XmlMapper();
@@ -520,6 +533,10 @@ You can create your own custom parameter store provider by implementing a handfu
     import software.amazon.lambda.powertools.parameters.cache.CacheManager;
     import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
     
+    /**
+    Our custom parameter provider itself. This does the heavy lifting of retrieving
+    parameters from whatever our underlying parameter store might be.
+    */
     public class CustomProvider extends BaseProvider {
     
         public CustomProvider(CacheManager cacheManager, TransformationManager transformationManager) {
@@ -545,14 +562,17 @@ You can create your own custom parameter store provider by implementing a handfu
 === "CustomProviderBuilder.java"
 
     ```java
+    /**
+    Provides a builder-style interface to configure our @{link CustomProvider}.
+    */
     public class CustomProviderBuilder {
         private CacheManager cacheManager;
         private TransformationManager transformationManager;
 
         /**
-         * Create a {@link DynamoDbProvider} instance.
+         * Create a {@link CustomProvider} instance.
          *
-         * @return a {@link DynamoDbProvider}
+         * @return a {@link CustomProvider}
          */
         public CustomProvider build() {
             if (cacheManager == null) {
@@ -573,7 +593,7 @@ You can create your own custom parameter store provider by implementing a handfu
         }
 
         /**
-         * Provide a transformationManager to the {@link DynamoDbProvider}
+         * Provide a transformationManager to the {@link CustomProvider}
          *
          * @param transformationManager the manager that will handle transformation of parameters
          * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
@@ -594,6 +614,11 @@ You can create your own custom parameter store provider by implementing a handfu
     import java.lang.annotation.Target;
     import software.amazon.lambda.powertools.parameters.transform.Transformer;
     
+    /**
+    Aspect to inject a parameter from our custom provider. Note that if you
+    want to implement a provider _without_ an Aspect and field injection, you can
+    skip implementing both this and the {@link CustomProviderAspect} class.
+    */
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     public @interface CustomProviderParam {
@@ -608,6 +633,11 @@ You can create your own custom parameter store provider by implementing a handfu
 === "CustomProviderAspect.java"
 
     ```java
+
+    /**
+    Aspect to inject a parameter from our custom provider where the {@link CustomProviderParam}
+    annotation is used.
+    */
     @Aspect
     public class CustomProviderAspect extends BaseParamAspect {
     
