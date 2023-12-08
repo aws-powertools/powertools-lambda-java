@@ -19,7 +19,6 @@ import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.i
 
 import java.time.Year;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
@@ -34,14 +33,11 @@ public class IdempotencyRedisE2ET {
     private static String functionName;
 
     @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
     public static void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(IdempotencyRedisE2ET.class.getSimpleName())
-                .redisHost(System.getenv("REDIS_HOST"))
-                .redisPort(System.getenv("REDIS_PORT"))
-                .redisUser(System.getenv("REDIS_USER"))
-                .redisSecret(System.getenv("REDIS_SECRET"))
+                .redisDeployment(true)
                 .pathToFunction("idempotency-redis")
                 .build();
         Map<String, String> outputs = infrastructure.deploy();

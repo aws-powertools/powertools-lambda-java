@@ -219,18 +219,26 @@ Resources:
 
 #### Using Redis as persistent storage layer
 
-If you are using Redis you'll need to provide the Redis host, port, user and password as AWS Lambda environment variables.
-In the following example, you can see a SAM template for deploying an AWS Lambda function by specifying the required environment variables.
-If you don't provide a custom [Redis client](# Customizing Redis client) you can omit the environment variables declaration.
+##### Redis resources
 
-!!! warning "Warning: Avoid including a plain text secret in your template"
+You need an existing Redis service before setting up Redis as persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/) as persistent storage layer provider.
+!!! tip "Tip:No existing Redis service?"
+If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider.
+
+If you are using Redis you'll need to provide the Redis host, port, user and password as AWS Lambda environment variables.
+If you want to connect to a Redis cluster instead of a Standalone server, you need to enable Redis cluster mode by setting an AWS Lambda
+environment variable `REDIS_CLUSTER_MODE` to `true`
+In the following example, you can see a SAM template for deploying an AWS Lambda function by specifying the required environment variables.
+If you provide a [custom Redis client](#Customizing Redis client) you can omit the environment variables declaration.
+
+!!! warning "Warning: Avoid including a plain text secret directly in your template"
 This can infer security implications
 
 !!! warning "Warning: Large responses with Redis persistence layer"
-When using this utility with Redis your function's responses must be [smaller than 512MB].
+When using this utility with Redis your function's responses must be smaller than 512MB.
 Persisting larger items cannot might cause exceptions.
 
-```yaml hl_lines="9-12" title="AWS Serverless Application Model (SAM) example"
+```yaml hl_lines="9-13" title="AWS Serverless Application Model (SAM) example"
 Resources:
   IdempotencyFunction:
     Type: AWS::Serverless::Function
@@ -243,7 +251,35 @@ Resources:
           REDIS_PORT: %redis-port%
           REDIS_USER: %redis-user%
           REDIS_SECRET: %redis-secret%
+          REDIS_CLUSTER_MODE: "true"
 ```
+##### VPC Access
+Your AWS Lambda Function must be able to reach the Redis endpoint before using it for idempotency persistent storage layer. In most cases you will need to [configure VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html) for your AWS Lambda Function. Using a public accessible Redis is not recommended.
+
+!!! tip "Amazon ElastiCache for Redis as persistent storage layer provider"
+If you intend to use Amazon ElastiCache for Redis for idempotency persistent storage layer, you can also reference [This AWS Tutorial](https://docs.aws.amazon.com/lambda/latest/dg/services-elasticache-tutorial.html).
+
+!!! warning "Amazon ElastiCache Serverless not supported"
+[Amazon ElastiCache Serverless](https://aws.amazon.com/elasticache/features/#Serverless) is not supported for now.
+
+!!! warning "Check network connectivity to Redis server"
+Make sure that your AWS Lambda function can connect to your Redis server.
+
+```yaml hl_lines="9-12" title="AWS Serverless Application Model (SAM) example"
+Resources:
+  IdempotencyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: Function
+      Handler: helloworld.App::handleRequest
+      VpcConfig: # (1)!
+        SecurityGroupIds:
+          - sg-{your_sg_id}
+        SubnetIds:
+          - subnet-{your_subnet_id_1}
+          - subnet-{your_subnet_id_2}
+```
+1. Replace the Security Group ID and Subnet ID to match your Redis' VPC setting.
 
 ### Idempotent annotation
 
@@ -667,7 +703,7 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 #### RedisPersistenceStore
 
-The redis persistence store has as a prerequisite to install a Redis datastore(https://redis.io/docs/about/) in Standalone mode.
+The redis persistence store has as a prerequisite to install a Redis datastore(https://redis.io/docs/about/) in either Standalone or Cluster mode.
 
 We are using [Redis hashes](https://redis.io/docs/data-types/hashes/) to store the idempotency fields and values.
 There are some predefined fields that you can see listed in the following table. The predefined fields have some default values.
