@@ -445,27 +445,7 @@ custom cache duration can be provided using `withMaxAge(duration, unit)`.
 If this is not specified, the default value set on the `CacheManager` itself will be used. This default can be customized
 by calling `setDefaultExpirationTime(duration, unit)` on the `CacheManager`.
 
-=== "Customize Cache - Per Item"
-
-    ```java hl_lines="14 15"
-    import java.time.Duration;
-    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigProvider;
-    import software.amazon.lambda.powertools.parameters.cache.CacheManager;
-    
-    public class CustomizeCacheTimeout {
-        
-        public void CustomizeCache() {
-    
-            AppConfigProvider paramProvider = AppConfigProvider.create();
-    
-            // Cache for 20 seconds, rather than the default 5.
-            return paramProvider.withMaxAge(20, ChronoUnit.SECONDS)
-                    .get("my-param");
-        }
-    }
-    ```
-
-=== "Customize Cache - Change Default"
+=== "Customize Cache"
 
     ```java hl_lines="9 10 14 19 22-25"
     import java.time.Duration;
