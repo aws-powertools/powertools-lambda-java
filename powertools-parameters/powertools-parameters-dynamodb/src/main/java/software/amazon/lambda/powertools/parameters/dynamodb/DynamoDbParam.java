@@ -26,7 +26,7 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
  *
  * Usage:
  * <pre>
- * @SSMParam(key = "my-param", table = "my-table")
+ * @DynamoDbParam(key = "my-param", table = "my-table")
  * String myParameter;
  * </pre>
  */
