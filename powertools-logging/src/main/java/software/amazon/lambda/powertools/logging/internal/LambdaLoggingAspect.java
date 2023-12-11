@@ -48,6 +48,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -123,24 +126,40 @@ public final class LambdaLoggingAspect {
      * @return an instance of {@link LoggingManager}
      * @throws IllegalStateException if no {@link LoggingManager} could be found
      */
+    @SuppressWarnings("java:S106") // S106: System.err is used rather than logger to make sure message is printed
     private static LoggingManager getLoggingManagerFromServiceLoader() {
-        LoggingManager loggingManager;
+        ServiceLoader<LoggingManager> loggingManagers;
+        SecurityManager securityManager = System.getSecurityManager();
+        if (securityManager == null) {
+            loggingManagers = ServiceLoader.load(LoggingManager.class);
+        } else {
+            final PrivilegedAction<ServiceLoader<LoggingManager>> action = () -> ServiceLoader.load(LoggingManager.class);
+            loggingManagers = AccessController.doPrivileged(action);
+        }
 
-        ServiceLoader<LoggingManager> loggingManagers = ServiceLoader.load(LoggingManager.class);
         List<LoggingManager> loggingManagerList = new ArrayList<>();
         for (LoggingManager lm : loggingManagers) {
             loggingManagerList.add(lm);
         }
+        return getLoggingManager(loggingManagerList, System.err);
+    }
+
+    static LoggingManager getLoggingManager(List<LoggingManager> loggingManagerList, PrintStream printStream) {
+        LoggingManager loggingManager;
         if (loggingManagerList.isEmpty()) {
-            throw new IllegalStateException("No LoggingManager was found on the classpath, "
-                    +
-                    "make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
-        } else if (loggingManagerList.size() > 1) {
-            throw new IllegalStateException(
-                    "Multiple LoggingManagers were found on the classpath: " + loggingManagerList
-                            +
-                            ", make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
+            printStream.println("ERROR. No LoggingManager was found on the classpath");
+            printStream.println("ERROR. Applying default LoggingManager: POWERTOOLS_LOG_LEVEL variable is ignored");
+            printStream.println("ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
+            loggingManager = new DefautlLoggingManager();
         } else {
+            if (loggingManagerList.size() > 1) {
+                printStream.println("WARN. Multiple LoggingManagers were found on the classpath");
+                for (LoggingManager manager : loggingManagerList) {
+                    printStream.println("WARN. Found LoggingManager: [" + manager + "]");
+                }
+                printStream.println("WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
+                printStream.println("WARN. Using the first LoggingManager found on the classpath: [" + loggingManagerList.get(0) + "]");
+            }
             loggingManager = loggingManagerList.get(0);
         }
         return loggingManager;
@@ -183,7 +202,7 @@ public final class LambdaLoggingAspect {
         // 3. retrieve this temporary stream to log it (if enabled)
         // 4. write it back to the OutputStream provided by Lambda
         OutputStream backupOutputStream = null;
-        if ((logging.logResponse() || "true".equals(POWERTOOLS_LOG_RESPONSE)) && isOnRequestStreamHandler) {
+        if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE) && isOnRequestStreamHandler) {
             backupOutputStream = (OutputStream) proceedArgs[1];
             proceedArgs[1] = new ByteArrayOutputStream();
         }
@@ -193,7 +212,7 @@ public final class LambdaLoggingAspect {
         try {
             lambdaFunctionResponse = pjp.proceed(proceedArgs);
         } catch (Throwable t) {
-            if (logging.logError() || "true".equals(POWERTOOLS_LOG_ERROR)) {
+            if (logging.logError() || POWERTOOLS_LOG_ERROR) {
                 // logging the exception with additional context
                 logger(pjp).error(MarkerFactory.getMarker("FATAL"), "Exception in Lambda Handler", t);
             }
@@ -205,7 +224,7 @@ public final class LambdaLoggingAspect {
             coldStartDone();
         }
 
-        if ((logging.logResponse() || "true".equals(POWERTOOLS_LOG_RESPONSE))) {
+        if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE)) {
             if (isOnRequestHandler) {
                 logRequestHandlerResponse(pjp, lambdaFunctionResponse);
             } else if (isOnRequestStreamHandler && backupOutputStream != null) {
@@ -222,7 +241,7 @@ public final class LambdaLoggingAspect {
                               boolean isOnRequestHandler,  boolean isOnRequestStreamHandler) {
         Object[] proceedArgs = pjp.getArgs();
 
-        if (logging.logEvent() || "true".equals(POWERTOOLS_LOG_EVENT)) {
+        if (logging.logEvent() || POWERTOOLS_LOG_EVENT) {
             if (isOnRequestHandler) {
                 logRequestHandlerEvent(pjp, pjp.getArgs()[0]);
             } else if (isOnRequestStreamHandler) {

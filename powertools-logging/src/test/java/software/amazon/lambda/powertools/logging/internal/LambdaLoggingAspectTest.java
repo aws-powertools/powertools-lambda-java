@@ -46,6 +46,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
@@ -54,7 +56,9 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +112,7 @@ class LambdaLoggingAspectTest {
         resetLogLevel(Level.INFO);
         writeStaticField(LoggingConstants.class, "LAMBDA_LOG_LEVEL", null, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", null, true);
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_EVENT", null, true);
+        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_EVENT", false, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_SAMPLING_RATE", null, true);
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
@@ -475,7 +479,7 @@ class LambdaLoggingAspectTest {
     void shouldLogEventForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
         try {
             // GIVEN
-            LoggingConstants.POWERTOOLS_LOG_EVENT = "true";
+            LoggingConstants.POWERTOOLS_LOG_EVENT = true;
 
             requestHandler = new PowertoolsLogEnabled();
 
@@ -491,14 +495,14 @@ class LambdaLoggingAspectTest {
             File logFile = new File("target/logfile.json");
             assertThat(contentOf(logFile)).contains("\"body\":\"body\"").contains("\"messageId\":\"1234abcd\"").contains("\"awsRegion\":\"eu-west-1\"");
         } finally {
-            writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_EVENT", "false", true);
+            LoggingConstants.POWERTOOLS_LOG_EVENT = false;
         }
     }
 
     @Test
     void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException {
         // GIVEN
-        LoggingConstants.POWERTOOLS_LOG_EVENT = "false";
+        LoggingConstants.POWERTOOLS_LOG_EVENT = false;
 
         // WHEN
         requestHandler = new PowertoolsLogEventDisabled();
@@ -543,7 +547,7 @@ class LambdaLoggingAspectTest {
     void shouldLogResponseForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
         try {
             // GIVEN
-            LoggingConstants.POWERTOOLS_LOG_RESPONSE = "true";
+            LoggingConstants.POWERTOOLS_LOG_RESPONSE = true;
 
             requestHandler = new PowertoolsLogEnabled();
 
@@ -554,7 +558,7 @@ class LambdaLoggingAspectTest {
             File logFile = new File("target/logfile.json");
             assertThat(contentOf(logFile)).contains("Bonjour le monde");
         } finally {
-            writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_RESPONSE", "false", true);
+            LoggingConstants.POWERTOOLS_LOG_RESPONSE = false;
         }
     }
 
@@ -597,7 +601,7 @@ class LambdaLoggingAspectTest {
     void shouldLogErrorForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
         try {
             // GIVEN
-            LoggingConstants.POWERTOOLS_LOG_ERROR = "true";
+            LoggingConstants.POWERTOOLS_LOG_ERROR = true;
 
             requestHandler = new PowertoolsLogEnabled(true);
 
@@ -611,7 +615,7 @@ class LambdaLoggingAspectTest {
             File logFile = new File("target/logfile.json");
             assertThat(contentOf(logFile)).contains("Something went wrong");
         } finally {
-            writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_ERROR", "false", true);
+            LoggingConstants.POWERTOOLS_LOG_ERROR = false;
         }
     }
 
@@ -692,6 +696,48 @@ class LambdaLoggingAspectTest {
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", eventId);
+    }
+
+    @Test
+    void testMultipleLoggingManagers_shouldWarnAndSelectFirstOne() throws UnsupportedEncodingException {
+        // GIVEN
+        List<LoggingManager> list = new ArrayList<>();
+        list.add(new TestLoggingManager());
+        list.add(new DefautlLoggingManager());
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream stream = new PrintStream(outputStream);
+
+        // WHEN
+        LambdaLoggingAspect.getLoggingManager(list, stream);
+
+        // THEN
+        String output = outputStream.toString("UTF-8");
+        assertThat(output)
+                .contains("WARN. Multiple LoggingManagers were found on the classpath")
+                .contains("WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies")
+                .contains("WARN. Using the first LoggingManager found on the classpath: [" + list.get(0) + "]");
+    }
+
+    @Test
+    void testNoLoggingManagers_shouldWarnAndCreateDefault() throws UnsupportedEncodingException {
+        // GIVEN
+        List<LoggingManager> list = new ArrayList<>();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PrintStream stream = new PrintStream(outputStream);
+
+        // WHEN
+        LoggingManager loggingManager = LambdaLoggingAspect.getLoggingManager(list, stream);
+
+        // THEN
+        String output = outputStream.toString("UTF-8");
+        assertThat(output)
+                .contains("ERROR. No LoggingManager was found on the classpath")
+                .contains("ERROR. Applying default LoggingManager: POWERTOOLS_LOG_LEVEL variable is ignored")
+                .contains("ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
+
+        assertThat(loggingManager).isExactlyInstanceOf(DefautlLoggingManager.class);
     }
 
     private void setupContext() {

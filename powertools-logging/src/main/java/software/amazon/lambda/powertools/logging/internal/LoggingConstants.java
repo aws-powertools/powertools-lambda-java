@@ -21,11 +21,11 @@ class LoggingConstants {
 
     static String POWERTOOLS_SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
 
-    static String POWERTOOLS_LOG_EVENT = System.getenv("POWERTOOLS_LOGGER_LOG_EVENT"); /* not final for test purpose */
+    static boolean POWERTOOLS_LOG_EVENT = "true".equals(System.getenv("POWERTOOLS_LOGGER_LOG_EVENT")); /* not final for test purpose */
 
-    static String POWERTOOLS_LOG_RESPONSE = System.getenv("POWERTOOLS_LOGGER_LOG_RESPONSE"); /* not final for test purpose */
+    static boolean POWERTOOLS_LOG_RESPONSE = "true".equals(System.getenv("POWERTOOLS_LOGGER_LOG_RESPONSE")); /* not final for test purpose */
 
-    static String POWERTOOLS_LOG_ERROR = System.getenv("POWERTOOLS_LOGGER_LOG_ERROR"); /* not final for test purpose */
+    static boolean POWERTOOLS_LOG_ERROR = "true".equals(System.getenv("POWERTOOLS_LOGGER_LOG_ERROR")); /* not final for test purpose */
 
     private LoggingConstants() {
         // constants
