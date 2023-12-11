@@ -4,14 +4,14 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 
 public class DynamoDBStreamBatchHandler implements RequestHandler<DynamodbEvent, StreamsEventResponse> {
 
-    private final static Logger LOGGER = LogManager.getLogger(DynamoDBStreamBatchHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBStreamBatchHandler.class);
     private final BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler;
 
     public DynamoDBStreamBatchHandler() {

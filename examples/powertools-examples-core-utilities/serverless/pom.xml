@@ -2,17 +2,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Powertools for AWS Lambda (Java) library Examples - Core Utilities (logging, tracing, metrics) with Serverless</name>
+    <name>Powertools for AWS Lambda (Java) - Examples - Core Utilities (logging, tracing, metrics) with Serverless</name>
     <groupId>software.amazon.lambda.examples</groupId>
     <version>2.0.0-SNAPSHOT</version>
     <artifactId>powertools-examples-core-utilities-serverless</artifactId>
     <packaging>jar</packaging>
 
     <properties>
-        <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <aspectj.version>1.9.20</aspectj.version>
+        <aspectj.version>1.9.20.1</aspectj.version>
     </properties>
 
     <dependencies>
@@ -23,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
+            <artifactId>powertools-logging-log4j</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -40,16 +39,6 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
             <version>3.11.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>${log4j.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-api</artifactId>
-            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+        </Console>
+        <File name="logFile" fileName="target/logfile.json">
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+        </File>
+        <File name="logFileWithEcs" fileName="target/ecslogfile.json">
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaEcsLayout.json" />
+        </File>
+    </Appenders>
+    <Loggers>q
+        <Logger name="software.amazon.lambda.powertools" level="DEBUG" additivity="false">
+            <AppenderRef ref="logFileWithEcs"/>
+            <AppenderRef ref="logFile"/>
+        </Logger>
+        <Root level="WARN">
+            <AppenderRef ref="logFileWithEcs"/>
+            <AppenderRef ref="logFile"/>
+        </Root>
+    </Loggers>
+</Configuration>

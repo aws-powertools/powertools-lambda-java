@@ -19,18 +19,18 @@
     <version>2.0.0-SNAPSHOT</version>
     <artifactId>powertools-examples-validation</artifactId>
     <packaging>jar</packaging>
-    <name>Powertools for AWS Lambda (Java) library Examples - Validation</name>
+    <name>Powertools for AWS Lambda (Java) - Examples - Validation</name>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <aspectj.version>1.9.20</aspectj.version>
+        <aspectj.version>1.9.20.1</aspectj.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
+            <artifactId>powertools-logging-log4j</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

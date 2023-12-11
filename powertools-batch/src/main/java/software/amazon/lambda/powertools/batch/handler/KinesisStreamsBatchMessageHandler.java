@@ -34,7 +34,7 @@ import software.amazon.lambda.powertools.utilities.EventDeserializer;
  * @param <M> The user-defined type of the Kinesis record payload
  */
 public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler<KinesisEvent, StreamsEventResponse> {
-    private final static Logger LOGGER = LoggerFactory.getLogger(KinesisStreamsBatchMessageHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KinesisStreamsBatchMessageHandler.class);
 
     private final BiConsumer<KinesisEvent.KinesisEventRecord, Context> rawMessageHandler;
     private final BiConsumer<M, Context> messageHandler;

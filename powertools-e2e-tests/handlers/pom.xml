@@ -22,8 +22,7 @@
         <aspectj.plugin.version>1.13.1</aspectj.plugin.version>
         <maven.compiler.version>3.11.0</maven.compiler.version>
         <aws.sdk.version>2.20.108</aws.sdk.version>
-        <log4j.version>2.20.0</log4j.version>
-        <aspectj.version>1.9.20</aspectj.version>
+        <aspectj.version>1.9.20.1</aspectj.version>
     </properties>
 
     <modules>
@@ -33,7 +32,10 @@
         <module>logging</module>
         <module>tracing</module>
         <module>metrics</module>
+        <module>batch</module>
         <module>idempotency</module>
+        <module>largemessage</module>
+        <module>largemessage_idempotent</module>
         <module>parameters</module>
         <module>validation-alb-event</module>
         <module>validation-apigw-event</module>
@@ -55,7 +57,7 @@
             </dependency>
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
-                <artifactId>powertools-logging</artifactId>
+                <artifactId>powertools-logging-log4j</artifactId>
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
@@ -107,11 +109,6 @@
                 <groupId>com.amazonaws</groupId>
                 <artifactId>aws-lambda-java-serialization</artifactId>
                 <version>${lambda.java.serialization}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j2-impl</artifactId>
-                <version>${log4j.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -15,7 +15,12 @@
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
+            <artifactId>powertools-logging-log4j</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-layout-template-json</artifactId>
+            <version>2.20.0</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -24,10 +29,6 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
         </dependency>
     </dependencies>
 

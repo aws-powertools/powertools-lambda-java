@@ -24,7 +24,7 @@
     </parent>
 
     <artifactId>powertools-e2e-tests</artifactId>
-    <name>Powertools for AWS Lambda (Java)library End-to-end tests</name>
+    <name>Powertools for AWS Lambda (Java) - End-to-end tests</name>
     <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
 
     <properties>
@@ -184,6 +184,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.1</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

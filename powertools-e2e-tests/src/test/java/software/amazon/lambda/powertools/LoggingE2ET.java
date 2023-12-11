@@ -83,7 +83,7 @@ public class LoggingE2ET {
         JsonNode jsonNode = objectMapper.readTree(functionLogs[0]);
         assertThat(jsonNode.get("message").asText()).isEqualTo("New Order");
         assertThat(jsonNode.get("orderId").asText()).isEqualTo(orderId);
-        assertThat(jsonNode.get("coldStart").asBoolean()).isTrue();
+        assertThat(jsonNode.get("cold_start").asBoolean()).isTrue();
         assertThat(jsonNode.get("xray_trace_id").asText()).isNotBlank();
         assertThat(jsonNode.get("function_request_id").asText()).isEqualTo(invocationResult1.getRequestId());
 
@@ -91,6 +91,6 @@ public class LoggingE2ET {
         functionLogs = invocationResult2.getLogs().getFunctionLogs(INFO);
         assertThat(functionLogs).hasSize(1);
         jsonNode = objectMapper.readTree(functionLogs[0]);
-        assertThat(jsonNode.get("coldStart").asBoolean()).isFalse();
+        assertThat(jsonNode.get("cold_start").asBoolean()).isFalse();
     }
 }

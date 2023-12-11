@@ -47,22 +47,6 @@
         <Bug pattern="EI_EXPOSE_REP"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Method name="getLogEvent"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Method name="getAdditionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
-                <Method name="getAdditionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
-                <Method name="getAdditionalFields"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
                 <Method name="getPersistenceStore"/>
             </And>
@@ -80,20 +64,12 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Field name="logEvent"/>
+                <Class name="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder"/>
+                <Field name="throwableConverter"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
-                <Field name="additionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
-                <Field name="additionalFields"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
-                <Field name="additionalFields"/>
+                <Class name="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder"/>
+                <Field name="throwableConverter"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.sqs.internal.BatchContext"/>
@@ -131,11 +107,20 @@
     </Match>
     <!--Functionally needed-->
     <Match>
+        <Bug pattern="MS_SHOULD_BE_FINAL"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
+                <Field name="SAMPLING_RATE"/>
+            </And>
+        </Or>
+    </Match>
+    <Match>
         <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
         <Or>
             <And>
                 <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="defaultObjectMapper"/>
+                <Method name="setObjectMapper"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
@@ -156,7 +141,7 @@
         <Or>
             <And>
                 <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="objectMapper"/>
+                <Method name="getObjectMapper"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>

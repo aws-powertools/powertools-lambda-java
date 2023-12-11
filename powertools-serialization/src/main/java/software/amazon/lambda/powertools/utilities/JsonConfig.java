@@ -82,6 +82,6 @@ public class JsonConfig {
     }
 
     private static class ConfigHolder {
-        private final static JsonConfig instance = new JsonConfig();
+        private static final JsonConfig instance = new JsonConfig();
     }
 }

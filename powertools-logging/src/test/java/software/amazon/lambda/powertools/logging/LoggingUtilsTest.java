@@ -16,73 +16,99 @@ package software.amazon.lambda.powertools.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.logging.log4j.ThreadContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.MDC;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 
 class LoggingUtilsTest {
 
     @BeforeEach
     void setUp() {
-        ThreadContext.clearAll();
+        MDC.clear();
     }
 
     @Test
-    void shouldSetCustomKeyOnThreadContext() {
-        LoggingUtils.appendKey("test", "value");
+    void shouldSetCustomKeyInLoggingContext() {
+        LoggingUtils.appendKey("org/slf4j/test", "value");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
-                .containsEntry("test", "value");
+                .containsEntry("org/slf4j/test", "value");
     }
 
     @Test
-    void shouldSetCustomKeyAsMapOnThreadContext() {
+    void shouldSetCustomKeyAsMapInLoggingContext() {
         Map<String, String> customKeys = new HashMap<>();
-        customKeys.put("test", "value");
+        customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
 
         LoggingUtils.appendKeys(customKeys);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(2)
-                .containsEntry("test", "value")
+                .containsEntry("org/slf4j/test", "value")
                 .containsEntry("test1", "value1");
     }
 
     @Test
-    void shouldRemoveCustomKeyOnThreadContext() {
-        LoggingUtils.appendKey("test", "value");
+    void shouldRemoveCustomKeyInLoggingContext() {
+        LoggingUtils.appendKey("org/slf4j/test", "value");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
-                .containsEntry("test", "value");
+                .containsEntry("org/slf4j/test", "value");
 
-        LoggingUtils.removeKey("test");
+        LoggingUtils.removeKey("org/slf4j/test");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();
     }
 
     @Test
-    void shouldRemoveCustomKeysOnThreadContext() {
+    void shouldRemoveCustomKeysInLoggingContext() {
         Map<String, String> customKeys = new HashMap<>();
-        customKeys.put("test", "value");
+        customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
 
         LoggingUtils.appendKeys(customKeys);
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .hasSize(2)
-                .containsEntry("test", "value")
+                .containsEntry("org/slf4j/test", "value")
                 .containsEntry("test1", "value1");
 
-        LoggingUtils.removeKeys("test", "test1");
+        LoggingUtils.removeKeys("org/slf4j/test", "test1");
 
-        assertThat(ThreadContext.getImmutableContext())
+        assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();
+    }
+
+    @Test
+    void shouldAddCorrelationIdToLoggingContext() {
+        String id = "correlationID_12345";
+        LoggingUtils.setCorrelationId(id);
+
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(1)
+                .containsEntry("correlation_id", id);
+
+        assertThat(LoggingUtils.getCorrelationId()).isEqualTo(id);
+    }
+
+    @Test
+    void shouldGetObjectMapper() {
+        assertThat(LoggingUtils.getObjectMapper()).isNotNull();
+        assertThat(LoggingUtils.getObjectMapper()).isEqualTo(JsonConfig.get().getObjectMapper());
+
+        ObjectMapper mapper = new ObjectMapper().disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
+        LoggingUtils.setObjectMapper(mapper);
+        assertThat(LoggingUtils.getObjectMapper()).isEqualTo(mapper);
+
     }
 }

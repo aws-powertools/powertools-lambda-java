@@ -29,15 +29,15 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.parameters.secrets.SecretsParam;
 import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.ssm.SSMParam;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
 public class ParametersFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    private final static Logger log = LogManager.getLogger(ParametersFunction.class);
+    private static final Logger log = LoggerFactory.getLogger(ParametersFunction.class);
 
     // Annotation-style injection from secrets manager
     @SecretsParam(key = "/powertools-java/userpwd")

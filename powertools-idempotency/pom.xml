@@ -27,7 +27,7 @@
     <artifactId>powertools-idempotency</artifactId>
     <packaging>jar</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Idempotency</name>
+    <name>Powertools for AWS Lambda (Java) - Idempotency</name>
     <description>
 
     </description>
@@ -55,6 +55,11 @@
     </distributionManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
@@ -85,10 +90,6 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
             <version>${aws.sdk.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

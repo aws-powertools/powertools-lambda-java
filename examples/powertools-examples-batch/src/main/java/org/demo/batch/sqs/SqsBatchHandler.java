@@ -4,14 +4,14 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.demo.batch.model.Product;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 
 public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
-    private final static Logger LOGGER = LogManager.getLogger(SqsBatchHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SqsBatchHandler.class);
     private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
 
     public SqsBatchHandler() {

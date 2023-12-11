@@ -26,11 +26,16 @@
 
     <artifactId>powertools-parameters</artifactId>
 
-    <name>Powertools for AWS Lambda (Java) library Parameters</name>
+    <name>Powertools for AWS Lambda (Java) - Parameters</name>
 
     <description>Set of utilities to retrieve parameters - common interface</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
