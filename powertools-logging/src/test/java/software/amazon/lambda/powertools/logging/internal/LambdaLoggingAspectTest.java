@@ -707,6 +707,6 @@ class LambdaLoggingAspectTest {
         Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels", Level.class);
         resetLogLevels.setAccessible(true);
         resetLogLevels.invoke(null, level);
-        LambdaLoggingAspect.LEVEL_AT_INITIALISATION = level;
+        writeStaticField(LambdaLoggingAspect.class, "LEVEL_AT_INITIALISATION", level, true);
     }
 }

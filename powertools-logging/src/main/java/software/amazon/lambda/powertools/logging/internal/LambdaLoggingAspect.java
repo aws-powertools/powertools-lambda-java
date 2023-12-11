@@ -74,7 +74,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 public final class LambdaLoggingAspect {
     private static final Logger LOG = LoggerFactory.getLogger(LambdaLoggingAspect.class);
     private static final Random SAMPLER = new Random();
-    static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
+    private static Level LEVEL_AT_INITIALISATION; /* not final for test purpose */
 
     private static final LoggingManager LOGGING_MANAGER;
 
@@ -88,21 +88,21 @@ public final class LambdaLoggingAspect {
 
     static void setLogLevel() {
         if (POWERTOOLS_LOG_LEVEL != null) {
-            Level powertoolsLevel = getLevelFromEnvironmentVariable(POWERTOOLS_LOG_LEVEL);
+            Level powertoolsLevel = getLevelFromString(POWERTOOLS_LOG_LEVEL);
             if (LAMBDA_LOG_LEVEL != null) {
-                Level lambdaLevel = getLevelFromEnvironmentVariable(LAMBDA_LOG_LEVEL);
+                Level lambdaLevel = getLevelFromString(LAMBDA_LOG_LEVEL);
                 if (powertoolsLevel.toInt() < lambdaLevel.toInt()) {
                     LOG.warn("Current log level ({}) does not match AWS Lambda Advanced Logging Controls minimum log level ({}). This can lead to data loss, consider adjusting them.",
                             POWERTOOLS_LOG_LEVEL, LAMBDA_LOG_LEVEL);
                 }
             }
-            resetLogLevels(powertoolsLevel);
+            setLogLevels(powertoolsLevel);
         } else if (LAMBDA_LOG_LEVEL != null) {
-            resetLogLevels(getLevelFromEnvironmentVariable(LAMBDA_LOG_LEVEL));
+            setLogLevels(getLevelFromString(LAMBDA_LOG_LEVEL));
         }
     }
 
-    private static Level getLevelFromEnvironmentVariable(String level) {
+    private static Level getLevelFromString(String level) {
         if (Arrays.stream(Level.values()).anyMatch(slf4jLevel -> slf4jLevel.name().equalsIgnoreCase(level))) {
             return Level.valueOf(level.toUpperCase());
         } else {
@@ -146,7 +146,7 @@ public final class LambdaLoggingAspect {
         return loggingManager;
     }
 
-    private static void resetLogLevels(Level logLevel) {
+    private static void setLogLevels(Level logLevel) {
         LOGGING_MANAGER.setLogLevel(logLevel);
     }
 
@@ -263,12 +263,12 @@ public final class LambdaLoggingAspect {
             float sample = SAMPLER.nextFloat();
 
             if (samplingRate > sample) {
-                resetLogLevels(Level.DEBUG);
+                setLogLevels(Level.DEBUG);
 
                 LOG.debug("Changed log level to DEBUG based on Sampling configuration. "
                         + "Sampling Rate: {}, Sampler Value: {}.", samplingRate, sample);
             } else if (LEVEL_AT_INITIALISATION != LOGGING_MANAGER.getLogLevel(LOG)) {
-                resetLogLevels(LEVEL_AT_INITIALISATION);
+                setLogLevels(LEVEL_AT_INITIALISATION);
             }
         }
     }
