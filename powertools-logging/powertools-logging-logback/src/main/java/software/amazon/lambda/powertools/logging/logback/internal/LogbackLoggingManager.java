@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
+package software.amazon.lambda.powertools.logging.logback.internal;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -20,6 +20,7 @@ import ch.qos.logback.classic.LoggerContext;
 import java.util.List;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.logging.internal.LoggingManager;
 
 /**
  * LoggingManager for Logback (see {@link LoggingManager}).

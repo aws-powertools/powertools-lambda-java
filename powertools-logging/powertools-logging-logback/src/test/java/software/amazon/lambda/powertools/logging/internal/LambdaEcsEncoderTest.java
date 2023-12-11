@@ -40,7 +40,7 @@ import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.LambdaEcsEncoder;
+import software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
 @Order(3)

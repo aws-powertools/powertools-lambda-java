@@ -233,7 +233,7 @@ You can leverage the standard configuration files (_log4j2.xml_ or _logback.xml_
     <?xml version="1.0" encoding="UTF-8"?>
     <configuration>
         <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+            <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
             </encoder>
         </appender>
         <logger name="com.example" level="DEBUG" additivity="false">
@@ -1008,7 +1008,7 @@ Logback configuration is done in _logback.xml_ and the Powertools [`LambdaJsonEn
 
 ```xml
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+        <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         </encoder>
     </appender>
 ```
@@ -1020,7 +1020,7 @@ The `LambdaJsonEncoder` can be customized in different ways:
 With the following configuration, you choose to log all the JSON messages as JSON and not as String (default is `false`):
 
 ```xml
-    <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+    <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         <logMessagesAsJson>true</logMessagesAsJson>
     </encoder>
 ```
@@ -1030,7 +1030,7 @@ Utility by default emits `timestamp` field in the logs in format `yyyy-MM-dd'T'H
 If you need to customize format and timezone, you can change use the following:
 
 ```xml
-    <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+    <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         <timestampFormat>yyyy-MM-dd HH:mm:ss</timestampFormat>
         <timestampFormatTimezoneId>Europe/Paris</timestampFormatTimezoneId>
     </encoder>
@@ -1041,7 +1041,7 @@ If you need to customize format and timezone, you can change use the following:
 - You can use a standard `ThrowableHandlingConverter` to customize the exception format (default is no converter). Example:
 
 ```xml
-    <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+    <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
             <maxDepthPerThrowable>30</maxDepthPerThrowable>
             <maxLength>2048</maxLength>
@@ -1058,7 +1058,7 @@ If you need to customize format and timezone, you can change use the following:
 - You can choose to add information about threads (default is `false`):
 
 ```xml
-    <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+    <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         <includeThreadInfo>true</includeThreadInfo>
     </encoder>
 ```
@@ -1066,7 +1066,7 @@ If you need to customize format and timezone, you can change use the following:
 - You can even choose to remove Powertools information from the logs like function name, arn:
 
 ```xml
-    <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+    <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         <includePowertoolsInfo>false</includePowertoolsInfo>
     </encoder>
 ```
@@ -1134,7 +1134,7 @@ Use the `LambdaEcsEncoder` rather than the `LambdaJsonEncoder` when configuring 
     ```xml hl_lines="3"
     <configuration>
         <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
+            <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder">
             </encoder>
         </appender>
         <root level="INFO">

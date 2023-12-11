@@ -30,11 +30,11 @@
         <Bug pattern="EI_EXPOSE_REP2"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.LambdaJsonEncoder"/>
+                <Class name="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder"/>
                 <Field name="throwableConverter"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.LambdaEcsEncoder"/>
+                <Class name="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder"/>
                 <Field name="throwableConverter"/>
             </And>
             <And>

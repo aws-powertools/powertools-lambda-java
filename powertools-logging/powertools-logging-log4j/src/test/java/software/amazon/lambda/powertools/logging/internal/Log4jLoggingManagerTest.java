@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
+import software.amazon.lambda.powertools.logging.log4.internal.Log4jLoggingManager;
 
 class Log4jLoggingManagerTest {
 

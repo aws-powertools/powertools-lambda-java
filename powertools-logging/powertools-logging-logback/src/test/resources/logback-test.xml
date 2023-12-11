@@ -1,18 +1,18 @@
 <configuration>
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+        <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         </encoder>
     </appender>
 
     <appender name="logFile" class="ch.qos.logback.core.FileAppender">
         <file>target/logfile.json</file>
-        <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+        <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
         </encoder>
     </appender>
 
     <appender name="logFileWithEcs" class="ch.qos.logback.core.FileAppender">
         <file>target/ecslogfile.json</file>
-        <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
+        <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder">
         </encoder>
     </appender>
 

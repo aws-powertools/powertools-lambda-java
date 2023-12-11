@@ -12,9 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
-
-import static software.amazon.lambda.powertools.logging.internal.JsonUtils.serializeAttributeAsString;
+package software.amazon.lambda.powertools.logging.logback.internal;
 
 import ch.qos.logback.classic.Level;
 import java.text.DateFormat;
@@ -25,6 +23,7 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 /**
  * This class will serialize the log events in ecs format (ElasticSearch).<br/>
@@ -83,28 +82,28 @@ public class LambdaEcsSerializer {
             }
             formattedTimestamp = format.format(date);
         }
-        serializeAttributeAsString(builder, TIMESTAMP_ATTR_NAME, formattedTimestamp, false);
+        JsonUtils.serializeAttributeAsString(builder, TIMESTAMP_ATTR_NAME, formattedTimestamp, false);
     }
 
     public static void serializeThreadName(StringBuilder builder, String threadName) {
         if (threadName != null) {
-            serializeAttributeAsString(builder, THREAD_ATTR_NAME, threadName);
+            JsonUtils.serializeAttributeAsString(builder, THREAD_ATTR_NAME, threadName);
         }
     }
 
     public static void serializeLogLevel(StringBuilder builder, Level level) {
-        serializeAttributeAsString(builder, LEVEL_ATTR_NAME, level.toString());
+        JsonUtils.serializeAttributeAsString(builder, LEVEL_ATTR_NAME, level.toString());
     }
 
     public static void serializeFormattedMessage(StringBuilder builder, String formattedMessage) {
-        serializeAttributeAsString(builder, FORMATTED_MESSAGE_ATTR_NAME,
+        JsonUtils.serializeAttributeAsString(builder, FORMATTED_MESSAGE_ATTR_NAME,
                 formattedMessage.replace("\"", Matcher.quoteReplacement("\\\"")));
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {
-        serializeAttributeAsString(builder, EXCEPTION_MSG_ATTR_NAME, message);
-        serializeAttributeAsString(builder, EXCEPTION_CLASS_ATTR_NAME, className);
-        serializeAttributeAsString(builder, EXCEPTION_STACK_ATTR_NAME, stackTrace);
+        JsonUtils.serializeAttributeAsString(builder, EXCEPTION_MSG_ATTR_NAME, message);
+        JsonUtils.serializeAttributeAsString(builder, EXCEPTION_CLASS_ATTR_NAME, className);
+        JsonUtils.serializeAttributeAsString(builder, EXCEPTION_STACK_ATTR_NAME, stackTrace);
     }
 
     public static void serializeException(StringBuilder builder, Throwable throwable) {
@@ -113,7 +112,7 @@ public class LambdaEcsSerializer {
     }
 
     public static void serializeThreadId(StringBuilder builder, String threadId) {
-        serializeAttributeAsString(builder, THREAD_ID_ATTR_NAME, threadId);
+        JsonUtils.serializeAttributeAsString(builder, THREAD_ID_ATTR_NAME, threadId);
     }
 
     public static void serializeAdditionalFields(StringBuilder builder, Map<String, String> mdc) {
@@ -121,68 +120,68 @@ public class LambdaEcsSerializer {
 
         sortedMap.forEach((k, v) -> {
             if (!PowertoolsLoggedFields.stringValues().contains(k)) {
-                serializeAttributeAsString(builder, k, v);
+                JsonUtils.serializeAttributeAsString(builder, k, v);
             }
         });
     }
 
     public static void serializeEcsVersion(StringBuilder builder, String ecsVersion) {
-        serializeAttributeAsString(builder, ECS_VERSION_ATTR_NAME, ecsVersion);
+        JsonUtils.serializeAttributeAsString(builder, ECS_VERSION_ATTR_NAME, ecsVersion);
     }
 
     public static void serializeServiceName(StringBuilder builder, String serviceName) {
-        serializeAttributeAsString(builder, SERVICE_NAME_ATTR_NAME, serviceName);
+        JsonUtils.serializeAttributeAsString(builder, SERVICE_NAME_ATTR_NAME, serviceName);
     }
 
     public static void serializeServiceVersion(StringBuilder builder, String serviceVersion) {
-        serializeAttributeAsString(builder, SERVICE_VERSION_ATTR_NAME, serviceVersion);
+        JsonUtils.serializeAttributeAsString(builder, SERVICE_VERSION_ATTR_NAME, serviceVersion);
     }
 
     public static void serializeLoggerName(StringBuilder builder, String loggerName) {
-        serializeAttributeAsString(builder, LOGGER_ATTR_NAME, loggerName);
+        JsonUtils.serializeAttributeAsString(builder, LOGGER_ATTR_NAME, loggerName);
     }
 
     public static void serializeCloudProvider(StringBuilder builder, String cloudProvider) {
-        serializeAttributeAsString(builder, CLOUD_PROVIDER_ATTR_NAME, cloudProvider);
+        JsonUtils.serializeAttributeAsString(builder, CLOUD_PROVIDER_ATTR_NAME, cloudProvider);
     }
 
     public static void serializeCloudService(StringBuilder builder, String cloudService) {
-        serializeAttributeAsString(builder, CLOUD_SERVICE_ATTR_NAME, cloudService);
+        JsonUtils.serializeAttributeAsString(builder, CLOUD_SERVICE_ATTR_NAME, cloudService);
     }
 
     public static void serializeCloudRegion(StringBuilder builder, String cloudRegion) {
-        serializeAttributeAsString(builder, CLOUD_REGION_ATTR_NAME, cloudRegion);
+        JsonUtils.serializeAttributeAsString(builder, CLOUD_REGION_ATTR_NAME, cloudRegion);
     }
 
     public static void serializeCloudAccountId(StringBuilder builder, String cloudAccountId) {
-        serializeAttributeAsString(builder, CLOUD_ACCOUNT_ATTR_NAME, cloudAccountId);
+        JsonUtils.serializeAttributeAsString(builder, CLOUD_ACCOUNT_ATTR_NAME, cloudAccountId);
     }
 
     public static void serializeColdStart(StringBuilder builder, String coldStart) {
-        serializeAttributeAsString(builder, FUNCTION_COLD_START_ATTR_NAME, coldStart);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_COLD_START_ATTR_NAME, coldStart);
     }
 
     public static void serializeFunctionExecutionId(StringBuilder builder, String requestId) {
-        serializeAttributeAsString(builder, FUNCTION_REQUEST_ID_ATTR_NAME, requestId);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_REQUEST_ID_ATTR_NAME, requestId);
     }
 
     public static void serializeFunctionId(StringBuilder builder, String functionArn) {
-        serializeAttributeAsString(builder, FUNCTION_ARN_ATTR_NAME, functionArn);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_ARN_ATTR_NAME, functionArn);
     }
 
     public static void serializeFunctionName(StringBuilder builder, String functionName) {
-        serializeAttributeAsString(builder, FUNCTION_NAME_ATTR_NAME, functionName);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_NAME_ATTR_NAME, functionName);
     }
 
     public static void serializeFunctionVersion(StringBuilder builder, String functionVersion) {
-        serializeAttributeAsString(builder, FUNCTION_VERSION_ATTR_NAME, functionVersion);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_VERSION_ATTR_NAME, functionVersion);
     }
 
     public static void serializeFunctionMemory(StringBuilder builder, String functionMemory) {
-        serializeAttributeAsString(builder, FUNCTION_MEMORY_ATTR_NAME, functionMemory);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_MEMORY_ATTR_NAME, functionMemory);
     }
 
     public static void serializeTraceId(StringBuilder builder, String traceId) {
-        serializeAttributeAsString(builder, FUNCTION_TRACE_ID_ATTR_NAME, traceId);
+        JsonUtils.serializeAttributeAsString(builder, FUNCTION_TRACE_ID_ATTR_NAME, traceId);
     }
 }

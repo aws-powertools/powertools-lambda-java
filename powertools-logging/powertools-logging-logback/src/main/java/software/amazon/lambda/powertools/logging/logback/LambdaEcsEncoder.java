@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging;
+package software.amazon.lambda.powertools.logging.logback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
@@ -31,7 +31,7 @@ import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
 import java.util.Map;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.internal.LambdaEcsSerializer;
+import software.amazon.lambda.powertools.logging.logback.internal.LambdaEcsSerializer;
 
 
 /**
@@ -128,7 +128,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      * (default is <b>null</b>, no throwableConverter):
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder">
      *         <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
      *              <maxDepthPerThrowable>30</maxDepthPerThrowable>
      *              <maxLength>2048</maxLength>
@@ -160,7 +160,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      * We strongly recommend to keep these information.
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder">
      *         <includeCloudInfo>false</includeCloudInfo>
      *     </encoder>
      * }</pre>
@@ -186,7 +186,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      * We strongly recommend to keep these information.
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaEcsEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder">
      *         <includeFaasInfo>false</includeFaasInfo>
      *     </encoder>
      * }</pre>

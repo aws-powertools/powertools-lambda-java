@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging;
+package software.amazon.lambda.powertools.logging.logback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
@@ -23,7 +23,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
-import software.amazon.lambda.powertools.logging.internal.LambdaJsonSerializer;
+import software.amazon.lambda.powertools.logging.logback.internal.LambdaJsonSerializer;
 
 /**
  * Custom encoder for logback that encodes logs in JSON format.
@@ -97,7 +97,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      * Note that if you use the Lambda Advanced Logging Configuration, you should keep the default format.
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
      *         <timestampFormat>yyyy-MM-dd'T'HH:mm:ss.SSSZz</timestampFormat>
      *     </encoder>
      * }</pre>
@@ -112,7 +112,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      * Specify the format of the time zone id for timestamp (default is <b>null</b>, no timezone):
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
      *         <timestampFormatTimezoneId>Europe/Paris</timestampFormatTimezoneId>
      *     </encoder>
      * }</pre>
@@ -128,7 +128,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      * (default is <b>null</b>, no throwableConverter):
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
      *         <throwableConverter class="net.logstash.logback.stacktrace.ShortenedThrowableConverter">
      *              <maxDepthPerThrowable>30</maxDepthPerThrowable>
      *              <maxLength>2048</maxLength>
@@ -152,7 +152,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      * Specify if thread information should be logged (default is <b>false</b>)
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
      *         <includeThreadInfo>true</includeThreadInfo>
      *     </encoder>
      * }</pre>
@@ -180,7 +180,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      * We strongly recommend to keep these information.
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
      *         <includePowertoolsInfo>false</includePowertoolsInfo>
      *     </encoder>
      * }</pre>
@@ -195,7 +195,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      * Specify if messages should be logged as JSON, without escaping string (default is <b>false</b>):
      * <br/>
      * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.LambdaJsonEncoder">
+     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
      *         <logMessagesAsJson>true</logMessagesAsJson>
      *     </encoder>
      * }</pre>

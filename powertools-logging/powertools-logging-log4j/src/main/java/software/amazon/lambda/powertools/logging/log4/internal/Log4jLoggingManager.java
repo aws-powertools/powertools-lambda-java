@@ -12,13 +12,14 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
+package software.amazon.lambda.powertools.logging.log4.internal;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
+import software.amazon.lambda.powertools.logging.internal.LoggingManager;
 
 /**
  * LoggingManager for Log4j2 (see {@link LoggingManager}).

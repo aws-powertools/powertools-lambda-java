@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
+package software.amazon.lambda.powertools.logging.logback.internal;
 
 /**
  * Json tools to serialize attributes manually, to avoid using further dependencies (jackson, gson...)

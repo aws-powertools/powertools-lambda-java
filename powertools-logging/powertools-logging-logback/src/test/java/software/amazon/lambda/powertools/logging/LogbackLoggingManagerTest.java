@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-import software.amazon.lambda.powertools.logging.internal.LogbackLoggingManager;
+import software.amazon.lambda.powertools.logging.logback.internal.LogbackLoggingManager;
 
 class LogbackLoggingManagerTest {
 

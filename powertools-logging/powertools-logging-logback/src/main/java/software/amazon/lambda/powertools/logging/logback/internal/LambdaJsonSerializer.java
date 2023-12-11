@@ -12,12 +12,10 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.internal;
+package software.amazon.lambda.powertools.logging.logback.internal;
 
 import static java.lang.Boolean.TRUE;
 import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
-import static software.amazon.lambda.powertools.logging.internal.JsonUtils.serializeAttribute;
-import static software.amazon.lambda.powertools.logging.internal.JsonUtils.serializeMessage;
 
 import ch.qos.logback.classic.Level;
 import com.fasterxml.jackson.core.JacksonException;
@@ -30,6 +28,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 /**
  * This class will serialize the log events in json.<br/>
@@ -73,17 +72,17 @@ public class LambdaJsonSerializer {
             }
             formattedTimestamp = format.format(date);
         }
-        serializeAttribute(builder, TIMESTAMP_ATTR_NAME, formattedTimestamp);
+        JsonUtils.serializeAttribute(builder, TIMESTAMP_ATTR_NAME, formattedTimestamp);
     }
 
     public static void serializeThreadName(StringBuilder builder, String threadName) {
         if (threadName != null) {
-            serializeAttribute(builder, THREAD_ATTR_NAME, threadName);
+            JsonUtils.serializeAttribute(builder, THREAD_ATTR_NAME, threadName);
         }
     }
 
     public static void serializeLogLevel(StringBuilder builder, Level level) {
-        serializeAttribute(builder, LEVEL_ATTR_NAME, level.toString(), false);
+        JsonUtils.serializeAttribute(builder, LEVEL_ATTR_NAME, level.toString(), false);
     }
 
     public static void serializeFormattedMessage(StringBuilder builder, String message,
@@ -95,14 +94,14 @@ public class LambdaJsonSerializer {
 
         boolean logAsJson = ((logMessagesAsJsonGlobal && logMessagesAsJson == null) || TRUE.equals(logMessagesAsJson))
                 && isValidJson(message);
-        serializeMessage(builder, FORMATTED_MESSAGE_ATTR_NAME, message, logAsJson);
+        JsonUtils.serializeMessage(builder, FORMATTED_MESSAGE_ATTR_NAME, message, logAsJson);
     }
 
     public static void serializeException(StringBuilder builder, String className, String message, String stackTrace) {
         builder.append(",\"").append(EXCEPTION_ATTR_NAME).append("\":{");
-        serializeAttribute(builder, EXCEPTION_MSG_ATTR_NAME, message, false);
-        serializeAttribute(builder, EXCEPTION_CLASS_ATTR_NAME, className);
-        serializeAttribute(builder, EXCEPTION_STACK_ATTR_NAME, stackTrace);
+        JsonUtils.serializeAttribute(builder, EXCEPTION_MSG_ATTR_NAME, message, false);
+        JsonUtils.serializeAttribute(builder, EXCEPTION_CLASS_ATTR_NAME, className);
+        JsonUtils.serializeAttribute(builder, EXCEPTION_STACK_ATTR_NAME, stackTrace);
         builder.append("}");
     }
 
@@ -112,11 +111,11 @@ public class LambdaJsonSerializer {
     }
 
     public static void serializeThreadId(StringBuilder builder, String threadId) {
-        serializeAttribute(builder, THREAD_ID_ATTR_NAME, threadId);
+        JsonUtils.serializeAttribute(builder, THREAD_ID_ATTR_NAME, threadId);
     }
 
     public static void serializeThreadPriority(StringBuilder builder, String threadPriority) {
-        serializeAttribute(builder, THREAD_PRIORITY_ATTR_NAME, threadPriority);
+        JsonUtils.serializeAttribute(builder, THREAD_PRIORITY_ATTR_NAME, threadPriority);
     }
 
     public static void serializePowertools(StringBuilder builder, Map<String, String> mdc,
@@ -127,7 +126,7 @@ public class LambdaJsonSerializer {
                     && !(k.equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && v.equals("0.0"))  // do not log sampling rate when 0
                     && !LOG_MESSAGES_AS_JSON.equals(k)) // do not log internal keys
             {
-                serializeAttribute(builder, k, v);
+                JsonUtils.serializeAttribute(builder, k, v);
             }
         });
 
