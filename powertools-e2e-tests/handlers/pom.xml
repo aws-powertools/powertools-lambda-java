@@ -205,7 +205,7 @@
                 <jdk>[21,)</jdk>
             </activation>
             <properties>
-                <aspectj.version>1.9.21.M1</aspectj.version>
+                <aspectj.version>1.9.21</aspectj.version>
             </properties>
         </profile>
     </profiles>
