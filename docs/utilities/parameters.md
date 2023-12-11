@@ -4,29 +4,46 @@ description: Utility
 ---
 
 
-The parameters utility provides a way to retrieve parameter values from
+The parameters utilities provide a way to retrieve parameter values from
 [AWS Systems Manager Parameter Store](https://docs.aws.amazon.com/systems-manager/latest/userguide/systems-manager-parameter-store.html), 
-[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), or [Amazon DynamoDB](https://aws.amazon.com/dynamodb/). 
-It also provides a base class to create your parameter provider implementation.
+[AWS Secrets Manager](https://aws.amazon.com/secrets-manager/), [Amazon DynamoDB](https://aws.amazon.com/dynamodb/), 
+or [AWS AppConfig](https://aws.amazon.com/systems-manager/features/appconfig/). 
+ 
+## Key features
 
-**Key features**
-
-* Retrieve one or multiple parameters from the underlying provider
+* Retrieve one or multiple parameters from an underlying provider in a standard way
 * Cache parameter values for a given amount of time (defaults to 5 seconds)
 * Transform parameter values from JSON or base 64 encoded strings
 
 ## Install
-Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
+In order to provide lightweight dependencies, each parameters module is available as its own
+package:
+
+* **Secrets Manager** - `powertools-parameters-secrets`  
+* **SSM Parameter Store** - `powertools-parameters-ssm`  
+* **Amazon DynamoDB** -`powertools-parameters-dynamodb` 
+* **AWS AppConfig** - `powertools-parameters-appconfig`
+
+You can easily mix and match parameter providers within the same project for different needs.  
+
+Depending on which Java version you are using, you configuration will differ. Note that you must also provide
+the concrete parameters module you want to use below - see the TODOs!
 
 === "Maven Java 11+"
 
-    ```xml hl_lines="3-7 16 18 24-27"
+    ```xml hl_lines="4-12 17 24 30-34"
     <dependencies>
         ...
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-parameters</artifactId>
-            <version>{{ powertools.version }}</version>
+
+             <!-- TODO! Provide the parameters module you want to use here -->
+             <artifactId>powertools-parameters-secrets</artifactId>
+             <artifactId>powertools-parameters-ssm</artifactId>
+             <artifactId>powertools-parameters-dynamodb</artifactId>
+             <artifactId>powertools-parameters-appconfig</artifactId>
+
+             <version>{{ powertools.version }}</version>
         </dependency>
         ...
     </dependencies>
@@ -44,9 +61,10 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
                      <target>11</target> <!-- or higher -->
                      <complianceLevel>11</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
+                         <!-- TODO! Provide an aspectLibrary for each of the parameters module(s) you want to use here -->
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-parameters</artifactId>
+                             <artifactId>powertools-parameters-secrets</artifactId>
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
@@ -65,13 +83,19 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 
 === "Maven Java 1.8"
 
-    ```xml hl_lines="3-7 16 18 24-27"
+    ```xml hl_lines="4-12 17 24 30-34"
     <dependencies>
         ...
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-parameters</artifactId>
-            <version>{{ powertools.version }}</version>
+
+             <!-- TODO! Provide the parameters module you want to use here -->
+             <artifactId>powertools-parameters-secrets</artifactId>
+             <artifactId>powertools-parameters-ssm</artifactId>
+             <artifactId>powertools-parameters-dynamodb</artifactId>
+             <artifactId>powertools-parameters-appconfig</artifactId>
+
+             <version>{{ powertools.version }}</version>
         </dependency>
         ...
     </dependencies>
@@ -89,9 +113,10 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
                      <target>1.8</target>
                      <complianceLevel>1.8</complianceLevel>
                      <aspectLibraries>
+                         <!-- TODO! Provide an aspectLibrary for each of the parameters module(s) you want to use here -->
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-parameters</artifactId>
+                             <artifactId>powertools-parameters-secrets</artifactId>
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
@@ -110,7 +135,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 
 === "Gradle Java 11+"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11 12"
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
@@ -121,7 +146,8 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
+            // TODO! Provide the parameters module you want to use here
+            aspect 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}'
         }
         
         sourceCompatibility = 11 // or higher
@@ -130,7 +156,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 
 === "Gradle Java 1.8"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11 12"
         plugins {
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
@@ -140,8 +166,9 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
             mavenCentral()
         }
         
+         // TODO! Provide an aspectLibrary for each of the parameters module(s) you want to use here
         dependencies {
-            aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}'
         }
         
         sourceCompatibility = 1.8
@@ -152,63 +179,78 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 
 This utility requires additional permissions to work as expected. See the table below:
 
-Provider | Function/Method                                                      | IAM Permission
-------------------------------------------------- |----------------------------------------------------------------------| ---------------------------------------------------------------------------------
-SSM Parameter Store | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`           | `ssm:GetParameter`
-SSM Parameter Store | `SSMProvider.getMultiple(String)`                                    | `ssm:GetParametersByPath`
-Secrets Manager | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)`   | `secretsmanager:GetSecretValue`
-DynamoDB | `DynamoDBProvider.get(String)` `DynamoDBProvider.getMultiple(string)` | `dynamodb:GetItem` `dynamoDB:Query`
+| Provider  | Function/Method                                                         | IAM Permission                                                            |
+|-----------|-------------------------------------------------------------------------|---------------------------------------------------------------------------|
+| SSM       | `SSMProvider.get(String)` `SSMProvider.get(String, Class)`              | `ssm:GetParameter`                                                        |
+| SSM       | `SSMProvider.getMultiple(String)`                                       | `ssm:GetParametersByPath`                                                 |
+| SSM       | If using `withDecryption(true)`                                         | You must add an additional permission `kms:Decrypt`                       |
+| Secrets   | `SecretsProvider.get(String)` `SecretsProvider.get(String, Class)`      | `secretsmanager:GetSecretValue`                                           |
+| DynamoDB  | `DynamoDBProvider.get(String)` `DynamoDBProvider.getMultiple(string)`   | `dynamodb:GetItem` `dynamoDB:Query`                                       |
+| AppConfig | `AppConfigProvider.get(String)` `AppConfigProvider.getMultiple(string)` | `appconfig:StartConfigurationSession`, `appConfig:GetLatestConfiguration` |
 
-## SSM Parameter Store
+## Retrieving Parameters
+You can retrieve parameters either using annotations or by using the `xParamProvider` class for each parameter
+provider directly. The latter is useful if you need to configure the underlying SDK client, for example to use
+a different region or credentials, the former is simpler to use.
 
-You can retrieve a single parameter using SSMProvider.get() and pass the key of the parameter.
-For multiple parameters, you can use SSMProvider.getMultiple() and pass the path to retrieve them all.
+## Built-in provider classes
 
-Alternatively, you can retrieve an instance of a provider and configure its underlying SDK client,
-in order to get data from other regions or use specific credentials.
+This section describes the built-in provider classes for each parameter store, providing
+examples showing how to inject parameters using annotations, and how to use the provider
+interface. In cases where a provider supports extra features, these will also be described.
 
-=== "SSMProvider"
+### Secrets Manager
 
-    ```java hl_lines="6"
-    import software.amazon.lambda.powertools.parameters.SSMProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
+=== "Secrets Manager: @SecretsParam"
 
-    public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an instance of the SSM Provider
-        SSMProvider ssmProvider = ParamManager.getSsmProvider();
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.secrets.SecretsParam;
     
-        // Retrieve a single parameter
-        String value = ssmProvider.get("/my/parameter");
-    
-        // Retrieve multiple parameters from a path prefix
-        // This returns a Map with the parameter name as key
-        Map<String, String> values = ssmProvider.getMultiple("/my/path/prefix");
-    
+    public class ParametersFunction implements RequestHandler<String, String> {
+
+        // Annotation-style injection from secrets manager
+        @SecretsParam(key = "/powertools-java/userpwd")
+        String secretParam;
+
+        public string handleRequest(String request, Context context) {
+            // ... do something with the secretParam here
+            return "something";
+        }
     }
     ```
 
-=== "SSMProvider with a custom client"
+=== "Secrets Manager: SecretsProvider"
 
-    ```java hl_lines="5 7"
-    import software.amazon.lambda.powertools.parameters.SSMProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
+    ```java hl_lines="12-15 19"
+    import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
+    
+    import com.amazonaws.services.lambda.runtime.Context;
+    import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+    import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-    public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        SsmClient client = SsmClient.builder().region(Region.EU_CENTRAL_1).build();
-        // Get an instance of the SSM Provider
-        SSMProvider ssmProvider = ParamManager.getSsmProvider(client);
+    public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
-        // Retrieve a single parameter
-        String value = ssmProvider.get("/my/parameter");
+        // Get an instance of the SecretsProvider. We can provide a custom client here if we want,
+        // for instance to use a particular region.
+        SecretsProvider secretsProvider = SecretsProvider
+                .builder()
+                .withClient(SecretsManagerClient.builder().build())
+                .build();
     
-        // Retrieve multiple parameters from a path prefix
-        // This returns a Map with the parameter name as key
-        Map<String, String> values = ssmProvider.getMultiple("/my/path/prefix");
+        public String handleRequest(String input, Context context) {
+            // Retrieve a single secret
+            String value = secretsProvider.get("/my/secret");
     
+            // ... do something with the secretParam here
+            return "something";
+        }
     }
     ```
 
-### Additional arguments
+### SSM Parameter Store
 
 The AWS Systems Manager Parameter Store provider supports two additional arguments for the `get()` and `getMultiple()` methods:
 
@@ -217,9 +259,59 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 | **withDecryption()**   | `False` | Will automatically decrypt the parameter. |
 | **recursive()** | `False`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
-**Example:**
 
-=== "AppWithSSM.java"
+=== "SSM Parameter Store: @SSMParam"
+
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.ssm.SSMParam;
+
+    public class ParametersFunction implements RequestHandler<String, String> {
+
+        // Annotation-style injection from SSM Parameter Store
+        @SSMParam(key = "/powertools-java/param")
+        String ssmParam;
+
+        public string handleRequest(String request, Context context) {
+            return ssmParam; // Request handler simply returns our configuration value
+        }
+    }
+    ```
+
+=== "SSM Parameter Store: SSMProvider"
+
+    ```java hl_lines="12-15 19-20 22"
+    import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
+    
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.awssdk.services.ssm.SsmClient;
+    import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
+
+    public class RequestHandlerWithParams implements RequestHandler<String, String> {
+    
+        // Get an instance of the SSMProvider. We can provide a custom client here if we want,
+        // for instance to use a particular region.
+        SSMProvider ssmProvider = SSMProvider
+                .builder()
+                .withClient(SsmClient.builder().build())
+                .build();
+    
+        public String handleRequest(String input, Context context) {
+            // Retrieve a single param
+            String value = ssmProvider
+                    .get("/my/secret");
+                    // We might instead want to retrieve multiple parameters at once, returning a Map of key/value pairs
+                    // .getMultiple("/my/secret/path");
+
+            // Return the result
+            return value;
+        }
+    }
+    ```
+
+=== "SSM Parameter Store: Additional Options"
 
     ```java hl_lines="9 12"
     import software.amazon.lambda.powertools.parameters.SSMProvider;
@@ -238,183 +330,159 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-## Secrets Manager
+### DynamoDB
 
-For secrets stored in Secrets Manager, use `getSecretsProvider`.
+=== "DynamoDB: @DyanmoDbParam"
 
-Alternatively, you can retrieve an instance of a provider and configure its underlying SDK client,
-in order to get data from other regions or use specific credentials.
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.dynamodb.DynamoDBParam;
 
+    public class ParametersFunction implements RequestHandler<String, String> {
 
-=== "SecretsProvider"
+        // Annotation-style injection from DynamoDB
+        @DynamoDbParam(table = "my-test-tablename", key = "myKey")
+        String ddbParam;
 
-    ```java hl_lines="9"
-    import software.amazon.lambda.powertools.parameters.SecretsProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
-
-    public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an instance of the Secrets Provider
-        SecretsProvider secretsProvider = ParamManager.getSecretsProvider();
-    
-        // Retrieve a single secret
-        String value = secretsProvider.get("/my/secret");
-    
+        public string handleRequest(String request, Context context) {
+            return ddbParam;  // Request handler simply returns our configuration value
+        }
     }
     ```
 
-=== "SecretsProvider with a custom client"
+=== "DynamoDB: DynamoDbProvider"
 
-    ```java hl_lines="5 7"
-    import software.amazon.lambda.powertools.parameters.SecretsProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
-
-    public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        SecretsManagerClient client = SecretsManagerClient.builder().region(Region.EU_CENTRAL_1).build();
-        // Get an instance of the Secrets Provider
-        SecretsProvider secretsProvider = ParamManager.getSecretsProvider(client);
+    ```java hl_lines="12-15 19-20 22"
+    import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
     
-        // Retrieve a single secret
-        String value = secretsProvider.get("/my/secret");
-    
-    }
-    ```
-
-## DynamoDB 
-To get secrets stored in DynamoDB, use `getDynamoDbProvider`, providing the name of the table that
-contains the secrets. As with the other providers, an overloaded methods allows you to retrieve 
-a `DynamoDbProvider` providing a client if you need to configure it yourself. 
-
-=== "DynamoDbProvider"
-
-    ```java hl_lines="6 9"
-    import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
-
-    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an instance of the DynamoDbProvider
-        DynamoDbProvider ddbProvider = ParamManager.getDynamoDbProvider("my-parameters-table");
-    
-        // Retrieve a single parameter
-        String value = ddbProvider.get("my-key"); 
-    } 
-    ```
-
-=== "DynamoDbProvider with a custom client"
-
-    ```java hl_lines="9 10 11 12 15 18"
-    import software.amazon.lambda.powertools.parameters.DynamoDbProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
     import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-    import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-    import software.amazon.awssdk.regions.Region;
+    import software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProvider;
 
-    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get a DynamoDB Client with an explicit region
-        DynamoDbClient ddbClient = DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .region(Region.EU_CENTRAL_2)
+    public class RequestHandlerWithParams implements RequestHandler<String, String> {
+    
+        // Get an instance of the DynamoDbProvider. We can provide a custom client here if we want,
+        // for instance to use a particular region.
+        DynamoDbProvider ddbProvider = DynamoDbProvider
+                .builder()
+                .withClient(DynamoDbClient.builder().build())
                 .build();
-
-        // Get an instance of the DynamoDbProvider
-        DynamoDbProvider provider = ParamManager.getDynamoDbProvider(ddbClient, "test-table");
     
-        // Retrieve a single parameter
-        String value = ddbProvider.get("my-key"); 
-    } 
+        public String handleRequest(String input, Context context) {
+            // Retrieve a single param
+            String value = ddbProvider
+                    .get("/my/secret");
+                    // We might instead want to retrieve multiple values at once, returning a Map of key/value pairs
+                    // .getMultiple("my-partition-key-value");
+    
+            // Return the result
+            return value;
+        }
+    }
     ```
 
-## AppConfig
-To get parameters stored in AppConfig, use `getAppConfigProvider`, providing the application and environment
-name to retrieve configuration from. As with the other providers, an overloaded method allows you to retrieve
-an `AppConfigProvider` providing a client if you need to configure it yourself.
+### AppConfig
 
-=== "AppConfigProvider"
+=== "AppConfig: @AppConfigParam"
 
-    ```java hl_lines="6 9"
-    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
+    ```java hl_lines="8 9"
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigParam;
 
-    public class AppWitAppConfigParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an instance of the AppConfigProvider
-        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider("my-environment", "my-app");
+    public class ParametersFunction implements RequestHandler<String, String> {
     
-        // Retrieve a single parameter
-        String value = appConfigProvider.get("my-key"); 
-    } 
+        // Annotation-style injection from AppConfig
+        @AppConfigParam(application = "my-app", environment = "my-env", key = "myKey")
+        String appConfigParam;
+
+        public string handleRequest(String request, Context context) {
+            return appConfigParam; // Request handler simply returns our configuration value
+        }
+    }
     ```
 
-=== "AppConfigProvider with a custom client"
+=== "AppConfig: AppConfigProvider"
 
-    ```java hl_lines="9 10 11 12 15 18"
-    import software.amazon.lambda.powertools.parameters.AppConfigProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
+    ```java hl_lines="12-15 19-20"
+    import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
+    
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
     import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
-    import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
-    import software.amazon.awssdk.regions.Region;
+    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigProvider;
 
-    public class AppWithDynamoDbParameters implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an AppConfig Client with an explicit region
-        AppConfigDataClient appConfigDataClient = AppConfigDataClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
-                .region(Region.EU_CENTRAL_2)
-                .build();
-
-        // Get an instance of the DynamoDbProvider
-        AppConfigProvider appConfigProvider = ParamManager.getAppConfigProvider(appConfigDataClient, "my-environment", "my-app");
+    public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
-        // Retrieve a single parameter
-        String value = appConfigProvider.get("my-key"); 
-    } 
+        // Get an instance of the AppConfigProvider. We can provide a custom client here if we want,
+        // for instance to use a particular region.
+        AppConfigProvider appConfigProvider = AppConfigProvider
+                .builder()
+                .withClient(AppConfigDataClient.builder().build())
+                .build();
+    
+        public String handleRequest(String input, Context context) {
+            // Retrieve a single param
+            String value = appConfigProvider
+                    .get("/my/secret");
+    
+            // Return the result
+            return value;
+        }
+    }    
     ```
-
 
 ## Advanced configuration
 
 ### Caching
+Each provider uses the `CacheManager` to cache parameter values. When a value is retrieved using from the provider, a 
+custom cache duration can be provided using `withMaxAge(duration, unit)`. 
 
-By default, all parameters and their corresponding values are cached for 5 seconds.
+If this is not specified, the default value set on the `CacheManager` itself will be used. This default can be customized
+by calling `setDefaultExpirationTime(duration, unit)` on the `CacheManager`.
 
-You can customize this default value using `defaultMaxAge`. You can also customize this value for each parameter using 
-`withMaxAge`.
+=== "Customize Cache"
 
-=== "Provider with default Max age"
-
-    ```java hl_lines="9"
-    import software.amazon.lambda.powertools.parameters.SecretsProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
-
-    public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        // Get an instance of the Secrets Provider
-        SecretsProvider secretsProvider = ParamManager.getSecretsProvider()
-                                                      .defaultMaxAge(10, ChronoUnit.SECONDS);
-
-        String value = secretsProvider.get("/my/secret");
+    ```java hl_lines="9 10 14 19 22-25"
+    import java.time.Duration;
+    import software.amazon.lambda.powertools.parameters.appconfig.AppConfigProvider;
+    import software.amazon.lambda.powertools.parameters.cache.CacheManager;
     
-    }
-    ```
-
-=== "Provider with age for each param"
-
-    ```java hl_lines="8"
-    import software.amazon.lambda.powertools.parameters.SecretsProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
-
-    public class AppWithSecrets implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        SecretsManagerClient client = SecretsManagerClient.builder().region(Region.EU_CENTRAL_1).build();
+    public class CustomizeCache {
         
-        SecretsProvider secretsProvider = ParamManager.getSecretsProvider(client);
-
-        String value = secretsProvider.withMaxAge(10, ChronoUnit.SECONDS).get("/my/secret");
+        public void CustomizeCache() {
     
+            CacheManager cacheManager = new CacheManager();
+            cacheManager.setDefaultExpirationTime(Duration.ofSeconds(10));
+    
+            AppConfigProvider paramProvider = AppConfigProvider
+                    .builder()
+                    .withCacheManager(cacheManager)
+                    .withClient(AppConfigDataClient.builder().build())
+                    .build();
+    
+            // Will use the default specified above - 10 seconds 
+            String myParam1 = paramProvider.get("myParam1");
+
+            // Will override the default above 
+            String myParam2 = paramProvider
+                .withMaxAge(20, ChronoUnit.SECONDS)
+                .get("myParam2"); 
+
+            return myParam2;
+        }
     }
     ```
+
 
 ### Transform values
 
 Parameter values can be transformed using ```withTransformation(transformerClass)```.
-Base64 and JSON transformations are provided. For more complex transformation, you need to specify how to deserialize-
+Base64 and JSON transformations are provided. For more complex transformation, you need to specify how to deserialize.
 
-!!! warning "`SSMProvider.getMultiple()` does not support transformation and will return simple Strings."
+!!! warning "`getMultiple()` does not support transformation and will return simple Strings."
 
 === "Base64 Transformation"
     ```java
@@ -431,14 +499,16 @@ Base64 and JSON transformations are provided. For more complex transformation, y
                         .get("/my/parameter/json", MyObj.class);
     ```
 
-## Write your own Transformer
+
+
+#### Create your own Transformer
 
 You can write your own transformer, by implementing the `Transformer` interface and the `applyTransformation()` method.
 For example, if you wish to deserialize XML into an object.
 
 === "XmlTransformer.java"
 
-    ```java hl_lines="1"
+    ```java
     public class XmlTransformer<T> implements Transformer<T> {
     
         private final XmlMapper mapper = new XmlMapper();
@@ -470,172 +540,141 @@ To simplify the use of the library, you can chain all method calls before a get.
 
     ```java
         ssmProvider
-          .defaultMaxAge(10, SECONDS)     // will set 10 seconds as the default cache TTL
           .withMaxAge(1, MINUTES)         // will set the cache TTL for this value at 1 minute
           .withTransformation(json)       // json is a static import from Transformer.json
           .withDecryption()               // enable decryption of the parameter value
           .get("/my/param", MyObj.class); // finally get the value
-    ```
 
-## Create your own provider
+### Create your own Provider
+You can create your own custom parameter store provider by implementing a handful of classes: 
 
-You can create your own custom parameter store provider by inheriting the ```BaseProvider``` class and implementing the
-```String getValue(String key)``` method to retrieve data from your underlying store. All transformation and caching logic is handled by the get() methods in the base class.
-
-=== "Example implementation using S3 as a custom parameter"
+=== "CustomProvider.java"
 
     ```java
-    public class S3Provider extends BaseProvider {
+    import java.util.Map;
+    import software.amazon.lambda.powertools.parameters.BaseProvider;
+    import software.amazon.lambda.powertools.parameters.cache.CacheManager;
+    import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
     
-        private final S3Client client;
-        private String bucket;
+    /**
+     * Our custom parameter provider itself. This does the heavy lifting of retrieving
+     * parameters from whatever our underlying parameter store might be.
+    **/
+    public class CustomProvider extends BaseProvider {
     
-        S3Provider(CacheManager cacheManager) {
-            this(cacheManager, S3Client.create());
+        public CustomProvider(CacheManager cacheManager, TransformationManager transformationManager) {
+            super(cacheManager, transformationManager);
         }
-    
-        S3Provider(CacheManager cacheManager, S3Client client) {
-            super(cacheManager);
-            this.client = client;
-        }
-    
-        public S3Provider withBucket(String bucket) {
-            this.bucket = bucket;
-            return this;
+
+        public CustomProviderBuilder builder() {
+            return new CustomProviderBuilder();
         }
     
         @Override
         protected String getValue(String key) {
-            if (bucket == null) {
-                throw new IllegalStateException("A bucket must be specified, using withBucket() method");
-            }
-    
-            GetObjectRequest request = GetObjectRequest.builder().bucket(bucket).key(key).build();
-            ResponseBytes<GetObjectResponse> response = client.getObject(request, ResponseTransformer.toBytes());
-            return response.asUtf8String();
+            throw new RuntimeException("TODO - return a single value");
         }
     
         @Override
         protected Map<String, String> getMultipleValues(String path) {
-            if (bucket == null) {
-                throw new IllegalStateException("A bucket must be specified, using withBucket() method");
+            throw new RuntimeException("TODO - Optional - return multiple values");
+        }
+    }
+    ```
+
+=== "CustomProviderBuilder.java"
+
+    ```java
+    /**
+     * Provides a builder-style interface to configure our @{link CustomProvider}.
+    **/
+    public class CustomProviderBuilder {
+        private CacheManager cacheManager;
+        private TransformationManager transformationManager;
+
+        /**
+         * Create a {@link CustomProvider} instance.
+         *
+         * @return a {@link CustomProvider}
+         */
+        public CustomProvider build() {
+            if (cacheManager == null) {
+                cacheManager = new CacheManager();
             }
+            return new CustomProvider(cacheManager, transformationManager);
+        }
+
+        /**
+         * Provide a CacheManager to the {@link CustomProvider}
+         *
+         * @param cacheManager the manager that will handle the cache of parameters
+         * @return the builder to chain calls (eg. <pre>builder.withCacheManager().build()</pre>)
+         */
+        public CustomProviderBuilder withCacheManager(CacheManager cacheManager) {
+            this.cacheManager = cacheManager;
+            return this;
+        }
+
+        /**
+         * Provide a transformationManager to the {@link CustomProvider}
+         *
+         * @param transformationManager the manager that will handle transformation of parameters
+         * @return the builder to chain calls (eg. <pre>builder.withTransformationManager().build()</pre>)
+         */
+        public CustomProviderBuilder withTransformationManager(TransformationManager transformationManager) {
+            this.transformationManager = transformationManager;
+            return this;
+        }
+    }
+    ```
+
+=== "CustomProviderParam.java"
     
-            ListObjectsV2Request listRequest = ListObjectsV2Request.builder().bucket(bucket).prefix(path).build();
-            List<S3Object> s3Objects = client.listObjectsV2(listRequest).contents();
+    ```java 
+    import java.lang.annotation.ElementType;
+    import java.lang.annotation.Retention;
+    import java.lang.annotation.RetentionPolicy;
+    import java.lang.annotation.Target;
+    import software.amazon.lambda.powertools.parameters.transform.Transformer;
     
-            Map<String, String> result = new HashMap<>();
-            s3Objects.forEach(s3Object -> {
-                result.put(s3Object.key(), getValue(s3Object.key()));
-            });
+    /**
+     * Aspect to inject a parameter from our custom provider. Note that if you
+     * want to implement a provider _without_ an Aspect and field injection, you can
+     * skip implementing both this and the {@link CustomProviderAspect} class.
+    **/
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.FIELD)
+    public @interface CustomProviderParam {
+        // The parameter key  
+        String key();
+
+        // The transformer to use
+        Class<? extends Transformer> transformer() default Transformer.class;
+    }
+    ```
+
+=== "CustomProviderAspect.java"
+
+    ```java
+
+    /**
+     * Aspect to inject a parameter from our custom provider where the {@link CustomProviderParam}
+     * annotation is used.
+    **/
+    @Aspect
+    public class CustomProviderAspect extends BaseParamAspect {
     
-            return result;
+        @Pointcut("get(* *) && @annotation(ddbConfigParam)")
+        public void getParam(CustomProviderParam customConfigParam) {
         }
     
-        @Override
-        protected void resetToDefaults() {
-            super.resetToDefaults();
-            bucket = null;
+        @Around("getParam(customConfigParam)")
+        public Object injectParam(final ProceedingJoinPoint joinPoint, final CustomProviderParam customConfigParam) { 
+            BaseProvider provider = CustomProvider.builder().build();
+
+            return getAndTransform(customConfigParam.key(), ddbConfigParam.transformer(), provider,
+                    (FieldSignature) joinPoint.getSignature());
         }
     
-    }
-    ```
-
-=== "Using custom parameter store"
-
-    ```java hl_lines="3"
-        S3Provider provider = new S3Provider(ParamManager.getCacheManager());
-
-        provider.setTransformationManager(ParamManager.getTransformationManager());
-
-        String value = provider.withBucket("myBucket").get("myKey");
-    ```
-
-## Annotation
-
-You can make use of the annotation `@Param` to inject a parameter value in a variable.
-
-By default, it will use `SSMProvider` to retrieve the value from AWS System Manager Parameter Store.
-You could specify a different provider as long as it extends `BaseProvider` and/or a `Transformer`.
-
-=== "Param Annotation"
-
-    ```java hl_lines="3"
-    public class AppWithAnnotation implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        @Param(key = "/my/parameter/json")
-        ObjectToDeserialize value;
-    
-    }
-    ```
-
-=== "Custom Provider Usage"
-    
-    ```java hl_lines="3"
-    public class AppWithAnnotation implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        @Param(key = "/my/parameter/json" provider = SecretsProvider.class, transformer = JsonTransformer.class)
-        ObjectToDeserialize value;
-    
-    }
-    ```
-
-    In this case ```SecretsProvider``` will be used to retrieve a raw value that is then trasformed into the target Object by using ```JsonTransformer```.
-    To show the convenience of the annotation compare the following two code snippets.
-
-
-### Install
-
-If you want to use the ```@Param``` annotation in your project add configuration to compile-time weave (CTW) the powertools-parameters aspects into your project.
-
-=== "Maven"
-
-    ```xml
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>dev.aspectj</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
-                 <configuration>
-                     ...
-                     <aspectLibraries>
-                         ...
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-parameters</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-    
-=== "Gradle"
-
-    ```groovy
-    plugins{
-        id 'java'
-        id 'io.freefair.aspectj.post-compile-weaving' version '6.3.0'
-    }
-
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        ...
-        aspect 'software.amazon.lambda:powertools-parameters:{{ powertools.version }}'
-        implementation 'org.aspectj:aspectjrt:1.9.19'
     }
     ```
