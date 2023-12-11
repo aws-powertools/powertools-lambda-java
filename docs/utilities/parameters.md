@@ -215,9 +215,8 @@ interface. In cases where a provider supports extra features, these will also be
         String secretParam;
 
         public string handleRequest(String request, Context context) {
-            // Because this is a secret, we probably don't want to return it! Return something indicating
-            // we could access it instead.
-            return "Retrieved a secret, and sensibly refusing to return it!";
+            // ... do something with the secretParam here
+            return "something";
         }
     }
     ```
@@ -245,9 +244,8 @@ interface. In cases where a provider supports extra features, these will also be
             // Retrieve a single secret
             String value = secretsProvider.get("/my/secret");
     
-            // Because this is a secret, we probably don't want to return it! Return something indicating
-            // we could access it instead.
-            return "Retrieved a secret, and sensibly refusing to return it!";
+            // ... do something with the secretParam here
+            return "something";
         }
     }
     ```
@@ -301,10 +299,10 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
                 .build();
     
         public String handleRequest(String input, Context context) {
-            // Retrieve a single secret
+            // Retrieve a single param
             String value = ssmProvider
                     .get("/my/secret");
-                    // We might instead want to retrieve multiple secrets at once, returning a Map of key/value pairs
+                    // We might instead want to retrieve multiple parameters at once, returning a Map of key/value pairs
                     // .getMultiple("/my/secret/path");
 
             // Return the result
@@ -365,7 +363,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
-        // Get an instance of the SecretsProvider. We can provide a custom client here if we want,
+        // Get an instance of the DynamoDbProvider. We can provide a custom client here if we want,
         // for instance to use a particular region.
         DynamoDbProvider ddbProvider = DynamoDbProvider
                 .builder()
@@ -373,7 +371,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
                 .build();
     
         public String handleRequest(String input, Context context) {
-            // Retrieve a single secret
+            // Retrieve a single param
             String value = ddbProvider
                     .get("/my/secret");
                     // We might instead want to retrieve multiple values at once, returning a Map of key/value pairs
@@ -418,7 +416,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
-        // Get an instance of the SecretsProvider. We can provide a custom client here if we want,
+        // Get an instance of the AppConfigProvider. We can provide a custom client here if we want,
         // for instance to use a particular region.
         AppConfigProvider appConfigProvider = AppConfigProvider
                 .builder()
@@ -426,7 +424,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
                 .build();
     
         public String handleRequest(String input, Context context) {
-            // Retrieve a single secret
+            // Retrieve a single param
             String value = appConfigProvider
                     .get("/my/secret");
     
