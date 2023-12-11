@@ -8,6 +8,40 @@
        https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html
   -->
 <FindBugsFilter>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
+                <Field name="transformation"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
+                <Field name="client"/>
+            </And>
+
+        </Or>
+    </Match>
     <!-- Internals of Log event for apache log4j-->
     <Match>
         <Bug pattern="EI_EXPOSE_REP"/>
@@ -64,14 +98,6 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.sqs.internal.BatchContext"/>
                 <Field name="client"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
-                <Field name="cacheManager"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
-                <Field name="transformer"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
@@ -141,16 +167,8 @@
                 <Method name="objectMapper"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
-                <Method name="getCacheManager"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
                 <Method name="s3Client"/>
-            </And>
-            <And>
-                <Class name="software.amazon.lambda.powertools.parameters.ParamManager"/>
-                <Method name="getTransformationManager"/>
             </And>
         </Or>
     </Match>
