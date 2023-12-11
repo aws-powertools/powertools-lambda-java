@@ -704,9 +704,9 @@ class LambdaLoggingAspectTest {
 
     private void resetLogLevel(Level level)
             throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method resetLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("resetLogLevels", Level.class);
-        resetLogLevels.setAccessible(true);
-        resetLogLevels.invoke(null, level);
+        Method setLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("setLogLevels", Level.class);
+        setLogLevels.setAccessible(true);
+        setLogLevels.invoke(null, level);
         writeStaticField(LambdaLoggingAspect.class, "LEVEL_AT_INITIALISATION", level, true);
     }
 }
