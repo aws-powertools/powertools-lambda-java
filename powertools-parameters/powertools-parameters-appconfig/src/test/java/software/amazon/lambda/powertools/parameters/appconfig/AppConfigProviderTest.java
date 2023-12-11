@@ -52,7 +52,7 @@ public class AppConfigProviderTest {
 
     @BeforeEach
     public void init() {
-       openMocks(this);
+        openMocks(this);
 
         provider = AppConfigProvider.builder()
                 .withClient(client)
