@@ -25,8 +25,8 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.appendEntry;
+import static software.amazon.lambda.powertools.logging.LoggingUtils.appendEntries;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LAMBDA_LOG_LEVEL;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_ERROR;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_EVENT;
@@ -188,7 +188,7 @@ public final class LambdaLoggingAspect {
 
         addLambdaContextToLoggingContext(pjp);
 
-        getXrayTraceId().ifPresent(xRayTraceId -> appendKey(FUNCTION_TRACE_ID.getName(), xRayTraceId));
+        getXrayTraceId().ifPresent(xRayTraceId -> appendEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
         Object[] proceedArgs = logEvent(pjp, logging, isOnRequestHandler, isOnRequestStreamHandler);
 
@@ -255,9 +255,9 @@ public final class LambdaLoggingAspect {
         Context extractedContext = extractContext(pjp);
 
         if (extractedContext != null) {
-            appendKeys(PowertoolsLoggedFields.setValuesFromLambdaContext(extractedContext));
-            appendKey(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
-            appendKey(SERVICE.getName(), serviceName());
+            appendEntries(PowertoolsLoggedFields.setValuesFromLambdaContext(extractedContext));
+            appendEntry(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
+            appendEntry(SERVICE.getName(), serviceName());
         }
     }
 
@@ -273,7 +273,7 @@ public final class LambdaLoggingAspect {
                 return;
             }
 
-            appendKey(PowertoolsLoggedFields.SAMPLING_RATE.getName(), String.valueOf(samplingRate));
+            appendEntry(PowertoolsLoggedFields.SAMPLING_RATE.getName(), String.valueOf(samplingRate));
 
             if (samplingRate == 0) {
                 return;

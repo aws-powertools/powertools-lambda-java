@@ -118,6 +118,10 @@ public class LambdaJsonSerializer {
         JsonUtils.serializeAttribute(builder, THREAD_PRIORITY_ATTR_NAME, threadPriority);
     }
 
+    public static void serializeEntry(StringBuilder builder, String key, Object value) {
+        JsonUtils.serializeAttribute(builder, key, value.toString());
+    }
+
     public static void serializePowertools(StringBuilder builder, Map<String, String> mdc,
                                            boolean includePowertoolsInfo) {
         TreeMap<String, String> sortedMap = new TreeMap<>(mdc);

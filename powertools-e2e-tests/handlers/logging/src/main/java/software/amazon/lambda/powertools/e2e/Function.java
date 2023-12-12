@@ -26,7 +26,7 @@ public class Function implements RequestHandler<Input, String> {
 
     @Logging
     public String handleRequest(Input input, Context context) {
-        LoggingUtils.appendKeys(input.getKeys());
+        LoggingUtils.appendEntries(input.getKeys());
         LOG.info(input.getMessage());
 
         return "OK";

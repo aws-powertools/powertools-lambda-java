@@ -35,7 +35,7 @@ class LoggingUtilsTest {
 
     @Test
     void shouldSetCustomKeyInLoggingContext() {
-        LoggingUtils.appendKey("org/slf4j/test", "value");
+        LoggingUtils.appendEntry("org/slf4j/test", "value");
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
@@ -48,7 +48,7 @@ class LoggingUtilsTest {
         customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
 
-        LoggingUtils.appendKeys(customKeys);
+        LoggingUtils.appendEntries(customKeys);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(2)
@@ -58,13 +58,13 @@ class LoggingUtilsTest {
 
     @Test
     void shouldRemoveCustomKeyInLoggingContext() {
-        LoggingUtils.appendKey("org/slf4j/test", "value");
+        LoggingUtils.appendEntry("org/slf4j/test", "value");
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(1)
                 .containsEntry("org/slf4j/test", "value");
 
-        LoggingUtils.removeKey("org/slf4j/test");
+        LoggingUtils.removeEntry("org/slf4j/test");
 
         assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();
@@ -76,14 +76,14 @@ class LoggingUtilsTest {
         customKeys.put("org/slf4j/test", "value");
         customKeys.put("test1", "value1");
 
-        LoggingUtils.appendKeys(customKeys);
+        LoggingUtils.appendEntries(customKeys);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(2)
                 .containsEntry("org/slf4j/test", "value")
                 .containsEntry("test1", "value1");
 
-        LoggingUtils.removeKeys("org/slf4j/test", "test1");
+        LoggingUtils.removeEntries("org/slf4j/test", "test1");
 
         assertThat(MDC.getCopyOfContextMap())
                 .isEmpty();

@@ -42,37 +42,36 @@ public final class LoggingUtils {
      * @param key   The name of the key to be logged
      * @param value The value to be logged
      */
-    public static void appendKey(String key, String value) {
+    public static void appendEntry(String key, String value) {
         MDC.put(key, value);
     }
 
-
     /**
-     * Appends additional key and value to each log entry made. Duplicate values
+     * Appends additional keys and values to each log entry made. Duplicate values
      * for the same key will be replaced with the latest.
      *
-     * @param customKeys Map of custom keys values to be appended to logs
+     * @param customEntries Map of custom keys values to be appended to logs
      */
-    public static void appendKeys(Map<String, String> customKeys) {
-        customKeys.forEach(MDC::put);
+    public static void appendEntries(Map<String, String> customEntries) {
+        customEntries.forEach(MDC::put);
     }
 
     /**
-     * Remove an additional key from log entry.
+     * Remove an entry from log entry.
      *
-     * @param customKey The name of the key to be logged
+     * @param key The key of the entry to be removed
      */
-    public static void removeKey(String customKey) {
-        MDC.remove(customKey);
+    public static void removeEntry(String key) {
+        MDC.remove(key);
     }
 
 
     /**
-     * Removes additional keys from log entry.
+     * Removes entries from log entry.
      *
-     * @param keys Map of custom keys values to be appended to logs
+     * @param keys Map of keys to be removed from logs
      */
-    public static void removeKeys(String... keys) {
+    public static void removeEntries(String... keys) {
         Arrays.stream(keys).forEach(MDC::remove);
     }
 

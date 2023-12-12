@@ -27,7 +27,7 @@ public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
     @Override
     @Logging(clearState = true)
     public Object handleRequest(Object input, Context context) {
-        LoggingUtils.appendKey("myKey", "myValue");
+        LoggingUtils.appendEntry("myKey", "myValue");
         LOG.debug("Test debug event");
         return null;
     }

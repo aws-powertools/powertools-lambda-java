@@ -28,7 +28,7 @@ public class PowertoolsLogClearState implements RequestHandler<Map<String, Strin
     @Override
     @Logging(clearState = true)
     public Object handleRequest(Map<String, String> input, Context context) {
-        LoggingUtils.appendKey("mySuperSecret", input.get("mySuperSecret"));
+        LoggingUtils.appendEntry("mySuperSecret", input.get("mySuperSecret"));
         LOG.info("Test event");
         return null;
     }

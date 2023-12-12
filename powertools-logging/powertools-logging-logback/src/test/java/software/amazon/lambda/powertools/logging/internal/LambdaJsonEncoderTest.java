@@ -97,7 +97,7 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
+                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\",\"timestamp\":");
     }
 
     @Test
@@ -238,7 +238,10 @@ class LambdaJsonEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"message\":\"Error\",\"error\":{\"message\":\"Unexpected value\",\"name\":\"java.lang.IllegalStateException\",\"stack\":\"[software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest.shouldLogException");
+        assertThat(result).contains("\"message\":\"Error\",\"error\":{")
+                .contains("\"message\":\"Unexpected value\"")
+                .contains("\"name\":\"java.lang.IllegalStateException\"")
+                .contains("\"stack\":\"[software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest.shouldLogException");
 
         // WHEN (configure a custom throwableConverter)
         encoder = new LambdaJsonEncoder();
@@ -249,7 +252,9 @@ class LambdaJsonEncoderTest {
         result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (stack is logged with root cause first)
-        assertThat(result).contains("\"message\":\"Error\",\"error\":{\"message\":\"Unexpected value\",\"name\":\"java.lang.IllegalStateException\",\"stack\":\"java.lang.IllegalStateException: Unexpected value\n");
+        assertThat(result).contains("\"message\":\"Unexpected value\"")
+                .contains("\"name\":\"java.lang.IllegalStateException\"")
+                .contains("\"stack\":\"java.lang.IllegalStateException: Unexpected value\\n"); // TODO unescape \n
     }
 
     private void setupContext() {

@@ -33,9 +33,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
-import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.tracing.CaptureMode;
 import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
@@ -60,7 +58,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
 
-        LoggingUtils.appendKey("test", "willBeLogged");
+        LoggingUtils.appendEntry("test", "willBeLogged");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);

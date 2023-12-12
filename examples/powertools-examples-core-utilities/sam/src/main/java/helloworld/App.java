@@ -63,7 +63,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
 
-        LoggingUtils.appendKey("test", "willBeLogged");
+        LoggingUtils.appendEntry("test", "willBeLogged");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
