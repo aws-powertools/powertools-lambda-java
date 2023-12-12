@@ -39,7 +39,34 @@
                 <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
                 <Field name="client"/>
             </And>
-
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.ssm.SSMProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProviderBuilder"/>
+                <Field name="client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.dynamodb.DynamoDbProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
+                <Field name="transformationManager"/>
+            </And>
         </Or>
     </Match>
     <!-- Internals of Log event for apache log4j-->
