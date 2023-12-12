@@ -101,6 +101,10 @@
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
         <elastic.version>1.5.0</elastic.version>
+
+        <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
+            regardless of where maven is run - sub-module, or root. -->
+        <project.rootdir>${maven.multiModuleProjectDirectory}</project.rootdir>
     </properties>
 
     <distributionManagement>
@@ -542,7 +546,7 @@
                         </executions>
                         <configuration>
                             <xmlOutput>true</xmlOutput>
-                            <excludeFilterFile>../spotbugs-exclude.xml</excludeFilterFile>
+                            <excludeFilterFile>${project.rootdir}/spotbugs-exclude.xml</excludeFilterFile>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -639,6 +643,7 @@
                         <artifactId>maven-checkstyle-plugin</artifactId>
                         <version>3.3.0</version>
                         <configuration>
+                            <propertyExpansion>basedir=${project.rootdir}</propertyExpansion>
                             <configLocation>checkstyle.xml</configLocation>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
