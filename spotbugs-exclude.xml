@@ -58,6 +58,18 @@
                 <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
                 <Method name="getS3Client"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder" />
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields" />
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields" />
+                <Method name="getAdditionalFields"/>
+            </And>
         </Or>
     </Match>
     <Match>
@@ -102,6 +114,26 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
                 <Field name="s3Client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy" />
+                <Method name="LogEventWithAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder" />
+                <Method name="setAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout" />
+                <Method name="LogEventWithAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.LambdaEcsEncoder" />
+                <Method name="setThrowableConverter"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.LambdaJsonEncoder" />
+                <Method name="setThrowableConverter"/>
             </And>
         </Or>
     </Match>
@@ -171,5 +203,5 @@
                 <Method name="threadOption1"/>
             </And>
         </Or>
-    </Match>    
+    </Match>
 </FindBugsFilter>
