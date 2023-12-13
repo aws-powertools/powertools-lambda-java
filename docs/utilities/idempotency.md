@@ -164,7 +164,7 @@ As of now, [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) and [Redis](https
 
 #### Using Amazon DynamoDB as persistent storage layer
 
-If you are using Amazon DynamoDB  you'll need to create a table.
+If you are using Amazon DynamoDB, you'll need to create a table.
 
 **Default table configuration**
 
@@ -221,9 +221,9 @@ Resources:
 
 ##### Redis resources
 
-You need an existing Redis service before setting up Redis as persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/) as persistent storage layer provider.
+You need an existing Redis service before setting up Redis as persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/).
 !!! tip "Tip:No existing Redis service?"
-If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider.
+    If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider.
 
 If you are using Redis you'll need to provide the Redis host, port, user and password as AWS Lambda environment variables.
 If you want to connect to a Redis cluster instead of a Standalone server, you need to enable Redis cluster mode by setting an AWS Lambda
@@ -257,10 +257,10 @@ Resources:
 Your AWS Lambda Function must be able to reach the Redis endpoint before using it for idempotency persistent storage layer. In most cases you will need to [configure VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html) for your AWS Lambda Function. Using a public accessible Redis is not recommended.
 
 !!! tip "Amazon ElastiCache for Redis as persistent storage layer provider"
-If you intend to use Amazon ElastiCache for Redis for idempotency persistent storage layer, you can also reference [This AWS Tutorial](https://docs.aws.amazon.com/lambda/latest/dg/services-elasticache-tutorial.html).
+    If you intend to use Amazon ElastiCache for Redis for idempotency persistent storage layer, you can also reference [This AWS Tutorial](https://docs.aws.amazon.com/lambda/latest/dg/services-elasticache-tutorial.html).
 
 !!! warning "Amazon ElastiCache Serverless not supported"
-[Amazon ElastiCache Serverless](https://aws.amazon.com/elasticache/features/#Serverless) is not supported for now.
+    [Amazon ElastiCache Serverless](https://aws.amazon.com/elasticache/features/#Serverless) is not supported for now.
 
 !!! warning "Check network connectivity to Redis server"
 Make sure that your AWS Lambda function can connect to your Redis server.
@@ -722,7 +722,7 @@ You can alter the field names by passing these parameters when initializing the 
 
 
 !!! Tip "Tip: You can share the same prefix and key for all functions"
-You can reuse the same prefix and key to store idempotency state. We add your function name in addition to the idempotency key as a hash key.
+    You can reuse the same prefix and key to store idempotency state. We add your function name in addition to the idempotency key as a hash key.
 
 ## Advanced
 
