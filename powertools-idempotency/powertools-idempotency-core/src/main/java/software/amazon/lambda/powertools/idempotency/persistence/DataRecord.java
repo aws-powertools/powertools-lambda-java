@@ -14,11 +14,10 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence;
 
-import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-
 import java.time.Instant;
 import java.util.Objects;
 import java.util.OptionalLong;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 
 /**
  * Data Class for idempotency records. This is actually the item that will be stored in the persistence layer.

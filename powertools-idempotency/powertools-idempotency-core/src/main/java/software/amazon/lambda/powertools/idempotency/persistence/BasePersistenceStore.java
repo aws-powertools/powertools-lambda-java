@@ -14,20 +14,12 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence;
 
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.burt.jmespath.Expression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
-import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
-import software.amazon.lambda.powertools.utilities.JsonConfig;
-
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -41,8 +33,15 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 /**
  * Persistence layer that will store the idempotency result.
@@ -63,6 +62,14 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     private Expression<JsonNode> validationKeyJMESPath;
     private boolean throwOnNoIdempotencyKey = false;
     private String hashFunctionName;
+
+    private static boolean isEqual(String dataRecordPayload, String dataHash) {
+        if (dataHash != null && dataRecordPayload != null) {
+            return dataHash.length() != dataRecordPayload.length() ? false : dataHash.equals(dataRecordPayload);
+        } else {
+            return false;
+        }
+    }
 
     /**
      * Initialize the base persistence layer from the configuration settings
@@ -401,13 +408,5 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     void configure(IdempotencyConfig config, String functionName, LRUCache<String, DataRecord> cache) {
         this.configure(config, functionName);
         this.cache = cache;
-    }
-
-    private static boolean isEqual(String dataRecordPayload, String dataHash) {
-        if (dataHash != null && dataRecordPayload != null) {
-            return dataHash.length() != dataRecordPayload.length() ? false : dataHash.equals(dataRecordPayload);
-        } else {
-            return false;
-        }
     }
 }

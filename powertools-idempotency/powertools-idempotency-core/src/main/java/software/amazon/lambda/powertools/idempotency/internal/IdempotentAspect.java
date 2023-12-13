@@ -14,8 +14,12 @@
 
 package software.amazon.lambda.powertools.idempotency.internal;
 
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -28,11 +32,6 @@ import software.amazon.lambda.powertools.idempotency.IdempotencyKey;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 
 /**
  * Aspect that handles the {@link Idempotent} annotation.
