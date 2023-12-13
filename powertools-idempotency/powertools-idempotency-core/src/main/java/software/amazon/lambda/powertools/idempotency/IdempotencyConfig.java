@@ -15,9 +15,8 @@
 package software.amazon.lambda.powertools.idempotency;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
-
 import java.time.Duration;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
 
 /**
  * Configuration of the idempotency feature. Use the {@link Builder} to create an instance.

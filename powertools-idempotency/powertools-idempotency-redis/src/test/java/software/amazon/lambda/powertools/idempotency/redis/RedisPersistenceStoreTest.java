@@ -106,15 +106,18 @@ public class RedisPersistenceStoreTest {
                 .newRedisServer()
                 .setOptions(ServiceOptions.defaultOptions().withClusterModeEnabled())
                 .start();
-        assertThat(redisPersistenceStore.getJedisClient(redisCluster.getHost(), redisCluster.getBindPort()) instanceof JedisCluster).isTrue();
+        assertThat(redisPersistenceStore.getJedisClient(redisCluster.getHost(),
+                redisCluster.getBindPort()) instanceof JedisCluster).isTrue();
         redisCluster.stop();
     }
 
     @SetEnvironmentVariable(key = Constants.REDIS_CLUSTER_MODE, value = "false")
     @Test
     void putRecord_JedisClientInstanceOfJedisPooled() {
-        assertThat(redisPersistenceStore.getJedisClient(System.getenv(REDIS_HOST), Integer.parseInt(System.getenv(REDIS_PORT))) instanceof JedisCluster).isFalse();
+        assertThat(redisPersistenceStore.getJedisClient(System.getenv(REDIS_HOST),
+                Integer.parseInt(System.getenv(REDIS_PORT))) instanceof JedisCluster).isFalse();
     }
+
     @Test
     void putRecord_shouldCreateItemInRedisWithInProgressExpiration() {
         Instant now = Instant.now();

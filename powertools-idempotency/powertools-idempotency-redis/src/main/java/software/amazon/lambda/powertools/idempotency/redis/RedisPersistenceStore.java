@@ -1,4 +1,4 @@
-package software.amazon.lambda.powertools.idempotency.redis;/*
+/*
  * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
@@ -11,6 +11,8 @@ package software.amazon.lambda.powertools.idempotency.redis;/*
  * limitations under the License.
  *
  */
+
+package software.amazon.lambda.powertools.idempotency.redis;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
@@ -77,7 +79,8 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
             String idempotencyDisabledEnv =
                     System.getenv(software.amazon.lambda.powertools.idempotency.Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null || "false".equalsIgnoreCase(idempotencyDisabledEnv)) {
-                this.jedisClient = getJedisClient(System.getenv(Constants.REDIS_HOST), Integer.parseInt(System.getenv(Constants.REDIS_PORT)));
+                this.jedisClient = getJedisClient(System.getenv(Constants.REDIS_HOST),
+                        Integer.parseInt(System.getenv(Constants.REDIS_PORT)));
             } else {
                 // we do not want to create a Jedis connection pool if idempotency is disabled
                 // null is ok as idempotency won't be called
@@ -107,11 +110,11 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         return new Builder();
     }
 
-     UnifiedJedis getJedisClient(String redisHost, Integer redisPort) {
+    UnifiedJedis getJedisClient(String redisHost, Integer redisPort) {
         HostAndPort address = new HostAndPort(redisHost, redisPort);
         JedisClientConfig config = getJedisClientConfig();
         String isClusterMode = System.getenv(Constants.REDIS_CLUSTER_MODE);
-        if (isClusterMode != null && "true".equalsIgnoreCase(isClusterMode)) {
+        if ("true".equalsIgnoreCase(isClusterMode)) {
             return new JedisCluster(address, getJedisClientConfig(), 5, new GenericObjectPoolConfig<>());
         } else {
             return new JedisPooled(address, config);
