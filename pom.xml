@@ -32,6 +32,25 @@
         <system>GitHub Issues</system>
         <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
+
+    <scm>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>Powertools for AWS Lambda (Java) Team</name>
+            <organization>Amazon Web Services</organization>
+            <organizationUrl>https://aws.amazon.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -63,21 +82,11 @@
         <module>powertools-parameters/powertools-parameters-tests</module>
     </modules>
 
-    <scm>
-        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
-    </scm>
-
-    <developers>
-        <developer>
-            <name>Powertools for AWS Lambda (Java) team</name>
-            <organization>Amazon Web Services</organization>
-            <organizationUrl>https://aws.amazon.com/</organizationUrl>
-        </developer>
-    </developers>
-
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
+        <log4j.version>2.20.0</log4j.version>
         <log4j.version>2.22.0</log4j.version>
         <slf4j.version>2.0.7</slf4j.version>
         <jackson.version>2.15.3</jackson.version>
@@ -102,13 +111,6 @@
         <jmespath.version>0.6.0</jmespath.version>
         <elastic.version>1.5.0</elastic.version>
     </properties>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>

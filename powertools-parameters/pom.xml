@@ -27,7 +27,6 @@
     <artifactId>powertools-parameters</artifactId>
 
     <name>Powertools for AWS Lambda (Java) - Parameters</name>
-
     <description>Set of utilities to retrieve parameters - common interface</description>
 
     <dependencies>
