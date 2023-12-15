@@ -14,9 +14,8 @@
 
 package software.amazon.lambda.powertools.logging.argument;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import java.io.IOException;
 import java.util.Map;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
 public class MapArgument implements StructuredArgument {
     private final Map<?, ?> map;
@@ -26,11 +25,10 @@ public class MapArgument implements StructuredArgument {
     }
 
     @Override
-    public void writeTo(JsonGenerator jsonGenerator) throws IOException {
+    public void writeTo(JsonSerializer serializer) {
         if (map != null) {
             for (Map.Entry<?, ?> entry : map.entrySet()) {
-                jsonGenerator.writeFieldName(String.valueOf(entry.getKey()));
-                jsonGenerator.writeObject(entry.getValue());
+                serializer.writeObjectField(String.valueOf(entry.getKey()), entry.getValue());
             }
         }
     }

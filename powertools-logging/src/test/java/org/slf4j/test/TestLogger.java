@@ -185,6 +185,9 @@ public class TestLogger extends LegacyAbstractLogger {
     /** The short name of this simple log instance */
     private transient String shortLogName = null;
 
+    // used for test purpose
+    private Object[] arguments;
+
     /**
      * Package access allows only {@link TestLoggerFactory} to instantiate
      * SimpleLogger instances.
@@ -368,6 +371,8 @@ public class TestLogger extends LegacyAbstractLogger {
     private void innerHandleNormalizedLoggingCall(Level level, List<Marker> markers, String messagePattern,
                                                   Object[] arguments, Throwable t) {
 
+        this.arguments = arguments;
+
         StringBuilder buf = new StringBuilder(32);
 
         // Append date-time if so configured
@@ -449,4 +454,11 @@ public class TestLogger extends LegacyAbstractLogger {
         return null;
     }
 
+    public Object[] getArguments() {
+        return arguments;
+    }
+
+    public void clearArguments() {
+        arguments = null;
+    }
 }

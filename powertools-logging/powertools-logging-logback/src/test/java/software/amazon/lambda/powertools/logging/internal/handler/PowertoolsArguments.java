@@ -22,23 +22,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.LoggingUtils;
+import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-public class PowertoolsJsonMessage implements RequestHandler<SQSEvent.SQSMessage, String> {
-    private final Logger LOG = LoggerFactory.getLogger(PowertoolsJsonMessage.class);
+public class PowertoolsArguments implements RequestHandler<SQSEvent.SQSMessage, String> {
+    private final Logger LOG = LoggerFactory.getLogger(PowertoolsArguments.class);
+    private final ArgumentFormat argumentFormat;
+
+    public PowertoolsArguments(ArgumentFormat argumentFormat) {
+        this.argumentFormat = argumentFormat;
+    }
 
     @Override
     @Logging(clearState = true)
     public String handleRequest(SQSEvent.SQSMessage input, Context context) {
         try {
-            LoggingUtils.logMessagesAsJson(true);
             LoggingUtils.setCorrelationId(input.getMessageId());
-            LOG.debug(JsonConfig.get().getObjectMapper().writeValueAsString(input));
+            if (argumentFormat == ArgumentFormat.JSON) {
+                LOG.debug("", StructuredArguments.json("input",
+                        JsonConfig.get().getObjectMapper().writeValueAsString(input)));
+            } else {
+                LOG.debug("", StructuredArguments.entry("input", input));
+            }
             LOG.debug("{}", input.getMessageId());
             LOG.warn("Message body = {} and id = \"{}\"", input.getBody(), input.getMessageId());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
         return input.getMessageId();
+    }
+
+    public enum ArgumentFormat {
+        JSON, ENTRY
     }
 }

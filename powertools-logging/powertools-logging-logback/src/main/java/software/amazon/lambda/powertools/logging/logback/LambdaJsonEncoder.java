@@ -15,7 +15,10 @@
 package software.amazon.lambda.powertools.logging.logback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeArguments;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntries;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntry;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeTimestamp;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -23,24 +26,16 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
-import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TimeZone;
 import java.util.TreeMap;
-import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
-import software.amazon.lambda.powertools.logging.internal.StringBuilderJsonGenerator;
-import software.amazon.lambda.powertools.logging.logback.internal.LambdaJsonSerializer;
 
 /**
  * Custom encoder for logback that encodes logs in JSON format.
- * It does not use a JSON library but a custom serializer ({@link LambdaJsonSerializer})
  */
 public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
 
@@ -61,11 +56,10 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     protected String timestampFormatTimezoneId = null;
     private boolean includeThreadInfo = false;
     private boolean includePowertoolsInfo = true;
-    private boolean logMessagesAsJsonGlobal;
 
     @Override
     public byte[] headerBytes() {
-        return null;
+        return new byte[0];
     }
 
     @Override
@@ -77,79 +71,83 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         }
     }
 
+    @SuppressWarnings("java:S106")
     @Override
     public byte[] encode(ILoggingEvent event) {
         StringBuilder builder = new StringBuilder();
-        try (StringBuilderJsonGenerator generator = new StringBuilderJsonGenerator(builder)) {
-            generator.writeStartObject();
-            generator.writeStringField(LEVEL_ATTR_NAME, event.getLevel().toString());
-            generator.writeRaw(',');
-            generator.writeStringField(FORMATTED_MESSAGE_ATTR_NAME, event.getFormattedMessage());
+        try (JsonSerializer serializer = new JsonSerializer(builder)) {
+            serializer.writeStartObject();
+            serializer.writeStringField(LEVEL_ATTR_NAME, event.getLevel().toString());
+            serializer.writeRaw(',');
+            serializer.writeStringField(FORMATTED_MESSAGE_ATTR_NAME, event.getFormattedMessage());
 
-            IThrowableProxy throwableProxy = event.getThrowableProxy();
-            if (throwableProxy != null) {
-                if (throwableConverter != null) {
-                    serializeException(generator, throwableProxy.getClassName(), throwableProxy.getMessage(), throwableConverter.convert(event));
-                } else if (throwableProxy instanceof ThrowableProxy) {
-                    Throwable throwable = ((ThrowableProxy) throwableProxy).getThrowable();
-                    serializeException(generator, throwable.getClass().getName(), throwable.getMessage(),
-                            Arrays.toString(throwable.getStackTrace()));
-                } else {
-                    serializeException(generator, throwableProxy.getClassName(), throwableProxy.getMessage(), throwableProxyConverter.convert(event));
-                }
-            }
+            serializeException(event, serializer);
 
             TreeMap<String, String> sortedMap = new TreeMap<>(event.getMDCPropertyMap());
-            if (includePowertoolsInfo) {
-                for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
-                    if (PowertoolsLoggedFields.stringValues().contains(entry.getKey())
-                        && !(entry.getKey().equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && entry.getValue().equals("0.0"))) {
-                        serializeMDCEntry(entry, generator);
-                    }
-                }
-            }
+            serializePowertools(sortedMap, serializer);
 
-            // log other MDC values
-            for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
-                if (!PowertoolsLoggedFields.stringValues().contains(entry.getKey()) && !LOG_MESSAGES_AS_JSON.equals(entry.getKey())) {
-                    serializeMDCEntry(entry, generator);
-                }
-            }
+            serializeMDCEntries(sortedMap, serializer);
 
-            // log structured arguments
-            Object[] arguments = event.getArgumentArray();
-            if (arguments != null) {
-                for (Object argument : arguments) {
-                    if (argument instanceof StructuredArgument) {
-                        generator.writeRaw(',');
-                        ((StructuredArgument) argument).writeTo(generator);
-                    }
-                }
-            }
+            serializeArguments(event, serializer);
 
-            if (includeThreadInfo) {
-                if (event.getThreadName() != null) {
-                    generator.writeRaw(',');
-                    generator.writeStringField(THREAD_ATTR_NAME, event.getThreadName());
-                }
-                generator.writeRaw(',');
-                generator.writeNumberField(THREAD_ID_ATTR_NAME, Thread.currentThread().getId());
-                generator.writeRaw(',');
-                generator.writeNumberField(THREAD_PRIORITY_ATTR_NAME, Thread.currentThread().getPriority());
-            }
+            serializeThreadInfo(event, serializer);
 
-            serializeTimestamp(generator, event.getTimeStamp());
+            serializer.writeRaw(',');
+            serializeTimestamp(serializer, event.getTimeStamp(),
+                    timestampFormat, timestampFormatTimezoneId, TIMESTAMP_ATTR_NAME);
 
-            generator.writeEndObject();
+            serializer.writeEndObject();
+            serializer.writeRaw('\n');
         } catch (IOException e) {
             System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
         }
         return builder.toString().getBytes(UTF_8);
     }
 
+    private void serializeThreadInfo(ILoggingEvent event, JsonSerializer serializer) {
+        if (includeThreadInfo) {
+            if (event.getThreadName() != null) {
+                serializer.writeRaw(',');
+                serializer.writeStringField(THREAD_ATTR_NAME, event.getThreadName());
+            }
+            serializer.writeRaw(',');
+            serializer.writeNumberField(THREAD_ID_ATTR_NAME, Thread.currentThread().getId());
+            serializer.writeRaw(',');
+            serializer.writeNumberField(THREAD_PRIORITY_ATTR_NAME, Thread.currentThread().getPriority());
+        }
+    }
+
+    private void serializePowertools(TreeMap<String, String> sortedMap, JsonSerializer serializer) {
+        if (includePowertoolsInfo) {
+            for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
+                if (PowertoolsLoggedFields.stringValues().contains(entry.getKey())
+                    && !(entry.getKey().equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && entry.getValue().equals("0.0"))) {
+                    serializeMDCEntry(entry, serializer);
+                }
+            }
+        }
+    }
+
+    private void serializeException(ILoggingEvent event, JsonSerializer serializer) {
+        IThrowableProxy throwableProxy = event.getThrowableProxy();
+        if (throwableProxy != null) {
+            if (throwableConverter != null) {
+                serializeException(serializer, throwableProxy.getClassName(),
+                        throwableProxy.getMessage(), throwableConverter.convert(event));
+            } else if (throwableProxy instanceof ThrowableProxy) {
+                Throwable throwable = ((ThrowableProxy) throwableProxy).getThrowable();
+                serializeException(serializer, throwable.getClass().getName(), throwable.getMessage(),
+                        Arrays.toString(throwable.getStackTrace()));
+            } else {
+                serializeException(serializer, throwableProxy.getClassName(), throwableProxy.getMessage(), throwableProxyConverter.convert(
+                        event));
+            }
+        }
+    }
+
     @Override
     public byte[] footerBytes() {
-        return null;
+        return new byte[0];
     }
 
     /**
@@ -251,109 +249,12 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         this.includePowertoolsInfo = includePowertoolsInfo;
     }
 
-    /**
-     * Specify if messages should be logged as JSON, without escaping string (default is <b>false</b>):
-     * <br/>
-     * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
-     *         <logMessagesAsJson>true</logMessagesAsJson>
-     *     </encoder>
-     * }</pre>
-     *
-     * @param logMessagesAsJson if messages should be looged as JSON (non escaped quotes)
-     */
-    public void setLogMessagesAsJson(boolean logMessagesAsJson) {
-        this.logMessagesAsJsonGlobal = logMessagesAsJson;
-    }
-
-    private void serializeException(JsonGenerator generator, String className, String message, String stackTrace)
-            throws IOException {
+    private void serializeException(JsonSerializer serializer, String className, String message, String stackTrace) {
         Map<Object, Object> map = new HashMap<>();
         map.put(EXCEPTION_MSG_ATTR_NAME, message);
         map.put(EXCEPTION_CLASS_ATTR_NAME, className);
         map.put(EXCEPTION_STACK_ATTR_NAME, stackTrace);
-        generator.writeRaw(',');
-        generator.writeObjectField(EXCEPTION_ATTR_NAME, map);
-    }
-
-    private void serializeTimestamp(JsonGenerator generator, long timestamp) throws IOException {
-        String formattedTimestamp;
-        if (timestampFormat == null || timestamp < 0) {
-            formattedTimestamp = String.valueOf(timestamp);
-        } else {
-            Date date = new Date(timestamp);
-            DateFormat format = new SimpleDateFormat(timestampFormat);
-
-            if (timestampFormatTimezoneId != null) {
-                TimeZone tz = TimeZone.getTimeZone(timestampFormatTimezoneId);
-                format.setTimeZone(tz);
-            }
-            formattedTimestamp = format.format(date);
-        }
-        generator.writeRaw(',');
-        generator.writeStringField(TIMESTAMP_ATTR_NAME, formattedTimestamp);
-    }
-
-    private void serializeMDCEntry(Map.Entry<String, String> entry, JsonGenerator generator) throws IOException {
-        generator.writeRaw(',');
-        generator.writeFieldName(entry.getKey());
-        if (isString(entry.getValue())) {
-            generator.writeString(entry.getValue());
-        } else {
-            generator.writeRawValue(entry.getValue());
-        }
-    }
-
-    /**
-     * As MDC is a {@code Map<String, String>}, we need to check the type
-     * to output numbers and booleans correctly (without quotes)
-     */
-    private boolean isString(String str) {
-        if (str == null) {
-            return true;
-        }
-        if ("true".equals(str) || "false".equals(str)) {
-            return false; // boolean
-        }
-        return !isNumeric(str); // number
-    }
-
-    /**
-     * Taken from commons-lang3 NumberUtils to avoid include the library
-     */
-    private boolean isNumeric(final String str) {
-        if (str == null || str.isEmpty()) {
-            return false;
-        }
-        if (str.charAt(str.length() - 1) == '.') {
-            return false;
-        }
-        if (str.charAt(0) == '-') {
-            if (str.length() == 1) {
-                return false;
-            }
-            return withDecimalsParsing(str, 1);
-        }
-        return withDecimalsParsing(str, 0);
-    }
-
-    /**
-     * Taken from commons-lang3 NumberUtils
-     */
-    private boolean withDecimalsParsing(final String str, final int beginIdx) {
-        int decimalPoints = 0;
-        for (int i = beginIdx; i < str.length(); i++) {
-            final boolean isDecimalPoint = str.charAt(i) == '.';
-            if (isDecimalPoint) {
-                decimalPoints++;
-            }
-            if (decimalPoints > 1) {
-                return false;
-            }
-            if (!isDecimalPoint && !Character.isDigit(str.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
+        serializer.writeRaw(',');
+        serializer.writeObjectField(EXCEPTION_ATTR_NAME, map);
     }
 }

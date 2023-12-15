@@ -20,8 +20,9 @@ import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,25 +31,25 @@ import software.amazon.lambda.powertools.logging.model.Basket;
 import software.amazon.lambda.powertools.logging.model.Product;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-class StringBuilderJsonGeneratorTest {
+class JsonSerializerTest {
     private StringBuilder sb;
-    private StringBuilderJsonGenerator generator;
+    private JsonSerializer generator;
 
     @BeforeEach
     void setUp() {
         sb = new StringBuilder();
-        generator = new StringBuilderJsonGenerator(sb);
+        generator = new JsonSerializer(sb);
     }
 
     @Test
     void writeString_shouldWriteStringWithQuotes() throws IOException {
-        generator.writeStringField("key","StringValue");
+        generator.writeStringField("key", "StringValue");
         assertThat(sb.toString()).hasToString("\"key\":\"StringValue\"");
     }
 
     @Test
     void writeBoolean_shouldWriteBooleanValue() throws IOException {
-        generator.writeBooleanField("key",true);
+        generator.writeBooleanField("key", true);
         assertThat(sb.toString()).hasToString("\"key\":true");
     }
 
@@ -98,9 +99,11 @@ class StringBuilderJsonGeneratorTest {
 
     @Test
     void writeMapObject_shouldWriteMapAsJson() throws IOException {
-        Map<String, String> map = Collections.singletonMap("key","StringValue");
+        Map<String, Object> map = new HashMap<>();
+        map.put("string","StringValue");
+        map.put("number", BigInteger.valueOf(1234567890L));
         generator.writeObjectField("map", map);
-        assertThat(sb.toString()).hasToString("\"map\":{\"key\":\"StringValue\"}");
+        assertThat(sb.toString()).hasToString("\"map\":{\"number\":1234567890,\"string\":\"StringValue\"}");
     }
 
     @Test

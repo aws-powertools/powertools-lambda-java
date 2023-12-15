@@ -15,28 +15,22 @@
 package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Map;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class PowertoolsLogEventForStream implements RequestStreamHandler {
+public class PowertoolsLogEventEnvVar implements RequestHandler<Object, Object> {
 
-    private static final Logger logger = LoggerFactory.getLogger(PowertoolsLogEventForStream.class);
+    private final Logger logger = LoggerFactory.getLogger(PowertoolsLogEventEnvVar.class);
 
     @Override
-    @Logging(logEvent = true)
-    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(outputStream, mapper.readValue(inputStream, Map.class));
+    @Logging
+    public Object handleRequest(Object input, Context context) {
+        return null;
     }
 
-    public static Logger getLogger() {
+    public Logger getLogger() {
         return logger;
     }
 }

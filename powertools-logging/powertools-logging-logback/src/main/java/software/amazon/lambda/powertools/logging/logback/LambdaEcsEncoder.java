@@ -22,6 +22,9 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_REQUEST_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeArguments;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntries;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeTimestamp;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -29,9 +32,11 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.logback.internal.LambdaEcsSerializer;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
 
 /**
@@ -45,6 +50,29 @@ import software.amazon.lambda.powertools.logging.logback.internal.LambdaEcsSeria
  */
 public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
 
+    protected static final String TIMESTAMP_ATTR_NAME = "@timestamp";
+    protected static final String ECS_VERSION_ATTR_NAME = "ecs.version";
+    protected static final String LOGGER_ATTR_NAME = "log.logger";
+    protected static final String LEVEL_ATTR_NAME = "log.level";
+    protected static final String SERVICE_NAME_ATTR_NAME = "service.name";
+    protected static final String SERVICE_VERSION_ATTR_NAME = "service.version";
+    protected static final String FORMATTED_MESSAGE_ATTR_NAME = "message";
+    protected static final String THREAD_ATTR_NAME = "process.thread.name";
+    protected static final String EXCEPTION_MSG_ATTR_NAME = "error.message";
+    protected static final String EXCEPTION_CLASS_ATTR_NAME = "error.type";
+    protected static final String EXCEPTION_STACK_ATTR_NAME = "error.stack_trace";
+    protected static final String CLOUD_PROVIDER_ATTR_NAME = "cloud.provider";
+    protected static final String CLOUD_REGION_ATTR_NAME = "cloud.region";
+    protected static final String CLOUD_ACCOUNT_ATTR_NAME = "cloud.account.id";
+    protected static final String CLOUD_SERVICE_ATTR_NAME = "cloud.service.name";
+    protected static final String FUNCTION_COLD_START_ATTR_NAME = "faas.coldstart";
+    protected static final String FUNCTION_REQUEST_ID_ATTR_NAME = "faas.execution";
+    protected static final String FUNCTION_ARN_ATTR_NAME = "faas.id";
+    protected static final String FUNCTION_NAME_ATTR_NAME = "faas.name";
+    protected static final String FUNCTION_VERSION_ATTR_NAME = "faas.version";
+    protected static final String FUNCTION_MEMORY_ATTR_NAME = "faas.memory";
+    protected static final String FUNCTION_TRACE_ID_ATTR_NAME = "trace.id";
+
     protected static final String ECS_VERSION = "1.2.0";
     protected static final String CLOUD_PROVIDER = "aws";
     protected static final String CLOUD_SERVICE = "lambda";
@@ -56,7 +84,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
 
     @Override
     public byte[] headerBytes() {
-        return null;
+        return new byte[0];
     }
 
     /**
@@ -65,62 +93,108 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      * @param event the logging event
      * @return the encoded bytes
      */
+
+    @SuppressWarnings("java:S106")
     @Override
     public byte[] encode(ILoggingEvent event) {
         final Map<String, String> mdcPropertyMap = event.getMDCPropertyMap();
 
-        StringBuilder builder = new StringBuilder(256);
-        LambdaEcsSerializer.serializeObjectStart(builder);
-        LambdaEcsSerializer.serializeTimestamp(builder, event.getTimeStamp(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "UTC");
-        LambdaEcsSerializer.serializeEcsVersion(builder, ECS_VERSION);
-        LambdaEcsSerializer.serializeLogLevel(builder, event.getLevel());
-        LambdaEcsSerializer.serializeFormattedMessage(builder, event.getFormattedMessage());
+        StringBuilder builder = new StringBuilder();
+        try (JsonSerializer serializer = new JsonSerializer(builder)) {
+            serializer.writeStartObject();
+            serializeTimestamp(serializer, event.getTimeStamp(), "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                    "UTC", TIMESTAMP_ATTR_NAME);
+            serializer.writeRaw(',');
+            serializer.writeStringField(ECS_VERSION_ATTR_NAME, ECS_VERSION);
+            serializer.writeRaw(',');
+            serializer.writeStringField(LEVEL_ATTR_NAME, event.getLevel().toString());
+            serializer.writeRaw(',');
+            serializer.writeStringField(FORMATTED_MESSAGE_ATTR_NAME, event.getFormattedMessage());
+
+            serializeException(event, serializer);
+
+            serializer.writeRaw(',');
+            serializer.writeStringField(SERVICE_NAME_ATTR_NAME, LambdaHandlerProcessor.serviceName());
+            serializer.writeRaw(',');
+            serializer.writeStringField(SERVICE_VERSION_ATTR_NAME, mdcPropertyMap.get(FUNCTION_VERSION.getName()));
+            serializer.writeRaw(',');
+            serializer.writeStringField(LOGGER_ATTR_NAME, event.getLoggerName());
+            serializer.writeRaw(',');
+            serializer.writeStringField(THREAD_ATTR_NAME, event.getThreadName());
+
+            String arn = mdcPropertyMap.get(FUNCTION_ARN.getName());
+
+            serializeCloudInfo(serializer, arn);
+
+            serializeFunctionInfo(serializer, arn, mdcPropertyMap);
+
+            serializeMDCEntries(mdcPropertyMap, serializer);
+
+            serializeArguments(event, serializer);
+
+            serializer.writeEndObject();
+            serializer.writeRaw('\n');
+        } catch (IOException e) {
+            System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
+        }
+        return builder.toString().getBytes(UTF_8);
+    }
+
+    private void serializeFunctionInfo(JsonSerializer serializer, String arn, Map<String, String> mdcPropertyMap) {
+        if (includeFaasInfo) {
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_ARN_ATTR_NAME, arn);
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_NAME_ATTR_NAME, mdcPropertyMap.get(FUNCTION_NAME.getName()));
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_VERSION_ATTR_NAME, mdcPropertyMap.get(FUNCTION_VERSION.getName()));
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_MEMORY_ATTR_NAME, mdcPropertyMap.get(FUNCTION_MEMORY_SIZE.getName()));
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_REQUEST_ID_ATTR_NAME, mdcPropertyMap.get(FUNCTION_REQUEST_ID.getName()));
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_COLD_START_ATTR_NAME, mdcPropertyMap.get(FUNCTION_COLD_START.getName()));
+            serializer.writeRaw(',');
+            serializer.writeStringField(FUNCTION_TRACE_ID_ATTR_NAME, mdcPropertyMap.get(FUNCTION_TRACE_ID.getName()));
+        }
+    }
+
+    private void serializeCloudInfo(JsonSerializer serializer, String arn) {
+        if (includeCloudInfo) {
+            serializer.writeRaw(',');
+            serializer.writeStringField(CLOUD_PROVIDER_ATTR_NAME, CLOUD_PROVIDER);
+            serializer.writeRaw(',');
+            serializer.writeStringField(CLOUD_SERVICE_ATTR_NAME, CLOUD_SERVICE);
+            if (arn != null) {
+                String[] arnParts = arn.split(":");
+                serializer.writeRaw(',');
+                serializer.writeStringField(CLOUD_REGION_ATTR_NAME, arnParts[3]);
+                serializer.writeRaw(',');
+                serializer.writeStringField(CLOUD_ACCOUNT_ATTR_NAME, arnParts[4]);
+            }
+        }
+    }
+
+    private void serializeException(ILoggingEvent event, JsonSerializer serializer) {
         IThrowableProxy throwableProxy = event.getThrowableProxy();
         if (throwableProxy != null) {
             if (throwableConverter != null) {
-                LambdaEcsSerializer.serializeException(builder, throwableProxy.getClassName(),
+                serializeException(serializer, throwableProxy.getClassName(),
                         throwableProxy.getMessage(), throwableConverter.convert(event));
             } else if (throwableProxy instanceof ThrowableProxy) {
-                LambdaEcsSerializer.serializeException(builder, ((ThrowableProxy) throwableProxy).getThrowable());
+                Throwable throwable = ((ThrowableProxy) throwableProxy).getThrowable();
+                serializeException(serializer, throwable.getClass().getName(), throwable.getMessage(),
+                        Arrays.toString(throwable.getStackTrace()));
             } else {
-                LambdaEcsSerializer.serializeException(builder, throwableProxy.getClassName(),
+                serializeException(serializer, throwableProxy.getClassName(),
                         throwableProxy.getMessage(), throwableProxyConverter.convert(event));
             }
         }
-        LambdaEcsSerializer.serializeServiceName(builder, LambdaHandlerProcessor.serviceName());
-        LambdaEcsSerializer.serializeServiceVersion(builder, mdcPropertyMap.get(FUNCTION_VERSION.getName()));
-        LambdaEcsSerializer.serializeLoggerName(builder, event.getLoggerName());
-        LambdaEcsSerializer.serializeThreadName(builder, event.getThreadName());
-        String arn = mdcPropertyMap.get(FUNCTION_ARN.getName());
-
-        if (includeCloudInfo) {
-            LambdaEcsSerializer.serializeCloudProvider(builder, CLOUD_PROVIDER);
-            LambdaEcsSerializer.serializeCloudService(builder, CLOUD_SERVICE);
-            if (arn != null) {
-                String[] arnParts = arn.split(":");
-                LambdaEcsSerializer.serializeCloudRegion(builder, arnParts[3]);
-                LambdaEcsSerializer.serializeCloudAccountId(builder, arnParts[4]);
-            }
-        }
-
-        if (includeFaasInfo) {
-            LambdaEcsSerializer.serializeFunctionId(builder, arn);
-            LambdaEcsSerializer.serializeFunctionName(builder, mdcPropertyMap.get(FUNCTION_NAME.getName()));
-            LambdaEcsSerializer.serializeFunctionVersion(builder, mdcPropertyMap.get(FUNCTION_VERSION.getName()));
-            LambdaEcsSerializer.serializeFunctionMemory(builder, mdcPropertyMap.get(FUNCTION_MEMORY_SIZE.getName()));
-            LambdaEcsSerializer.serializeFunctionExecutionId(builder,
-                    mdcPropertyMap.get(FUNCTION_REQUEST_ID.getName()));
-            LambdaEcsSerializer.serializeColdStart(builder, mdcPropertyMap.get(FUNCTION_COLD_START.getName()));
-            LambdaEcsSerializer.serializeTraceId(builder, mdcPropertyMap.get(FUNCTION_TRACE_ID.getName()));
-        }
-        LambdaEcsSerializer.serializeAdditionalFields(builder, event.getMDCPropertyMap());
-        LambdaEcsSerializer.serializeObjectEnd(builder);
-        return builder.toString().getBytes(UTF_8);
     }
 
     @Override
     public byte[] footerBytes() {
-        return null;
+        return new byte[0];
     }
 
     /**
@@ -195,5 +269,14 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
      */
     public void setIncludeFaasInfo(boolean includeFaasInfo) {
         this.includeFaasInfo = includeFaasInfo;
+    }
+
+    private void serializeException(JsonSerializer serializer, String className, String message, String stackTrace) {
+        serializer.writeRaw(',');
+        serializer.writeObjectField(EXCEPTION_MSG_ATTR_NAME, message);
+        serializer.writeRaw(',');
+        serializer.writeObjectField(EXCEPTION_CLASS_ATTR_NAME, className);
+        serializer.writeRaw(',');
+        serializer.writeObjectField(EXCEPTION_STACK_ATTR_NAME, stackTrace);
     }
 }

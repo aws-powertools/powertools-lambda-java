@@ -21,18 +21,18 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import software.amazon.lambda.powertools.logging.internal.StringBuilderJsonGenerator;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 import software.amazon.lambda.powertools.logging.model.Basket;
 import software.amazon.lambda.powertools.logging.model.Product;
 
 class StructuredArgumentsTest {
     private StringBuilder sb;
-    private StringBuilderJsonGenerator generator;
+    private JsonSerializer serializer;
 
     @BeforeEach
     void setUp() {
         sb = new StringBuilder();
-        generator = new StringBuilderJsonGenerator(sb);
+        serializer = new JsonSerializer(sb);
     }
 
     @Test
@@ -44,7 +44,7 @@ class StructuredArgumentsTest {
 
         // WHEN
         StructuredArgument argument = StructuredArguments.entry("basket", basket);
-        argument.writeTo(generator);
+        argument.writeTo(serializer);
 
         // THEN
         assertThat(sb.toString()).hasToString("\"basket\":{\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]}");
@@ -60,7 +60,7 @@ class StructuredArgumentsTest {
 
         // WHEN
         StructuredArgument argument = StructuredArguments.entries(catalog);
-        argument.writeTo(generator);
+        argument.writeTo(serializer);
 
         // THEN
         assertThat(sb.toString())
@@ -81,7 +81,7 @@ class StructuredArgumentsTest {
 
         // WHEN
         StructuredArgument argument = StructuredArguments.array("products", products);
-        argument.writeTo(generator);
+        argument.writeTo(serializer);
 
         // THEN
         assertThat(sb.toString()).contains("\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]");
@@ -95,7 +95,7 @@ class StructuredArgumentsTest {
 
         // WHEN
         StructuredArgument argument = StructuredArguments.json("product", rawJson);
-        argument.writeTo(generator);
+        argument.writeTo(serializer);
 
         // THEN
         assertThat(sb.toString()).contains("\"product\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}");

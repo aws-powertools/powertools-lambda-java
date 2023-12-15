@@ -14,9 +14,9 @@
 
 package software.amazon.lambda.powertools.logging.argument;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import java.io.IOException;
 import org.slf4j.Logger;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
 /**
  * A wrapper for an argument passed to a log method (e.g. {@link Logger#info(String, Object...)})
@@ -24,12 +24,12 @@ import org.slf4j.Logger;
  */
 public interface StructuredArgument {
     /**
-     * Writes the data associated with this argument to the given {@link JsonGenerator}.
+     * Writes the data associated with this argument to the given {@link JsonSerializer}.
      *
-     * @param jsonGenerator the {@link JsonGenerator} to produce JSON content
+     * @param serializer the {@link JsonSerializer} to produce JSON content
      * @throws IOException if an I/O error occurs
      */
-    void writeTo(JsonGenerator jsonGenerator) throws IOException;
+    void writeTo(JsonSerializer serializer) throws IOException;
 
     /**
      * Writes the data associated with this argument to a {@link String} to be

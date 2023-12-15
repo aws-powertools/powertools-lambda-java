@@ -14,9 +14,8 @@
 
 package software.amazon.lambda.powertools.logging.argument;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import java.io.IOException;
 import java.util.Objects;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
 public class JsonArgument implements StructuredArgument {
     private final String key;
@@ -28,9 +27,9 @@ public class JsonArgument implements StructuredArgument {
     }
 
     @Override
-    public void writeTo(JsonGenerator jsonGenerator) throws IOException {
-        jsonGenerator.writeFieldName(key);
-        jsonGenerator.writeRawValue(rawJson);
+    public void writeTo(JsonSerializer serializer) {
+        serializer.writeFieldName(key);
+        serializer.writeRaw(rawJson);
     }
 
     @Override
