@@ -14,6 +14,7 @@
 
 package helloworld;
 
+import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
@@ -31,10 +32,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.tracing.CaptureMode;
 import software.amazon.lambda.powertools.tracing.Tracing;
@@ -63,13 +64,13 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
 
-        LoggingUtils.appendEntry("test", "willBeLogged");
+        MDC.put("test", "willBeLogged");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
         try {
             final String pageContents = this.getPageContents("https://checkip.amazonaws.com");
-            log.info(pageContents);
+            log.info("", entry("ip", pageContents));
             TracingUtils.putAnnotation("Test", "New");
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 

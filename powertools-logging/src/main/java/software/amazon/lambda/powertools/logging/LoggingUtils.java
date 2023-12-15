@@ -17,8 +17,6 @@ package software.amazon.lambda.powertools.logging;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Arrays;
-import java.util.Map;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
@@ -28,51 +26,9 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  */
 public final class LoggingUtils {
 
-    public static final String LOG_MESSAGES_AS_JSON = "PowertoolsLogMessagesAsJson";
-
     private static ObjectMapper objectMapper;
 
     private LoggingUtils() {
-    }
-
-    /**
-     * Appends an additional key and value to each log entry made. Duplicate values
-     * for the same key will be replaced with the latest.
-     *
-     * @param key   The name of the key to be logged
-     * @param value The value to be logged
-     */
-    public static void appendEntry(String key, String value) {
-        MDC.put(key, value);
-    }
-
-    /**
-     * Appends additional keys and values to each log entry made. Duplicate values
-     * for the same key will be replaced with the latest.
-     *
-     * @param customEntries Map of custom keys values to be appended to logs
-     */
-    public static void appendEntries(Map<String, String> customEntries) {
-        customEntries.forEach(MDC::put);
-    }
-
-    /**
-     * Remove an entry from log entry.
-     *
-     * @param key The key of the entry to be removed
-     */
-    public static void removeEntry(String key) {
-        MDC.remove(key);
-    }
-
-
-    /**
-     * Removes entries from log entry.
-     *
-     * @param keys Map of keys to be removed from logs
-     */
-    public static void removeEntries(String... keys) {
-        Arrays.stream(keys).forEach(MDC::remove);
     }
 
     /**
@@ -90,15 +46,6 @@ public final class LoggingUtils {
      */
     public static String getCorrelationId() {
         return MDC.get(CORRELATION_ID.getName());
-    }
-
-    /**
-     * When set to true, will log messages as JSON (without escaping string).
-     * Useful to log events or big JSON objects.
-     * @param value boolean to specify if yes or no messages should be logged as JSON (default is false)
-     */
-    public static void logMessagesAsJson(boolean value) {
-        MDC.put(LOG_MESSAGES_AS_JSON, String.valueOf(value));
     }
 
     /**

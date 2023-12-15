@@ -18,25 +18,15 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
-import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class IdempotencyFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    private static final Logger LOG = LoggerFactory.getLogger(IdempotencyFunction.class);
-
     public boolean handlerExecuted = false;
 
     public IdempotencyFunction(DynamoDbClient client) {
@@ -65,28 +55,10 @@ public class IdempotencyFunction implements RequestHandler<APIGatewayProxyReques
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
-        try {
-            String address = JsonConfig.get().getObjectMapper().readTree(input.getBody()).get("address").asText();
-            final String pageContents = this.getPageContents(address);
-            String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
-            LOG.debug("ip is {}", pageContents);
             return response
                     .withStatusCode(200)
-                    .withBody(output);
+                    .withBody("{ \"message\": \"hello world\"}");
 
-        } catch (IOException e) {
-            return response
-                    .withBody("{}")
-                    .withStatusCode(500);
-        }
-    }
-
-    // we could actually also put the @Idempotent annotation here
-    private String getPageContents(String address) throws IOException {
-        URL url = new URL(address);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()))) {
-            return br.lines().collect(Collectors.joining(System.lineSeparator()));
-        }
     }
 }

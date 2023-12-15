@@ -57,7 +57,8 @@ import java.lang.annotation.Target;
  * <p>By default {@code Logging} will not log the event which has trigger the invoke of the Lambda function.
  * This can be enabled using {@code @Logging(logEvent = true)}.</p>
  *
- * <p>To append additional keys to each log entry you can use {@link LoggingUtils#appendEntry(String, String)}</p>
+ * <p>To append additional keys to each log entry you can either use {@link org.slf4j.MDC#put(String, String)}
+ * or {@link software.amazon.lambda.powertools.logging.argument.StructuredArguments}</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)

@@ -18,8 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import java.util.HashMap;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
@@ -31,62 +29,6 @@ class LoggingUtilsTest {
     @BeforeEach
     void setUp() {
         MDC.clear();
-    }
-
-    @Test
-    void shouldSetCustomKeyInLoggingContext() {
-        LoggingUtils.appendEntry("org/slf4j/test", "value");
-
-        assertThat(MDC.getCopyOfContextMap())
-                .hasSize(1)
-                .containsEntry("org/slf4j/test", "value");
-    }
-
-    @Test
-    void shouldSetCustomKeyAsMapInLoggingContext() {
-        Map<String, String> customKeys = new HashMap<>();
-        customKeys.put("org/slf4j/test", "value");
-        customKeys.put("test1", "value1");
-
-        LoggingUtils.appendEntries(customKeys);
-
-        assertThat(MDC.getCopyOfContextMap())
-                .hasSize(2)
-                .containsEntry("org/slf4j/test", "value")
-                .containsEntry("test1", "value1");
-    }
-
-    @Test
-    void shouldRemoveCustomKeyInLoggingContext() {
-        LoggingUtils.appendEntry("org/slf4j/test", "value");
-
-        assertThat(MDC.getCopyOfContextMap())
-                .hasSize(1)
-                .containsEntry("org/slf4j/test", "value");
-
-        LoggingUtils.removeEntry("org/slf4j/test");
-
-        assertThat(MDC.getCopyOfContextMap())
-                .isEmpty();
-    }
-
-    @Test
-    void shouldRemoveCustomKeysInLoggingContext() {
-        Map<String, String> customKeys = new HashMap<>();
-        customKeys.put("org/slf4j/test", "value");
-        customKeys.put("test1", "value1");
-
-        LoggingUtils.appendEntries(customKeys);
-
-        assertThat(MDC.getCopyOfContextMap())
-                .hasSize(2)
-                .containsEntry("org/slf4j/test", "value")
-                .containsEntry("test1", "value1");
-
-        LoggingUtils.removeEntries("org/slf4j/test", "test1");
-
-        assertThat(MDC.getCopyOfContextMap())
-                .isEmpty();
     }
 
     @Test
