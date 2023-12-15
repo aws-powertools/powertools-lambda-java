@@ -23,7 +23,7 @@ public class JsonArgument implements StructuredArgument {
 
     public JsonArgument(String key, String rawJson) {
         this.key = Objects.requireNonNull(key, "key must not be null");
-        this.rawJson = Objects.requireNonNull(rawJson, "rawJson must not be null");;
+        this.rawJson = Objects.requireNonNull(rawJson, "rawJson must not be null");
     }
 
     @Override

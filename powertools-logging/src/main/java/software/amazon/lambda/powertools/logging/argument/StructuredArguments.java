@@ -87,6 +87,7 @@ public class StructuredArguments {
      * @param arg the argument to format
      * @return formatted string version of the argument
      */
+    @SuppressWarnings("java:S106")
     public static String toString(Object arg) {
 
         if (arg == null) {

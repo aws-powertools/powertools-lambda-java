@@ -32,11 +32,6 @@ class LogbackLoggingManagerTest {
     private static final Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     @Test
-    void test() {
-//        LOG.info("test", kv("key", "value"));
-    }
-
-    @Test
     @Order(1)
     void getLogLevel_shouldReturnConfiguredLogLevel() {
         LogbackLoggingManager manager = new LogbackLoggingManager();
