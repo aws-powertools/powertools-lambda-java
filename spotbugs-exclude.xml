@@ -67,6 +67,9 @@
                 <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
                 <Field name="transformationManager"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.JsonSerializer"/>
+            </And>
         </Or>
     </Match>
     <!-- Internals of Log event for apache log4j-->

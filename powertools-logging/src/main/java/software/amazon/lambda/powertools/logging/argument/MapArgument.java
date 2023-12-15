@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.logging.argument;
 
+import java.util.HashMap;
 import java.util.Map;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
@@ -21,7 +22,11 @@ public class MapArgument implements StructuredArgument {
     private final Map<?, ?> map;
 
     public MapArgument(Map<?, ?> map) {
-        this.map = map;
+        if (map != null) {
+            this.map = new HashMap<>(map);
+        } else {
+            this.map = null;
+        }
     }
 
     @Override

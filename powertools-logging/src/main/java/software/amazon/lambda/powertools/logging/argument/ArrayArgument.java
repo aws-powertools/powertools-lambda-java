@@ -23,7 +23,8 @@ public class ArrayArgument implements StructuredArgument {
 
     public ArrayArgument(String key, Object[] values) {
         this.key = Objects.requireNonNull(key, "Key must not be null");
-        this.values = values;
+        this.values = new Object[values.length];
+        System.arraycopy(values, 0, this.values, 0, values.length);
     }
 
     @Override
