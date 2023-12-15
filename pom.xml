@@ -55,12 +55,12 @@
         <module>powertools-large-messages</module>
         <module>powertools-e2e-tests</module>
         <module>powertools-batch</module>
-        <module>examples</module>
         <module>powertools-parameters/powertools-parameters-ssm</module>
         <module>powertools-parameters/powertools-parameters-secrets</module>
         <module>powertools-parameters/powertools-parameters-dynamodb</module>
         <module>powertools-parameters/powertools-parameters-appconfig</module>
         <module>powertools-parameters/powertools-parameters-tests</module>
+        <module>examples</module>
     </modules>
 
     <scm>
