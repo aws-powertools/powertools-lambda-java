@@ -14,29 +14,51 @@
 
 package software.amazon.lambda.powertools.utilities;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.RuntimeConfiguration;
 import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionRegistry;
 import io.burt.jmespath.jackson.JacksonRuntime;
+import java.util.function.Supplier;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 import software.amazon.lambda.powertools.utilities.jmespath.JsonFunction;
 
-public class JsonConfig {
-    private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(ObjectMapper::new);
+public final class JsonConfig {
+
+    private static final Supplier<ObjectMapper> objectMapperSupplier = () -> JsonMapper.builder()
+            // Don't throw an exception when json has extra fields you are not serializing on.
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            // Ignore null values when writing json.
+            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            // Write times as a String instead of a Long so its human-readable.
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            // Sort fields in alphabetical order
+            .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+            .build();
+
+    private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(objectMapperSupplier);
+
     private final FunctionRegistry defaultFunctions = FunctionRegistry.defaultRegistry();
+
     private final FunctionRegistry customFunctions = defaultFunctions.extend(
             new Base64Function(),
             new Base64GZipFunction(),
             new JsonFunction()
     );
+
     private final RuntimeConfiguration configuration = new RuntimeConfiguration.Builder()
             .withSilentTypeErrors(true)
             .withFunctionRegistry(customFunctions)
             .build();
+
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
     private JsonConfig() {
