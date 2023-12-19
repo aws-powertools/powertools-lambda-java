@@ -12,12 +12,10 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.redis;
+package software.amazon.lambda.powertools.idempotency.persistence.redis;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static software.amazon.lambda.powertools.idempotency.redis.Constants.REDIS_HOST;
-import static software.amazon.lambda.powertools.idempotency.redis.Constants.REDIS_PORT;
 
 import com.github.fppt.jedismock.server.ServiceOptions;
 import java.io.IOException;
@@ -39,8 +37,8 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemA
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 
-@SetEnvironmentVariable(key = REDIS_HOST, value = "localhost")
-@SetEnvironmentVariable(key = REDIS_PORT, value = "6379")
+@SetEnvironmentVariable(key = Constants.REDIS_HOST, value = "localhost")
+@SetEnvironmentVariable(key = Constants.REDIS_PORT, value = "6379")
 public class RedisPersistenceStoreTest {
     static RedisServer redisServer;
     private final RedisPersistenceStore redisPersistenceStore = RedisPersistenceStore.builder().build();
@@ -114,8 +112,8 @@ public class RedisPersistenceStoreTest {
     @SetEnvironmentVariable(key = Constants.REDIS_CLUSTER_MODE, value = "false")
     @Test
     void putRecord_JedisClientInstanceOfJedisPooled() {
-        assertThat(redisPersistenceStore.getJedisClient(System.getenv(REDIS_HOST),
-                Integer.parseInt(System.getenv(REDIS_PORT))) instanceof JedisCluster).isFalse();
+        assertThat(redisPersistenceStore.getJedisClient(System.getenv(Constants.REDIS_HOST),
+                Integer.parseInt(System.getenv(Constants.REDIS_PORT))) instanceof JedisCluster).isFalse();
     }
 
     @Test

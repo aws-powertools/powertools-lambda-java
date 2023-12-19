@@ -28,10 +28,6 @@
                 <Field name="transformationManager"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
-                <Method name="getS3Client"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
                 <Field name="cacheManager"/>
             </And>
@@ -86,6 +82,22 @@
                 <Method name="getConfig"/>
             </And>
             <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Method name="getLogEvent"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$Builder"/>
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.AbstractJacksonLayoutCopy$LogEventWithAdditionalFields"/>
+                <Method name="getAdditionalFields"/>
+            </And>
+            <And>
                 <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
                 <Method name="getS3Client"/>
             </And>
@@ -111,10 +123,6 @@
                 <Field name="throwableConverter"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
-                <Field name="transformer"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder"/>
                 <Field name="throwableConverter"/>
             </And>
@@ -137,6 +145,18 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore$Builder"/>
                 <Field name="dynamoDbClient"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.redis.RedisPersistenceStore$Builder"/>
+                <Field name="jedisClient"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>
+                <Field name="cacheManager"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
+                <Field name="transformer"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.utilities.EventDeserializer$EventPart"/>

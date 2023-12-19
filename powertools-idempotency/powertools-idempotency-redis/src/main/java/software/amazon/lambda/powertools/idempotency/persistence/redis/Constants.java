@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.redis;
+package software.amazon.lambda.powertools.idempotency.persistence.redis;
 
 public class Constants {
     public static final String REDIS_HOST = "REDIS_HOST";
