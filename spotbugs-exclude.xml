@@ -74,6 +74,14 @@
         <Bug pattern="EI_EXPOSE_REP"/>
         <Or>
             <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
+                <Method name="getPersistenceStore"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
+                <Method name="getConfig"/>
+            </And>
+            <And>
                 <Class name="software.amazon.lambda.powertools.logging.internal.LambdaJsonLayout$LogEventWithAdditionalFields"/>
                 <Method name="getLogEvent"/>
             </And>
@@ -121,6 +129,26 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.sqs.internal.BatchContext"/>
                 <Field name="client"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
+                <Field name="store"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
+                <Field name="config"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
+                <Field name="pjp"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore$Builder"/>
+                <Field name="dynamoDbClient"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.redis.RedisPersistenceStore$Builder"/>
+                <Field name="jedisClient"/>
             </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.parameters.BaseProvider"/>

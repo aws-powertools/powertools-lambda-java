@@ -12,7 +12,7 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.redis;
+package software.amazon.lambda.powertools.idempotency.persistence.redis;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
@@ -297,7 +297,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         private String statusAttr = "status";
         private String dataAttr = "data";
         private String validationAttr = "validation";
-        private UnifiedJedis jedisPool;
+        private UnifiedJedis jedisClient;
 
         /**
          * Initialize and return a new instance of {@link RedisPersistenceStore}.<br/>
@@ -310,7 +310,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
          */
         public RedisPersistenceStore build() {
             return new RedisPersistenceStore(keyPrefixName, keyAttr, expiryAttr,
-                    inProgressExpiryAttr, statusAttr, dataAttr, validationAttr, jedisPool);
+                    inProgressExpiryAttr, statusAttr, dataAttr, validationAttr, jedisClient);
         }
 
         /**
@@ -400,7 +400,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
          * @return the builder instance (to chain operations)
          */
         public Builder withJedisClient(UnifiedJedis jedisClient) {
-            this.jedisPool = jedisClient;
+            this.jedisClient = jedisClient;
             return this;
         }
     }
