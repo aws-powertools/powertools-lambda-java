@@ -27,11 +27,10 @@
     <artifactId>powertools-idempotency</artifactId>
     <packaging>pom</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Idempotency</name>
+    <name>Powertools for AWS Lambda (Java) - Idempotency</name>
     <description>
 
     </description>
-
 
     <modules>
         <module>powertools-idempotency-core</module>
@@ -40,6 +39,11 @@
     </modules>
 
     <dependencies>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
@@ -63,6 +67,11 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>

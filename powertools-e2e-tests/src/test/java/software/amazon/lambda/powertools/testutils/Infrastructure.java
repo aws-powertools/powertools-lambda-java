@@ -258,7 +258,6 @@ public class Infrastructure {
                 "cd " + pathToFunction +
                         " && timeout -s SIGKILL 5m mvn clean install -ff " +
                         " -Dmaven.test.skip=true " +
-                        " -Dmaven.resources.skip=true " +
                         " -Dmaven.compiler.source=" + runtime.getMvnProperty() +
                         " -Dmaven.compiler.target=" + runtime.getMvnProperty() +
                         " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/"
@@ -597,27 +596,30 @@ public class Infrastructure {
         private boolean redisDeployment = false;
 
         private Builder() {
-            getJavaRuntime();
+            runtime = mapRuntimeVersion("JAVA_VERSION");
         }
 
-        /**
-         * Retrieve the java runtime to use for the lambda function.
-         */
-        private void getJavaRuntime() {
-            String javaVersion = System.getenv("JAVA_VERSION"); // must be set in GitHub actions
+
+
+        private JavaRuntime mapRuntimeVersion(String environmentVariableName) {
+            String javaVersion = System.getenv(environmentVariableName); // must be set in GitHub actions
+            JavaRuntime ret = null;
             if (javaVersion == null) {
-                throw new IllegalArgumentException("JAVA_VERSION is not set");
+                throw new IllegalArgumentException(environmentVariableName + " is not set");
             }
             if (javaVersion.startsWith("8")) {
-                runtime = JavaRuntime.JAVA8AL2;
+                ret = JavaRuntime.JAVA8AL2;
             } else if (javaVersion.startsWith("11")) {
-                runtime = JavaRuntime.JAVA11;
+                ret = JavaRuntime.JAVA11;
             } else if (javaVersion.startsWith("17")) {
-                runtime = JavaRuntime.JAVA17;
+                ret = JavaRuntime.JAVA17;
+            } else if (javaVersion.startsWith("21")) {
+                ret = JavaRuntime.JAVA21;
             } else {
                 throw new IllegalArgumentException("Unsupported Java version " + javaVersion);
             }
-            LOG.debug("Java Version set to {}, using runtime {}", javaVersion, runtime.getRuntime());
+            LOG.debug("Java Version set to {}, using runtime variable {}", ret, javaVersion);
+            return ret;
         }
 
         public Infrastructure build() {

@@ -31,9 +31,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
-import software.amazon.lambda.powertools.common.internal.LambdaConstants;
-import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 
 class LambdaHandlerProcessorTest {
 

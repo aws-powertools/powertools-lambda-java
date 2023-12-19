@@ -51,7 +51,7 @@
   <module name="FileLength"/>
 
   <module name="Header">
-    <property name="headerFile" value="license-header"/>
+    <property name="headerFile" value="${basedir}/license-header"/>
     <property name="severity" value="error"/>
   </module>
 

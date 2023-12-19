@@ -35,7 +35,7 @@ jobs:
           distribution: 'corretto'
           java-version: 11
       - name: Build with Maven
-        run: mvn clean package --file pom.xml -DskipTests artifact:buildinfo
+        run: mvn clean package --file pom.xml -DskipTests artifact:buildinfo -pl '!software.amazon.lambda.examples:powertools-examples-idempotency,!software.amazon.lambda.examples:powertools-examples-batch,!software.amazon.lambda.examples:powertools-examples-cloudformation,!software.amazon.lambda.examples:powertools-examples-core-utilities-cdk,!software.amazon.lambda.examples:powertools-examples-core-utilities-sam,!software.amazon.lambda.examples:powertools-examples-core-utilities-serverless,!software.amazon.lambda.examples:powertools-examples-core-utilities-terraform,!software.amazon.lambda.examples:powertools-examples-parameters,!software.amazon.lambda.examples:powertools-examples-serialization,!software.amazon.lambda.examples:powertools-examples-validation,!software.amazon.lambda.examples:cdk,!software.amazon.lambda:powertools-examples'
       - name: Get artifacts size & build report
         id: artifacts-size-report
         run: |

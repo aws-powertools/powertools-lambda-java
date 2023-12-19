@@ -3,8 +3,8 @@ package helloworld;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import java.util.Objects;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
@@ -24,7 +24,7 @@ import software.amazon.lambda.powertools.cloudformation.Response;
  */
 
 public class App extends AbstractCustomResourceHandler {
-    private final static Logger log = LogManager.getLogger(App.class);
+    private static final Logger log = LoggerFactory.getLogger(App.class);
     private final S3Client s3Client;
 
     public App() {
@@ -47,7 +47,7 @@ public class App extends AbstractCustomResourceHandler {
         Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"),
                 "BucketName cannot be null.");
 
-        log.info(cloudFormationCustomResourceEvent);
+        log.info(cloudFormationCustomResourceEvent.toString());
         String bucketName = (String) cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName");
         log.info("Bucket Name {}", bucketName);
         try {
@@ -57,7 +57,7 @@ public class App extends AbstractCustomResourceHandler {
             return Response.success(bucketName);
         } catch (AwsServiceException | SdkClientException e) {
             // In case of error, return a failed response, with the bucketName as the physicalResourceId
-            log.error(e);
+            log.error("Unable to create bucket", e);
             return Response.failed(bucketName);
         }
     }
@@ -77,7 +77,7 @@ public class App extends AbstractCustomResourceHandler {
         Objects.requireNonNull(cloudFormationCustomResourceEvent.getResourceProperties().get("BucketName"),
                 "BucketName cannot be null.");
 
-        log.info(cloudFormationCustomResourceEvent);
+        log.info(cloudFormationCustomResourceEvent.toString());
         // Get the physicalResourceId. physicalResourceId is the value returned to CloudFormation in the Create request, and passed in on subsequent requests (e.g. UPDATE or DELETE)
         String physicalResourceId = cloudFormationCustomResourceEvent.getPhysicalResourceId();
         log.info("Physical Resource ID {}", physicalResourceId);
@@ -94,7 +94,7 @@ public class App extends AbstractCustomResourceHandler {
                 // Return a successful response with the newBucketName
                 return Response.success(newBucketName);
             } catch (AwsServiceException | SdkClientException e) {
-                log.error(e);
+                log.error("Unable to create bucket", e);
                 return Response.failed(newBucketName);
             }
         } else {
@@ -120,7 +120,7 @@ public class App extends AbstractCustomResourceHandler {
         Objects.requireNonNull(cloudFormationCustomResourceEvent.getPhysicalResourceId(),
                 "PhysicalResourceId cannot be null.");
 
-        log.info(cloudFormationCustomResourceEvent);
+        log.info(cloudFormationCustomResourceEvent.toString());
         // Get the physicalResourceId. physicalResourceId is the value provided to CloudFormation in the Create request.
         String bucketName = cloudFormationCustomResourceEvent.getPhysicalResourceId();
         log.info("Bucket Name {}", bucketName);
@@ -135,7 +135,7 @@ public class App extends AbstractCustomResourceHandler {
                 return Response.success(bucketName);
             } catch (AwsServiceException | SdkClientException e) {
                 // Return a failed response in case of errors during the bucket deletion
-                log.error(e);
+                log.error("Unable to delete bucket", e);
                 return Response.failed(bucketName);
             }
         } else {
@@ -166,7 +166,7 @@ public class App extends AbstractCustomResourceHandler {
         s3Client.createBucket(createBucketRequest);
         WaiterResponse<HeadBucketResponse> waiterResponse =
                 waiter.waitUntilBucketExists(HeadBucketRequest.builder().bucket(bucketName).build());
-        waiterResponse.matched().response().ifPresent(log::info);
+        waiterResponse.matched().response().ifPresent(res -> log.info(res.toString()));
         log.info("Bucket Created {}", bucketName);
     }
 }

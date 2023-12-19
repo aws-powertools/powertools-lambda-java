@@ -82,7 +82,7 @@ public class Idempotency {
     }
 
     private static class Holder {
-        private final static Idempotency instance = new Idempotency();
+        private static final Idempotency instance = new Idempotency();
     }
 
     public static class Config {

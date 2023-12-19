@@ -14,17 +14,17 @@
 
 package software.amazon.lambda.powertools.logging.handlers;
 
-import static software.amazon.lambda.powertools.logging.CorrelationIdPathConstants.APPLICATION_LOAD_BALANCER;
+import static software.amazon.lambda.powertools.logging.CorrelationIdPaths.APPLICATION_LOAD_BALANCER;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowertoolsLogAlbCorrelationId implements RequestHandler<ApplicationLoadBalancerRequestEvent, Object> {
-    private final Logger LOG = LogManager.getLogger(PowertoolsLogAlbCorrelationId.class);
+    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogAlbCorrelationId.class);
 
     @Override
     @Logging(correlationIdPath = APPLICATION_LOAD_BALANCER)

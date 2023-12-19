@@ -49,7 +49,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        java: [8, 11, 17, 21, 15, 16, 18, 19, 20]
+        java: [8, 11, 17, 21]
     name: Java ${{ matrix.java }}
     env:
       JAVA: ${{ matrix.java }}
@@ -66,13 +66,17 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: 'maven'
       - name: Build with Maven
+        if: ${{ matrix.java == '8' }} # If 8 exclude the examples directory
+        run: mvn -B install --file pom.xml -pl '!software.amazon.lambda.examples:powertools-examples-idempotency,!software.amazon.lambda.examples:powertools-examples-batch,!software.amazon.lambda.examples:powertools-examples-cloudformation,!software.amazon.lambda.examples:powertools-examples-core-utilities-cdk,!software.amazon.lambda.examples:powertools-examples-core-utilities-sam,!software.amazon.lambda.examples:powertools-examples-core-utilities-serverless,!software.amazon.lambda.examples:powertools-examples-core-utilities-terraform,!software.amazon.lambda.examples:powertools-examples-parameters,!software.amazon.lambda.examples:powertools-examples-serialization,!software.amazon.lambda.examples:powertools-examples-validation,!software.amazon.lambda.examples:cdk,!software.amazon.lambda:powertools-examples'
+      - name: Build with Maven
+        if: ${{  matrix.java != '8' }} # If not 8 don't exclude the examples directory
         run: mvn -B install --file pom.xml
       - name: Build Gradle Example - Java
-        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        if: ${{ matrix.java != '8' }}
         working-directory: examples/powertools-examples-core-utilities/gradle
         run: ./gradlew build
       - name: Build Gradle Example - Kotlin
-        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        if: ${{ matrix.java != '8' }}
         working-directory: examples/powertools-examples-core-utilities/kotlin
         run: ./gradlew build
       - name: Setup Terraform

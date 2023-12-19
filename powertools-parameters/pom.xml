@@ -26,78 +26,22 @@
 
     <artifactId>powertools-parameters</artifactId>
 
-    <name>Powertools for AWS Lambda (Java) library Parameters</name>
-
-    <description>
-        Set of utilities to retrieve parameters from Secrets Manager or SSM Parameter Store
-    </description>
-    <url>https://aws.amazon.com/lambda/</url>
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
-    </issueManagement>
-    <scm>
-        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
-    </scm>
-    <developers>
-        <developer>
-            <name>Powertools for AWS Lambda team</name>
-            <organization>Amazon Web Services</organization>
-            <organizationUrl>https://aws.amazon.com/</organizationUrl>
-        </developer>
-    </developers>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <name>Powertools for AWS Lambda (Java) - Parameters</name>
+    <description>Set of utilities to retrieve parameters - common interface</description>
 
     <dependencies>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>ssm</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>apache-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>netty-nio-client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>secretsmanager</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>apache-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>software.amazon.awssdk</groupId>
-                    <artifactId>netty-nio-client</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>dynamodb</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>appconfigdata</artifactId>
         </dependency>
 
         <dependency>

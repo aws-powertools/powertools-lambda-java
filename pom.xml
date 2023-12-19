@@ -23,7 +23,7 @@
     <version>2.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Powertools for AWS Lambda (Java) library Parent</name>
+    <name>Powertools for AWS Lambda (Java) - Parent</name>
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
@@ -32,6 +32,25 @@
         <system>GitHub Issues</system>
         <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
+
+    <scm>
+        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
+    </scm>
+    <developers>
+        <developer>
+            <name>Powertools for AWS Lambda (Java) Team</name>
+            <organization>Amazon Web Services</organization>
+            <organizationUrl>https://aws.amazon.com/</organizationUrl>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -44,6 +63,8 @@
         <module>powertools-common</module>
         <module>powertools-serialization</module>
         <module>powertools-logging</module>
+        <module>powertools-logging/powertools-logging-log4j</module>
+        <module>powertools-logging/powertools-logging-logback</module>
         <module>powertools-tracing</module>
         <module>powertools-metrics</module>
         <module>powertools-parameters</module>
@@ -54,26 +75,21 @@
         <module>powertools-e2e-tests</module>
         <module>powertools-batch</module>
         <module>examples</module>
+        <module>powertools-parameters/powertools-parameters-ssm</module>
+        <module>powertools-parameters/powertools-parameters-secrets</module>
+        <module>powertools-parameters/powertools-parameters-dynamodb</module>
+        <module>powertools-parameters/powertools-parameters-appconfig</module>
+        <module>powertools-parameters/powertools-parameters-tests</module>
     </modules>
-
-    <scm>
-        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
-    </scm>
-
-    <developers>
-        <developer>
-            <name>Powertools for AWS Lambda (Java) team</name>
-            <organization>Amazon Web Services</organization>
-            <organizationUrl>https://aws.amazon.com/</organizationUrl>
-        </developer>
-    </developers>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
         <log4j.version>2.20.0</log4j.version>
+        <log4j.version>2.22.0</log4j.version>
+        <slf4j.version>2.0.7</slf4j.version>
         <jackson.version>2.15.3</jackson.version>
-        <aspectj.version>1.9.7</aspectj.version>
         <aws.sdk.version>2.21.0</aws.sdk.version>
         <aws.xray.recorder.version>2.14.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.1.3</payloadoffloading-common.version>
@@ -82,6 +98,7 @@
         <lambda.events.version>3.11.2</lambda.events.version>
         <lambda.serial.version>1.1.2</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
@@ -91,15 +108,13 @@
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
         <junit.version>5.10.0</junit.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
-        <jmespath.version>0.5.1</jmespath.version>
-    </properties>
+        <jmespath.version>0.6.0</jmespath.version>
+        <elastic.version>1.5.0</elastic.version>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
+        <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
+            regardless of where maven is run - sub-module, or root. -->
+        <project.rootdir>${maven.multiModuleProjectDirectory}</project.rootdir>
+    </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -116,6 +131,16 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-logging</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-logging-log4j</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-logging-logback</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -197,6 +222,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-slf4j2-impl</artifactId>
                 <version>${log4j.version}</version>
             </dependency>
@@ -214,6 +244,16 @@
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-jcl</artifactId>
                 <version>${log4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>co.elastic.logging</groupId>
+                <artifactId>logback-ecs-encoder</artifactId>
+                <version>${elastic.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.amazonaws</groupId>
@@ -507,7 +547,7 @@
                         </executions>
                         <configuration>
                             <xmlOutput>true</xmlOutput>
-                            <excludeFilterFile>../spotbugs-exclude.xml</excludeFilterFile>
+                            <excludeFilterFile>${project.rootdir}/spotbugs-exclude.xml</excludeFilterFile>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -604,8 +644,8 @@
                         <artifactId>maven-checkstyle-plugin</artifactId>
                         <version>3.3.0</version>
                         <configuration>
+                            <propertyExpansion>basedir=${project.rootdir}</propertyExpansion>
                             <configLocation>checkstyle.xml</configLocation>
-                            <encoding>UTF-8</encoding>
                             <consoleOutput>true</consoleOutput>
                             <failsOnError>true</failsOnError>
                             <linkXRef>false</linkXRef>

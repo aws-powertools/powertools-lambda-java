@@ -21,4 +21,8 @@ public class SystemWrapper {
     public static String getenv(String name) {
         return System.getenv(name);
     }
+
+    public static String getProperty(String name) {
+        return System.getProperty(name);
+    }
 }

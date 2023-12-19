@@ -24,14 +24,14 @@
     </parent>
 
     <artifactId>powertools-e2e-tests</artifactId>
-    <name>Powertools for AWS Lambda (Java)library End-to-end tests</name>
+    <name>Powertools for AWS Lambda (Java) - End-to-end tests</name>
     <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
 
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <constructs.version>10.3.0</constructs.version>
-        <cdk.version>2.100.0</cdk.version>
+        <cdk.version>2.109.0</cdk.version>
     </properties>
 
     <dependencies>
@@ -184,6 +184,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>${maven.deploy.plugin.version}</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

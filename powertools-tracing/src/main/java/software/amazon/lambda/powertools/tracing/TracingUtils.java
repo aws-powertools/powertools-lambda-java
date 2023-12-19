@@ -21,12 +21,15 @@ import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.Consumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class of helper functions to add additional functionality and ease
  * of use.
  */
 public final class TracingUtils {
+    private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
 
     /**
@@ -36,6 +39,10 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, String value) {
+        if (!isValidAnnotationKey(key)) {
+            LOG.warn("Ignoring annotation with unsupported characters in key: {}", key);
+            return;
+        }
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
     }
@@ -47,8 +54,22 @@ public final class TracingUtils {
      * @param value the value of the annotation
      */
     public static void putAnnotation(String key, Number value) {
+        if (!isValidAnnotationKey(key)) {
+            LOG.warn("Ignoring annotation with unsupported characters in key: {}", key);
+            return;
+        }
         AWSXRay.getCurrentSubsegmentOptional()
                 .ifPresent(segment -> segment.putAnnotation(key, value));
+    }
+
+    /**
+     Make sure that the annotation key is valid according to
+     <a href='https://docs.aws.amazon.com/xray/latest/devguide/xray-api-segmentdocuments.html#api-segmentdocuments-annotations'>the documentation</a>.
+
+     Annotation keys that are added that are invalid are ignored by x-ray.
+     **/
+    private static boolean isValidAnnotationKey(String key) {
+        return key.matches("^[a-zA-Z0-9_]+$");
     }
 
     /**

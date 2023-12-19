@@ -33,13 +33,13 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 3
+      max-parallel: 4
       matrix:
-        java: [ 8, 11, 17 ]
+        java: [ 8, 11, 17, 21 ]
     name: End-to-end tests java${{ matrix.java }}
     env:
-      JAVA_VERSION: ${{ matrix.java }}
       AWS_DEFAULT_REGION: eu-west-1
+      JAVA_VERSION: ${{ matrix.java }}
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
       contents: read
@@ -56,5 +56,12 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Build with Maven Java 8
+        if: ${{ matrix.java == '8' }} # If 8 exclude the examples directory
+        run: mvn -DskipTests install --file pom.xml -pl '!software.amazon.lambda.examples:powertools-examples-idempotency,!software.amazon.lambda.examples:powertools-examples-batch,!software.amazon.lambda.examples:powertools-examples-cloudformation,!software.amazon.lambda.examples:powertools-examples-core-utilities-cdk,!software.amazon.lambda.examples:powertools-examples-core-utilities-sam,!software.amazon.lambda.examples:powertools-examples-core-utilities-serverless,!software.amazon.lambda.examples:powertools-examples-core-utilities-terraform,!software.amazon.lambda.examples:powertools-examples-parameters,!software.amazon.lambda.examples:powertools-examples-serialization,!software.amazon.lambda.examples:powertools-examples-validation,!software.amazon.lambda.examples:cdk,!software.amazon.lambda:powertools-examples'
+      - name: Build with Maven
+        if: ${{  matrix.java != '8' }} # If not 8 don't exclude the examples directory
+        run: mvn -DskipTests install --file pom.xml
       - name: Run e2e test with Maven
-        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
+        run: mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml

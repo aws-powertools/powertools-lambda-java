@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.demo.batch.model.DdbProduct;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -21,7 +21,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
 
-    private static final Logger LOGGER = LogManager.getLogger(DynamoDBWriter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBWriter.class);
 
     private final DynamoDbEnhancedClient enhancedClient;
 
