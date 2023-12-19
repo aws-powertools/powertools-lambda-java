@@ -66,6 +66,10 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-serialization</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
