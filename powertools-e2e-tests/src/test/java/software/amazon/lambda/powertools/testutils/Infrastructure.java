@@ -168,7 +168,7 @@ public class Infrastructure {
 
         if (isRedisDeployment) {
             this.vpc = Vpc.Builder.create(this.stack, "MyVPC-" + stackName)
-                    .availabilityZones(List.of(region.toString() + "a", region.toString() + "b"))
+                    .availabilityZones(Arrays.asList(region.toString() + "a", region + "b"))
                     .build();
 
             List<String> subnets = vpc.getPublicSubnets().stream().map(subnet ->
@@ -311,7 +311,7 @@ public class Infrastructure {
         if (isRedisDeployment) {
             functionBuilder.vpc(vpc)
                     .vpcSubnets(subnetSelection)
-                    .securityGroups(List.of(lambdaSecurityGroup));
+                    .securityGroups(singletonList(lambdaSecurityGroup));
         }
 
         Function function = functionBuilder.build();
@@ -344,7 +344,7 @@ public class Infrastructure {
                     .engine("redis")
                     .cacheNodeType("cache.t2.micro")
                     .cacheSubnetGroupName(cfnSubnetGroup.getCacheSubnetGroupName())
-                    .vpcSecurityGroupIds(List.of(securityGroup.getSecurityGroupId()))
+                    .vpcSecurityGroupIds(singletonList(securityGroup.getSecurityGroupId()))
                     .numCacheNodes(1)
                     .build();
             redisServer.addDependency(cfnSubnetGroup);
