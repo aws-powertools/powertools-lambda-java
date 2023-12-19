@@ -24,7 +24,7 @@ import java.util.TimeZone;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
-import software.amazon.lambda.powertools.idempotency.redis.RedisPersistenceStore;
+import software.amazon.lambda.powertools.idempotency.persistence.redis.RedisPersistenceStore;
 import software.amazon.lambda.powertools.logging.Logging;
 
 
