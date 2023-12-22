@@ -64,10 +64,10 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
-            <version>${aws.sdk.version}</version>
+            <artifactId>aws-crt-client</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -110,6 +110,12 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>DynamoDBLocal</artifactId>
             <version>[1.12,2.0)</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- Needed for dynamoDB local telemetry -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
             <scope>test</scope>
         </dependency>
         <!--Needed when building locally on M1 Mac-->

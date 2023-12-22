@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -94,7 +94,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
             String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null || "false".equalsIgnoreCase(idempotencyDisabledEnv)) {
                 this.dynamoDbClient = DynamoDbClient.builder()
-                        .httpClient(UrlConnectionHttpClient.builder().build())
+                        .httpClient(AwsCrtHttpClient.builder().build())
                         .overrideConfiguration(ClientOverrideConfiguration.builder()
                                 .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
                                         UserAgentConfigurator.getUserAgent(IDEMPOTENCY)).build())
@@ -419,7 +419,7 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
 
         /**
          * Custom {@link DynamoDbClient} used to query DynamoDB (optional).<br/>
-         * The default one uses {@link UrlConnectionHttpClient} as a http client and
+         * The default one uses {@link AwsCrtHttpClient} as a http client and
          * add com.amazonaws.xray.interceptors.TracingInterceptor (X-Ray) if available in the classpath.
          *
          * @param dynamoDbClient the {@link DynamoDbClient} instance to use

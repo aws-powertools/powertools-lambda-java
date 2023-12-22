@@ -23,7 +23,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
@@ -55,7 +55,7 @@ public class DynamoDBConfig {
         }
 
         client = DynamoDbClient.builder()
-                .httpClient(UrlConnectionHttpClient.builder().build())
+                .httpClient(AwsCrtHttpClient.builder().build())
                 .region(Region.EU_WEST_1)
                 .endpointOverride(URI.create("http://localhost:" + port))
                 .credentialsProvider(StaticCredentialsProvider.create(

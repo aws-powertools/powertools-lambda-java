@@ -879,7 +879,7 @@ When creating the `DynamoDBPersistenceStore`, you can set a custom [`DynamoDbCli
     ```java
     DynamoDbClient.builder()
         .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-        .httpClient(UrlConnectionHttpClient.builder().build())
+        .httpClient(AwsCrtHttpClient.builder().build())
         .region(Region.of(System.getenv(AWS_REGION_ENV)))
         .build();
     ```
@@ -1073,7 +1073,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
     
             // Initialize DynamoDBClient
             client = DynamoDbClient.builder()
-                    .httpClient(UrlConnectionHttpClient.builder().build())
+                    .httpClient(AwsCrtHttpClient.builder().build())
                     .region(Region.EU_WEST_1)
                     .endpointOverride(URI.create("http://localhost:" + port))
                     .credentialsProvider(StaticCredentialsProvider.create(
@@ -1151,7 +1151,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
       public App() {
         DynamoDbClientBuilder ddbBuilder = DynamoDbClient.builder()
            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
-           .httpClient(UrlConnectionHttpClient.builder().build());
+           .httpClient(AwsCrtHttpClient.builder().build());
     
         if (System.getenv("AWS_SAM_LOCAL") != null) {
           ddbBuilder.endpointOverride(URI.create("http://dynamo:8000"));
