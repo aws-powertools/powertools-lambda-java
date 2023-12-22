@@ -22,7 +22,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 
 /**
  * Handler base class providing core functionality for sending responses to custom CloudFormation resources after
@@ -40,7 +40,7 @@ public abstract class AbstractCustomResourceHandler
      * Creates a new Handler that uses the default HTTP client for communicating with custom CloudFormation resources.
      */
     protected AbstractCustomResourceHandler() {
-        this.client = UrlConnectionHttpClient.create();
+        this.client = AwsCrtHttpClient.create();
     }
 
     /**
