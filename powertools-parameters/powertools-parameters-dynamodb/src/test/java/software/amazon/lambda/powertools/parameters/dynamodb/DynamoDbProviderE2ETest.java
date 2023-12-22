@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
@@ -45,7 +45,7 @@ public class DynamoDbProviderE2ETest {
     public DynamoDbProviderE2ETest() {
         // Create a DDB client to inject test data into our test tables
         ddbClient = DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .httpClientBuilder(AwsCrtHttpClient.builder())
                 .build();
 
 
@@ -105,7 +105,7 @@ public class DynamoDbProviderE2ETest {
 
     private DynamoDbProvider makeProvider(String tableName) {
         return new DynamoDbProvider(new CacheManager(), null, DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder()).build(),
+                .httpClientBuilder(AwsCrtHttpClient.builder()).build(),
                 tableName);
     }
 

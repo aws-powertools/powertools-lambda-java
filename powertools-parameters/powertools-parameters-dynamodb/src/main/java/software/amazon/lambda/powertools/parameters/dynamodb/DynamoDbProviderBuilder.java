@@ -17,7 +17,7 @@ package software.amazon.lambda.powertools.parameters.dynamodb;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
@@ -37,7 +37,7 @@ public class DynamoDbProviderBuilder {
 
     static DynamoDbClient createClient() {
         return DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .httpClientBuilder(AwsCrtHttpClient.builder())
                 .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                 .overrideConfiguration(ClientOverrideConfiguration.builder()
                         .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,

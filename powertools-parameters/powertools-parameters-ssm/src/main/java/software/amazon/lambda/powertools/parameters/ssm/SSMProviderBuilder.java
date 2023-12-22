@@ -17,7 +17,7 @@ package software.amazon.lambda.powertools.parameters.ssm;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
@@ -35,7 +35,7 @@ public class SSMProviderBuilder {
 
     private static SsmClient createClient() {
         return SsmClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .httpClientBuilder(AwsCrtHttpClient.builder())
                 .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
                 .overrideConfiguration(ClientOverrideConfiguration.builder()
                         .putAdvancedOption(SdkAdvancedClientOption.USER_AGENT_SUFFIX,
