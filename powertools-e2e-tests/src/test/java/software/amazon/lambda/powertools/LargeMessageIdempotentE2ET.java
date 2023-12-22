@@ -33,7 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -49,7 +49,7 @@ import software.amazon.lambda.powertools.testutils.Infrastructure;
 public class LargeMessageIdempotentE2ET {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageIdempotentE2ET.class);
-    private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
+    private static final SdkHttpClient httpClient = AwsCrtHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
 
     private static final S3Client s3Client = S3Client.builder()

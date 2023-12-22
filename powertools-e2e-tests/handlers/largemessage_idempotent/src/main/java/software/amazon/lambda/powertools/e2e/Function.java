@@ -26,7 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -49,7 +49,7 @@ public class Function implements RequestHandler<SQSEvent, SQSBatchResponse> {
     public Function() {
         this(DynamoDbClient
                 .builder()
-                .httpClient(UrlConnectionHttpClient.builder().build())
+                .httpClient(AwsCrtHttpClient.builder().build())
                 .region(Region.of(System.getenv("AWS_REGION")))
                 .build());
     }

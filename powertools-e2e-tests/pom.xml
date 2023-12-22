@@ -90,7 +90,7 @@
 
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
+            <artifactId>aws-crt-client</artifactId>
             <scope>test</scope>
         </dependency>
 

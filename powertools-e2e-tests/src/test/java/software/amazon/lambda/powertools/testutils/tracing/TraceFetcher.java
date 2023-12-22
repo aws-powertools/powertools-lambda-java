@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.xray.XRayClient;
 import software.amazon.awssdk.services.xray.model.BatchGetTracesRequest;
@@ -53,7 +53,7 @@ public class TraceFetcher {
     private static final ObjectMapper MAPPER =
             new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final Logger LOG = LoggerFactory.getLogger(TraceFetcher.class);
-    private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
+    private static final SdkHttpClient httpClient = AwsCrtHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
     private static final XRayClient xray = XRayClient.builder()
             .httpClient(httpClient)

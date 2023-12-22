@@ -20,7 +20,7 @@ import java.time.Clock;
 import java.time.Instant;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.InvokeRequest;
@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 import software.amazon.awssdk.services.lambda.model.LogType;
 
 public class LambdaInvoker {
-    private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
+    private static final SdkHttpClient httpClient = AwsCrtHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
     private static final LambdaClient lambda = LambdaClient.builder()
             .httpClient(httpClient)

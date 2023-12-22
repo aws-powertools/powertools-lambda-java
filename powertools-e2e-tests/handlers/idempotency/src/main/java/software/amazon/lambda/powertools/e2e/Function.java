@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.TimeZone;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
@@ -36,7 +36,7 @@ public class Function implements RequestHandler<Input, String> {
     public Function() {
         this(DynamoDbClient
                 .builder()
-                .httpClient(UrlConnectionHttpClient.builder().build())
+                .httpClient(AwsCrtHttpClient.builder().build())
                 .region(Region.of(System.getenv("AWS_REGION")))
                 .build());
     }

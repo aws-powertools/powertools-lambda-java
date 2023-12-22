@@ -65,7 +65,7 @@ import software.amazon.awscdk.services.sqs.DeadLetterQueue;
 import software.amazon.awscdk.services.sqs.Queue;
 import software.amazon.awssdk.core.waiters.WaiterResponse;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudformation.CloudFormationClient;
 import software.amazon.awssdk.services.cloudformation.model.Capability;
@@ -138,7 +138,7 @@ public class Infrastructure {
 
         this.synthesize();
 
-        this.httpClient = UrlConnectionHttpClient.builder().build();
+        this.httpClient = AwsCrtHttpClient.builder().build();
         this.region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
         this.account = StsClient.builder()
                 .httpClient(httpClient)

@@ -29,7 +29,7 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cloudwatch.CloudWatchClient;
 import software.amazon.awssdk.services.cloudwatch.model.Dimension;
@@ -46,7 +46,7 @@ import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
 public class MetricsFetcher {
     private static final Logger LOG = LoggerFactory.getLogger(MetricsFetcher.class);
 
-    private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
+    private static final SdkHttpClient httpClient = AwsCrtHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
     private static final CloudWatchClient cloudwatch = CloudWatchClient.builder()
             .httpClient(httpClient)

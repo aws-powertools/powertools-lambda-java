@@ -33,7 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -52,7 +52,7 @@ import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class BatchE2ET {
-    private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
+    private static final SdkHttpClient httpClient = AwsCrtHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
     private static Infrastructure infrastructure;
     private static String functionName;
