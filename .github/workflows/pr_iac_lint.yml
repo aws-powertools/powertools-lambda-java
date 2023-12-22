@@ -24,6 +24,10 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: 11
+      - name: Build Project
+        working-directory: core
+        run: |
+          mvn install -DskipTests
       - name: Run SAM validator to check syntax of IaC templates - Java
         working-directory: examples/powertools-examples-core/${{ matrix.project }}
         run: |
