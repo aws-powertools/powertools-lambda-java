@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.demo.batch.model.Product;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
@@ -35,7 +35,7 @@ public class SqsBatchSender implements RequestHandler<ScheduledEvent, String> {
 
     public SqsBatchSender() {
         sqsClient = SqsClient.builder()
-                .httpClient(UrlConnectionHttpClient.create())
+                .httpClient(AwsCrtHttpClient.create())
                 .build();
         random = new SecureRandom();
         objectMapper = new ObjectMapper();

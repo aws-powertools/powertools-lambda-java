@@ -14,7 +14,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <aspectj.version>1.9.20.1</aspectj.version>
-        <sdk.version>2.21.1</sdk.version>
+        <sdk.version>2.22.0</sdk.version>
     </properties>
 
     <dependencies>
@@ -50,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
-            <artifactId>url-connection-client</artifactId>
+            <artifactId>aws-crt-client</artifactId>
             <version>${sdk.version}</version>
         </dependency>
         <dependency>

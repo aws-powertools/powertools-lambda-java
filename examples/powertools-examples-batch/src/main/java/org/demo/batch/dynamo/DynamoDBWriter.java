@@ -16,7 +16,6 @@ import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteItemEnhancedRequest;
 import software.amazon.awssdk.enhanced.dynamodb.model.BatchWriteResult;
 import software.amazon.awssdk.enhanced.dynamodb.model.WriteBatch;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
@@ -30,7 +29,7 @@ public class DynamoDBWriter implements RequestHandler<ScheduledEvent, String> {
     public DynamoDBWriter() {
         random = new SecureRandom();
         DynamoDbClient dynamoDbClient = DynamoDbClient.builder()
-                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .httpClientBuilder(AwsCrtHttpClient.builder())
                 .build();
 
         enhancedClient = DynamoDbEnhancedClient.builder()

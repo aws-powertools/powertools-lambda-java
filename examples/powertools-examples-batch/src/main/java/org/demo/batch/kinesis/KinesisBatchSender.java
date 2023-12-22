@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.demo.batch.model.Product;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
@@ -36,7 +36,7 @@ public class KinesisBatchSender implements RequestHandler<ScheduledEvent, String
 
     public KinesisBatchSender() {
         kinesisClient = KinesisClient.builder()
-                .httpClient(UrlConnectionHttpClient.create())
+                .httpClient(AwsCrtHttpClient.create())
                 .build();
         random = new SecureRandom();
         objectMapper = new ObjectMapper();
