@@ -370,7 +370,7 @@ To interact with S3, the utility creates a default S3 Client :
 === "Default S3 Client"
     ```java
     S3Client client = S3Client.builder()
-                        .httpClient(UrlConnectionHttpClient.builder().build())
+                        .httpClient(AwsCrtHttpClient.builder().build())
                         .region(Region.of(System.getenv(AWS_REGION_ENV)))
                         .build();
     ```

@@ -16,7 +16,7 @@ package software.amazon.lambda.powertools.largemessages;
 
 import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
 
-import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
@@ -74,7 +74,7 @@ public class LargeMessageConfig {
     public S3Client getS3Client() {
         if (this.s3Client == null) {
             S3ClientBuilder s3ClientBuilder = S3Client.builder()
-                    .httpClient(UrlConnectionHttpClient.builder().build())
+                    .httpClient(AwsCrtHttpClient.builder().build())
                     .region(Region.of(System.getenv(AWS_REGION_ENV)));
             this.s3Client = s3ClientBuilder.build();
         }
