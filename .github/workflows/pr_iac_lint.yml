@@ -25,7 +25,7 @@ jobs:
           distribution: 'corretto'
           java-version: 11
       - name: Build Project
-        working-directory: core
+        working-directory: powertools-core
         run: |
           mvn install -DskipTests
       - name: Run SAM validator to check syntax of IaC templates - Java
