@@ -16,22 +16,26 @@ package software.amazon.lambda.powertools.idempotency.persistence.redis;
 
 import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.OptionalLong;
+import java.util.stream.Collectors;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
@@ -45,6 +49,7 @@ import software.amazon.lambda.powertools.idempotency.persistence.PersistenceStor
 public class RedisPersistenceStore extends BasePersistenceStore implements PersistenceStore {
 
     private static final Logger LOG = LoggerFactory.getLogger(RedisPersistenceStore.class);
+    public static final String UPDATE_SCRIPT_LUA = "putRecordOnCondition.lua";
     private final String keyPrefixName;
     private final String keyAttr;
     private final String expiryAttr;
@@ -53,11 +58,14 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
     private final String dataAttr;
     private final String validationAttr;
     private final UnifiedJedis jedisClient;
+    private final String luaScript;
+    private final JedisConfig jedisConfig;
 
     /**
      * Private: use the {@link Builder} to instantiate a new {@link RedisPersistenceStore}
      */
-    private RedisPersistenceStore(String keyPrefixName,
+    private RedisPersistenceStore(JedisConfig jedisConfig,
+                                  String keyPrefixName,
                                   String keyAttr,
                                   String expiryAttr,
                                   String inProgressExpiryAttr,
@@ -65,6 +73,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
                                   String dataAttr,
                                   String validationAttr,
                                   UnifiedJedis jedisClient) {
+        this.jedisConfig = jedisConfig;
         this.keyPrefixName = keyPrefixName;
         this.keyAttr = keyAttr;
         this.expiryAttr = expiryAttr;
@@ -79,46 +88,35 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
             String idempotencyDisabledEnv =
                     System.getenv(software.amazon.lambda.powertools.idempotency.Constants.IDEMPOTENCY_DISABLED_ENV);
             if (idempotencyDisabledEnv == null || "false".equalsIgnoreCase(idempotencyDisabledEnv)) {
-                this.jedisClient = getJedisClient(System.getenv(Constants.REDIS_HOST),
-                        Integer.parseInt(System.getenv(Constants.REDIS_PORT)));
+                this.jedisClient = getJedisClient(this.jedisConfig);
             } else {
                 // we do not want to create a Jedis connection pool if idempotency is disabled
                 // null is ok as idempotency won't be called
                 this.jedisClient = null;
             }
         }
-    }
+        try (InputStreamReader luaScriptReader = new InputStreamReader(
+                RedisPersistenceStore.class.getClassLoader().getResourceAsStream(UPDATE_SCRIPT_LUA))) {
+            luaScript = new BufferedReader(
+                    luaScriptReader).lines().collect(Collectors.joining("\n"));
 
-    /**
-     * Set redis user and secret to connect to the redis server
-     *
-     * @return
-     */
-    private static JedisClientConfig getJedisClientConfig() {
-        String redisSecret = "";
-        String redisSecretEnv = System.getenv(Constants.REDIS_SECRET);
-        if (redisSecretEnv != null) {
-            redisSecret = redisSecretEnv;
+        } catch (IOException e) {
+            throw new IdempotencyConfigurationException("Unable to load lua script with name " + UPDATE_SCRIPT_LUA);
         }
-        return DefaultJedisClientConfig.builder()
-                .user(System.getenv(Constants.REDIS_USER))
-                .password(System.getenv(redisSecret))
-                .build();
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    UnifiedJedis getJedisClient(String redisHost, Integer redisPort) {
-        HostAndPort address = new HostAndPort(redisHost, redisPort);
-        JedisClientConfig config = getJedisClientConfig();
-        String isClusterMode = System.getenv(Constants.REDIS_CLUSTER_MODE);
-        if ("true".equalsIgnoreCase(isClusterMode)) {
-            return new JedisCluster(address, getJedisClientConfig(), 5, new GenericObjectPoolConfig<>());
-        } else {
-            return new JedisPooled(address, config);
-        }
+    private static List<String> getArgs(DataRecord dataRecord, Instant now) {
+        List<String> args = new ArrayList<>();
+        args.add(String.valueOf(now.getEpochSecond()));
+        args.add(String.valueOf(now.toEpochMilli()));
+        args.add(INPROGRESS.toString());
+        args.add(String.valueOf(dataRecord.getExpiryTimestamp()));
+        args.add(dataRecord.getStatus().toString());
+        return args;
     }
 
     @Override
@@ -169,48 +167,39 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
         }
     }
 
+    UnifiedJedis getJedisClient(JedisConfig jedisConfig) {
+        HostAndPort address = new HostAndPort(jedisConfig.getHost(), jedisConfig.getPort());
+        JedisClientConfig config = jedisConfig.getJedisClientConfig();
+        String isClusterMode = System.getenv(Constants.REDIS_CLUSTER_MODE);
+        if ("true".equalsIgnoreCase(isClusterMode)) {
+            return new JedisCluster(address, config, 5, new GenericObjectPoolConfig<>());
+        } else {
+            return new JedisPooled(address, config);
+        }
+    }
+
     private Object putItemOnCondition(DataRecord dataRecord, Instant now, String inProgressExpiry) {
-        // if item with key exists
-        String redisHashExistsExpression = "redis.call('exists', KEYS[1]) == 0";
-        // if expiry timestamp is exceeded for existing item
-        String itemExpiredExpression = "redis.call('hget', KEYS[1], KEYS[2]) < ARGV[1]";
-        // if item status field exists and has value is INPROGRESS
-        // and the in-progress-expiry timestamp is still valid
-        String itemIsInProgressExpression = "(redis.call('hexists', KEYS[1], KEYS[4]) ~= 0" +
-                " and redis.call('hget', KEYS[1], KEYS[4]) < ARGV[2]" +
-                " and redis.call('hget', KEYS[1], KEYS[3]) == ARGV[3])";
 
-        // insert item and fields
-        String insertItemExpression = "return redis.call('hset', KEYS[1], KEYS[2], ARGV[4], KEYS[3], ARGV[5])";
+        List<String> keys = getKeys(dataRecord);
 
-        // only insert in-progress-expiry if it is set
+        List<String> args = getArgs(dataRecord, now);
+
+
         if (inProgressExpiry != null) {
-            insertItemExpression = insertItemExpression.replace(")", ", KEYS[4], ARGV[6])");
+            args.add(inProgressExpiry);
         }
 
-        // if redisHashExistsExpression or itemExpiredExpression or itemIsInProgressExpression then insertItemExpression
-        String luaScript = String.format("if %s or %s or %s then %s end;",
-                redisHashExistsExpression, itemExpiredExpression,
-                itemIsInProgressExpression, insertItemExpression);
+        return jedisClient.evalsha(jedisClient.scriptLoad(luaScript), keys, args);
+    }
 
-        List<String> fields = new ArrayList<>();
+    private List<String> getKeys(DataRecord dataRecord) {
+        List<String> keys = new ArrayList<>();
         String hashKey = getKey(dataRecord.getIdempotencyKey());
-        fields.add(hashKey);
-        fields.add(prependField(hashKey, this.expiryAttr));
-        fields.add(prependField(hashKey, this.statusAttr));
-        fields.add(prependField(hashKey, this.inProgressExpiryAttr));
-        fields.add(String.valueOf(now.getEpochSecond()));
-        fields.add(String.valueOf(now.toEpochMilli()));
-        fields.add(INPROGRESS.toString());
-        fields.add(String.valueOf(dataRecord.getExpiryTimestamp()));
-        fields.add(dataRecord.getStatus().toString());
-
-        if (inProgressExpiry != null) {
-            fields.add(inProgressExpiry);
-        }
-
-        String[] arr = new String[fields.size()];
-        return jedisClient.eval(luaScript, 4, fields.toArray(arr));
+        keys.add(hashKey);
+        keys.add(prependField(hashKey, this.expiryAttr));
+        keys.add(prependField(hashKey, this.statusAttr));
+        keys.add(prependField(hashKey, this.inProgressExpiryAttr));
+        return keys;
     }
 
     @Override
@@ -274,13 +263,14 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
      */
     private DataRecord itemToRecord(Map<String, String> item, String idempotencyKey) {
         String hashKey = getKey(idempotencyKey);
+        String prependedInProgressExpiryAttr = item.get(prependField(hashKey, this.inProgressExpiryAttr));
         return new DataRecord(item.get(getKey(idempotencyKey)),
                 DataRecord.Status.valueOf(item.get(prependField(hashKey, this.statusAttr))),
                 Long.parseLong(item.get(prependField(hashKey, this.expiryAttr))),
                 item.get(prependField(hashKey, this.dataAttr)),
                 item.get(prependField(hashKey, this.validationAttr)),
-                item.get(prependField(hashKey, this.inProgressExpiryAttr)) != null ?
-                        OptionalLong.of(Long.parseLong(item.get(prependField(hashKey, this.inProgressExpiryAttr)))) :
+                prependedInProgressExpiryAttr != null && !prependedInProgressExpiryAttr.isEmpty() ?
+                        OptionalLong.of(Long.parseLong(prependedInProgressExpiryAttr)) :
                         OptionalLong.empty());
     }
 
@@ -290,6 +280,8 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
      * You can also set a custom {@link UnifiedJedis} client.
      */
     public static class Builder {
+
+        private JedisConfig jedisConfig = JedisConfig.Builder.builder().build();
         private String keyPrefixName = "idempotency";
         private String keyAttr = "id";
         private String expiryAttr = "expiration";
@@ -309,7 +301,7 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
          * @return an instance of the {@link RedisPersistenceStore}
          */
         public RedisPersistenceStore build() {
-            return new RedisPersistenceStore(keyPrefixName, keyAttr, expiryAttr,
+            return new RedisPersistenceStore(jedisConfig, keyPrefixName, keyAttr, expiryAttr,
                     inProgressExpiryAttr, statusAttr, dataAttr, validationAttr, jedisClient);
         }
 
@@ -401,6 +393,18 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
          */
         public Builder withJedisClient(UnifiedJedis jedisClient) {
             this.jedisClient = jedisClient;
+            return this;
+        }
+
+
+        /**
+         * Custom {@link JedisConfig} used to configure the Redis client(optional)
+         *
+         * @param jedisConfig
+         * @return the builder instance (to chain operations)
+         */
+        public Builder withJedisConfig(JedisConfig jedisConfig) {
+            this.jedisConfig = jedisConfig;
             return this;
         }
     }

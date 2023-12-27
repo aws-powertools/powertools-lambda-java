@@ -29,6 +29,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPooled;
 import redis.embedded.RedisServer;
@@ -37,19 +38,17 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemA
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 
-@SetEnvironmentVariable(key = Constants.REDIS_HOST, value = "localhost")
-@SetEnvironmentVariable(key = Constants.REDIS_PORT, value = "6379")
+@SetEnvironmentVariable(key = "REDIS_HOST", value = "localhost")
+@SetEnvironmentVariable(key = "REDIS_PORT", value = "6379")
 public class RedisPersistenceStoreTest {
     static RedisServer redisServer;
-    private final RedisPersistenceStore redisPersistenceStore = RedisPersistenceStore.builder().build();
     private final JedisPooled jedisPool = new JedisPooled();
-
-    public RedisPersistenceStoreTest() {
-    }
+    private final RedisPersistenceStore redisPersistenceStore = RedisPersistenceStore.builder().build();
 
     @BeforeAll
     public static void init() {
-        redisServer = new RedisServer(6379);
+
+        redisServer = RedisServer.builder().build();
         redisServer.start();
     }
 
@@ -63,6 +62,27 @@ public class RedisPersistenceStoreTest {
         Instant now = Instant.now();
         long ttl = 3600;
         long expiry = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
+        redisPersistenceStore.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
+
+        Map<String, String> entry = jedisPool.hgetAll("{idempotency:id:key}");
+        long ttlInRedis = jedisPool.ttl("{idempotency:id:key}");
+
+        assertThat(entry).isNotNull();
+        assertThat(entry.get("{idempotency:id:key}:status")).isEqualTo("COMPLETED");
+        assertThat(entry.get("{idempotency:id:key}:expiration")).isEqualTo(String.valueOf(expiry));
+        assertThat(Math.round(ttlInRedis / 100.0) * 100).isEqualTo(ttl);
+    }
+
+    @Test
+    void putRecord_shouldCreateItemInRedisWithCustomJedisConfig() {
+
+        Instant now = Instant.now();
+        long ttl = 3600;
+        long expiry = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
+        RedisPersistenceStore store = new RedisPersistenceStore.Builder()
+                .withJedisClient(jedisPool).withJedisConfig(JedisConfig.Builder.builder().build())
+                .build();
+
         redisPersistenceStore.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
 
         Map<String, String> entry = jedisPool.hgetAll("{idempotency:id:key}");
@@ -104,16 +124,28 @@ public class RedisPersistenceStoreTest {
                 .newRedisServer()
                 .setOptions(ServiceOptions.defaultOptions().withClusterModeEnabled())
                 .start();
-        assertThat(redisPersistenceStore.getJedisClient(redisCluster.getHost(),
-                redisCluster.getBindPort()) instanceof JedisCluster).isTrue();
+        JedisConfig jedisConfig = JedisConfig.Builder.builder()
+                .withHost(redisCluster.getHost())
+                .withPort(redisCluster.getBindPort())
+                .withJedisClientConfig(DefaultJedisClientConfig.builder()
+                        .user("default")
+                        .password("")
+                        .ssl(false)
+                        .build())
+                .build();
+        assertThat(redisPersistenceStore.getJedisClient(jedisConfig) instanceof JedisCluster).isTrue();
         redisCluster.stop();
     }
 
     @SetEnvironmentVariable(key = Constants.REDIS_CLUSTER_MODE, value = "false")
     @Test
     void putRecord_JedisClientInstanceOfJedisPooled() {
-        assertThat(redisPersistenceStore.getJedisClient(System.getenv(Constants.REDIS_HOST),
-                Integer.parseInt(System.getenv(Constants.REDIS_PORT))) instanceof JedisCluster).isFalse();
+        JedisConfig jedisConfig = JedisConfig.Builder.builder()
+                .withHost(System.getenv("REDIS_HOST"))
+                .withPort(Integer.parseInt(System.getenv("REDIS_PORT")))
+                .withJedisClientConfig(DefaultJedisClientConfig.builder().build())
+                .build();
+        assertThat(redisPersistenceStore.getJedisClient(jedisConfig) instanceof JedisCluster).isFalse();
     }
 
     @Test

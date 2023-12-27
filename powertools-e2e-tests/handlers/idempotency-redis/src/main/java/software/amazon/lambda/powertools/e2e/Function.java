@@ -21,9 +21,11 @@ import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.TimeZone;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
+import software.amazon.lambda.powertools.idempotency.persistence.redis.JedisConfig;
 import software.amazon.lambda.powertools.idempotency.persistence.redis.RedisPersistenceStore;
 import software.amazon.lambda.powertools.logging.Logging;
 
@@ -36,6 +38,10 @@ public class Function implements RequestHandler<Input, String> {
                                 .build())
                 .withPersistenceStore(
                         RedisPersistenceStore.builder()
+                                .withJedisConfig(JedisConfig.Builder.builder()
+                                        .withJedisClientConfig(DefaultJedisClientConfig.builder().ssl(true).build())
+                                        .withHost(System.getenv("REDIS_HOST"))
+                                        .withPort(6379).build())
                                 .build()
                 ).configure();
     }
