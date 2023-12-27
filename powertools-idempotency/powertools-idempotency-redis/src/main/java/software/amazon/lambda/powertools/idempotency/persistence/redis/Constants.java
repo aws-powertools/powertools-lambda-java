@@ -14,10 +14,10 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence.redis;
 
-public class Constants {
-    public static final String REDIS_HOST = "REDIS_HOST";
-    public static final String REDIS_PORT = "REDIS_PORT";
-    public static final String REDIS_USER = "REDIS_USER";
-    public static final String REDIS_SECRET = "REDIS_SECRET";
+final class Constants {
+    private Constants() {
+        throw new IllegalStateException("Utility class");
+    }
+
     public static final String REDIS_CLUSTER_MODE = "REDIS_CLUSTER_MODE";
 }

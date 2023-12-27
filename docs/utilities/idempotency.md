@@ -162,7 +162,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your Lambda functions will need read and write access to it.
 As of now, [Amazon DynamoDB](https://aws.amazon.com/dynamodb/) and [Redis](https://redis.io/) are the supported persistnce layers.
 
-#### Using Amazon DynamoDB as persistent storage layer
+#### Using Amazon DynamoDB
 
 If you are using Amazon DynamoDB, you'll need to create a table.
 
@@ -217,28 +217,23 @@ Resources:
     see 1WCU and 1RCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
     estimate the cost.
 
-#### Using Redis as persistent storage layer
+#### Using Redis
 
 ##### Redis resources
 
-You need an existing Redis service before setting up Redis as persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/).
+You need an existing Redis service before setting up Redis as the persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/).
 !!! tip "Tip:No existing Redis service?"
-    If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider.
+    If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider. DynamoDB does not require a VPC deployment and is easier to configure and operate.
 
-If you are using Redis you'll need to provide the Redis host, port, user and password as AWS Lambda environment variables.
 If you want to connect to a Redis cluster instead of a Standalone server, you need to enable Redis cluster mode by setting an AWS Lambda
 environment variable `REDIS_CLUSTER_MODE` to `true`
-In the following example, you can see a SAM template for deploying an AWS Lambda function by specifying the required environment variables.
-If you provide a [custom Redis client](#Customizing Redis client) you can omit the environment variables declaration.
-
-!!! warning "Warning: Avoid including a plain text secret directly in your template"
-This can infer security implications
+In the following example, you can see a SAM template for deploying an AWS Lambda function by specifying the required environment variable.
 
 !!! warning "Warning: Large responses with Redis persistence layer"
 When using this utility with Redis your function's responses must be smaller than 512MB.
 Persisting larger items cannot might cause exceptions.
 
-```yaml hl_lines="9-13" title="AWS Serverless Application Model (SAM) example"
+```yaml hl_lines="9" title="AWS Serverless Application Model (SAM) example"
 Resources:
   IdempotencyFunction:
     Type: AWS::Serverless::Function
@@ -247,10 +242,6 @@ Resources:
       Handler: helloworld.App::handleRequest
       Environment:
         Variables:
-          REDIS_HOST: %redis-host%
-          REDIS_PORT: %redis-port%
-          REDIS_USER: %redis-user%
-          REDIS_SECRET: %redis-secret%
           REDIS_CLUSTER_MODE: "true"
 ```
 ##### VPC Access
@@ -259,13 +250,7 @@ Your AWS Lambda Function must be able to reach the Redis endpoint before using i
 !!! tip "Amazon ElastiCache for Redis as persistent storage layer provider"
     If you intend to use Amazon ElastiCache for Redis for idempotency persistent storage layer, you can also reference [This AWS Tutorial](https://docs.aws.amazon.com/lambda/latest/dg/services-elasticache-tutorial.html).
 
-!!! warning "Amazon ElastiCache Serverless not supported"
-    [Amazon ElastiCache Serverless](https://aws.amazon.com/elasticache/features/#Serverless) is not supported for now.
-
-!!! warning "Check network connectivity to Redis server"
-Make sure that your AWS Lambda function can connect to your Redis server.
-
-```yaml hl_lines="9-12" title="AWS Serverless Application Model (SAM) example"
+```yaml hl_lines="7-12" title="AWS Serverless Application Model (SAM) example"
 Resources:
   IdempotencyFunction:
     Type: AWS::Serverless::Function
@@ -273,20 +258,22 @@ Resources:
       CodeUri: Function
       Handler: helloworld.App::handleRequest
       VpcConfig: # (1)!
-        SecurityGroupIds:
+        SecurityGroupIds: # (2)!
           - sg-{your_sg_id}
-        SubnetIds:
+        SubnetIds: # (3)!
           - subnet-{your_subnet_id_1}
           - subnet-{your_subnet_id_2}
 ```
 1. Replace the Security Group ID and Subnet ID to match your Redis' VPC setting.
+2. The security group ID or IDs of the VPC where the Redis deployment is configured.
+3. The subnet IDs  of the VPC where the Redis deployment is configured.
 
 ### Idempotent annotation
 
-You can quickly start by initializing the `DynamoDBPersistenceStore` and using it with the `@Idempotent` annotation on your Lambda handler.
+You can quickly start by initializing the persistence store  used (e.g. the `DynamoDBPersistenceStore`) and using it with the `@Idempotent` annotation on your Lambda handler.
 
 !!! warning "Important"
-    Initialization and configuration of the `DynamoDBPersistenceStore` must be performed outside the handler, preferably in the constructor.
+    Initialization and configuration of the persistence store must be performed outside the handler, preferably in the constructor.
 
 === "App.java"
 
@@ -975,23 +962,30 @@ When creating the `DynamoDBPersistenceStore`, you can set a custom [`DynamoDbCli
 
 ### Customizing Redis client
 
-The `RedisPersistenceStore` uses the JedisPooled java client to connect to the Redis Server.
-When creating the `RedisPersistenceStore`, you can set a custom [`JedisPooled`](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/JedisPooled.html) client:
+The `RedisPersistenceStore` uses the [`JedisPooled`](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/JedisPooled.html) java client to connect to the Redis standalone server or the [`JedisCluster`](https://javadoc.io/doc/redis.clients/jedis/4.0.0/redis/clients/jedis/JedisCluster.html) to connect to the Redis cluster.
+When creating the `RedisPersistenceStore`, you can set a custom Jedis client:
 
 === "Custom JedisPooled with connection timeout"
 
-    ```java hl_lines="2-6 11"
+    ```java hl_lines="2-11 13 18"
     public App() {
-        JedisPooled jedisPooled = new JedisPooled(new HostAndPort("host",6789), DefaultJedisClientConfig.builder()
-                .user("user")
-                .password("secret")
-                .connectionTimeoutMillis(3000)
-                .build())
+        JedisConfig jedisConfig = JedisConfig.Builder.builder()
+            .withHost(redisCluster.getHost())
+            .withPort(redisCluster.getBindPort())
+            .withJedisClientConfig(DefaultJedisClientConfig.builder()
+                        .user("user")
+                        .password("secret")
+                        .ssl(true)
+                        .connectionTimeoutMillis(3000)
+            .build())
+        .build();
+
+        JedisPooled jedisPooled = new JedisPooled(new HostAndPort("host",6789), jedisConfig)
 
         Idempotency.config().withPersistenceStore(
           RedisPersistenceStore.builder()
                 .withKeyPrefixName("items-idempotency")
-                .withJedisPooled(jedisPooled)
+                .withJedisClient(jedisPooled)
                 .build()
       ).configure();
     }
@@ -1001,8 +995,9 @@ When creating the `RedisPersistenceStore`, you can set a custom [`JedisPooled`](
 
     ```java
     DefaultJedisClientConfig.builder()
-    .user(System.getenv(Constants.REDIS_USER))
-    .password(System.getenv(Constants.REDIS_SECRET))
+    .user("default")
+    .password("")
+    .ssl(false)
     .build();
     ```
 

@@ -59,7 +59,7 @@ import software.amazon.awscdk.services.ec2.Port;
 import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ec2.Vpc;
-import software.amazon.awscdk.services.elasticache.CfnCacheCluster;
+import software.amazon.awscdk.services.elasticache.CfnServerlessCache;
 import software.amazon.awscdk.services.elasticache.CfnSubnetGroup;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.kinesis.Stream;
@@ -339,18 +339,16 @@ public class Infrastructure {
         }
 
         if (isRedisDeployment) {
-            CfnCacheCluster redisServer = CfnCacheCluster.Builder.create(this.stack, "ElastiCacheCluster-" + stackName)
-                    .clusterName("redis-cluster-" + stackName)
+            List<String> subnets = vpc.getPublicSubnets().stream().map(subnet ->
+                    subnet.getSubnetId()).collect(Collectors.toList());
+            CfnServerlessCache redisServer = CfnServerlessCache.Builder.create(this.stack, "ECC-" + stackName)
+                    .serverlessCacheName("rc-" + stackName)
                     .engine("redis")
-                    .cacheNodeType("cache.t2.micro")
-                    .cacheSubnetGroupName(cfnSubnetGroup.getCacheSubnetGroupName())
-                    .vpcSecurityGroupIds(singletonList(securityGroup.getSecurityGroupId()))
-                    .numCacheNodes(1)
+                    .subnetIds(subnets)
+                    .securityGroupIds(singletonList(securityGroup.getSecurityGroupId()))
                     .build();
-            redisServer.addDependency(cfnSubnetGroup);
-            function.addEnvironment("REDIS_HOST", redisServer.getAttrRedisEndpointAddress());
-            function.addEnvironment("REDIS_PORT", redisServer.getAttrRedisEndpointPort());
-            function.addEnvironment("REDIS_USER", "default");
+
+            function.addEnvironment("REDIS_HOST", redisServer.getAtt("Endpoint.Address").toString());
         }
 
         if (!StringUtils.isEmpty(queue)) {
