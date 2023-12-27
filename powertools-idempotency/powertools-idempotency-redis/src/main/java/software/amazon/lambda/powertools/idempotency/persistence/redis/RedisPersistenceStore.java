@@ -19,6 +19,7 @@ import static software.amazon.lambda.powertools.idempotency.persistence.DataReco
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,14 +96,21 @@ public class RedisPersistenceStore extends BasePersistenceStore implements Persi
                 this.jedisClient = null;
             }
         }
+
+        luaScript = getLuaScript();
+    }
+
+    private String getLuaScript() {
+        final String luaScript;
         try (InputStreamReader luaScriptReader = new InputStreamReader(
-                RedisPersistenceStore.class.getClassLoader().getResourceAsStream(UPDATE_SCRIPT_LUA))) {
+                RedisPersistenceStore.class.getClassLoader().getResourceAsStream(UPDATE_SCRIPT_LUA),
+                StandardCharsets.UTF_8)) {
             luaScript = new BufferedReader(
                     luaScriptReader).lines().collect(Collectors.joining("\n"));
-
         } catch (IOException e) {
             throw new IdempotencyConfigurationException("Unable to load lua script with name " + UPDATE_SCRIPT_LUA);
         }
+        return luaScript;
     }
 
     public static Builder builder() {
