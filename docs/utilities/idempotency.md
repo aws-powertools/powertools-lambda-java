@@ -221,7 +221,7 @@ Resources:
 
 ##### Redis resources
 
-You need an existing Redis service before setting up Redis as the persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/).
+You need an existing Redis service before setting up Redis as the persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/) or [Amazon MemoryDB for Redis](https://aws.amazon.com/memorydb/) as persistent storage layer provider.
 !!! tip "Tip:No existing Redis service?"
     If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider. DynamoDB does not require a VPC deployment and is easier to configure and operate.
 
