@@ -976,6 +976,7 @@ When creating the `RedisPersistenceStore`, you can set a custom Jedis client:
                         .user("user")
                         .password("secret")
                         .ssl(true)
+                        .database(1)
                         .connectionTimeoutMillis(3000)
             .build())
         .build();
@@ -998,6 +999,7 @@ When creating the `RedisPersistenceStore`, you can set a custom Jedis client:
     .user("default")
     .password("")
     .ssl(false)
+    .database(0)
     .build();
     ```
 
