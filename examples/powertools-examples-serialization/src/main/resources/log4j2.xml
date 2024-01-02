@@ -2,7 +2,7 @@
 <Configuration packages="com.amazonaws.services.lambda.runtime.log4j2">
     <Appenders>
         <Console name="JsonAppender" target="SYSTEM_OUT">
-            <LambdaJsonLayout compact="true" eventEol="true"/>
+            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
         </Console>
     </Appenders>
     <Loggers>
