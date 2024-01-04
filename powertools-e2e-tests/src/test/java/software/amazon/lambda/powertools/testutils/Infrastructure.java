@@ -167,7 +167,7 @@ public class Infrastructure {
                 .build().getCallerIdentity().account();
 
         if (isRedisDeployment) {
-            this.vpc = Vpc.Builder.create(this.stack, "MyVPC-" + stackName)
+            this.vpc = Vpc.Builder.create(this.stack, "PowertoolsVPC-" + stackName)
                     .availabilityZones(Arrays.asList(region.toString() + "a", region + "b"))
                     .build();
 
@@ -180,7 +180,7 @@ public class Infrastructure {
                     .description("ElastiCache SecurityGroup")
                     .build();
 
-            cfnSubnetGroup = CfnSubnetGroup.Builder.create(stack, "Redis Subnet-" + stackName)
+            cfnSubnetGroup = CfnSubnetGroup.Builder.create(stack, "Redis-Subnet-" + stackName)
                     .description("A subnet for the ElastiCache cluster")
                     .subnetIds(subnets).cacheSubnetGroupName("redis-SG-" + stackName).build();
 

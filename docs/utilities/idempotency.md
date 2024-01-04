@@ -222,6 +222,7 @@ Resources:
 ##### Redis resources
 
 You need an existing Redis service before setting up Redis as the persistent storage layer provider. You can also use Redis compatible services like [Amazon ElastiCache for Redis](https://aws.amazon.com/elasticache/redis/) or [Amazon MemoryDB for Redis](https://aws.amazon.com/memorydb/) as persistent storage layer provider.
+
 !!! tip "Tip:No existing Redis service?"
     If you don't have an existing Redis service, we recommend using DynamoDB as persistent storage layer provider. DynamoDB does not require a VPC deployment and is easier to configure and operate.
 
@@ -244,11 +245,12 @@ Resources:
         Variables:
           REDIS_CLUSTER_MODE: "true"
 ```
+
 ##### VPC Access
 Your AWS Lambda Function must be able to reach the Redis endpoint before using it for idempotency persistent storage layer. In most cases you will need to [configure VPC access](https://docs.aws.amazon.com/lambda/latest/dg/configuration-vpc.html) for your AWS Lambda Function. Using a public accessible Redis is not recommended.
 
 !!! tip "Amazon ElastiCache for Redis as persistent storage layer provider"
-    If you intend to use Amazon ElastiCache for Redis for idempotency persistent storage layer, you can also reference [This AWS Tutorial](https://docs.aws.amazon.com/lambda/latest/dg/services-elasticache-tutorial.html).
+    If you intend to use Amazon ElastiCache for Redis for idempotency persistent storage layer, you can also consult [this AWS tutorial](https://docs.aws.amazon.com/lambda/latest/dg/services-elasticache-tutorial.html).
 
 ```yaml hl_lines="7-12" title="AWS Serverless Application Model (SAM) example"
 Resources:
@@ -266,11 +268,11 @@ Resources:
 ```
 1. Replace the Security Group ID and Subnet ID to match your Redis' VPC setting.
 2. The security group ID or IDs of the VPC where the Redis deployment is configured.
-3. The subnet IDs  of the VPC where the Redis deployment is configured.
+3. The subnet IDs of the VPC where the Redis deployment is configured.
 
 ### Idempotent annotation
 
-You can quickly start by initializing the persistence store  used (e.g. the `DynamoDBPersistenceStore`) and using it with the `@Idempotent` annotation on your Lambda handler.
+You can quickly start by initializing the persistence store used (e.g. `DynamoDBPersistenceStore` or `RedisPersistenceStore`) and using it with the `@Idempotent` annotation on your Lambda handler.
 
 !!! warning "Important"
     Initialization and configuration of the persistence store must be performed outside the handler, preferably in the constructor.
@@ -974,14 +976,14 @@ When creating the `RedisPersistenceStore`, you can set a custom Jedis client:
             .withPort(redisCluster.getBindPort())
             .withJedisClientConfig(DefaultJedisClientConfig.builder()
                         .user("user")
-                        .password("secret")
+                        .password("secret") // leverage parameters-secrets module to retrieve this from Secrets Manager
                         .ssl(true)
                         .database(1)
                         .connectionTimeoutMillis(3000)
             .build())
         .build();
 
-        JedisPooled jedisPooled = new JedisPooled(new HostAndPort("host",6789), jedisConfig)
+        JedisPooled jedisPooled = new JedisPooled(new HostAndPort("host",6789), jedisConfig);
 
         Idempotency.config().withPersistenceStore(
           RedisPersistenceStore.builder()
