@@ -30,6 +30,7 @@ import static software.amazon.lambda.powertools.logging.internal.LoggingConstant
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_LEVEL;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_RESPONSE;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_SAMPLING_RATE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
@@ -63,7 +64,6 @@ import org.slf4j.MDC;
 import org.slf4j.MarkerFactory;
 import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 
@@ -350,12 +350,12 @@ public final class LambdaLoggingAspect {
                                           final boolean isOnRequestHandler,
                                           final boolean isOnRequestStreamHandler) {
         if (isOnRequestHandler) {
-            JsonNode jsonNode = LoggingUtils.getObjectMapper().valueToTree(proceedArgs[0]);
+            JsonNode jsonNode = JsonConfig.get().getObjectMapper().valueToTree(proceedArgs[0]);
             setCorrelationIdFromNode(correlationIdPath, jsonNode);
         } else if (isOnRequestStreamHandler) {
             try {
                 byte[] bytes = bytesFromInputStreamSafely((InputStream) proceedArgs[0]);
-                JsonNode jsonNode = LoggingUtils.getObjectMapper().readTree(bytes);
+                JsonNode jsonNode = JsonConfig.get().getObjectMapper().readTree(bytes);
                 proceedArgs[0] = new ByteArrayInputStream(bytes);
 
                 setCorrelationIdFromNode(correlationIdPath, jsonNode);
@@ -371,7 +371,7 @@ public final class LambdaLoggingAspect {
 
         String asText = node.asText();
         if (null != asText && !asText.isEmpty()) {
-            LoggingUtils.setCorrelationId(asText);
+            MDC.put(CORRELATION_ID.getName(), asText);
         } else {
             LOG.warn("Unable to extract any correlation id. Is your function expecting supported event type?");
         }

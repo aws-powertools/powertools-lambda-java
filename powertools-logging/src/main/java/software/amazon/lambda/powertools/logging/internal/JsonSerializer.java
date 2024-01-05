@@ -38,8 +38,9 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 /**
  * A simple JSON serializer.
- *
- * Used internally for json serialization, not to be used externally
+ * Used internally for json serialization, not to be used externally.
+ * We do not use Jackson as we need to serialize each fields of the log event individually.
+ * Mainly used by logback as log4j is using its own JsonWriter
  */
 public class JsonSerializer implements AutoCloseable {
 

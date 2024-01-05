@@ -19,7 +19,6 @@ import java.util.Map;
 
 /**
  * Factory for creating {@link StructuredArgument}s.
- *
  * Inspired from the StructuredArgument of logstash-logback-encoder.
  */
 public class StructuredArguments {

@@ -18,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
+/**
+ * See {@link StructuredArguments#entries(Map)}
+ */
 public class MapArgument implements StructuredArgument {
     private final Map<?, ?> map;
 

@@ -14,14 +14,16 @@
 
 package software.amazon.lambda.powertools.logging.internal.handler;
 
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
@@ -37,12 +39,12 @@ public class PowertoolsArguments implements RequestHandler<SQSEvent.SQSMessage, 
     @Logging(clearState = true)
     public String handleRequest(SQSEvent.SQSMessage input, Context context) {
         try {
-            LoggingUtils.setCorrelationId(input.getMessageId());
+            MDC.put(CORRELATION_ID.getName(), input.getMessageId());
             if (argumentFormat == ArgumentFormat.JSON) {
-                LOG.debug("", StructuredArguments.json("input",
+                LOG.debug("SQS Event", StructuredArguments.json("input",
                         JsonConfig.get().getObjectMapper().writeValueAsString(input)));
             } else {
-                LOG.debug("", StructuredArguments.entry("input", input));
+                LOG.debug("SQS Event", StructuredArguments.entry("input", input));
             }
             LOG.debug("{}", input.getMessageId());
             LOG.warn("Message body = {} and id = \"{}\"", input.getBody(), input.getMessageId());
