@@ -33,7 +33,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
-            <scope>provided</scope>
+            <version>${aspectj.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
@@ -48,6 +48,7 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
         </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

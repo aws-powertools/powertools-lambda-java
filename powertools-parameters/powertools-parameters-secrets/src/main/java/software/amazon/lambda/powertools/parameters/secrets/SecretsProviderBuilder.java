@@ -59,7 +59,9 @@ public class SecretsProviderBuilder {
         if (client == null) {
             client = createClient();
         }
-
+        if(transformationManager == null){
+            transformationManager = new TransformationManager();
+        }
         provider = new SecretsProvider(cacheManager, transformationManager, client);
 
         return provider;
