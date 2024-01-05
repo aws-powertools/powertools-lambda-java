@@ -392,7 +392,8 @@ public class LambdaMetricsAspectTest {
 
             assertThatExceptionOfType(DimensionSetExceededException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Maximum number of dimensions allowed are 30. Account for default dimensions if not using setDimensions.");
+                    .withMessage(
+                            "Maximum number of dimensions allowed are 30. Account for default dimensions if not using setDimensions.");
         }
     }
 

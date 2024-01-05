@@ -35,14 +35,17 @@ public class Function implements RequestHandler<Input, String> {
     @Metrics(captureColdStart = true)
     public String handleRequest(Input input, Context context) {
 
-        Instant currentTimeTruncatedPlusThirty = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).toInstant(ZoneOffset.UTC).plusSeconds(30);
+        Instant currentTimeTruncatedPlusThirty =
+                LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).toInstant(ZoneOffset.UTC).plusSeconds(30);
         metricsLogger.setTimestamp(currentTimeTruncatedPlusThirty);
 
         DimensionSet dimensionSet = new DimensionSet();
         input.getDimensions().forEach((key, value) -> dimensionSet.addDimension(key, value));
         metricsLogger.putDimensions(dimensionSet);
 
-        input.getMetrics().forEach((key, value) -> metricsLogger.putMetric(key, value, Unit.COUNT,input.getHighResolution().equalsIgnoreCase("true") ? StorageResolution.HIGH : StorageResolution.STANDARD ));
+        input.getMetrics().forEach((key, value) -> metricsLogger.putMetric(key, value, Unit.COUNT,
+                input.getHighResolution().equalsIgnoreCase("true") ? StorageResolution.HIGH :
+                        StorageResolution.STANDARD));
 
         return "OK";
     }

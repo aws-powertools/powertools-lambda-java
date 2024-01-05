@@ -269,10 +269,11 @@ class MetricsLoggerTest {
                                 .contains("Namespace=GlobalName");
 
                         ArrayList cloudWatchMetrics = (ArrayList) aws.get("CloudWatchMetrics");
-                        LinkedHashMap<String,Object> values = (java.util.LinkedHashMap<String, Object>) cloudWatchMetrics.get(0);
+                        LinkedHashMap<String, Object> values =
+                                (java.util.LinkedHashMap<String, Object>) cloudWatchMetrics.get(0);
                         ArrayList metricArray = (ArrayList) values.get("Metrics");
-                        LinkedHashMap<String,Object> metricValues = (LinkedHashMap<String, Object>) metricArray.get(1);
-                        assertThat(metricValues.get("StorageResolution")).isEqualTo(1);
+                        LinkedHashMap<String, Object> metricValues = (LinkedHashMap<String, Object>) metricArray.get(1);
+                        assertThat(metricValues).containsEntry("StorageResolution", 1);
                     });
         }
     }
