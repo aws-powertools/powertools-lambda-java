@@ -181,10 +181,6 @@
         <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="setObjectMapper"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
                 <Method name="defaultObjectMapper"/>
             </And>
@@ -201,10 +197,6 @@
     <Match>
         <Bug pattern="MS_EXPOSE_REP"/>
         <Or>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="getObjectMapper"/>
-            </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
                 <Method name="objectMapper"/>

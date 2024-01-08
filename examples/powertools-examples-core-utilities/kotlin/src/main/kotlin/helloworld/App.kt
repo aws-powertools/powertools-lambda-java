@@ -18,25 +18,21 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.amazonaws.xray.entities.Subsegment
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet
 import software.amazon.cloudwatchlogs.emf.model.Unit
 import software.amazon.lambda.powertools.logging.Logging
-import software.amazon.lambda.powertools.logging.LoggingUtils
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry
 import software.amazon.lambda.powertools.metrics.Metrics
 import software.amazon.lambda.powertools.metrics.MetricsUtils
 import software.amazon.lambda.powertools.tracing.CaptureMode
 import software.amazon.lambda.powertools.tracing.Tracing
 import software.amazon.lambda.powertools.tracing.TracingUtils
-import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
-import java.util.stream.Collectors
 
 /**
  * Handler for requests to Lambda function.
