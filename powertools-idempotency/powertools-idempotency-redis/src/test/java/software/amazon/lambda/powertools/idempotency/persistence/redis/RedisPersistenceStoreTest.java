@@ -30,6 +30,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPooled;
 import redis.embedded.RedisServer;
@@ -80,10 +81,11 @@ public class RedisPersistenceStoreTest {
         long ttl = 3600;
         long expiry = now.plus(ttl, ChronoUnit.SECONDS).getEpochSecond();
         RedisPersistenceStore store = new RedisPersistenceStore.Builder()
-                .withJedisClient(jedisPool).withJedisConfig(JedisConfig.Builder.builder().build())
+                  .withJedisConfig(JedisConfig.Builder.builder().withJedisClientConfig(
+                        DefaultJedisClientConfig.builder().build()).build())
                 .build();
 
-        redisPersistenceStore.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
+        store.putRecord(new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null), now);
 
         Map<String, String> entry = jedisPool.hgetAll("{idempotency:id:key}");
         long ttlInRedis = jedisPool.ttl("{idempotency:id:key}");

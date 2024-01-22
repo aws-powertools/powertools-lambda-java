@@ -232,7 +232,7 @@ In the following example, you can see a SAM template for deploying an AWS Lambda
 
 !!! warning "Warning: Large responses with Redis persistence layer"
 When using this utility with Redis your function's responses must be smaller than 512MB.
-Persisting larger items cannot might cause exceptions.
+Persisting larger items might cause exceptions.
 
 ```yaml hl_lines="9" title="AWS Serverless Application Model (SAM) example"
 Resources:
@@ -267,8 +267,8 @@ Resources:
           - subnet-{your_subnet_id_2}
 ```
 1. Replace the Security Group ID and Subnet ID to match your Redis' VPC setting.
-2. The security group ID or IDs of the VPC where the Redis deployment is configured.
-3. The subnet IDs of the VPC where the Redis deployment is configured.
+2. The security group ID or IDs of the VPC where the Redis is deployed.
+3. The subnet IDs of the VPC where Redis is deployed.
 
 ### Idempotent annotation
 
@@ -972,8 +972,8 @@ When creating the `RedisPersistenceStore`, you can set a custom Jedis client:
     ```java hl_lines="2-11 13 18"
     public App() {
         JedisConfig jedisConfig = JedisConfig.Builder.builder()
-            .withHost(redisCluster.getHost())
-            .withPort(redisCluster.getBindPort())
+            .withHost("redisHost")
+            .withPort("redisPort")
             .withJedisClientConfig(DefaultJedisClientConfig.builder()
                         .user("user")
                         .password("secret") // leverage parameters-secrets module to retrieve this from Secrets Manager
@@ -998,8 +998,8 @@ When creating the `RedisPersistenceStore`, you can set a custom Jedis client:
 
     ```java
     DefaultJedisClientConfig.builder()
-    .user("default")
-    .password("")
+    .user(null)
+    .password(null)
     .ssl(false)
     .database(0)
     .build();
