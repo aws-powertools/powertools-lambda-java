@@ -136,7 +136,7 @@ public class Infrastructure {
     private String cfnAssetDirectory;
     private SubnetSelection subnetSelection;
     private CfnSubnetGroup cfnSubnetGroup;
-    private SecurityGroup securityGroup;
+    private SecurityGroup redisSecurityGroup;
     private boolean isRedisDeployment = false;
 
     private Infrastructure(Builder builder) {
@@ -174,7 +174,7 @@ public class Infrastructure {
             List<String> subnets = vpc.getPublicSubnets().stream().map(subnet ->
                     subnet.getSubnetId()).collect(Collectors.toList());
 
-            securityGroup = SecurityGroup.Builder.create(stack, "ElastiCache-SG-" + stackName)
+            redisSecurityGroup = SecurityGroup.Builder.create(stack, "ElastiCache-SG-" + stackName)
                     .vpc(vpc)
                     .allowAllOutbound(true)
                     .description("ElastiCache SecurityGroup")
@@ -284,13 +284,16 @@ public class Infrastructure {
         LOG.debug("Building Lambda function with command " +
                 packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
 
-        final SecurityGroup lambdaSecurityGroup = SecurityGroup.Builder.create(this.stack, "Lambda-SG")
-                .vpc(vpc)
-                .allowAllOutbound(true)
-                .description("Lambda SecurityGroup")
-                .build();
-        securityGroup.addIngressRule(Peer.securityGroupId(lambdaSecurityGroup.getSecurityGroupId()), Port.tcp(6379),
-                "Allow ElastiCache Server");
+        if (isRedisDeployment) {
+            final SecurityGroup lambdaSecurityGroup = SecurityGroup.Builder.create(this.stack, "Lambda-SG")
+                    .vpc(vpc)
+                    .allowAllOutbound(true)
+                    .description("Lambda SecurityGroup")
+                    .build();
+            redisSecurityGroup.addIngressRule(Peer.securityGroupId(lambdaSecurityGroup.getSecurityGroupId()),
+                    Port.tcp(6379),
+                    "Allow ElastiCache Server");
+        }
 
         Function.Builder functionBuilder = Function.Builder
                 .create(this.stack, functionName)
@@ -345,7 +348,7 @@ public class Infrastructure {
                     .serverlessCacheName("rc-" + stackName)
                     .engine("redis")
                     .subnetIds(subnets)
-                    .securityGroupIds(singletonList(securityGroup.getSecurityGroupId()))
+                    .securityGroupIds(singletonList(redisSecurityGroup.getSecurityGroupId()))
                     .build();
 
             function.addEnvironment("REDIS_HOST", redisServer.getAtt("Endpoint.Address").toString());
