@@ -22,13 +22,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.parameters.secrets.SecretsParam;
@@ -70,43 +65,17 @@ public class ParametersFunction implements RequestHandler<APIGatewayProxyRequest
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-
-        log.info("\n=============== SSM Parameter Store ===============");
-        log.info("simplevalue={}, listvalue={}, b64value={}\n", simpleValue, listValue, b64value);
-        log.info("jsonobj={}\n", jsonObj);
-
-        log.info("allvalues (multiple):");
-        allValues.forEach((key, value) -> log.info("- {}={}\n", key, value));
-
-        log.info("\n=============== Secrets Manager ===============");
-        log.info("secretjson:");
-        secretJson.forEach((key, value) -> log.info("- {}={}\n", key, value));
-        log.info("secretjsonobj={}\n", secretJsonObj);
-
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
-        try {
-            final String pageContents = this.getPageContents("https://checkip.amazonaws.com");
-            String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
+        String output = "{ \"message\": \"hello world\"}";
 
-            return response
-                    .withStatusCode(200)
-                    .withBody(output);
-        } catch (IOException e) {
-            return response
-                    .withBody("{}")
-                    .withStatusCode(500);
-        }
+        return response
+                .withStatusCode(200)
+                .withBody(output);
     }
 
-    private String getPageContents(String address) throws IOException {
-        URL url = new URL(address);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"))) {
-            return br.lines().collect(Collectors.joining(System.lineSeparator()));
-        }
-    }
 }
