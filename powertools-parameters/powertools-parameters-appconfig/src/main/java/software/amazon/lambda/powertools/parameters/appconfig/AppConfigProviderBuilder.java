@@ -51,7 +51,9 @@ public class AppConfigProviderBuilder {
         if (application == null) {
             throw new IllegalStateException("No application provided; please provide one");
         }
-
+        if (transformationManager == null) {
+            transformationManager = new TransformationManager();
+        }
         // Create a AppConfigDataClient if we haven't been given one
         if (client == null) {
             client = AppConfigDataClient.builder()

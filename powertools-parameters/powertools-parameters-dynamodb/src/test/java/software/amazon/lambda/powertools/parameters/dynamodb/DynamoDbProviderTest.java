@@ -16,7 +16,9 @@ package software.amazon.lambda.powertools.parameters.dynamodb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -224,6 +226,15 @@ public class DynamoDbProviderTest {
         assertThatIllegalStateException().isThrownBy(() -> DynamoDbProvider.builder()
                 .withCacheManager(new CacheManager())
                 .build());
+    }
+    @Test
+    public void testDynamoDBBuilder_withoutParameter_shouldHaveDefaultTransformationManager() {
+
+        // Act
+        DynamoDbProvider dynamoDbProvider = DynamoDbProvider.builder().withTable("test-table")
+                .build();
+        // Assert
+        assertDoesNotThrow(()->dynamoDbProvider.withTransformation(json));
     }
 
 }
