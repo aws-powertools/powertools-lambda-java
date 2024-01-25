@@ -19,9 +19,11 @@ Resources:
       Handler: org.demo.parameters.ParametersFunction::handleRequest
       MemorySize: 512
       Tracing: Active
+      Timeout: 60
       Environment:
         Variables:
           LOG_LEVEL: INFO
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1
       Policies:
         - AWSSecretsManagerGetSecretValuePolicy:
             SecretArn: !Ref UserPwd
