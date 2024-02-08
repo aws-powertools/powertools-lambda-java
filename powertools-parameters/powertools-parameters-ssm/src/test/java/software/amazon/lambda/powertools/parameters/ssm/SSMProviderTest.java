@@ -16,6 +16,8 @@ package software.amazon.lambda.powertools.parameters.ssm;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -192,6 +194,16 @@ public class SSMProviderTest {
 
         assertThat(request1.nextToken()).isNull();
         assertThat(request2.nextToken()).isEqualTo("123abc");
+    }
+
+    @Test
+    public void testSSMProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
+
+        // Act
+        SSMProvider ssmProvider = SSMProvider.builder()
+                .build();
+        // Assert
+        assertDoesNotThrow(()->ssmProvider.withTransformation(json));
     }
 
     private void initMock(String expectedValue) {
