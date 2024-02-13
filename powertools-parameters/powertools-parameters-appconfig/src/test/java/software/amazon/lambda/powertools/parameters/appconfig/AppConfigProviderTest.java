@@ -17,7 +17,9 @@ package software.amazon.lambda.powertools.parameters.appconfig;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.MockitoAnnotations.openMocks;
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -215,5 +217,16 @@ public class AppConfigProviderTest {
                         .withClient(client)
                         .build())
                 .withMessage("No application provided; please provide one");
+    }
+    @Test
+    public void testAppConfigProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
+
+        // Act
+        AppConfigProvider appConfigProvider = AppConfigProvider.builder()
+                .withEnvironment("test")
+                .withApplication("app")
+                .build();
+        // Assert
+        assertDoesNotThrow(()->appConfigProvider.withTransformation(json));
     }
 }

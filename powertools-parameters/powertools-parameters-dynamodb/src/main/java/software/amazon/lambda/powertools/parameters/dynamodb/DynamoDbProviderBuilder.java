@@ -61,6 +61,9 @@ public class DynamoDbProviderBuilder {
         if (client == null) {
             client = createClient();
         }
+        if (transformationManager == null) {
+            transformationManager = new TransformationManager();
+        }
         provider = new DynamoDbProvider(cacheManager, transformationManager, client, table);
 
         return provider;
