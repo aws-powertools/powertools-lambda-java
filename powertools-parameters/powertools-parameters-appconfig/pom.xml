@@ -21,7 +21,6 @@
             <artifactId>powertools-parameters</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>appconfigdata</artifactId>
@@ -35,6 +34,11 @@
                     <artifactId>netty-nio-client</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Test dependencies -->

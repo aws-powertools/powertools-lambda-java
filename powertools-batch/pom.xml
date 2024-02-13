@@ -25,6 +25,7 @@
     </build>
 
     <artifactId>powertools-batch</artifactId>
+
     <dependencies>
         <dependency>
             <groupId>com.amazonaws</groupId>
