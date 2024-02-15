@@ -32,25 +32,6 @@
         <system>GitHub Issues</system>
         <url>https://github.com/aws-powertools/powertools-lambda-java/issues</url>
     </issueManagement>
-
-    <scm>
-        <url>https://github.com/aws-powertools/powertools-lambda-java.git</url>
-    </scm>
-    <developers>
-        <developer>
-            <name>Powertools for AWS Lambda (Java) Team</name>
-            <organization>Amazon Web Services</organization>
-            <organizationUrl>https://aws.amazon.com/</organizationUrl>
-        </developer>
-    </developers>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -421,7 +402,6 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
                             <goal>test-compile</goal>

@@ -2,7 +2,7 @@
 
 **This is pre-release code for Powertools for AWS Lambda (Java) V2! Please check out the `main` branch for the stable release** 
 
-![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent) [![codecov.io](https://codecov.io/github/aws-powertools/powertools-lambda-java/branch/main/graphs/badge.svg)](https://app.codecov.io/gh/aws-powertools/powertools-lambda-java)
+![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) [![V2 Build Status](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/pr_build.yml/badge.svg?branch=v2)](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/pr_build.yml) **MAVEN DEPLOY NOT DONE** [![codecov.io](https://codecov.io/github/aws-powertools/powertools-lambda-java/branch/v2/graphs/badge.svg)](https://app.codecov.io/gh/aws-powertools/powertools-lambda-java/tree/v2)
 
 
 Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity.
