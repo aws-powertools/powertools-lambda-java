@@ -29,14 +29,14 @@ jobs:
         run: |
           mvn install -DskipTests
       - name: Run SAM validator to check syntax of IaC templates - Java
-        working-directory: examples/powertools-examples-core/${{ matrix.project }}
+        working-directory: examples/powertools-examples-core-utilities//${{ matrix.project }}
         run: |
           sam build
           sam validate --lint
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@633666f66e0061ca3b725c73b2ec20cd13a8fdd1 #v2.0.3
       - name: Run Terraform validator to check syntax of IaC templates and produce a plan of changes
-        working-directory: examples/powertools-examples-core/terraform
+        working-directory: examples/powertools-examples-core-utilities/terraform
         run: |
           mvn install
           terraform -version
