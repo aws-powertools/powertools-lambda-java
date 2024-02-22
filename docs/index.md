@@ -306,9 +306,6 @@ Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj
 | `11-17`     | `1.9.20.1`      |
 | `21`        | `1.9.21`        |
 
-_Note: 1.9.21 is not yet available and Java 21 not yet officially supported by aspectj, but you can already use the `1.9.21.M1`_
-
-
 ## Environment variables
 
 !!! info
