@@ -15,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency</artifactId>
+            <artifactId>powertools-idempotency-dynamodb</artifactId>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
@@ -43,7 +43,7 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-idempotency</artifactId>
+                            <artifactId>powertools-idempotency-core</artifactId>
                         </aspectLibrary>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
