@@ -17,22 +17,43 @@ package helloworld;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+
 public class AppStream implements RequestStreamHandler {
     private static final ObjectMapper mapper = new ObjectMapper();
+    private final static Logger log = LogManager.getLogger(AppStream.class);
 
     @Override
     @Logging(logEvent = true)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-    public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
-        Map map = mapper.readValue(input, Map.class);
+    // RequestStreamHandler can be used instead of RequestHandler for cases when you'd like to deserialize request body or serialize response body yourself, instead of allowing that to happen automatically
+    // Note that you still need to return a proper JSON for API Gateway to handle 
+    // See Lambda Response format for examples: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
+    public void handleRequest(InputStream input, OutputStream output, Context context) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
+             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8)))) {
 
-        System.out.println(map.size());
+            log.info("Received: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(reader)));
+
+            writer.write("{\"body\": \"" + System.currentTimeMillis() + "\"} ");
+        } catch (IOException e) {
+            log.error("Something has gone wrong: ", e);
+        }
     }
 }
+
