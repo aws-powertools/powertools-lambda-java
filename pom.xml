@@ -81,12 +81,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.3</lambda.events.version>
-        <lambda.serial.version>1.1.2</lambda.serial.version>
+        <lambda.serial.version>1.1.5</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.6.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
