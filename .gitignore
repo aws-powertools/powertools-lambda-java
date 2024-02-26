@@ -111,3 +111,4 @@ example/HelloWorldFunction/build
 build/
 .terraform*
 terraform.tfstate*
+/powertools-idempotency/powertools-idempotency-dynamodb/dynamodb-local-metadata.json

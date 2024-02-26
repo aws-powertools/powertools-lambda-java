@@ -14,6 +14,17 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
+
+import java.time.Instant;
+import java.util.AbstractMap;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.OptionalLong;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
@@ -35,18 +46,6 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemN
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore;
-
-import java.time.Instant;
-import java.util.AbstractMap;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.OptionalLong;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
-import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
  * DynamoDB version of the {@link PersistenceStore}. Will store idempotency data in DynamoDB.<br>

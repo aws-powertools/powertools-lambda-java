@@ -14,10 +14,9 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence;
 
+import java.time.Instant;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
-
-import java.time.Instant;
 
 /**
  * Persistence layer that will store the idempotency result.

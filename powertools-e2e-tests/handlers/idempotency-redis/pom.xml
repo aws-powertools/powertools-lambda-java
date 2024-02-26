@@ -8,14 +8,13 @@
         <version>2.0.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>e2e-test-handler-idempotency</artifactId>
+    <artifactId>e2e-test-handler-idempotency-redis</artifactId>
     <packaging>jar</packaging>
     <name>A Lambda function using Powertools for AWS Lambda (Java) idempotency</name>
-
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-idempotency</artifactId>
+            <artifactId>powertools-idempotency-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
@@ -30,7 +29,6 @@
             <artifactId>aspectjrt</artifactId>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -43,7 +41,7 @@
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-idempotency</artifactId>
+                            <artifactId>powertools-idempotency-core</artifactId>
                         </aspectLibrary>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>

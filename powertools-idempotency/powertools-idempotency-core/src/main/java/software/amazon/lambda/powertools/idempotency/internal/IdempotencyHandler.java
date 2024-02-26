@@ -14,8 +14,13 @@
 
 package software.amazon.lambda.powertools.idempotency.internal;
 
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.time.Instant;
+import java.util.OptionalInt;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
@@ -31,12 +36,6 @@ import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValid
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.time.Instant;
-import java.util.OptionalInt;
-
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
 
 /**
  * Internal class that will handle the Idempotency, and use the {@link software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore}

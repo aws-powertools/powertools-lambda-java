@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -36,8 +37,10 @@ import software.amazon.awscdk.BundlingOutput;
 import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.DockerVolume;
 import software.amazon.awscdk.Duration;
+import software.amazon.awscdk.Environment;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
+import software.amazon.awscdk.StackProps;
 import software.amazon.awscdk.cxapi.CloudAssembly;
 import software.amazon.awscdk.services.appconfig.CfnApplication;
 import software.amazon.awscdk.services.appconfig.CfnConfigurationProfile;
@@ -45,7 +48,19 @@ import software.amazon.awscdk.services.appconfig.CfnDeployment;
 import software.amazon.awscdk.services.appconfig.CfnDeploymentStrategy;
 import software.amazon.awscdk.services.appconfig.CfnEnvironment;
 import software.amazon.awscdk.services.appconfig.CfnHostedConfigurationVersion;
-import software.amazon.awscdk.services.dynamodb.*;
+import software.amazon.awscdk.services.dynamodb.Attribute;
+import software.amazon.awscdk.services.dynamodb.AttributeType;
+import software.amazon.awscdk.services.dynamodb.BillingMode;
+import software.amazon.awscdk.services.dynamodb.StreamViewType;
+import software.amazon.awscdk.services.dynamodb.Table;
+import software.amazon.awscdk.services.ec2.IVpc;
+import software.amazon.awscdk.services.ec2.Peer;
+import software.amazon.awscdk.services.ec2.Port;
+import software.amazon.awscdk.services.ec2.SecurityGroup;
+import software.amazon.awscdk.services.ec2.SubnetSelection;
+import software.amazon.awscdk.services.ec2.Vpc;
+import software.amazon.awscdk.services.elasticache.CfnServerlessCache;
+import software.amazon.awscdk.services.elasticache.CfnSubnetGroup;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.kinesis.Stream;
 import software.amazon.awscdk.services.kinesis.StreamMode;
@@ -114,10 +129,15 @@ public class Infrastructure {
     private final String queue;
     private final String kinesisStream;
     private final String largeMessagesBucket;
+    private IVpc vpc;
     private String ddbStreamsTableName;
     private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
+    private SubnetSelection subnetSelection;
+    private CfnSubnetGroup cfnSubnetGroup;
+    private SecurityGroup redisSecurityGroup;
+    private boolean isRedisDeployment = false;
 
     private Infrastructure(Builder builder) {
         this.stackName = builder.stackName;
@@ -127,23 +147,51 @@ public class Infrastructure {
         this.timeout = builder.timeoutInSeconds;
         this.pathToFunction = builder.pathToFunction;
         this.idempotencyTable = builder.idemPotencyTable;
+        this.isRedisDeployment = builder.redisDeployment;
         this.appConfig = builder.appConfig;
         this.queue = builder.queue;
         this.kinesisStream = builder.kinesisStream;
         this.largeMessagesBucket = builder.largeMessagesBucket;
         this.ddbStreamsTableName = builder.ddbStreamsTableName;
+        this.region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
 
         this.app = new App();
-        this.stack = createStackWithLambda();
 
-        this.synthesize();
+        this.stack = createStack();
 
         this.httpClient = UrlConnectionHttpClient.builder().build();
-        this.region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
+
         this.account = StsClient.builder()
                 .httpClient(httpClient)
                 .region(region)
                 .build().getCallerIdentity().account();
+
+        if (isRedisDeployment) {
+            this.vpc = Vpc.Builder.create(this.stack, "PowertoolsVPC-" + stackName)
+                    .availabilityZones(Arrays.asList(region.toString() + "a", region + "b"))
+                    .build();
+
+            List<String> subnets = vpc.getPublicSubnets().stream().map(subnet ->
+                    subnet.getSubnetId()).collect(Collectors.toList());
+
+            redisSecurityGroup = SecurityGroup.Builder.create(stack, "ElastiCache-SG-" + stackName)
+                    .vpc(vpc)
+                    .allowAllOutbound(true)
+                    .description("ElastiCache SecurityGroup")
+                    .build();
+
+            cfnSubnetGroup = CfnSubnetGroup.Builder.create(stack, "Redis-Subnet-" + stackName)
+                    .description("A subnet for the ElastiCache cluster")
+                    .subnetIds(subnets).cacheSubnetGroupName("redis-SG-" + stackName).build();
+
+            subnetSelection = SubnetSelection.builder().subnets(vpc.getPublicSubnets()).build();
+        }
+
+
+        createStackWithLambda();
+
+        this.synthesize();
+
 
         s3 = S3Client.builder()
                 .httpClient(httpClient)
@@ -201,10 +249,9 @@ public class Infrastructure {
      *
      * @return the CDK stack
      */
-    private Stack createStackWithLambda() {
+    private void createStackWithLambda() {
         boolean createTableForAsyncTests = false;
         Stack stack = new Stack(app, stackName);
-
         List<String> packagingInstruction = Arrays.asList(
                 "/bin/sh",
                 "-c",
@@ -230,14 +277,26 @@ public class Infrastructure {
                 .outputType(BundlingOutput.ARCHIVED);
 
         functionName = stackName + "-function";
-        CfnOutput.Builder.create(stack, FUNCTION_NAME_OUTPUT)
+        CfnOutput.Builder.create(this.stack, FUNCTION_NAME_OUTPUT)
                 .value(functionName)
                 .build();
 
         LOG.debug("Building Lambda function with command " +
                 packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
-        Function function = Function.Builder
-                .create(stack, functionName)
+
+        if (isRedisDeployment) {
+            final SecurityGroup lambdaSecurityGroup = SecurityGroup.Builder.create(this.stack, "Lambda-SG")
+                    .vpc(vpc)
+                    .allowAllOutbound(true)
+                    .description("Lambda SecurityGroup")
+                    .build();
+            redisSecurityGroup.addIngressRule(Peer.securityGroupId(lambdaSecurityGroup.getSecurityGroupId()),
+                    Port.tcp(6379),
+                    "Allow ElastiCache Server");
+        }
+
+        Function.Builder functionBuilder = Function.Builder
+                .create(this.stack, functionName)
                 .code(Code.fromAsset("handlers/", AssetOptions.builder()
                         .bundling(builderOptions
                                 .command(packagingInstruction)
@@ -247,13 +306,22 @@ public class Infrastructure {
                 .handler("software.amazon.lambda.powertools.e2e.Function::handleRequest")
                 .memorySize(1024)
                 .timeout(Duration.seconds(timeout))
+                .allowPublicSubnet(true)
                 .runtime(runtime.getCdkRuntime())
                 .environment(envVar)
-                .tracing(tracing ? Tracing.ACTIVE : Tracing.DISABLED)
-                .build();
+                .tracing(tracing ? Tracing.ACTIVE : Tracing.DISABLED);
+
+        if (isRedisDeployment) {
+            functionBuilder.vpc(vpc)
+                    .vpcSubnets(subnetSelection)
+                    .securityGroups(singletonList(lambdaSecurityGroup));
+        }
+
+        Function function = functionBuilder.build();
+
 
         LogGroup.Builder
-                .create(stack, functionName + "-logs")
+                .create(this.stack, functionName + "-logs")
                 .logGroupName("/aws/lambda/" + functionName)
                 .retention(RetentionDays.ONE_DAY)
                 .removalPolicy(RemovalPolicy.DESTROY)
@@ -261,7 +329,7 @@ public class Infrastructure {
 
         if (!StringUtils.isEmpty(idempotencyTable)) {
             Table table = Table.Builder
-                    .create(stack, "IdempotencyTable")
+                    .create(this.stack, "IdempotencyTable")
                     .billingMode(BillingMode.PAY_PER_REQUEST)
                     .removalPolicy(RemovalPolicy.DESTROY)
                     .partitionKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
@@ -273,9 +341,22 @@ public class Infrastructure {
             table.grantReadWriteData(function);
         }
 
+        if (isRedisDeployment) {
+            List<String> subnets = vpc.getPublicSubnets().stream().map(subnet ->
+                    subnet.getSubnetId()).collect(Collectors.toList());
+            CfnServerlessCache redisServer = CfnServerlessCache.Builder.create(this.stack, "ECC-" + stackName)
+                    .serverlessCacheName("rc-" + stackName)
+                    .engine("redis")
+                    .subnetIds(subnets)
+                    .securityGroupIds(singletonList(redisSecurityGroup.getSecurityGroupId()))
+                    .build();
+
+            function.addEnvironment("REDIS_HOST", redisServer.getAtt("Endpoint.Address").toString());
+        }
+
         if (!StringUtils.isEmpty(queue)) {
             Queue sqsQueue = Queue.Builder
-                    .create(stack, "SQSQueue")
+                    .create(this.stack, "SQSQueue")
                     .queueName(queue)
                     .visibilityTimeout(Duration.seconds(timeout * 6))
                     .retentionPeriod(Duration.seconds(timeout * 6))
@@ -293,14 +374,14 @@ public class Infrastructure {
                     .build();
             function.addEventSource(sqsEventSource);
             CfnOutput.Builder
-                    .create(stack, "QueueURL")
+                    .create(this.stack, "QueueURL")
                     .value(sqsQueue.getQueueUrl())
                     .build();
             createTableForAsyncTests = true;
         }
         if (!StringUtils.isEmpty(kinesisStream)) {
             Stream stream = Stream.Builder
-                    .create(stack, "KinesisStream")
+                    .create(this.stack, "KinesisStream")
                     .streamMode(StreamMode.ON_DEMAND)
                     .streamName(kinesisStream)
                     .build();
@@ -316,13 +397,13 @@ public class Infrastructure {
                     .build();
             function.addEventSource(kinesisEventSource);
             CfnOutput.Builder
-                    .create(stack, "KinesisStreamName")
+                    .create(this.stack, "KinesisStreamName")
                     .value(stream.getStreamName())
                     .build();
         }
 
         if (!StringUtils.isEmpty(ddbStreamsTableName)) {
-            Table ddbStreamsTable = Table.Builder.create(stack, "DDBStreamsTable")
+            Table ddbStreamsTable = Table.Builder.create(this.stack, "DDBStreamsTable")
                     .tableName(ddbStreamsTableName)
                     .stream(StreamViewType.KEYS_ONLY)
                     .removalPolicy(RemovalPolicy.DESTROY)
@@ -336,12 +417,12 @@ public class Infrastructure {
                     .reportBatchItemFailures(true)
                     .build();
             function.addEventSource(ddbEventSource);
-            CfnOutput.Builder.create(stack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();
+            CfnOutput.Builder.create(this.stack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();
         }
 
         if (!StringUtils.isEmpty(largeMessagesBucket)) {
             Bucket offloadBucket = Bucket.Builder
-                    .create(stack, "LargeMessagesOffloadBucket")
+                    .create(this.stack, "LargeMessagesOffloadBucket")
                     .removalPolicy(RemovalPolicy.RETAIN) // autodelete does not work without cdk deploy
                     .bucketName(largeMessagesBucket)
                     .build();
@@ -352,19 +433,19 @@ public class Infrastructure {
 
         if (appConfig != null) {
             CfnApplication app = CfnApplication.Builder
-                    .create(stack, "AppConfigApp")
+                    .create(this.stack, "AppConfigApp")
                     .name(appConfig.getApplication())
                     .build();
 
             CfnEnvironment environment = CfnEnvironment.Builder
-                    .create(stack, "AppConfigEnvironment")
+                    .create(this.stack, "AppConfigEnvironment")
                     .applicationId(app.getRef())
                     .name(appConfig.getEnvironment())
                     .build();
 
             // Create a fast deployment strategy, so we don't have to wait ages
             CfnDeploymentStrategy fastDeployment = CfnDeploymentStrategy.Builder
-                    .create(stack, "AppConfigDeployment")
+                    .create(this.stack, "AppConfigDeployment")
                     .name("FastDeploymentStrategy")
                     .deploymentDurationInMinutes(0)
                     .finalBakeTimeInMinutes(0)
@@ -383,14 +464,14 @@ public class Infrastructure {
             CfnDeployment previousDeployment = null;
             for (Map.Entry<String, String> entry : appConfig.getConfigurationValues().entrySet()) {
                 CfnConfigurationProfile configProfile = CfnConfigurationProfile.Builder
-                        .create(stack, "AppConfigProfileFor" + entry.getKey())
+                        .create(this.stack, "AppConfigProfileFor" + entry.getKey())
                         .applicationId(app.getRef())
                         .locationUri("hosted")
                         .name(entry.getKey())
                         .build();
 
                 CfnHostedConfigurationVersion configVersion = CfnHostedConfigurationVersion.Builder
-                        .create(stack, "AppConfigHostedVersionFor" + entry.getKey())
+                        .create(this.stack, "AppConfigHostedVersionFor" + entry.getKey())
                         .applicationId(app.getRef())
                         .contentType("text/plain")
                         .configurationProfileId(configProfile.getRef())
@@ -398,7 +479,7 @@ public class Infrastructure {
                         .build();
 
                 CfnDeployment deployment = CfnDeployment.Builder
-                        .create(stack, "AppConfigDepoymentFor" + entry.getKey())
+                        .create(this.stack, "AppConfigDepoymentFor" + entry.getKey())
                         .applicationId(app.getRef())
                         .environmentId(environment.getRef())
                         .deploymentStrategyId(fastDeployment.getRef())
@@ -415,7 +496,7 @@ public class Infrastructure {
         }
         if (createTableForAsyncTests) {
             Table table = Table.Builder
-                    .create(stack, "TableForAsyncTests")
+                    .create(this.stack, "TableForAsyncTests")
                     .billingMode(BillingMode.PAY_PER_REQUEST)
                     .removalPolicy(RemovalPolicy.DESTROY)
                     .partitionKey(Attribute.builder().name("functionName").type(AttributeType.STRING).build())
@@ -424,9 +505,17 @@ public class Infrastructure {
 
             table.grantReadWriteData(function);
             function.addEnvironment("TABLE_FOR_ASYNC_TESTS", table.getTableName());
-            CfnOutput.Builder.create(stack, "TableNameForAsyncTests").value(table.getTableName()).build();
+            CfnOutput.Builder.create(this.stack, "TableNameForAsyncTests").value(table.getTableName()).build();
         }
+    }
 
+    @NotNull
+    private Stack createStack() {
+        Stack stack = new Stack(app, stackName, StackProps.builder()
+                .env(Environment.builder()
+                        .account(account)
+                        .region(region.id())
+                        .build()).build());
         return stack;
     }
 
@@ -437,6 +526,7 @@ public class Infrastructure {
         CloudAssembly synth = app.synth();
         cfnTemplate = synth.getStackByName(stack.getStackName()).getTemplate();
         cfnAssetDirectory = synth.getDirectory();
+
     }
 
     /**
@@ -477,9 +567,9 @@ public class Infrastructure {
                 String assetPath = file.get("source").get("path").asText();
                 String assetPackaging = file.get("source").get("packaging").asText();
                 String bucketName =
-                        file.get("destinations").get("current_account-current_region").get("bucketName").asText();
+                        file.get("destinations").get("current_account-" + region.id()).get("bucketName").asText();
                 String objectKey =
-                        file.get("destinations").get("current_account-current_region").get("objectKey").asText();
+                        file.get("destinations").get("current_account-" + region.id()).get("objectKey").asText();
                 Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
                         .replace("${AWS::Region}", region.toString()));
                 assets.put(objectKey, asset);
@@ -504,6 +594,7 @@ public class Infrastructure {
         private String queue;
         private String kinesisStream;
         private String ddbStreamsTableName;
+        private boolean redisDeployment = false;
 
         private Builder() {
             runtime = mapRuntimeVersion("JAVA_VERSION");
@@ -559,6 +650,11 @@ public class Infrastructure {
 
         public Builder idempotencyTable(String tableName) {
             this.idemPotencyTable = tableName;
+            return this;
+        }
+
+        public Builder redisDeployment(boolean isRedisDeployment) {
+            this.redisDeployment = isRedisDeployment;
             return this;
         }
 

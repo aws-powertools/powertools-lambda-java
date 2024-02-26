@@ -27,4 +27,9 @@ public class IdempotencyItemAlreadyExistsException extends RuntimeException {
     public IdempotencyItemAlreadyExistsException(String msg, Throwable e) {
         super(msg, e);
     }
+
+    public IdempotencyItemAlreadyExistsException(String msg) {
+        super(msg);
+    }
+
 }
