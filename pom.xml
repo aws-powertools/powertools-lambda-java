@@ -563,7 +563,7 @@
             </activation>
             <properties>
                 <!-- mockito 5+ is not compatible anymore with java < 11 -->
-                <mockito.version>4.11.0</mockito.version>
+                <mockito.version>5.2.0</mockito.version>
             </properties>
             <dependencies>
                 <dependency>
