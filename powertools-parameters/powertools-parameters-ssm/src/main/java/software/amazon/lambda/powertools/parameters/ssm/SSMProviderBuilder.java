@@ -57,6 +57,9 @@ public class SSMProviderBuilder {
             client = createClient();
         }
 
+        if(transformationManager == null){
+            transformationManager = new TransformationManager();
+        }
         provider = new SSMProvider(cacheManager, transformationManager, client);
 
         return provider;

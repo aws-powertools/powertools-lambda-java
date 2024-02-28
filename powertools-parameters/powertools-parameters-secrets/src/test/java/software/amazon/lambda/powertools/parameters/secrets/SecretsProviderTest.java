@@ -16,10 +16,13 @@ package software.amazon.lambda.powertools.parameters.secrets;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -104,5 +107,15 @@ public class SecretsProviderTest {
         // Assert
         assertNotNull(secretsProvider);
         assertNotNull(secretsProvider.getClient());
+    }
+
+    @Test
+    public void testGetSecretsProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
+
+        // Act
+        SecretsProvider secretsProvider = SecretsProvider.builder()
+                .build();
+        // Assert
+        assertDoesNotThrow(()->secretsProvider.withTransformation(json));
     }
 }

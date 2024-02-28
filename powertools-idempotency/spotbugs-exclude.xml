@@ -1,0 +1,46 @@
+<!-- This file specifies a spotbugs filter for excluding reports that
+     should not be considered errors.
+     The format of this file is documented at:
+       https://spotbugs.readthedocs.io/en/latest/filter.html
+     When possible, please specify the full names of the bug codes,
+     using the pattern attribute, to make it clearer what reports are
+     being suppressed.  You can find a listing of codes at:
+       https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html
+  -->
+<FindBugsFilter>
+    <!-- Internals of Log event for apache log4j-->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
+                <Method name="getPersistenceStore"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency"/>
+                <Method name="getConfig"/>
+            </And>
+        </Or>
+    </Match>
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
+                <Field name="store"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.Idempotency$Config"/>
+                <Field name="config"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler"/>
+                <Field name="pjp"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore$Builder"/>
+                <Field name="dynamoDbClient"/>
+            </And>
+        </Or>
+    </Match>
+</FindBugsFilter>

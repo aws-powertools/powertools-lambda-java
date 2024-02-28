@@ -28,6 +28,10 @@
                 <Field name="transformationManager"/>
             </And>
             <And>
+                <Class name="software.amazon.lambda.powertools.largemessages.LargeMessageConfig"/>
+                <Method name="getS3Client"/>
+            </And>
+            <And>
                 <Class name="software.amazon.lambda.powertools.parameters.secrets.SecretsProviderBuilder"/>
                 <Field name="cacheManager"/>
             </And>
@@ -110,6 +114,10 @@
                 <Field name="throwableConverter"/>
             </And>
             <And>
+                <Class name="software.amazon.lambda.powertools.parameters.transform.TransformationManager"/>
+                <Field name="transformer"/>
+            </And>
+            <And>
                 <Class name="software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder"/>
                 <Field name="throwableConverter"/>
             </And>
@@ -130,7 +138,7 @@
                 <Field name="pjp"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore$Builder"/>
+                <Class name="software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore$Builder"/>
                 <Field name="dynamoDbClient"/>
             </And>
             <And>
