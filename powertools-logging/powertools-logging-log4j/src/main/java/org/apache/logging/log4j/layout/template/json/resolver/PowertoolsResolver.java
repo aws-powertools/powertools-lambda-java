@@ -14,8 +14,7 @@
 
 package org.apache.logging.log4j.layout.template.json.resolver;
 
-import static java.lang.Boolean.TRUE;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
+import static java.util.Arrays.stream;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -26,18 +25,18 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SAMPLING_RATE;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
-import com.fasterxml.jackson.core.JacksonException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.layout.template.json.util.JsonWriter;
-import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.util.ReadOnlyStringMap;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 /**
@@ -170,76 +169,42 @@ final class PowertoolsResolver implements EventResolver {
         }
     };
 
-    /**
-     * Use a custom message resolver to permit to log json string in json format without escaped quotes.
-     */
-    private static final class MessageResolver implements EventResolver {
-        private final ObjectMapper mapper = new ObjectMapper()
-                .enable(DeserializationFeature.FAIL_ON_TRAILING_TOKENS);
-        private final boolean logMessagesAsJsonGlobal;
-
-        public MessageResolver(boolean logMessagesAsJson) {
-            this.logMessagesAsJsonGlobal = logMessagesAsJson;
-        }
-
-        public boolean isValidJson(String json) {
-            if (!(json.startsWith("{") || json.startsWith("["))) {
-                return false;
-            }
-            try {
-                mapper.readTree(json);
-            } catch (JacksonException e) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public boolean isResolvable(LogEvent logEvent) {
-            final Message msg = logEvent.getMessage();
-            return null != msg && null != msg.getFormattedMessage();
-        }
-
-        @Override
-        public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
-            String message = logEvent.getMessage().getFormattedMessage();
-
-            String logMessagesAsJsonLocal = logEvent.getContextData().getValue(LOG_MESSAGES_AS_JSON);
-            Boolean logMessagesAsJson = null;
-            if (logMessagesAsJsonLocal != null) {
-                logMessagesAsJson = Boolean.parseBoolean(logMessagesAsJsonLocal);
-            }
-
-            if (((logMessagesAsJsonGlobal && logMessagesAsJson == null) || TRUE.equals(logMessagesAsJson))
-                    && isValidJson(message)) {
-                jsonWriter.writeRawString(message);
-            } else {
-                jsonWriter.writeString(message);
-            }
-        }
-    }
-
+    @SuppressWarnings("java:S106")
     private static final EventResolver NON_POWERTOOLS_FIELD_RESOLVER =
             (LogEvent logEvent, JsonWriter jsonWriter) -> {
                 StringBuilder stringBuilder = jsonWriter.getStringBuilder();
-                // remove dummy field to kick in powertools resolver
-                stringBuilder.setLength(stringBuilder.length() - 4);
+                try (JsonSerializer serializer = new JsonSerializer(stringBuilder)) {
 
-                // Inject all the context information.
-                ReadOnlyStringMap contextData = logEvent.getContextData();
-                contextData.forEach((key, value) -> {
-                    if (!PowertoolsLoggedFields.stringValues().contains(key) && !LOG_MESSAGES_AS_JSON.equals(key)) {
-                        jsonWriter.writeSeparator();
-                        jsonWriter.writeString(key);
-                        stringBuilder.append(':');
-                        jsonWriter.writeValue(value);
+                    // remove dummy field to kick in powertools resolver
+                    stringBuilder.setLength(stringBuilder.length() - 4);
+
+                    // log other MDC values
+                    ReadOnlyStringMap contextData = logEvent.getContextData();
+                    contextData.forEach((key, value) -> {
+                        if (!PowertoolsLoggedFields.stringValues().contains(key)) {
+                            serializer.writeSeparator();
+                            serializer.writeObjectField(key, value);
+                        }
+                    });
+
+                    // log structured arguments
+                    Object[] arguments = logEvent.getMessage().getParameters();
+                    if (arguments != null) {
+                        stream(arguments).filter(StructuredArgument.class::isInstance).forEach(argument -> {
+                            serializer.writeRaw(',');
+                            try {
+                                ((StructuredArgument) argument).writeTo(serializer);
+                            } catch (IOException e) {
+                                System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
+                            }
+                        });
                     }
-                });
+                }
             };
 
     private final EventResolver internalResolver;
 
-    private static final Map<String, EventResolver> eventResolverMap = Stream.of(new Object[][] {
+    private static final Map<String, EventResolver> eventResolverMap = Collections.unmodifiableMap(Stream.of(new Object[][] {
             { SERVICE.getName(), SERVICE_RESOLVER },
             { FUNCTION_NAME.getName(), FUNCTION_NAME_RESOLVER },
             { FUNCTION_VERSION.getName(), FUNCTION_VERSION_RESOLVER },
@@ -251,7 +216,7 @@ final class PowertoolsResolver implements EventResolver {
             { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
             { "region", REGION_RESOLVER },
             { "account_id", ACCOUNT_ID_RESOLVER }
-    }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1]));
+    }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1])));
 
 
     PowertoolsResolver(final TemplateResolverConfig config) {
@@ -259,17 +224,9 @@ final class PowertoolsResolver implements EventResolver {
         if (fieldName == null) {
             internalResolver = NON_POWERTOOLS_FIELD_RESOLVER;
         } else {
-            boolean logMessagesAsJson = false;
-            if (config.exists("asJson")) {
-                logMessagesAsJson = config.getBoolean("asJson");
-            }
-            if ("message".equals(fieldName)) {
-                internalResolver = new MessageResolver(logMessagesAsJson);
-            } else {
-                internalResolver = eventResolverMap.get(fieldName);
-            }
+            internalResolver = eventResolverMap.get(fieldName);
             if (internalResolver == null) {
-                throw new IllegalArgumentException("unknown field: " + fieldName);
+                throw new IllegalArgumentException("Unknown field: " + fieldName);
             }
         }
     }

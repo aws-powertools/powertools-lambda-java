@@ -15,7 +15,10 @@
 package software.amazon.lambda.powertools.logging.logback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeArguments;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntries;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntry;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeTimestamp;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -23,13 +26,29 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
-import software.amazon.lambda.powertools.logging.logback.internal.LambdaJsonSerializer;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 /**
  * Custom encoder for logback that encodes logs in JSON format.
- * It does not use a JSON library but a custom serializer ({@link LambdaJsonSerializer})
  */
 public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
+
+    protected static final String TIMESTAMP_ATTR_NAME = "timestamp";
+    protected static final String LEVEL_ATTR_NAME = "level";
+    protected static final String FORMATTED_MESSAGE_ATTR_NAME = "message";
+    protected static final String THREAD_ATTR_NAME = "thread";
+    protected static final String THREAD_ID_ATTR_NAME = "thread_id";
+    protected static final String THREAD_PRIORITY_ATTR_NAME = "thread_priority";
+    protected static final String EXCEPTION_MSG_ATTR_NAME = "message";
+    protected static final String EXCEPTION_CLASS_ATTR_NAME = "name";
+    protected static final String EXCEPTION_STACK_ATTR_NAME = "stack";
+    protected static final String EXCEPTION_ATTR_NAME = "error";
 
     private final ThrowableProxyConverter throwableProxyConverter = new ThrowableProxyConverter();
     protected ThrowableHandlingConverter throwableConverter = null;
@@ -37,11 +56,10 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
     protected String timestampFormatTimezoneId = null;
     private boolean includeThreadInfo = false;
     private boolean includePowertoolsInfo = true;
-    private boolean logMessagesAsJsonGlobal;
 
     @Override
     public byte[] headerBytes() {
-        return null;
+        return new byte[0];
     }
 
     @Override
@@ -53,43 +71,83 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         }
     }
 
+    @SuppressWarnings("java:S106")
     @Override
     public byte[] encode(ILoggingEvent event) {
-        StringBuilder builder = new StringBuilder(256);
-        LambdaJsonSerializer.serializeObjectStart(builder);
-        LambdaJsonSerializer.serializeLogLevel(builder, event.getLevel());
-        LambdaJsonSerializer.serializeFormattedMessage(
-                builder,
-                event.getFormattedMessage(),
-                logMessagesAsJsonGlobal,
-                event.getMDCPropertyMap().get(LOG_MESSAGES_AS_JSON));
+        StringBuilder builder = new StringBuilder();
+        try (JsonSerializer serializer = new JsonSerializer(builder)) {
+            serializer.writeStartObject();
+            serializer.writeStringField(LEVEL_ATTR_NAME, event.getLevel().toString());
+            serializer.writeRaw(',');
+            serializer.writeStringField(FORMATTED_MESSAGE_ATTR_NAME, event.getFormattedMessage());
+
+            serializeException(event, serializer);
+
+            TreeMap<String, String> sortedMap = new TreeMap<>(event.getMDCPropertyMap());
+            serializePowertools(sortedMap, serializer);
+
+            serializeMDCEntries(sortedMap, serializer);
+
+            serializeArguments(event, serializer);
+
+            serializeThreadInfo(event, serializer);
+
+            serializer.writeRaw(',');
+            serializeTimestamp(serializer, event.getTimeStamp(),
+                    timestampFormat, timestampFormatTimezoneId, TIMESTAMP_ATTR_NAME);
+
+            serializer.writeEndObject();
+            serializer.writeRaw('\n');
+        } catch (IOException e) {
+            System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
+        }
+        return builder.toString().getBytes(UTF_8);
+    }
+
+    private void serializeThreadInfo(ILoggingEvent event, JsonSerializer serializer) {
+        if (includeThreadInfo) {
+            if (event.getThreadName() != null) {
+                serializer.writeRaw(',');
+                serializer.writeStringField(THREAD_ATTR_NAME, event.getThreadName());
+            }
+            serializer.writeRaw(',');
+            serializer.writeNumberField(THREAD_ID_ATTR_NAME, Thread.currentThread().getId());
+            serializer.writeRaw(',');
+            serializer.writeNumberField(THREAD_PRIORITY_ATTR_NAME, Thread.currentThread().getPriority());
+        }
+    }
+
+    private void serializePowertools(TreeMap<String, String> sortedMap, JsonSerializer serializer) {
+        if (includePowertoolsInfo) {
+            for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
+                if (PowertoolsLoggedFields.stringValues().contains(entry.getKey())
+                    && !(entry.getKey().equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && entry.getValue().equals("0.0"))) {
+                    serializeMDCEntry(entry, serializer);
+                }
+            }
+        }
+    }
+
+    private void serializeException(ILoggingEvent event, JsonSerializer serializer) {
         IThrowableProxy throwableProxy = event.getThrowableProxy();
         if (throwableProxy != null) {
             if (throwableConverter != null) {
-                LambdaJsonSerializer.serializeException(builder, throwableProxy.getClassName(),
+                serializeException(serializer, throwableProxy.getClassName(),
                         throwableProxy.getMessage(), throwableConverter.convert(event));
             } else if (throwableProxy instanceof ThrowableProxy) {
-                LambdaJsonSerializer.serializeException(builder, ((ThrowableProxy) throwableProxy).getThrowable());
+                Throwable throwable = ((ThrowableProxy) throwableProxy).getThrowable();
+                serializeException(serializer, throwable.getClass().getName(), throwable.getMessage(),
+                        Arrays.toString(throwable.getStackTrace()));
             } else {
-                LambdaJsonSerializer.serializeException(builder, throwableProxy.getClassName(),
-                        throwableProxy.getMessage(), throwableProxyConverter.convert(event));
+                serializeException(serializer, throwableProxy.getClassName(), throwableProxy.getMessage(), throwableProxyConverter.convert(
+                        event));
             }
         }
-        LambdaJsonSerializer.serializePowertools(builder, event.getMDCPropertyMap(), includePowertoolsInfo);
-        if (includeThreadInfo) {
-            LambdaJsonSerializer.serializeThreadName(builder, event.getThreadName());
-            LambdaJsonSerializer.serializeThreadId(builder, String.valueOf(Thread.currentThread().getId()));
-            LambdaJsonSerializer.serializeThreadPriority(builder, String.valueOf(Thread.currentThread().getPriority()));
-        }
-        LambdaJsonSerializer.serializeTimestamp(builder, event.getTimeStamp(), timestampFormat,
-                timestampFormatTimezoneId);
-        LambdaJsonSerializer.serializeObjectEnd(builder);
-        return builder.toString().getBytes(UTF_8);
     }
 
     @Override
     public byte[] footerBytes() {
-        return null;
+        return new byte[0];
     }
 
     /**
@@ -191,18 +249,12 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         this.includePowertoolsInfo = includePowertoolsInfo;
     }
 
-    /**
-     * Specify if messages should be logged as JSON, without escaping string (default is <b>false</b>):
-     * <br/>
-     * <pre>{@code
-     *     <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
-     *         <logMessagesAsJson>true</logMessagesAsJson>
-     *     </encoder>
-     * }</pre>
-     *
-     * @param logMessagesAsJson if messages should be looged as JSON (non escaped quotes)
-     */
-    public void setLogMessagesAsJson(boolean logMessagesAsJson) {
-        this.logMessagesAsJsonGlobal = logMessagesAsJson;
+    private void serializeException(JsonSerializer serializer, String className, String message, String stackTrace) {
+        Map<Object, Object> map = new HashMap<>();
+        map.put(EXCEPTION_MSG_ATTR_NAME, message);
+        map.put(EXCEPTION_CLASS_ATTR_NAME, className);
+        map.put(EXCEPTION_STACK_ATTR_NAME, stackTrace);
+        serializer.writeRaw(',');
+        serializer.writeObjectField(EXCEPTION_ATTR_NAME, map);
     }
 }

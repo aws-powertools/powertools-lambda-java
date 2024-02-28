@@ -71,6 +71,9 @@
                 <Class name="software.amazon.lambda.powertools.parameters.appconfig.AppConfigProviderBuilder"/>
                 <Field name="transformationManager"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.logging.internal.JsonSerializer"/>
+            </And>
         </Or>
     </Match>
     <!-- Internals of Log event for apache log4j-->
@@ -186,10 +189,6 @@
         <Bug pattern="EI_EXPOSE_STATIC_REP2"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="setObjectMapper"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
                 <Method name="defaultObjectMapper"/>
             </And>
@@ -206,10 +205,6 @@
     <Match>
         <Bug pattern="MS_EXPOSE_REP"/>
         <Or>
-            <And>
-                <Class name="software.amazon.lambda.powertools.logging.LoggingUtils"/>
-                <Method name="getObjectMapper"/>
-            </And>
             <And>
                 <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
                 <Method name="objectMapper"/>

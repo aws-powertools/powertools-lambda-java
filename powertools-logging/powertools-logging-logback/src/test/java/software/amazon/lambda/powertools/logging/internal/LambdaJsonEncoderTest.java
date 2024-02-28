@@ -14,13 +14,13 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.LOG_MESSAGES_AS_JSON;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -28,11 +28,14 @@ import ch.qos.logback.classic.pattern.RootCauseFirstThrowableProxyConverter;
 import ch.qos.logback.classic.spi.LoggingEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -42,7 +45,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.TimeZone;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
@@ -50,10 +53,16 @@ import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder;
-import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsJsonMessage;
+import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
+import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
-import software.amazon.lambda.powertools.utilities.JsonConfig;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEvent;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEventDisabled;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEventForStream;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogResponse;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogResponseForStream;
+import software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder;
 
 @Order(2)
 class LambdaJsonEncoderTest {
@@ -61,11 +70,6 @@ class LambdaJsonEncoderTest {
 
     @Mock
     private Context context;
-
-    @BeforeAll
-    private static void init() {
-        JsonConfig.get().getObjectMapper().setSerializationInclusion(NON_NULL);
-    }
 
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
@@ -97,13 +101,13 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"myKey\":\"myValue\",\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"timestamp\":");
+                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\",\"timestamp\":");
     }
 
     @Test
-    void shouldLogJsonMessageWithoutEscapedStrings() {
+    void shouldLogArgumentsAsJsonWhenUsingRawJson() {
         // GIVEN
-        PowertoolsJsonMessage requestHandler = new PowertoolsJsonMessage();
+        PowertoolsArguments requestHandler = new PowertoolsArguments(PowertoolsArguments.ArgumentFormat.JSON);
         SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
@@ -119,10 +123,33 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"message\":{\"messageId\":\"1212abcd\",\"body\":\"plop\",\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}}}")
+                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
-                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"")
-                .doesNotContain(LOG_MESSAGES_AS_JSON);
+                .contains("\"message\":\"Message body = plop and id = \"1212abcd\"\"");
+    }
+
+    @Test
+    void shouldLogArgumentsAsJsonWhenUsingKeyValue() {
+        // GIVEN
+        PowertoolsArguments requestHandler = new PowertoolsArguments(PowertoolsArguments.ArgumentFormat.ENTRY);
+        SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
+        msg.setMessageId("1212abcd");
+        msg.setBody("plop");
+        msg.setEventSource("eb");
+        msg.setAwsRegion("eu-west-1");
+        SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
+        attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
+        msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
+
+        // WHEN
+        requestHandler.handleRequest(msg, context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile))
+                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                .contains("\"message\":\"1212abcd\"")
+                .contains("\"message\":\"Message body = plop and id = \"1212abcd\"\"");
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);
@@ -159,10 +186,9 @@ class LambdaJsonEncoderTest {
     }
 
     @Test
-    void shouldLogMessagesAsJsonWhenEnabledInLogbackConfig() throws JsonProcessingException {
+    void shouldLogStructuredArgumentsAsNewEntries() {
         // GIVEN
         LambdaJsonEncoder encoder = new LambdaJsonEncoder();
-        encoder.setLogMessagesAsJson(true);
 
         SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
         msg.setMessageId("1212abcd");
@@ -172,24 +198,144 @@ class LambdaJsonEncoderTest {
         SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
         attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
         msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
+        StructuredArgument argument = StructuredArguments.entry("msg", msg);
 
         // WHEN
-        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, JsonConfig.get().getObjectMapper().writeValueAsString(msg), null, null);
+        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null, new Object[]{argument});
         byte[] encoded = encoder.encode(loggingEvent);
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (logged as JSON)
         assertThat(result)
-                .contains("\"message\":{\"messageId\":\"1212abcd\",\"body\":\"plop\",\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}}}");
+                .contains("\"message\":\"A message\",\"msg\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}");
+    }
 
-        // WHEN (disabling logging as json)
-        encoder.setLogMessagesAsJson(false);
-        encoded = encoder.encode(loggingEvent);
-        result = new String(encoded, StandardCharsets.UTF_8);
+    @Test
+    void shouldLogEventForHandlerWithLogEventAnnotation() {
+        // GIVEN
+        PowertoolsLogEvent requestHandler = new PowertoolsLogEvent();
 
-        // THEN (logged as String)
-        assertThat(result)
-                .contains("\"message\":\"{\\\"messageId\\\":\\\"1212abcd\\\",\\\"body\\\":\\\"plop\\\",\\\"eventSource\\\":\\\"eb\\\",\\\"awsRegion\\\":\\\"eu-west-1\\\",\\\"messageAttributes\\\":{\\\"keyAttribute\\\":{\\\"stringListValues\\\":[\\\"val1\\\",\\\"val2\\\",\\\"val3\\\"]}}}\"");
+        // WHEN
+        requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile)).contains("\"event\":[\"ListOfOneElement\"]");
+    }
+
+    @Test
+    void shouldLogEventForHandlerWhenEnvVariableSetToTrue() {
+        try {
+            // GIVEN
+            LoggingConstants.POWERTOOLS_LOG_EVENT = true;
+
+            PowertoolsLogEnabled requestHandler = new PowertoolsLogEnabled();
+
+            SQSEvent.SQSMessage message = new SQSEvent.SQSMessage();
+            message.setBody("body");
+            message.setMessageId("1234abcd");
+            message.setAwsRegion("eu-west-1");
+
+            // WHEN
+            requestHandler.handleRequest(message, context);
+
+            // THEN
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile))
+                .contains("\"message\":\"Handler Event\"")
+                .contains("\"event\":{\"awsRegion\":\"eu-west-1\",\"body\":\"body\",\"messageId\":\"1234abcd\"}");
+        } finally {
+            LoggingConstants.POWERTOOLS_LOG_EVENT = false;
+        }
+    }
+
+    @Test
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException {
+        // GIVEN
+        LoggingConstants.POWERTOOLS_LOG_EVENT = false;
+
+        // WHEN
+        PowertoolsLogEventDisabled requestHandler = new PowertoolsLogEventDisabled();
+        requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
+
+        // THEN
+        Assertions.assertEquals(0,
+                Files.lines(Paths.get("target/logfile.json")).collect(joining()).length());
+    }
+
+    @Test
+    void shouldLogEventAsStringForStreamHandler() throws IOException {
+        // GIVEN
+        PowertoolsLogEventForStream requestStreamHandler = new PowertoolsLogEventForStream();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+        // WHEN
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(Collections.singletonMap("key", "value"))), output, context);
+
+        // THEN
+        assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
+                .isNotEmpty();
+
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile))
+                .contains("\"message\":\"Handler Event\"")
+                .contains("\"event\":\"{\"key\":\"value\"}\""); // logged as String for StreamHandler
+    }
+
+    @Test
+    void shouldLogResponseForHandlerWithLogResponseAnnotation() {
+        // GIVEN
+        PowertoolsLogResponse requestHandler = new PowertoolsLogResponse();
+
+        // WHEN
+        requestHandler.handleRequest("input", context);
+
+        // THEN
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile))
+                .contains("\"message\":\"Handler Response\"")
+                .contains("\"response\":\"Hola mundo\"");
+    }
+
+    @Test
+    void shouldLogResponseForHandlerWhenEnvVariableSetToTrue() {
+        try {
+            // GIVEN
+            LoggingConstants.POWERTOOLS_LOG_RESPONSE = true;
+
+            PowertoolsLogEnabled requestHandler = new PowertoolsLogEnabled();
+
+            // WHEN
+            requestHandler.handleRequest("input", context);
+
+            // THEN
+            File logFile = new File("target/logfile.json");
+            assertThat(contentOf(logFile))
+                    .contains("\"message\":\"Handler Response\"")
+                    .contains("\"response\":\"Bonjour le monde\"");
+        } finally {
+            LoggingConstants.POWERTOOLS_LOG_RESPONSE = false;
+        }
+    }
+
+    @Test
+    void shouldLogResponseForStreamHandler() throws IOException {
+        // GIVEN
+        PowertoolsLogResponseForStream requestStreamHandler = new PowertoolsLogResponseForStream();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        String input = "<user><firstName>Bob</firstName><lastName>The Sponge</lastName></user>";
+
+        // WHEN
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), output, context);
+
+        // THEN
+        assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
+                .isEqualTo(input);
+
+        File logFile = new File("target/logfile.json");
+        assertThat(contentOf(logFile))
+                    .contains("\"message\":\"Handler Response\"")
+                    .contains("\"response\":\""+input+"\"");
     }
 
     @Test
@@ -238,7 +384,10 @@ class LambdaJsonEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"message\":\"Error\",\"error\":{\"message\":\"Unexpected value\",\"name\":\"java.lang.IllegalStateException\",\"stack\":\"[software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest.shouldLogException");
+        assertThat(result).contains("\"message\":\"Error\",\"error\":{")
+                .contains("\"message\":\"Unexpected value\"")
+                .contains("\"name\":\"java.lang.IllegalStateException\"")
+                .contains("\"stack\":\"[software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest.shouldLogException");
 
         // WHEN (configure a custom throwableConverter)
         encoder = new LambdaJsonEncoder();
@@ -249,7 +398,9 @@ class LambdaJsonEncoderTest {
         result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (stack is logged with root cause first)
-        assertThat(result).contains("\"message\":\"Error\",\"error\":{\"message\":\"Unexpected value\",\"name\":\"java.lang.IllegalStateException\",\"stack\":\"java.lang.IllegalStateException: Unexpected value\n");
+        assertThat(result).contains("\"message\":\"Unexpected value\"")
+                .contains("\"name\":\"java.lang.IllegalStateException\"")
+                .contains("\"stack\":\"java.lang.IllegalStateException: Unexpected value\n");
     }
 
     private void setupContext() {

@@ -338,73 +338,6 @@ Your logs will always include the following keys in your structured logging:
 | **xray_trace_id** | String | "1-5759e988-bd862e3fe1be46a994272793"                                                               | X-Ray Trace ID when [Tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"} |
 | **error**         | Map    | `{ "name": "InvalidAmountException", "message": "Amount must be superior to 0", "stack": "at..." }` | Eventual exception (e.g. when doing `logger.error("Error", new InvalidAmountException("Amount must be superior to 0"));`)  |
 
-### Log messages as JSON
-By default, `message` is logged as a `String` (e.g `"message": "The message"`). When logging JSON content, 
-you may want to avoid the escaped String (`"message:"{\"key\":\"value\"}"`) for better readability. 
-You can use `LoggingUtils.logMessagesAsJson(true)` to enable this programmatically. 
-
-=== "PaymentFunction.java"
-
-    ```java hl_lines="14 15 17-20"
-    import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
-    import software.amazon.lambda.powertools.logging.LoggingUtils;
-    import software.amazon.lambda.powertools.utilities.JsonConfig;
-    // ... other imports
-
-    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
-        
-        @Logging
-        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-            Order order = extractDataFrom(input).as(Order.class);
-
-            // logged as a String
-            LOGGER.debug("{}", JsonConfig.get().getObjectMapper().writeValueAsString(order));
-
-            // Logged as JSON
-            LoggingUtils.logMessagesAsJson(true);
-            LOGGER.debug("{}", JsonConfig.get().getObjectMapper().writeValueAsString(order));
-            LoggingUtils.logMessagesAsJson(false);
-
-            // ...
-        }
-    }
-    ```
-
-=== "Order.java"
-
-    ```java 
-    public class Order {
-        private String id;
-        private Date date;
-        private Double amount;
-    }
-    ```
-
-=== "Example CloudWatch Logs"
-
-    ```json hl_lines="3 9-13"
-	{
-		"level": "DEBUG",
-	  	"message": "{\"id\":\"435iuh2j3hb4\", \"date\":\"2023-12-01T14:48:59\", \"amount\":435.5}",
-		"timestamp": "2023-12-01T14:49:19.293Z",
-	  	"service": "payment",
-	}
-	{
-		"level": "DEBUG",
-	  	"message": {
-            "id": "435iuh2j3hb4", 
-            "date": "2023-12-01T14:48:59", 
-            "amount":435.5
-        },
-		"timestamp": "2023-12-01T14:49:19.312Z",
-	  	"service": "payment",
-	}
-    ```
-
-You can also achieve this more broadly for all JSON messages (see advanced configuration for [log4j](#log-messages-as-json_1) & [logback](#log-messages-as-json_2)).
-
 ## Additional structured keys
 
 ### Logging Lambda context information
@@ -463,58 +396,6 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
 	  	"correlation_id": "correlation_id_value"
 	}
     ```
-
-**setCorrelationId method**
-
-You can also use `LoggingUtils.setCorrelationId()` method to inject it anywhere else in your code. 
-
-=== "AppSetCorrelationId.java"
-
-    ```java hl_lines="8"
-    public class AppSetCorrelationId implements RequestHandler<ScheduledEvent, String> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(AppSetCorrelationId.class);
-    
-        @Logging
-        public String handleRequest(final ScheduledEvent event, final Context context) {
-            // ...
-            LoggingUtils.setCorrelationId(event.getId());
-            LOGGER.info("Scheduled Event")
-            // ...
-        }
-    }
-    ```
-
-=== "Example Schedule Event"
-
-	```json hl_lines="2"
-    {
-        "id": "cdc73f9d-aea9-11e3-9d5a-835b769c0d9c",
-        "detail-type": "Scheduled Event",
-        "source": "aws.events",
-        "account": "123456789012",
-        "time": "2023-12-01T14:49:19Z",
-        "region": "us-east-1",
-        "resources": [
-            "arn:aws:events:us-east-1:123456789012:rule/ExampleRule"
-        ],
-        "detail": {}
-    }
-	```
-
-=== "CloudWatch Logs with correlation id"
-
-    ```json hl_lines="6"
-	{
-		"level": "INFO",
-	  	"message": "Scheduled Event",
-		"timestamp": "2023-12-01T14:49:19.293Z",
-	  	"service": "payment",
-	  	"correlation_id": "cdc73f9d-aea9-11e3-9d5a-835b769c0d9c"
-	}
-    ```
-???+ tip
-    You can retrieve correlation IDs via `LoggingUtils.getCorrelationId()` method if needed.
  
 **Known correlation IDs**
 
@@ -563,14 +444,16 @@ we provide [built-in JMESPath expressions](#built-in-correlation-id-expressions)
 
 #### Custom keys
 
-???+ warning "Custom keys are persisted across warm invocations"
-    Always set additional keys as part of your handler method to ensure they have the latest value, or explicitly clear them with [`clearState=true`](#clearing-state).
+** Using StructuredArguments **
 
-To append an additional key in your logs, you can use the `LoggingUtils.appendKey()` or `LoggingUtils.appendKeys()` for multiple keys:
+To append additional keys in your logs, you can use the `StructuredArguments` class:
 
 === "PaymentFunction.java"
 
-    ```java hl_lines="8 9 15 16"
+    ```java hl_lines="1 2 11 17"
+    import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
+    import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entries;
+
     public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         private static final Logger LOGGER = LoggerFactory.getLogger(AppLogResponse.class);
@@ -578,20 +461,18 @@ To append an additional key in your logs, you can use the `LoggingUtils.appendKe
         @Logging
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
             // ...
-            LoggingUtils.appendKey("orderId", order.getId());
-            LOGGER.info("Collecting payment");
+            LOGGER.info("Collecting payment", entry("orderId", order.getId()));
     
             // ...
             Map<String, String> customKeys = new HashMap<>();
             customKeys.put("paymentId", payment.getId());
             customKeys.put("amount", payment.getAmount);
-            LoggingUtils.appendKeys(customKeys);
-            LOGGER.info("Payment successful");
+            LOGGER.info("Payment successful", entries(customKeys));
         }
     }
     ```
 
-=== "Example CloudWatch Logs"
+=== "CloudWatch Logs for PaymentFunction"
 
     ```json hl_lines="7 16-18"
     {
@@ -615,73 +496,153 @@ To append an additional key in your logs, you can use the `LoggingUtils.appendKe
     }
     ```
 
-???+ tip "Additional keys are based on the MDC"
-    Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supported by the [SLF4J API](https://www.slf4j.org/manual.html#mdc){target="_blank"},
-    [logback](https://logback.qos.ch/manual/mdc.html){target="_blank"} and log4j (known as [ThreadContext](https://logging.apache.org/log4j/2.x/manual/thread-context.html){target="_blank"}).
-    
-    `LoggingUtils.appendKey("key", "value")` is equivalent to `MDC.put("key", "value")`.
+`StructuredArguments` provides several options:
 
+ - `entry` to add one key and value into the log structure. Note that value can be any object type.
+ - `entries` to add multiple keys and values (from a Map) into the log structure. Note that values can be any object type.
+ - `json` to add a key and raw json (string) as value into the log structure.
+ - `array` to add one key and multiple values into the log structure. Note that values can be any object type.
 
-### Removing additional keys
+=== "OrderFunction.java"
 
-You can remove any additional key from entry using `LoggingUtils.removeKey()` or `LoggingUtils.removeKeys()` for multiple keys:
+    ```java hl_lines="1 2 11 17"
+    import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
+    import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.array;
 
-=== "PaymentFunction.java"
-
-    ```java hl_lines="19 20"
-    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    public class OrderFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         private static final Logger LOGGER = LoggerFactory.getLogger(AppLogResponse.class);
     
-        @Logging(logResponse = true)
+        @Logging
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
             // ...
-            LoggingUtils.appendKey("orderId", order.getId());
-            LOGGER.info("Collecting payment");
-    
+            LOGGER.info("Processing order", entry("order", order), array("products", productList));
             // ...
-            Map<String, String> customKeys = new HashMap<>();
-            customKeys.put("paymentId", payment.getId());
-            customKeys.put("amount", payment.getAmount);
-            LoggingUtils.appendKeys(customKeys);
-            LOGGER.info("Payment successful");
-
-            // ...
-            LoggingUtils.removeKey("orderId");
-            LoggingUtils.removeKeys("paymentId", "amount");
-
-            return response;
         }
     }
     ```
 
-=== "Example CloudWatch Logs"
-    Response is logged (`logResponse=true`) without the additional keys:
+=== "CloudWatch Logs for OrderFunction"
 
-    ```json
-    ...
+    ```json hl_lines="7 13"
     {
         "level": "INFO",
-        "message": {
-            "statusCode": 200,
-            "isBase64Encoded": false,
-            "body": ...,
-            "headers": ...,
-            "multiValueHeaders": ...
-        },
+        "message": "Processing order",
         "service": "payment",
-        "timestamp": "2023-12-01T14:49:20.118Z",
-        "xray_trace_id": "1-6569f266-4b0c7f97280dcd8428d3c9b5"
+        "timestamp": "2023-12-01T14:49:19.293Z",
+        "xray_trace_id": "1-6569f266-4b0c7f97280dcd8428d3c9b5",
+        "order": {
+            "orderId": 23542,
+            "amount": 459.99,
+            "date": "2023-12-01T14:49:19.018Z",
+            "customerId": 328496
+        },
+        "products": [
+            {
+                "productId": 764330,
+                "name": "product1",
+                "quantity": 1,
+                "price": 300
+            },
+            {
+                "productId": 798034,
+                "name": "product42",
+                "quantity": 1,
+                "price": 159.99
+            }
+        ]
     }
     ```
 
-???+ tip "Additional keys are based on the MDC"
-    `LoggingUtils.removeKey("key")` is equivalent to `MDC.remove("key")`.
+???+ tip "Use arguments without log placeholders"
+    As shown in the example above, you can use arguments (with `StructuredArguments`) without placeholders (`{}`) in the message.
+    If you add the placeholders, the arguments will be logged both as an additional field and also as a string in the log message, using the `toString()` method.
+
+    === "Function1.java"
+    
+        ```java
+        LOGGER.info("Processing {}", entry("order", order));
+        ```
+
+    === "Order.java"
+
+        ```java hl_lines="5"
+        public class Order {
+            // ...        
+
+            @Override
+            public String toString() {
+                return "Order{" +
+                        "orderId=" + id +
+                        ", amount=" + amount +
+                        ", date='" + date + '\'' +
+                        ", customerId=" + customerId +
+                        '}';
+            }
+        }
+        ```
+    
+    === "CloudWatch Logs Function1"
+    
+        ```json hl_lines="3 7"
+        {
+            "level": "INFO",
+            "message": "Processing order=Order{orderId=23542, amount=459.99, date='2023-12-01T14:49:19.018Z', customerId=328496}",
+            "service": "payment",
+            "timestamp": "2023-12-01T14:49:19.293Z",
+            "xray_trace_id": "1-6569f266-4b0c7f97280dcd8428d3c9b5",
+            "order": {
+                "orderId": 23542,
+                "amount": 459.99,
+                "date": "2023-12-01T14:49:19.018Z",
+                "customerId": 328496
+            }
+        }
+        ```
+    
+    You can also combine structured arguments with non structured ones. For example:
+
+    === "Function2.java"
+        ```java
+        LOGGER.info("Processing order {}", order.getOrderId(), entry("order", order));
+        ```
+
+    === "CloudWatch Logs Function2"
+        ```json
+        {
+                "level": "INFO",
+                "message": "Processing order 23542",
+                "service": "payment",
+                "timestamp": "2023-12-01T14:49:19.293Z",
+                "xray_trace_id": "1-6569f266-4b0c7f97280dcd8428d3c9b5",
+                "order": {
+                    "orderId": 23542,
+                    "amount": 459.99,
+                    "date": "2023-12-01T14:49:19.018Z",
+                    "customerId": 328496
+                }
+            }
+        ```
+
+** Using MDC **
+
+Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supported by the [SLF4J API](https://www.slf4j.org/manual.html#mdc){target="_blank"},
+[logback](https://logback.qos.ch/manual/mdc.html){target="_blank"} and log4j (known as [ThreadContext](https://logging.apache.org/log4j/2.x/manual/thread-context.html){target="_blank"}). You can use the following standard:
+
+`MDC.put("key", "value");`
+
+???+ warning "Custom keys stored in the MDC are persisted across warm invocations"
+    Always set additional keys as part of your handler method to ensure they have the latest value, or explicitly clear them with [`clearState=true`](#clearing-state).
+
+
+### Removing additional keys
+
+You can remove additional keys added with the MDC using `MDC.remove("key")`. 
 
 #### Clearing state
 
 Logger is commonly initialized in the global scope. Due to [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html){target="_blank"},
-this means that custom keys can be persisted across invocations. If you want all custom keys to be deleted, you can use
+this means that custom keys, added with the MDC can be persisted across invocations. If you want all custom keys to be deleted, you can use
 `clearState=true` attribute on the `@Logging` annotation.
 
 === "CreditCardFunction.java"
@@ -694,7 +655,7 @@ this means that custom keys can be persisted across invocations. If you want all
         @Logging(clearState = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
             // ...
-            LoggingUtils.appendKey("cardNumber", card.getId());
+            MDC.put("cardNumber", card.getId());
             LOGGER.info("Updating card information");
             // ...
         }
@@ -727,8 +688,7 @@ this means that custom keys can be persisted across invocations. If you want all
     }
     ```
 
-???+ tip "Additional keys are based on the MDC"
-    `clearState` is based on `MDC.clear()`. State clearing is automatically done at the end of the execution of the handler if set to `true`.
+`clearState` is based on `MDC.clear()`. State clearing is automatically done at the end of the execution of the handler if set to `true`.
 
 
 ## Logging incoming event
@@ -952,22 +912,6 @@ The `JsonTemplateLayout` is automatically configured with the provided template:
 You can create your own template and leverage the [PowertoolsResolver](https://github.com/aws-powertools/powertools-lambda-java/tree/v2/powertools-logging/powertools-logging-log4j/src/main/java/org/apache/logging/log4j/layout/template/json/resolver/PowertoolsResolver.java){target="_blank"} 
 and any other resolver to log the desired fields with the desired format. Some examples of customization are given below:
 
-#### Log messages as JSON
-`message` field is not handled with the standard [`MessageResolver`](https://logging.apache.org/log4j/2.x/manual/json-template-layout.html#event-template-resolver-message){target="_blank"} but by the `PowertoolsResolver`. 
-With this resolver, you can choose to log all the JSON messages as JSON and not as String.
-
-=== "my-custom-template.json"
-
-    ```json
-    {
-      "message": {
-        "$resolver": "powertools",
-        "field": "message",
-        "asJson": true
-      }
-    }
-    ```
-
 #### Customising date format
 
 Utility by default emits `timestamp` field in the logs in format `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'` and in system default timezone. 
@@ -1015,16 +959,6 @@ Logback configuration is done in _logback.xml_ and the Powertools [`LambdaJsonEn
 
 The `LambdaJsonEncoder` can be customized in different ways:
 
-#### Log messages as JSON
-
-With the following configuration, you choose to log all the JSON messages as JSON and not as String (default is `false`):
-
-```xml
-    <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder">
-        <logMessagesAsJson>true</logMessagesAsJson>
-    </encoder>
-```
-
 #### Customising date format
 Utility by default emits `timestamp` field in the logs in format `yyyy-MM-dd'T'HH:mm:ss.SSS'Z'` and in system default timezone.
 If you need to customize format and timezone, you can change use the following:
@@ -1070,33 +1004,6 @@ If you need to customize format and timezone, you can change use the following:
         <includePowertoolsInfo>false</includePowertoolsInfo>
     </encoder>
 ```
-
-## Override default object mapper
-
-You can optionally choose to override default object mapper which is used to serialize lambda function events. You might
-want to supply custom object mapper in order to control how serialisation is done, for example, when you want to log only
-specific fields from received event due to security.
-
-=== "App.java"
-
-    ```java hl_lines="6-10"
-    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
-
-        static {
-            ObjectMapper objectMapper = new ObjectMapper()
-                .enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-            LoggingUtils.setObjectMapper(objectMapper);
-        }
-    
-        @Logging(logEvent = true)
-        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-            // ...
-        }
-    }
-    ```
 
 ## Elastic Common Schema (ECS) Support
 

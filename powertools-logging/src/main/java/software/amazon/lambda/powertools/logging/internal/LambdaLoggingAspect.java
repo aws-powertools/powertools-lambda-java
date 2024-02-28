@@ -15,8 +15,6 @@
 package software.amazon.lambda.powertools.logging.internal;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
@@ -25,20 +23,19 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnStreamHandler;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKey;
-import static software.amazon.lambda.powertools.logging.LoggingUtils.appendKeys;
+import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.LAMBDA_LOG_LEVEL;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_ERROR;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_EVENT;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_LEVEL;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_LOG_RESPONSE;
 import static software.amazon.lambda.powertools.logging.internal.LoggingConstants.POWERTOOLS_SAMPLING_RATE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.burt.jmespath.Expression;
 import java.io.ByteArrayInputStream;
@@ -54,7 +51,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.ServiceLoader;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -68,7 +64,6 @@ import org.slf4j.MDC;
 import org.slf4j.MarkerFactory;
 import org.slf4j.event.Level;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 
@@ -188,8 +183,9 @@ public final class LambdaLoggingAspect {
 
         addLambdaContextToLoggingContext(pjp);
 
-        getXrayTraceId().ifPresent(xRayTraceId -> appendKey(FUNCTION_TRACE_ID.getName(), xRayTraceId));
+        getXrayTraceId().ifPresent(xRayTraceId -> MDC.put(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
+        // Log Event
         Object[] proceedArgs = logEvent(pjp, logging, isOnRequestHandler, isOnRequestStreamHandler);
 
         if (!logging.correlationIdPath().isEmpty()) {
@@ -210,6 +206,7 @@ public final class LambdaLoggingAspect {
         Object lambdaFunctionResponse;
 
         try {
+            // Call Function Handler
             lambdaFunctionResponse = pjp.proceed(proceedArgs);
         } catch (Throwable t) {
             if (logging.logError() || POWERTOOLS_LOG_ERROR) {
@@ -224,6 +221,7 @@ public final class LambdaLoggingAspect {
             coldStartDone();
         }
 
+        // Log Response
         if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE)) {
             if (isOnRequestHandler) {
                 logRequestHandlerResponse(pjp, lambdaFunctionResponse);
@@ -255,9 +253,9 @@ public final class LambdaLoggingAspect {
         Context extractedContext = extractContext(pjp);
 
         if (extractedContext != null) {
-            appendKeys(PowertoolsLoggedFields.setValuesFromLambdaContext(extractedContext));
-            appendKey(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
-            appendKey(SERVICE.getName(), serviceName());
+            PowertoolsLoggedFields.setValuesFromLambdaContext(extractedContext).forEach(MDC::put);
+            MDC.put(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
+            MDC.put(SERVICE.getName(), serviceName());
         }
     }
 
@@ -273,7 +271,7 @@ public final class LambdaLoggingAspect {
                 return;
             }
 
-            appendKey(PowertoolsLoggedFields.SAMPLING_RATE.getName(), String.valueOf(samplingRate));
+            MDC.put(PowertoolsLoggedFields.SAMPLING_RATE.getName(), String.valueOf(samplingRate));
 
             if (samplingRate == 0) {
                 return;
@@ -305,49 +303,45 @@ public final class LambdaLoggingAspect {
         return logging.samplingRate();
     }
 
+    @SuppressWarnings("java:S3457")
     private void logRequestHandlerEvent(final ProceedingJoinPoint pjp, final Object event) {
         Logger log = logger(pjp);
         if (log.isInfoEnabled()) {
-            LoggingUtils.logMessagesAsJson(true);
-            asJson(event).ifPresent(log::info);
-            LoggingUtils.logMessagesAsJson(false);
+            log.info("Handler Event", entry("event", event));
         }
     }
 
+    @SuppressWarnings("java:S3457")
     private Object[] logRequestStreamHandlerEvent(final ProceedingJoinPoint pjp) {
         Object[] args = pjp.getArgs();
         Logger log = logger(pjp);
         if (log.isInfoEnabled()) {
-            LoggingUtils.logMessagesAsJson(true);
             try {
                 byte[] bytes = bytesFromInputStreamSafely((InputStream) pjp.getArgs()[0]);
                 args[0] = new ByteArrayInputStream(bytes);
                 // do not log asJson as it can be something else (String, XML...)
-                log.info("{}", new String(bytes, UTF_8));
+                log.info("Handler Event", entry("event", new String(bytes, UTF_8)));
             } catch (IOException e) {
                 LOG.warn("Failed to log event from supplied input stream.", e);
             }
-            LoggingUtils.logMessagesAsJson(false);
         }
         return args;
     }
 
+    @SuppressWarnings("java:S3457")
     private void logRequestHandlerResponse(final ProceedingJoinPoint pjp, final Object response) {
         Logger log = logger(pjp);
         if (log.isInfoEnabled()) {
-            LoggingUtils.logMessagesAsJson(true);
-            asJson(response).ifPresent(log::info);
-            LoggingUtils.logMessagesAsJson(false);
+            log.info("Handler Response", entry("response", response));
         }
     }
 
+    @SuppressWarnings("java:S3457")
     private void logRequestStreamHandlerResponse(final ProceedingJoinPoint pjp, final byte[] bytes) {
         Logger log = logger(pjp);
         if (log.isInfoEnabled()) {
-            LoggingUtils.logMessagesAsJson(true);
             // we do not log with asJson as it can be something else (String, XML, ...)
-            log.info("{}", new String(bytes, UTF_8));
-            LoggingUtils.logMessagesAsJson(false);
+            log.info("Handler Response", entry("response", new String(bytes, UTF_8)));
         }
     }
 
@@ -356,12 +350,12 @@ public final class LambdaLoggingAspect {
                                           final boolean isOnRequestHandler,
                                           final boolean isOnRequestStreamHandler) {
         if (isOnRequestHandler) {
-            JsonNode jsonNode = LoggingUtils.getObjectMapper().valueToTree(proceedArgs[0]);
+            JsonNode jsonNode = JsonConfig.get().getObjectMapper().valueToTree(proceedArgs[0]);
             setCorrelationIdFromNode(correlationIdPath, jsonNode);
         } else if (isOnRequestStreamHandler) {
             try {
                 byte[] bytes = bytesFromInputStreamSafely((InputStream) proceedArgs[0]);
-                JsonNode jsonNode = LoggingUtils.getObjectMapper().readTree(bytes);
+                JsonNode jsonNode = JsonConfig.get().getObjectMapper().readTree(bytes);
                 proceedArgs[0] = new ByteArrayInputStream(bytes);
 
                 setCorrelationIdFromNode(correlationIdPath, jsonNode);
@@ -377,7 +371,7 @@ public final class LambdaLoggingAspect {
 
         String asText = node.asText();
         if (null != asText && !asText.isEmpty()) {
-            LoggingUtils.setCorrelationId(asText);
+            MDC.put(CORRELATION_ID.getName(), asText);
         } else {
             LOG.warn("Unable to extract any correlation id. Is your function expecting supported event type?");
         }
@@ -395,15 +389,6 @@ public final class LambdaLoggingAspect {
             }
             writer.flush();
             return out.toByteArray();
-        }
-    }
-
-    private Optional<String> asJson(final Object target) {
-        try {
-            return ofNullable(LoggingUtils.getObjectMapper().writeValueAsString(target));
-        } catch (JsonProcessingException e) {
-            LOG.error("Failed logging object of type {}", target.getClass(), e);
-            return empty();
         }
     }
 

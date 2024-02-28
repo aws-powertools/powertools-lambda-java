@@ -15,7 +15,6 @@
 package software.amazon.lambda.powertools.logging.internal;
 
 import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
@@ -52,15 +51,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,8 +68,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
+import org.slf4j.test.TestLogger;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
+import software.amazon.lambda.powertools.logging.argument.KeyValueArgument;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayRestApiCorrelationId;
@@ -84,7 +84,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabledFo
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogError;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEvent;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventBridgeCorrelationId;
-import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventDisabled;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventEnvVar;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogResponse;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogResponseForStream;
@@ -466,51 +466,61 @@ class LambdaLoggingAspectTest {
     void shouldLogEventForHandlerWithLogEventAnnotation() {
         // GIVEN
         requestHandler = new PowertoolsLogEvent();
+        List<String> listOfOneElement = singletonList("ListOfOneElement");
 
         // WHEN
-        requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
+        requestHandler.handleRequest(listOfOneElement, context);
 
         // THEN
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains("[\"ListOfOneElement\"]");
+        TestLogger logger = (TestLogger) PowertoolsLogEvent.getLogger();
+        assertThat(logger.getArguments()).hasSize(1);
+        KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
+        assertThat(argument.getKey()).isEqualTo("event");
+        assertThat(argument.getValue()).isEqualTo(listOfOneElement);
     }
 
     @Test
-    void shouldLogEventForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
+    void shouldLogEventForHandlerWhenEnvVariableSetToTrue() {
+        // GIVEN
+        LoggingConstants.POWERTOOLS_LOG_EVENT = true;
+
+        requestHandler = new PowertoolsLogEventEnvVar();
+
+        SQSEvent.SQSMessage message = new SQSEvent.SQSMessage();
+        message.setBody("body");
+        message.setMessageId("1234abcd");
+        message.setAwsRegion("eu-west-1");
+
+        // WHEN
+        requestHandler.handleRequest(message, context);
+
+        // THEN
+        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar)requestHandler).getLogger();
         try {
-            // GIVEN
-            LoggingConstants.POWERTOOLS_LOG_EVENT = true;
-
-            requestHandler = new PowertoolsLogEnabled();
-
-            SQSEvent.SQSMessage message = new SQSEvent.SQSMessage();
-            message.setBody("body");
-            message.setMessageId("1234abcd");
-            message.setAwsRegion("eu-west-1");
-
-            // WHEN
-            requestHandler.handleRequest(message, context);
-
-            // THEN
-            File logFile = new File("target/logfile.json");
-            assertThat(contentOf(logFile)).contains("\"body\":\"body\"").contains("\"messageId\":\"1234abcd\"").contains("\"awsRegion\":\"eu-west-1\"");
+            assertThat(logger.getArguments()).hasSize(1);
+            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
+            assertThat(argument.getKey()).isEqualTo("event");
+            assertThat(argument.getValue()).isEqualTo(message);
         } finally {
             LoggingConstants.POWERTOOLS_LOG_EVENT = false;
+            if (logger != null){
+                logger.clearArguments();
+            }
         }
     }
 
     @Test
-    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() throws IOException {
+    void shouldNotLogEventForHandlerWhenEnvVariableSetToFalse() {
         // GIVEN
         LoggingConstants.POWERTOOLS_LOG_EVENT = false;
 
         // WHEN
-        requestHandler = new PowertoolsLogEventDisabled();
+        requestHandler = new PowertoolsLogEventEnvVar();
         requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
 
         // THEN
-        Assertions.assertEquals(0,
-                Files.lines(Paths.get("target/logfile.json")).collect(joining()).length());
+        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar)requestHandler).getLogger();
+        assertThat(logger.getArguments()).isNull();
     }
 
     @Test
@@ -518,16 +528,24 @@ class LambdaLoggingAspectTest {
         // GIVEN
         requestStreamHandler = new PowertoolsLogEventForStream();
         ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Map<String, String> map = Collections.singletonMap("key", "value");
 
         // WHEN
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(Collections.singletonMap("key", "value"))), output, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(map)), output, context);
 
         // THEN
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
                 .isNotEmpty();
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains("{\"key\":\"value\"}");
+        TestLogger logger = (TestLogger) PowertoolsLogEventForStream.getLogger();
+        try {
+            assertThat(logger.getArguments()).hasSize(1);
+            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
+            assertThat(argument.getKey()).isEqualTo("event");
+            assertThat(argument.getValue()).isEqualTo("{\"key\":\"value\"}");
+        } finally {
+            logger.clearArguments();
+        }
     }
 
     @Test
@@ -539,26 +557,37 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest("input", context);
 
         // THEN
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains("Hola mundo");
+        TestLogger logger = (TestLogger) PowertoolsLogResponse.getLogger();
+        try {
+            assertThat(logger.getArguments()).hasSize(1);
+            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
+            assertThat(argument.getKey()).isEqualTo("response");
+            assertThat(argument.getValue()).isEqualTo("Hola mundo");
+        } finally {
+            logger.clearArguments();
+        }
     }
 
     @Test
-    void shouldLogResponseForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
+    void shouldLogResponseForHandlerWhenEnvVariableSetToTrue() {
+        // GIVEN
+        LoggingConstants.POWERTOOLS_LOG_RESPONSE = true;
+
+        requestHandler = new PowertoolsLogEnabled();
+
+        // WHEN
+        requestHandler.handleRequest("input", context);
+
+        // THEN
+        TestLogger logger = (TestLogger) PowertoolsLogEnabled.getLogger();
         try {
-            // GIVEN
-            LoggingConstants.POWERTOOLS_LOG_RESPONSE = true;
-
-            requestHandler = new PowertoolsLogEnabled();
-
-            // WHEN
-            requestHandler.handleRequest("input", context);
-
-            // THEN
-            File logFile = new File("target/logfile.json");
-            assertThat(contentOf(logFile)).contains("Bonjour le monde");
+            assertThat(logger.getArguments()).hasSize(1);
+            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
+            assertThat(argument.getKey()).isEqualTo("response");
+            assertThat(argument.getValue()).isEqualTo("Bonjour le monde");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_RESPONSE = false;
+            logger.clearArguments();
         }
     }
 
@@ -576,8 +605,15 @@ class LambdaLoggingAspectTest {
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
                 .isEqualTo(input);
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains(input);
+        TestLogger logger = (TestLogger) PowertoolsLogResponseForStream.getLogger();
+        try {
+            assertThat(logger.getArguments()).hasSize(1);
+            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
+            assertThat(argument.getKey()).isEqualTo("response");
+            assertThat(argument.getValue()).isEqualTo(input);
+        } finally {
+            logger.clearArguments();
+        }
     }
 
     @Test
@@ -598,7 +634,7 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    void shouldLogErrorForHandlerWhenEnvVariableSetToTrue() throws IllegalAccessException {
+    void shouldLogErrorForHandlerWhenEnvVariableSetToTrue() {
         try {
             // GIVEN
             LoggingConstants.POWERTOOLS_LOG_ERROR = true;

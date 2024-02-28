@@ -35,12 +35,10 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.slf4j.MDC;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
-import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsJsonMessage;
-import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
+import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments;
 
 @Order(2)
-class PowertoolsMessageResolverTest {
+class PowertoolsResolverArgumentsTest {
 
     @Mock
     private Context context;
@@ -67,9 +65,9 @@ class PowertoolsMessageResolverTest {
     }
 
     @Test
-    void shouldLogJsonMessageWithoutEscapedStringsWhenSettingLogAsJson() {
+    void shouldLogArgumentsAsJsonWhenUsingRawJson() {
         // GIVEN
-        PowertoolsJsonMessage requestHandler = new PowertoolsJsonMessage();
+        PowertoolsArguments requestHandler = new PowertoolsArguments(PowertoolsArguments.ArgumentFormat.JSON);
         SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
@@ -85,24 +83,33 @@ class PowertoolsMessageResolverTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"message\":{\"messageId\":\"1212abcd\",\"receiptHandle\":null,\"body\":\"plop\",\"md5OfBody\":null,\"md5OfMessageAttributes\":null,\"eventSourceArn\":null,\"eventSource\":\"eb\",\"awsRegion\":\"eu-west-1\",\"attributes\":null,\"messageAttributes\":{\"keyAttribute\":{\"stringValue\":null,\"binaryValue\":null,\"stringListValues\":[\"val1\",\"val2\",\"val3\"],\"binaryListValues\":null,\"dataType\":null}}}")
+                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
-                .contains("\"message\":\"{\\\"key\\\":\\\"value\\\"}\"")
-                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"")
-                .doesNotContain(LoggingUtils.LOG_MESSAGES_AS_JSON);
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
     }
 
     @Test
-    void shouldLogStringMessageWhenNotJson() {
+    void shouldLogArgumentsAsJsonWhenUsingKeyValue() {
         // GIVEN
-        PowertoolsLogEnabled requestHandler = new PowertoolsLogEnabled();
+        PowertoolsArguments requestHandler = new PowertoolsArguments(PowertoolsArguments.ArgumentFormat.ENTRY);
+        SQSEvent.SQSMessage msg = new SQSEvent.SQSMessage();
+        msg.setMessageId("1212abcd");
+        msg.setBody("plop");
+        msg.setEventSource("eb");
+        msg.setAwsRegion("eu-west-1");
+        SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
+        attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
+        msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
 
         // WHEN
-        requestHandler.handleRequest(null, context);
+        requestHandler.handleRequest(msg, context);
 
         // THEN
         File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).contains("\"message\":\"Test debug event\"");
+        assertThat(contentOf(logFile))
+                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                .contains("\"message\":\"1212abcd\"")
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
     }
 
     private void setupContext() {

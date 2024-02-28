@@ -12,16 +12,16 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.handlers;
+package software.amazon.lambda.powertools.logging.internal.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class PowertoolsLogEventDisabled implements RequestHandler<Object, Object> {
+public class PowertoolsLogEvent implements RequestHandler<Object, Object> {
 
-    @Logging
     @Override
+    @Logging(logEvent = true)
     public Object handleRequest(Object input, Context context) {
         return null;
     }

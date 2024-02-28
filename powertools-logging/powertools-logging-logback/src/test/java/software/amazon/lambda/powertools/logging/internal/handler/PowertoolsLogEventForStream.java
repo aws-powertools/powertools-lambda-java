@@ -12,23 +12,23 @@
  *
  */
 
-package software.amazon.lambda.powertools.e2e;
+package software.amazon.lambda.powertools.logging.internal.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class Function implements RequestHandler<Input, String> {
-    private static final Logger LOG = LoggerFactory.getLogger(Function.class);
+public class PowertoolsLogEventForStream implements RequestStreamHandler {
 
-    @Logging
-    public String handleRequest(Input input, Context context) {
-        input.getKeys().forEach(MDC::put);
-        LOG.info(input.getMessage());
-
-        return "OK";
+    @Override
+    @Logging(logEvent = true)
+    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.writeValue(outputStream, mapper.readValue(inputStream, Map.class));
     }
 }

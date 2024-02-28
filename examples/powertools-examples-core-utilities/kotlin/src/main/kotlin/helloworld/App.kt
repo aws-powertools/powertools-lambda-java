@@ -18,23 +18,21 @@ import com.amazonaws.services.lambda.runtime.RequestHandler
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.amazonaws.xray.entities.Subsegment
-import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet
 import software.amazon.cloudwatchlogs.emf.model.Unit
 import software.amazon.lambda.powertools.logging.Logging
-import software.amazon.lambda.powertools.logging.LoggingUtils
+import software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry
 import software.amazon.lambda.powertools.metrics.Metrics
 import software.amazon.lambda.powertools.metrics.MetricsUtils
 import software.amazon.lambda.powertools.tracing.CaptureMode
 import software.amazon.lambda.powertools.tracing.Tracing
 import software.amazon.lambda.powertools.tracing.TracingUtils
-import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.URL
-import java.util.stream.Collectors
 
 /**
  * Handler for requests to Lambda function.
@@ -44,7 +42,6 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
     @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-
     override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent {
         val headers = mapOf("Content-Type" to "application/json", "X-Custom-Header" to "application/json")
         MetricsUtils.metricsLogger().putMetric("CustomMetric1", 1.0, Unit.COUNT)
@@ -52,11 +49,11 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
             metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"))
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"))
         }
-        LoggingUtils.appendKey("test", "willBeLogged")
+        MDC.put("test", "willBeLogged")
         val response = APIGatewayProxyResponseEvent().withHeaders(headers)
         return try {
             val pageContents = getPageContents("https://checkip.amazonaws.com")
-            log.info(pageContents)
+            log.info("", entry("ip", pageContents));
             TracingUtils.putAnnotation("Test", "New")
             val output = """
             {

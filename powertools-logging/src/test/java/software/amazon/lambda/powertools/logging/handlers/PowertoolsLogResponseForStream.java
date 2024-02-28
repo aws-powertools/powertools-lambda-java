@@ -19,9 +19,13 @@ import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowertoolsLogResponseForStream implements RequestStreamHandler {
+
+    private static final Logger logger = LoggerFactory.getLogger(PowertoolsLogResponseForStream.class);
 
     @Override
     @Logging(logResponse = true)
@@ -31,5 +35,9 @@ public class PowertoolsLogResponseForStream implements RequestStreamHandler {
         while ((length = inputStream.read(buf)) != -1) {
             outputStream.write(buf, 0, length);
         }
+    }
+
+    public static Logger getLogger() {
+        return logger;
     }
 }

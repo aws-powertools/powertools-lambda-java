@@ -12,23 +12,25 @@
  *
  */
 
-package software.amazon.lambda.powertools.e2e;
+package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.Logging;
 
-public class Function implements RequestHandler<Input, String> {
-    private static final Logger LOG = LoggerFactory.getLogger(Function.class);
+public class PowertoolsLogEventEnvVar implements RequestHandler<Object, Object> {
 
+    private final Logger logger = LoggerFactory.getLogger(PowertoolsLogEventEnvVar.class);
+
+    @Override
     @Logging
-    public String handleRequest(Input input, Context context) {
-        input.getKeys().forEach(MDC::put);
-        LOG.info(input.getMessage());
+    public Object handleRequest(Object input, Context context) {
+        return null;
+    }
 
-        return "OK";
+    public Logger getLogger() {
+        return logger;
     }
 }

@@ -18,8 +18,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
     private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
@@ -27,8 +27,8 @@ public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
     @Override
     @Logging(clearState = true)
     public Object handleRequest(Object input, Context context) {
-        LoggingUtils.appendKey("myKey", "myValue");
+        MDC.put("myKey", "myValue");
         LOG.debug("Test debug event");
-        return null;
+        return "Bonjour le monde";
     }
 }
