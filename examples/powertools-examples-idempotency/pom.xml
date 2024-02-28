@@ -95,7 +95,7 @@
                         </aspectLibrary>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
-                            <artifactId>powertools-idempotency-dynamodb</artifactId>
+                            <artifactId>powertools-idempotency-core</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
                 </configuration>
