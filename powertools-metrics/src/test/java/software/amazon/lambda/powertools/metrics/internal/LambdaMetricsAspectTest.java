@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
@@ -389,9 +390,10 @@ public class LambdaMetricsAspectTest {
 
             requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
 
-            assertThatExceptionOfType(ValidationException.class)
+            assertThatExceptionOfType(DimensionSetExceededException.class)
                     .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Number of Dimensions must be in range of 0-9. Actual size: 14.");
+                    .withMessage(
+                            "Maximum number of dimensions allowed are 30. Account for default dimensions if not using setDimensions.");
         }
     }
 
