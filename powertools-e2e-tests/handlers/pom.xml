@@ -32,10 +32,7 @@
         <module>logging</module>
         <module>tracing</module>
         <module>metrics</module>
-        <module>batch</module>
         <module>idempotency</module>
-        <module>largemessage</module>
-        <module>largemessage_idempotent</module>
         <module>parameters</module>
         <module>validation-alb-event</module>
         <module>validation-apigw-event</module>
@@ -73,6 +70,11 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-idempotency</artifactId>
+                <version>${lambda.powertools.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-idempotency-dynamodb</artifactId>
                 <version>${lambda.powertools.version}</version>
             </dependency>
             <dependency>
