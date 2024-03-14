@@ -530,19 +530,19 @@ Handlers can be provided when building the batch processor and are available for
 For instance for DynamoDB:
 
 ```java
-BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
-            .withDynamoDbBatchHandler()
-            .withSuccessHandler((m) -> {
-                // Success handler receives the raw message
-                LOGGER.info("Message with sequenceNumber {} was successfully processed",
-                    m.getDynamodb().getSequenceNumber());
-            })
-            .withFailureHandler((m, e) -> {
-                // Failure handler receives the raw message and the exception thrown.
-                LOGGER.info("Message with sequenceNumber {} failed to be processed: {}"
-                , e.getDynamodb().getSequenceNumber(), e);
-            })
-            .buildWithMessageHander(this::processMessage);
+    BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+                .withDynamoDbBatchHandler()
+                .withSuccessHandler((m) -> {
+                    // Success handler receives the raw message
+                    LOGGER.info("Message with sequenceNumber {} was successfully processed",
+                        m.getDynamodb().getSequenceNumber());
+                })
+                .withFailureHandler((m, e) -> {
+                    // Failure handler receives the raw message and the exception thrown.
+                    LOGGER.info("Message with sequenceNumber {} failed to be processed: {}"
+                    , e.getDynamodb().getSequenceNumber(), e);
+                })
+                .buildWithMessageHander(this::processMessage);
 ```
 
 !!! info

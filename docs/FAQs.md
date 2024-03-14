@@ -6,7 +6,7 @@ description: Frequently Asked Questions
 
 ## How can I use Powertools for AWS Lambda (Java) with Lombok?
 
-Poweretools uses `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. In case you want to use `Lombok` or other compile-time preprocessor for your project, it is required to change `aspectj-maven-plugin` configuration to enable in-place weaving feature. Otherwise the plugin will ignore changes introduced by `Lombok` and will use `.java` files as a source. 
+Powertools uses `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. In case you want to use `Lombok` or other compile-time preprocessor for your project, it is required to change `aspectj-maven-plugin` configuration to enable in-place weaving feature. Otherwise the plugin will ignore changes introduced by `Lombok` and will use `.java` files as a source. 
 
 To enable in-place weaving feature you need to use following `aspectj-maven-plugin` configuration:
 
@@ -29,7 +29,7 @@ To enable in-place weaving feature you need to use following `aspectj-maven-plug
 
 ## How can I use Powertools for AWS Lambda (Java) with Kotlin projects?
 
-Poweretools uses `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. When using it with Kotlin projects, it is required to `forceAjcCompile`. 
+Powertools uses `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. When using it with Kotlin projects, it is required to `forceAjcCompile`. 
 No explicit configuration should be required for gradle projects. 
 
 To enable `forceAjcCompile` you need to use following `aspectj-maven-plugin` configuration:
@@ -47,3 +47,91 @@ To enable `forceAjcCompile` you need to use following `aspectj-maven-plugin` con
 </configuration>
 ```
 
+## How can I use Powertools for AWS Lambda (Java) with the AWS CRT HTTP Client?
+
+Powertools uses the `url-connection-client` as the default http client. The `url-connection-client` is a lightweight http client, which keeps the impact on Lambda cold starts to a minimum. 
+With the [announcement](https://aws.amazon.com/blogs/developer/announcing-availability-of-the-aws-crt-http-client-in-the-aws-sdk-for-java-2-x/) of the `aws-crt-client` a new http client has been released, which offers faster SDK startup time and smaller memory footprint. 
+
+Unfortunately, replacing the `url-connection-client` dependency with the `aws-crt-client` will not immediately improve the lambda cold start performance and memory footprint, 
+as the default version of the dependency contains low level libraries for all target runtimes (linux, macos, windows, etc).  
+
+Using the `aws-crt-client` in your project requires the exclusion of the `url-connection-client` transitive dependency from the powertools dependency. 
+
+```xml 
+<dependency>
+    <groupId>software.amazon.lambda</groupId>
+    <artifactId>powertools-parameters</artifactId>
+    <version>1.18.0</version>
+    <exclusions>
+        <exclusion>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>url-connection-client</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+```
+Next to adding the `aws-crt-client` and excluding the `aws-crt` dependency (contain all runtime libraries) it's required to set a specific runtime version of the `aws-crt` dependency by specifying the classifier for your specific target runtime.
+Specifying the specific target runtime makes sure all other target runtimes are excluded from the jar file, which will result in the benefit of improved cold start times.   
+
+```xml
+
+<dependencies>
+    <dependency>
+        <groupId>software.amazon.awssdk</groupId>
+        <artifactId>aws-crt-client</artifactId>
+        <version>2.23.21</version>
+        <exclusions>
+            <exclusion>
+                <groupId>software.amazon.awssdk.crt</groupId>
+                <artifactId>aws-crt</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+
+    <dependency>
+        <groupId>software.amazon.awssdk.crt</groupId>
+        <artifactId>aws-crt</artifactId>
+        <version>0.29.9</version>
+        <classifier>linux-x86_64</classifier>
+    </dependency>
+</dependencies>
+```
+
+After configuring the dependencies it's required to specify the aws sdk http client. 
+Most modules support a custom sdk client by leveraging the `.withClient()` method on the for instance the Provider singleton:
+
+    ```java hl_lines="11-16 19-20 22"
+    import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
+    
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.awssdk.services.ssm.SsmClient;
+    import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
+
+    public class RequestHandlerWithParams implements RequestHandler<String, String> {
+    
+        // Get an instance of the SSMProvider. We can provide a custom client here if we want,
+        // for instance to use the aws crt http client.
+        SSMProvider ssmProvider = SSMProvider
+                .builder()
+                .withClient(
+                        SsmClient.builder()
+                                .httpClient(AwsCrtHttpClient.builder().build())
+                                .build()
+                )
+                .build();
+    
+        public String handleRequest(String input, Context context) {
+            // Retrieve a single param
+            String value = ssmProvider
+                    .get("/my/secret");
+                    // We might instead want to retrieve multiple parameters at once, returning a Map of key/value pairs
+                    // .getMultiple("/my/secret/path");
+
+            // Return the result
+            return value;
+        }
+    }
+    ```
+It has been considered to make the `aws-crt-client` the default http client in Lambda Powertools for Java, as mentioned in [Move SDK http client to CRT](https://github.com/aws-powertools/powertools-lambda-java/issues/1092), 
+but due to the impact on the developer experience it was decided to stick with the `url-connection-client`. 
