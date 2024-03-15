@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-      - main
+      - v2
     paths: # add other modules when there are under e2e tests
       - 'powertools-e2e-tests/**'
       - 'powertools-batch/**'
@@ -23,7 +23,7 @@ on:
 
   pull_request:
     branches:
-      - main
+      - v2
     paths:
       - 'powertools-e2e-tests/**'
 
@@ -33,7 +33,7 @@ jobs:
     strategy:
       max-parallel: 4
       matrix:
-        java: [ 8, 11, 17, 21 ]
+        java: [ 11, 17, 21 ]
     name: End-to-end tests java${{ matrix.java }}
     env:
       AWS_DEFAULT_REGION: eu-west-1
