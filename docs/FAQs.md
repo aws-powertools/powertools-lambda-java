@@ -72,7 +72,7 @@ Using the `aws-crt-client` in your project requires the exclusion of the `url-co
 ```
 Next, add the `aws-crt-client` and exclude the "generic" `aws-crt` dependency (contains all runtime libraries). 
 Instead, set a specific classifier of the `aws-crt` to use the one for your target runtime: either `linux-x86_64` for a Lambda configured for x86 or `linux-aarch_64` for Lambda using arm64.
-Specifying the specific target runtime makes sure all other target runtimes are excluded from the jar file, which will result in the benefit of improved cold start times.   
+By specifying the specific target runtime, it will avoid other target runtimes to be included in the jar file, which will result in a smaller Lambda package and the benefit of improved cold start times.   
 
 ```xml
 
