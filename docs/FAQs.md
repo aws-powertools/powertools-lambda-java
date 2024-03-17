@@ -53,7 +53,9 @@ Powertools uses the `url-connection-client` as the default http client. The `url
 With the [announcement](https://aws.amazon.com/blogs/developer/announcing-availability-of-the-aws-crt-http-client-in-the-aws-sdk-for-java-2-x/) of the `aws-crt-client` a new http client has been released, which offers faster SDK startup time and smaller memory footprint. 
 
 Unfortunately, replacing the `url-connection-client` dependency with the `aws-crt-client` will not immediately improve the lambda cold start performance and memory footprint, 
-as the default version of the dependency contains low level libraries for all target runtimes (linux, macos, windows, etc).  
+as the default version of the dependency contains low level libraries for all target runtimes (Linux, MacOS, Windows, etc).  
+
+### Configuring dependencies
 
 Using the `aws-crt-client` in your project requires the exclusion of the `url-connection-client` transitive dependency from the powertools dependency. 
 
@@ -98,8 +100,11 @@ By specifying the specific target runtime, it will avoid other target runtimes t
 </dependencies>
 ```
 
-After configuring the dependencies, it's required to specify the AWS SDK http client in the code. 
-Most modules support a custom sdk client by leveraging the `.withClient()` method on the for instance the Provider singleton:
+### Explicitly set the AWS CRT HTTP Client
+After configuring the dependencies, it's required to explicitly specify the AWS SDK http client. 
+Depending on the Powertools module, there is a different way to configure the sdk client.
+
+The following example shows how to use the Lambda Powertools Parameters module while leveraging the AWS CRT Client.   
 
     ```java hl_lines="11-16 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -107,12 +112,12 @@ Most modules support a custom sdk client by leveraging the `.withClient()` metho
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import software.amazon.awssdk.services.ssm.SsmClient;
+    import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
     import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
     public class RequestHandlerWithParams implements RequestHandler<String, String> {
     
-        // Get an instance of the SSMProvider. We can provide a custom client here if we want,
-        // for instance to use the aws crt http client.
+        // Get an instance of the SSMProvider with a custom HTTP client (aws crt).
         SSMProvider ssmProvider = SSMProvider
                 .builder()
                 .withClient(
