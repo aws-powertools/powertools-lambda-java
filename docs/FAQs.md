@@ -98,7 +98,7 @@ By specifying the specific target runtime, it will avoid other target runtimes t
 </dependencies>
 ```
 
-After configuring the dependencies it's required to specify the aws sdk http client. 
+After configuring the dependencies, it's required to specify the AWS SDK http client in the code. 
 Most modules support a custom sdk client by leveraging the `.withClient()` method on the for instance the Provider singleton:
 
     ```java hl_lines="11-16 19-20 22"
