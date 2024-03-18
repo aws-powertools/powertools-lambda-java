@@ -63,7 +63,7 @@ Using the `aws-crt-client` in your project requires the exclusion of the `url-co
 <dependency>
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parameters</artifactId>
-    <version>1.18.0</version>
+    <version>2.0.0</version>
     <exclusions>
         <exclusion>
             <groupId>software.amazon.awssdk</groupId>
