@@ -141,5 +141,5 @@ The following example shows how to use the Lambda Powertools Parameters module w
         }
     }
     ```
-It has been considered to make the `aws-crt-client` the default http client in Lambda Powertools for Java, as mentioned in [Move SDK http client to CRT](https://github.com/aws-powertools/powertools-lambda-java/issues/1092), 
+The `aws-crt-client` was considered for adoption as the default HTTP client in Lambda Powertools for Java as mentioned in [Move SDK http client to CRT](https://github.com/aws-powertools/powertools-lambda-java/issues/1092), 
 but due to the impact on the developer experience it was decided to stick with the `url-connection-client`. 
