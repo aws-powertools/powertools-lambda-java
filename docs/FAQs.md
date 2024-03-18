@@ -49,7 +49,7 @@ To enable `forceAjcCompile` you need to use following `aspectj-maven-plugin` con
 
 ## How can I use Powertools for AWS Lambda (Java) with the AWS CRT HTTP Client?
 
-Powertools uses the `url-connection-client` as the default http client. The `url-connection-client` is a lightweight http client, which keeps the impact on Lambda cold starts to a minimum. 
+Powertools uses the `url-connection-client` as the default HTTP client. The `url-connection-client` is a lightweight HTTP client, which keeps the impact on Lambda cold starts to a minimum. 
 With the [announcement](https://aws.amazon.com/blogs/developer/announcing-availability-of-the-aws-crt-http-client-in-the-aws-sdk-for-java-2-x/) of the `aws-crt-client` a new http client has been released, which offers faster SDK startup time and smaller memory footprint. 
 
 Unfortunately, replacing the `url-connection-client` dependency with the `aws-crt-client` will not immediately improve the lambda cold start performance and memory footprint, 
