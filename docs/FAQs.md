@@ -103,7 +103,7 @@ By specifying the specific target runtime, we prevent other target runtimes from
 ```
 
 ### Explicitly set the AWS CRT HTTP Client
-After configuring the dependencies, it's required to explicitly specify the AWS SDK http client. 
+After configuring the dependencies, it's required to explicitly specify the AWS SDK HTTP client. 
 Depending on the Powertools module, there is a different way to configure the sdk client.
 
 The following example shows how to use the Lambda Powertools Parameters module while leveraging the AWS CRT Client.   
