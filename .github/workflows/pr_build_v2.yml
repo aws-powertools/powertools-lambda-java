@@ -66,10 +66,10 @@ jobs:
       - name: Build with Maven
         run: mvn -B install --file pom.xml
       - name: Build Gradle Example - Java
-        working-directory: examples/powertools-examples-core/gradle
+        working-directory: examples/powertools-examples-core-utilities/gradle
         run: ./gradlew build
       - name: Build Gradle Example - Kotlin
-        working-directory: examples/powertools-examples-core/kotlin
+        working-directory: examples/powertools-examples-core-utilities/kotlin
         run: ./gradlew build
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
