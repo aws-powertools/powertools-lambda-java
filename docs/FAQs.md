@@ -53,7 +53,7 @@ Powertools uses the `url-connection-client` as the default HTTP client. The `url
 With the [announcement](https://aws.amazon.com/blogs/developer/announcing-availability-of-the-aws-crt-http-client-in-the-aws-sdk-for-java-2-x/) of the `aws-crt-client` a new HTTP client has been released, which offers faster SDK startup time and smaller memory footprint. 
 
 Unfortunately, replacing the `url-connection-client` dependency with the `aws-crt-client` will not immediately improve the lambda cold start performance and memory footprint, 
-as the default version of the dependency contains low level libraries for all target runtimes (Linux, MacOS, Windows, etc).  
+as the default version of the dependency contains native system libraries for all supported runtimes and architectures (Linux, MacOS, Windows, AMD64, ARM64, etc).  This makes the CRT client portable, without the user having to consider _where_ their code will run, but comes at the cost of JAR size.
 
 ### Configuring dependencies
 
