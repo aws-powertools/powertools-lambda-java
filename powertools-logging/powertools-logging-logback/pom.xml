@@ -28,9 +28,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <!-- TODO: use 1.4 if we remove JDK 1.8 support -->
-            <version>1.3.4</version> <!-- v1.3.x compatible with JDK 1.8, v1.4.x only compatible with JDK 11 -->
-            <scope>provided</scope> <!-- provided to let users change to 1.4.x when using JDK 11 -->
+            <version>1.4.7</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.mail</groupId>
@@ -48,6 +46,11 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
