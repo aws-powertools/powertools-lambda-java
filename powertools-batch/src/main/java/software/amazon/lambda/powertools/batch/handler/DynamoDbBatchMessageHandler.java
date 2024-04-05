@@ -19,10 +19,13 @@ import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.batch.internal.MultiThreadMDC;
 
 /**
  * A batch message processor for DynamoDB Streams batches.
@@ -46,35 +49,60 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
 
     @Override
     public StreamsEventResponse processBatch(DynamodbEvent event, Context context) {
-        List<StreamsEventResponse.BatchItemFailure> batchFailures = new ArrayList<>();
+        StreamsEventResponse response = StreamsEventResponse.builder().withBatchItemFailures(new ArrayList<>()).build();
 
-        for (DynamodbEvent.DynamodbStreamRecord record : event.getRecords()) {
-            try {
-
-                rawMessageHandler.accept(record, context);
-                // Report success if we have a handler
-                if (this.successHandler != null) {
-                    this.successHandler.accept(record);
-                }
-            } catch (Throwable t) {
-                String sequenceNumber = record.getDynamodb().getSequenceNumber();
-                LOGGER.error("Error while processing record with id {}: {}, adding it to batch item failures",
-                        sequenceNumber, t.getMessage());
-                LOGGER.error("Error was", t);
-                batchFailures.add(new StreamsEventResponse.BatchItemFailure(sequenceNumber));
-
-                // Report failure if we have a handler
-                if (this.failureHandler != null) {
-                    // A failing failure handler is no reason to fail the batch
-                    try {
-                        this.failureHandler.accept(record, t);
-                    } catch (Throwable t2) {
-                        LOGGER.warn("failureHandler threw handling failure", t2);
-                    }
-                }
-            }
+        for (DynamodbEvent.DynamodbStreamRecord streamRecord : event.getRecords()) {
+            processBatchItem(streamRecord, context).ifPresent(batchItemFailure -> response.getBatchItemFailures().add(batchItemFailure));
         }
 
-        return new StreamsEventResponse(batchFailures);
+        return response;
+    }
+
+
+    @Override
+    public StreamsEventResponse processBatchInParallel(DynamodbEvent event, Context context) {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = event.getRecords()
+                .parallelStream() // Parallel processing
+                .map(eventRecord -> {
+                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                    return processBatchItem(eventRecord, context);
+                })
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
+    }
+
+    private Optional<StreamsEventResponse.BatchItemFailure> processBatchItem(DynamodbEvent.DynamodbStreamRecord streamRecord, Context context) {
+        try {
+            LOGGER.debug("Processing item {}", streamRecord.getEventID());
+
+            rawMessageHandler.accept(streamRecord, context);
+
+            // Report success if we have a handler
+            if (this.successHandler != null) {
+                this.successHandler.accept(streamRecord);
+            }
+            return Optional.empty();
+        } catch (Throwable t) {
+            String sequenceNumber = streamRecord.getDynamodb().getSequenceNumber();
+            LOGGER.error("Error while processing record with id {}: {}, adding it to batch item failures",
+                    sequenceNumber, t.getMessage());
+            LOGGER.error("Error was", t);
+
+            // Report failure if we have a handler
+            if (this.failureHandler != null) {
+                // A failing failure handler is no reason to fail the batch
+                try {
+                    this.failureHandler.accept(streamRecord, t);
+                } catch (Throwable t2) {
+                    LOGGER.warn("failureHandler threw handling failure", t2);
+                }
+            }
+            return Optional.of(StreamsEventResponse.BatchItemFailure.builder().withItemIdentifier(sequenceNumber).build());
+        }
     }
 }
