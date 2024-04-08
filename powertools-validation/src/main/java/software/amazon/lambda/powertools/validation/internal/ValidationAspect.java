@@ -190,7 +190,7 @@ public class ValidationAspect {
                 }
             }
 
-            if (validationNeeded && !validation.outboundSchema().isEmpty()) {
+            if (result != null && validationNeeded && !validation.outboundSchema().isEmpty()) {
                 JsonSchema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
 
                 Object overridenResponse = null;
