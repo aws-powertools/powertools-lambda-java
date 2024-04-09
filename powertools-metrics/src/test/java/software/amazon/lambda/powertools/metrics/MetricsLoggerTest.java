@@ -186,18 +186,6 @@ class MetricsLoggerTest {
     }
 
     @Test
-    void deprecatedMetricLoggerCaptureUtilityWithDefaultNameSpace() {
-        testLogger(MetricsUtils::withMetricLogger);
-    }
-
-    @Test
-    void shouldThrowExceptionWhenDefaultDimensionIsNull() {
-        assertThatNullPointerException()
-                .isThrownBy(() -> MetricsUtils.defaultDimensionSet(null))
-                .withMessage("Null dimension set not allowed");
-    }
-
-    @Test
     void shouldUseTraceIdFromSystemPropertyIfEnvVarNotPresent() {
         try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
              MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(

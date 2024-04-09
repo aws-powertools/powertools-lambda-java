@@ -50,22 +50,6 @@ import java.lang.annotation.Target;
 public @interface Tracing {
     String namespace() default "";
 
-    /**
-     * @deprecated As of release 1.2.0, replaced by captureMode()
-     * in order to support different modes and support via
-     * environment variables
-     */
-    @Deprecated
-    boolean captureResponse() default true;
-
-    /**
-     * @deprecated As of release 1.2.0, replaced by captureMode()
-     * in order to support different modes and support via
-     * environment variables
-     */
-    @Deprecated
-    boolean captureError() default true;
-
     String segmentName() default "";
 
     CaptureMode captureMode() default CaptureMode.ENVIRONMENT_VAR;

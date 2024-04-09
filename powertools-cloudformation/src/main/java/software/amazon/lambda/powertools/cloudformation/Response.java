@@ -48,23 +48,6 @@ public class Response {
     }
 
     /**
-     * Creates a failed Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
-     * Lambda LogStreamName
-     * <p>
-     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
-     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
-     * the update as a replacement and sends a delete request to the old resource. For more information,
-     * see AWS::CloudFormation::CustomResource.
-     *
-     * @return a failed Response with no value.
-     * @deprecated this method is not safe. Provide a physicalResourceId.
-     */
-    @Deprecated
-    public static Response failed() {
-        return new Response(null, Status.FAILED, null, false);
-    }
-
-    /**
      * Creates a failed Response with a given physicalResourceId.
      *
      * @param physicalResourceId The value must be a non-empty string and must be identical for all responses for the
@@ -78,23 +61,6 @@ public class Response {
      */
     public static Response failed(String physicalResourceId) {
         return new Response(null, Status.FAILED, physicalResourceId, false);
-    }
-
-    /**
-     * Creates a successful Response with no physicalResourceId set. Powertools for AWS Lambda (Java) will set the physicalResourceId to the
-     * Lambda LogStreamName
-     * <p>
-     * The value returned for a PhysicalResourceId can change custom resource update operations. If the value returned
-     * is the same, it is considered a normal update. If the value returned is different, AWS CloudFormation recognizes
-     * the update as a replacement and sends a delete request to the old resource. For more information,
-     * see AWS::CloudFormation::CustomResource.
-     *
-     * @return a success Response with no physicalResourceId value.
-     * @deprecated this method is not safe. Provide a physicalResourceId.
-     */
-    @Deprecated
-    public static Response success() {
-        return new Response(null, Status.SUCCESS, null, false);
     }
 
     /**

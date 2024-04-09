@@ -47,7 +47,6 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaData;
-import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaDataDeprecated;
 import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 
 class LambdaTracingAspectTest {
@@ -228,29 +227,6 @@ class LambdaTracingAspectTest {
         streamHandler = new PowerTracerToolEnabledForStreamWithNoMetaData();
 
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
-
-        assertThat(AWSXRay.getTraceEntity())
-                .isNotNull();
-
-        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
-                .hasSize(1)
-                .allSatisfy(subsegment ->
-                {
-                    assertThat(subsegment.getAnnotations())
-                            .hasSize(2)
-                            .containsEntry("ColdStart", true)
-                            .containsEntry("Service", "service_undefined");
-
-                    assertThat(subsegment.getMetadata())
-                            .isEmpty();
-                });
-    }
-
-    @Test
-    void shouldCaptureTracesWithNoMetadataDeprecated() {
-        requestHandler = new PowerTracerToolEnabledWithNoMetaDataDeprecated();
-
-        requestHandler.handleRequest(new Object(), context);
 
         assertThat(AWSXRay.getTraceEntity())
                 .isNotNull();
