@@ -23,16 +23,16 @@ public class NoPhysicalResourceIdSetHandler extends AbstractCustomResourceHandle
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-        return Response.success();
+        return Response.success(null);
     }
 
     @Override
     protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-        return Response.success();
+        return Response.success(null);
     }
 
     @Override
     protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-        return Response.success();
+        return Response.success(null);
     }
 }
