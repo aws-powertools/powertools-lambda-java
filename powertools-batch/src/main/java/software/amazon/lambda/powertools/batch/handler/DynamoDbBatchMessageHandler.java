@@ -17,7 +17,6 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -49,15 +48,15 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
 
     @Override
     public StreamsEventResponse processBatch(DynamodbEvent event, Context context) {
-        StreamsEventResponse response = StreamsEventResponse.builder().withBatchItemFailures(new ArrayList<>()).build();
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = event.getRecords()
+                .stream()
+                .map(eventRecord -> processBatchItem(eventRecord, context))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-        for (DynamodbEvent.DynamodbStreamRecord streamRecord : event.getRecords()) {
-            processBatchItem(streamRecord, context).ifPresent(batchItemFailure -> response.getBatchItemFailures().add(batchItemFailure));
-        }
-
-        return response;
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
-
 
     @Override
     public StreamsEventResponse processBatchInParallel(DynamodbEvent event, Context context) {

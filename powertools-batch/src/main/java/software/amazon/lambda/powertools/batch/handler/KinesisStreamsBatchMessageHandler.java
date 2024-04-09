@@ -18,7 +18,6 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -60,13 +59,14 @@ public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler
 
     @Override
     public StreamsEventResponse processBatch(KinesisEvent event, Context context) {
-        StreamsEventResponse response = StreamsEventResponse.builder().withBatchItemFailures(new ArrayList<>()).build();
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = event.getRecords()
+                .stream()
+                .map(eventRecord -> processBatchItem(eventRecord, context))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-        for (KinesisEvent.KinesisEventRecord eventRecord : event.getRecords()) {
-            processBatchItem(eventRecord, context).ifPresent(batchItemFailure -> response.getBatchItemFailures().add(batchItemFailure));
-        }
-
-        return response;
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
 
     @Override

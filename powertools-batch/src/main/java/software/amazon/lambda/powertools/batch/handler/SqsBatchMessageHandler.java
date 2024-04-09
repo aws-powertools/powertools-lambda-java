@@ -20,7 +20,6 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -66,10 +65,10 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
         // If we are working on a FIFO queue, when any message fails we should stop processing and return the
         // rest of the batch as failed too. We use this variable to track when that has happened.
         // https://docs.aws.amazon.com/lambda/latest/dg/with-sqs.html#services-sqs-batchfailurereporting
-        AtomicBoolean failWholeBatch = new AtomicBoolean(false);
+        final Boolean[] failWholeBatch = {false};
 
         int messageCursor = 0;
-        for (; messageCursor < event.getRecords().size() && !failWholeBatch.get(); messageCursor++) {
+        for (; messageCursor < event.getRecords().size() && !failWholeBatch[0]; messageCursor++) {
             SQSEvent.SQSMessage message = event.getRecords().get(messageCursor);
 
             String messageGroupId = message.getAttributes() != null ?
@@ -78,7 +77,7 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
             processBatchItem(message, context).ifPresent(batchItemFailure -> {
                 response.getBatchItemFailures().add(batchItemFailure);
                 if (messageGroupId != null) {
-                    failWholeBatch.set(true);
+                    failWholeBatch[0] = true;
                     LOGGER.info(
                             "A message in a batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
                             , messageGroupId, message.getMessageId());
@@ -86,7 +85,7 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
             });
         }
 
-        if (failWholeBatch.get()) {
+        if (failWholeBatch[0]) {
             // Add the remaining messages to the batch item failures
             event.getRecords()
                     .subList(messageCursor, event.getRecords().size())
@@ -100,8 +99,7 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
     @Override
     public SQSBatchResponse processBatchInParallel(SQSEvent event, Context context) {
         if (!event.getRecords().isEmpty() && event.getRecords().get(0).getAttributes().get(MESSAGE_GROUP_ID_KEY) != null) {
-            LOGGER.warn("FIFO queues are not supported in parallel mode, proceeding in sequence");
-            return processBatch(event, context);
+            throw new UnsupportedOperationException("FIFO queues are not supported in parallel mode, use the processBatch method instead");
         }
 
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
