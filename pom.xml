@@ -87,7 +87,7 @@
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
-        <junit.version>5.10.0</junit.version>
+        <junit.version>5.10.2</junit.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
         <elastic.version>1.6.0</elastic.version>
@@ -517,7 +517,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.7.3.6</version>
+                        <version>4.8.4.0</version>
                         <executions>
                             <execution>
                                 <id>test</id>
