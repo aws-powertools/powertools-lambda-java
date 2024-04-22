@@ -80,7 +80,7 @@
         <lambda.serial.version>1.1.2</lambda.serial.version>
         <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
+        <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
