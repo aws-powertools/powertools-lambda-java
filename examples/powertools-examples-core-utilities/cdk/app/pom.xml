@@ -11,7 +11,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <log4j.version>2.20.0</log4j.version>
+        <log4j.version>2.23.1</log4j.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <aspectj.version>1.9.20.1</aspectj.version>
