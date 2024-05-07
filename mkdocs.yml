@@ -5,6 +5,7 @@ site_url: https://docs.powertools.aws.dev/lambda-java/
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
+  - Workshop 🆕: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
   - FAQs: FAQs.md
   - Core utilities:
       - core/logging.md
