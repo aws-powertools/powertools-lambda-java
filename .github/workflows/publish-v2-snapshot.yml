@@ -20,13 +20,11 @@ jobs:
           distribution: 'corretto'
           java-version: 11
           server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
           # TODO: use environments https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
           gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }} # Value of the GPG private key to import
           gpg-passphrase: GPG_PASSPHRASE # env variable for GPG private key passphrase
       - name: Publish package
-        run: mvn -Prelease clean deploy -DskipTests
+        run: mvn -Prelease clean validate deploy -DskipTests # We use validate here to run maven enforcer, to make sure we are only publishing SNAPSHOT builds
         env:
           MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
           MAVEN_PASSWORD: fail_because_this_is_wrong
