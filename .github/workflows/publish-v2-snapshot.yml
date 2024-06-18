@@ -26,6 +26,6 @@ jobs:
       - name: Publish package
         run: mvn -Prelease clean validate deploy -DskipTests # We use validate here to run maven enforcer, to make sure we are only publishing SNAPSHOT builds
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
-          MAVEN_PASSWORD: fail_because_this_is_wrong
+          MAVEN_USERNAME: ${{ secrets.SNAPSHOT_PUBLISH_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.SNAPSHOT_PUBLISH_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
