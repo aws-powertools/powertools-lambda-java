@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - v2
-      -
   workflow_dispatch: {}
 jobs:
   publish:
