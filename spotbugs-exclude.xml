@@ -9,6 +9,12 @@
   -->
 <FindBugsFilter>
     <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+        <Or>
+            <Class name="software.amazon.lambda.powertools.common.internal.UserAgentConfigurator" />
+        </Or>
+    </Match>
+    <Match>
         <Bug pattern="EI_EXPOSE_REP2"/>
         <Or>
             <And>
