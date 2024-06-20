@@ -12,6 +12,13 @@
         <Bug pattern="CT_CONSTRUCTOR_THROW" />
         <Or>
             <Class name="software.amazon.lambda.powertools.common.internal.UserAgentConfigurator" />
+            <Class name="software.amazon.lambda.powertools.logging.internal.JsonSerializer" />
+        </Or>
+    </Match>
+    <Match>
+        <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE" />
+        <Or>
+            <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect" />
         </Or>
     </Match>
     <Match>
