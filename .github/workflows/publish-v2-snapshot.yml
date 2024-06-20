@@ -1,4 +1,4 @@
-name: Publish v2 snapshots to the Maven Central repository. Runs on merge to v2.
+name: Publish v2
 on:
   pull_request:
     branches:
