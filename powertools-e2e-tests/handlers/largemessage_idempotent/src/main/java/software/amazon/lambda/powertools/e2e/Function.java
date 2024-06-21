@@ -37,7 +37,7 @@ import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.IdempotencyKey;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
-import software.amazon.lambda.powertools.idempotency.persistence.DynamoDBPersistenceStore;
+import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
 import software.amazon.lambda.powertools.largemessages.LargeMessage;
 import software.amazon.lambda.powertools.logging.Logging;
 

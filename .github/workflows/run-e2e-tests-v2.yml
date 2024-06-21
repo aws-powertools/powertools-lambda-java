@@ -1,0 +1,58 @@
+name: Run end-to-end tests
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - v2
+    paths: # add other modules when there are under e2e tests
+      - 'powertools-e2e-tests/**'
+      - 'powertools-batch/**'
+      - 'powertools-core/**'
+      - 'powertools-common/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-message/**'
+      - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-tracing/**'
+      - 'pom.xml'
+      - '.github/workflows/**'
+
+  pull_request:
+    branches:
+      - v2
+    paths:
+      - 'powertools-e2e-tests/**'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        java: [ 11, 17, 21 ]
+    name: End-to-end tests java${{ matrix.java }}
+    env:
+      AWS_DEFAULT_REGION: eu-west-1
+      JAVA_VERSION: ${{ matrix.java }}
+    permissions:
+      id-token: write # needed to interact with GitHub's OIDC Token endpoint.
+      contents: read
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
+      - name: Setup java
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'corretto'
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+      - name: Run e2e test with Maven
+        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml

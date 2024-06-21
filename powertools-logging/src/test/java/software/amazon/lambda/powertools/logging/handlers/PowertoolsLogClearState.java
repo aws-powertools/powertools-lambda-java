@@ -19,8 +19,8 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.logging.LoggingUtils;
 
 public class PowertoolsLogClearState implements RequestHandler<Map<String, String>, Object> {
     private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogClearState.class);
@@ -28,7 +28,7 @@ public class PowertoolsLogClearState implements RequestHandler<Map<String, Strin
     @Override
     @Logging(clearState = true)
     public Object handleRequest(Map<String, String> input, Context context) {
-        LoggingUtils.appendKey("mySuperSecret", input.get("mySuperSecret"));
+        MDC.put("mySuperSecret", input.get("mySuperSecret"));
         LOG.info("Test event");
         return null;
     }

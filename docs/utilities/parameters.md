@@ -544,6 +544,7 @@ To simplify the use of the library, you can chain all method calls before a get.
           .withTransformation(json)       // json is a static import from Transformer.json
           .withDecryption()               // enable decryption of the parameter value
           .get("/my/param", MyObj.class); // finally get the value
+    ```
 
 ### Create your own Provider
 You can create your own custom parameter store provider by implementing a handful of classes: 

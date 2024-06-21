@@ -14,7 +14,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.3</lambda.events.version>
-        <aws.sdk.version>2.21.0</aws.sdk.version>
+        <aws.sdk.version>2.25.35</aws.sdk.version>
         <aspectj.version>1.9.20.1</aspectj.version>
 
     </properties>
@@ -87,7 +87,7 @@
         <plugin>
              <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.13.1</version>
+             <version>1.14</version>
              <configuration>
                  <source>${maven.compiler.source}</source>
                  <target>${maven.compiler.target}</target>
@@ -117,7 +117,7 @@
         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-shade-plugin</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.0</version>
             <executions>
                 <execution>
                     <phase>package</phase>
@@ -144,7 +144,7 @@
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-deploy-plugin</artifactId>
-              <version>3.1.1</version>
+              <version>3.1.2</version>
               <configuration>
                   <skip>true</skip>
               </configuration>

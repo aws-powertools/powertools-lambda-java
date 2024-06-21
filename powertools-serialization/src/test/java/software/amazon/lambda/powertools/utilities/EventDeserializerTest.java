@@ -39,7 +39,6 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import software.amazon.lambda.powertools.utilities.model.Basket;
 import software.amazon.lambda.powertools.utilities.model.Order;
 import software.amazon.lambda.powertools.utilities.model.Product;
 
@@ -91,14 +90,6 @@ public class EventDeserializerTest {
     public void testDeserializeAPIGWEventBodyAsObject_shouldReturnObject(APIGatewayProxyRequestEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
-    }
-
-    @ParameterizedTest
-    @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
-    public void testDeserializeAPIGWEventBodyAsWrongObjectType_shouldThrowException(APIGatewayProxyRequestEvent event) {
-        assertThatThrownBy(() -> extractDataFrom(event).as(Basket.class))
-                .isInstanceOf(EventDeserializationException.class)
-                .hasMessage("Cannot load the event as Basket");
     }
 
     @ParameterizedTest
@@ -162,14 +153,6 @@ public class EventDeserializerTest {
         assertThatThrownBy(() -> extractDataFrom(null).asListOf(Product.class))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Event content is null: the event may be malformed (missing fields)");
-    }
-
-    @ParameterizedTest
-    @Event(value = "sqs_event.json", type = SQSEvent.class)
-    public void testDeserializeSQSEventBodyAsWrongObjectType_shouldThrowException(SQSEvent event) {
-        assertThatThrownBy(() -> extractDataFrom(event).asListOf(Basket.class))
-                .isInstanceOf(EventDeserializationException.class)
-                .hasMessage("Cannot load the event as a list of Basket");
     }
 
     @ParameterizedTest

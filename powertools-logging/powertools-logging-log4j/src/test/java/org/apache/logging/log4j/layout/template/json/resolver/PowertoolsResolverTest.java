@@ -15,6 +15,7 @@
 package org.apache.logging.log4j.layout.template.json.resolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mockStatic;
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
@@ -68,6 +69,13 @@ class PowertoolsResolverTest {
     void shouldResolveAccountId() {
         String result = resolveField(FUNCTION_ARN.getName(), "account_id", "arn:aws:lambda:us-east-2:123456789012:function:my-function");
         assertThat(result).isEqualTo("\"123456789012\"");
+    }
+
+    @Test
+    void unknownField_shouldThrowException() {
+        assertThatThrownBy(() -> resolveField("custom-random-unknown-field", "custom-random-unknown-field", "Once apon a time in Switzerland..."))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Unknown field: custom-random-unknown-field");
     }
 
     @Test

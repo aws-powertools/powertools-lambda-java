@@ -16,13 +16,21 @@ package software.amazon.lambda.powertools.logging.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowertoolsLogEvent implements RequestHandler<Object, Object> {
+
+    private static final Logger logger = LoggerFactory.getLogger(PowertoolsLogEvent.class);
 
     @Override
     @Logging(logEvent = true)
     public Object handleRequest(Object input, Context context) {
         return null;
+    }
+
+    public static Logger getLogger() {
+        return logger;
     }
 }

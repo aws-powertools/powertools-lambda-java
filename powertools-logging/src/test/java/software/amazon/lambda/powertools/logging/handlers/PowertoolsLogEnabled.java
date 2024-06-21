@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
-    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
     private final boolean throwError;
 
     public PowertoolsLogEnabled(boolean throwError) {
@@ -48,5 +48,9 @@ public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
     @Logging
     public void anotherMethod() {
         System.out.println("test");
+    }
+
+    public static Logger getLogger() {
+        return LOG;
     }
 }
