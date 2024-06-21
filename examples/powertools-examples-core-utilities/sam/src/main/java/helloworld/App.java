@@ -67,7 +67,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
         metricsLogger().putMetric("CustomMetric3", 1, Unit.COUNT, StorageResolution.HIGH);
 
-        LoggingUtils.appendKey("test", "willBeLogged");
+        MDC.put("test", "willBeLogged");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
