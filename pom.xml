@@ -77,7 +77,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.2</lambda.events.version>
-        <lambda.serial.version>1.1.2</lambda.serial.version>
+        <lambda.serial.version>1.1.5</lambda.serial.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
@@ -86,7 +86,7 @@
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
+        <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
         <junit.version>5.10.2</junit.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
