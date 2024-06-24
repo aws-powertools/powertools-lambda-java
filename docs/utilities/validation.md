@@ -8,13 +8,12 @@ This utility provides JSON Schema validation for payloads held within events and
 **Key features**
 
 * Validate incoming events and responses
-* Built-in validation for most common events (API Gateway, SNS, SQS, ...)
+* Built-in validation for most common events (API Gateway, SNS, SQS, ...) and support for partial batch failures (SQS, Kinesis)
 * JMESPath support validate only a sub part of the event
 
 ## Install
-Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
 
-=== "Maven Java 11+"
+=== "Maven"
     ```xml hl_lines="3-7 16 18 24-27"
     <dependencies>
         ...
@@ -58,52 +57,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     </build>
     ```
 
-=== "Maven Java 1.8"
-
-    ```xml hl_lines="3-7 16 18 24-27"
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-validation</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
-                 <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-validation</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-
-=== "Gradle Java 11+"
+=== "Gradle"
 
     ```groovy hl_lines="3 11"
         plugins {
@@ -123,27 +77,6 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         targetCompatibility = 11 // or higher
     ```
 
-=== "Gradle Java 1.8"
-
-    ```groovy hl_lines="3 11"
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-        
-        repositories {
-            mavenCentral()
-        }
-        
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-validation:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    ```
-
-
 ## Validating events
 
 You can validate inbound and outbound events using `@Validation` annotation.
@@ -157,9 +90,14 @@ We support JSON schema version 4, 6, 7 and 201909 (from [jmespath-jackson librar
 `@Validation` annotation is used to validate either inbound events or functions' response.
 
 It will fail fast if an event or response doesn't conform with given JSON Schema. For most type of events a `ValidationException` will be thrown.
+
 For API gateway events associated with REST APIs and HTTP APIs -  `APIGatewayProxyRequestEvent` and `APIGatewayV2HTTPEvent` - the `@Validation` 
 annotation will build and return a custom 400 / "Bad Request" response, with a body containing the validation errors. This saves you from having
 to catch the validation exception and map it back to a meaningful user error yourself.
+
+For SQS and Kinesis events - `SQSEvent` and `KinesisEvent`- the `@Validation` annotation will add the invalid messages
+to the batch item failures list in the response, respectively `SQSBatchResponse` and `StreamsEventResponse` 
+and removed from the event so that you do not process them within the handler. 
 
 While it is easier to specify a json schema file in the classpath (using the notation `"classpath:/path/to/schema.json"`), you can also provide a JSON String containing the schema.
 
@@ -217,31 +155,31 @@ For the following events and responses, the Validator will automatically perform
 
 ** Events **
 
- Type of event | Class | Path to content |
- ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
- API Gateway REST |  APIGatewayProxyRequestEvent |  `body`
- API Gateway HTTP |  APIGatewayV2HTTPEvent | `body`
- Application Load Balancer |  ApplicationLoadBalancerRequestEvent | `body`
- Cloudformation Custom Resource |  CloudFormationCustomResourceEvent | `resourceProperties`
- CloudWatch Logs |  CloudWatchLogsEvent | `awslogs.powertools_base64_gzip(data)`
- EventBridge / Cloudwatch |  ScheduledEvent | `detail`
- Kafka |  KafkaEvent | `records[*][*].value`
- Kinesis |  KinesisEvent | `Records[*].kinesis.powertools_base64(data)`
- Kinesis Firehose |  KinesisFirehoseEvent | `Records[*].powertools_base64(data)`
- Kinesis Analytics from Firehose |  KinesisAnalyticsFirehoseInputPreprocessingEvent | `Records[*].powertools_base64(data)`
- Kinesis Analytics from Streams |  KinesisAnalyticsStreamsInputPreprocessingEvent | `Records[*].powertools_base64(data)`
- SNS |  SNSEvent | `Records[*].Sns.Message`
- SQS |  SQSEvent | `Records[*].body`
+| Type of event                   | Class                                           | Path to content                              |
+|---------------------------------|-------------------------------------------------|----------------------------------------------|
+| API Gateway REST                | APIGatewayProxyRequestEvent                     | `body`                                       |
+| API Gateway HTTP                | APIGatewayV2HTTPEvent                           | `body`                                       |
+| Application Load Balancer       | ApplicationLoadBalancerRequestEvent             | `body`                                       |
+| Cloudformation Custom Resource  | CloudFormationCustomResourceEvent               | `resourceProperties`                         |
+| CloudWatch Logs                 | CloudWatchLogsEvent                             | `awslogs.powertools_base64_gzip(data)`       |
+| EventBridge / Cloudwatch        | ScheduledEvent                                  | `detail`                                     |
+| Kafka                           | KafkaEvent                                      | `records[*][*].value`                        |
+| Kinesis                         | KinesisEvent                                    | `Records[*].kinesis.powertools_base64(data)` |
+| Kinesis Firehose                | KinesisFirehoseEvent                            | `Records[*].powertools_base64(data)`         |
+| Kinesis Analytics from Firehose | KinesisAnalyticsFirehoseInputPreprocessingEvent | `Records[*].powertools_base64(data)`         |
+| Kinesis Analytics from Streams  | KinesisAnalyticsStreamsInputPreprocessingEvent  | `Records[*].powertools_base64(data)`         |
+| SNS                             | SNSEvent                                        | `Records[*].Sns.Message`                     |
+| SQS                             | SQSEvent                                        | `Records[*].body`                            |
 
 ** Responses **
 
- Type of response | Class | Path to content (envelope)
- ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
- API Gateway REST | APIGatewayProxyResponseEvent} | `body`
- API Gateway HTTP | APIGatewayV2HTTPResponse} | `body`
- API Gateway WebSocket | APIGatewayV2WebSocketResponse} | `body`
- Load Balancer | ApplicationLoadBalancerResponseEvent} | `body`
- Kinesis Analytics | KinesisAnalyticsInputPreprocessingResponse} | `Records[*].powertools_base64(data)``
+| Type of response      | Class                                       | Path to content (envelope)            |
+|-----------------------|---------------------------------------------|---------------------------------------|
+| API Gateway REST      | APIGatewayProxyResponseEvent}               | `body`                                |
+| API Gateway HTTP      | APIGatewayV2HTTPResponse}                   | `body`                                |
+| API Gateway WebSocket | APIGatewayV2WebSocketResponse}              | `body`                                |
+| Load Balancer         | ApplicationLoadBalancerResponseEvent}       | `body`                                |
+| Kinesis Analytics     | KinesisAnalyticsInputPreprocessingResponse} | `Records[*].powertools_base64(data)`` |
 
 ## Custom events and responses
 
