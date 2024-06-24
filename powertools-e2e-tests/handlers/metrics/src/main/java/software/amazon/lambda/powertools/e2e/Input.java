@@ -21,6 +21,8 @@ public class Input {
 
     private Map<String, String> dimensions;
 
+    private String highResolution;
+
     public Input() {
     }
 
@@ -30,6 +32,14 @@ public class Input {
 
     public void setMetrics(Map<String, Double> metrics) {
         this.metrics = metrics;
+    }
+
+    public String getHighResolution() {
+        return highResolution;
+    }
+
+    public void setHighResolution(String highResolution) {
+        this.highResolution = highResolution;
     }
 
     public Map<String, String> getDimensions() {
