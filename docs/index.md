@@ -3,7 +3,13 @@ title: Homepage
 description: Powertools for AWS Lambda (Java)
 ---
 
-![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/build.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent)
+![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) ![Build status](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/publish-v2-snapshot.yml/badge.svg) ![Maven Central](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Faws.oss.sonatype.org%2Fcontent%2Frepositories%2Fsnapshots%2Fsoftware%2Famazon%2Flambda%2Fpowertools-parent%2Fmaven-metadata.xml
+)
+
+???+ warning
+    You are browsing the documentation for Powertools for AWS Lambda (Java) - v2. This is a snapshot release and not stable! 
+    Check out our stable [v1](https://docs.powertools.aws.dev/lambda/java/) documentation if this is not what you wanted.   
+    The v2 maven snapshot repository can be found [here](https://aws.oss.sonatype.org/content/repositories/snapshots/software/amazon/lambda/) .
 
 Powertools for AWS Lambda (Java) is a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
 
