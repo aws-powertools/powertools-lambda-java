@@ -233,6 +233,10 @@
                 <Class name="software.amazon.lambda.powertools.sqs.SqsUtils"/>
                 <Method name="s3Client"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.metrics.MetricsUtils"/>
+                <Method name="metricsLogger"/>
+            </And>
         </Or>
     </Match>
     <!--False positive https://github.com/spotbugs/spotbugs/issues/1539-->

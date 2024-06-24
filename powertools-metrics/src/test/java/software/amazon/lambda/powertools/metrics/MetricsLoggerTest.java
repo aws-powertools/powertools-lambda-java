@@ -25,6 +25,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
@@ -35,6 +37,7 @@ import org.mockito.MockedStatic;
 import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
 class MetricsLoggerTest {
@@ -245,6 +248,7 @@ class MetricsLoggerTest {
             {
                 metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
                 metricsLogger.putMetric("Metric1", 1, Unit.COUNT);
+                metricsLogger.putMetric("Metric2", 1, Unit.COUNT, StorageResolution.HIGH);
             });
 
             assertThat(out.toString())
@@ -263,6 +267,13 @@ class MetricsLoggerTest {
                         assertThat(aws.get("CloudWatchMetrics"))
                                 .asString()
                                 .contains("Namespace=GlobalName");
+
+                        ArrayList cloudWatchMetrics = (ArrayList) aws.get("CloudWatchMetrics");
+                        LinkedHashMap<String, Object> values =
+                                (java.util.LinkedHashMap<String, Object>) cloudWatchMetrics.get(0);
+                        ArrayList metricArray = (ArrayList) values.get("Metrics");
+                        LinkedHashMap<String, Object> metricValues = (LinkedHashMap<String, Object>) metricArray.get(1);
+                        assertThat(metricValues).containsEntry("StorageResolution", 1);
                     });
         }
     }
