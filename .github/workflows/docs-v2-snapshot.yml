@@ -1,6 +1,6 @@
 name: Docs
 on:
-  pull_request:
+  push:
     branches:
       - v2
   workflow_dispatch: {}

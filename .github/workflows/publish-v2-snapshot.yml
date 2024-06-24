@@ -1,6 +1,6 @@
 name: Publish v2
 on:
-  pull_request:
+  push:
     branches:
       - v2
   workflow_dispatch: {}
