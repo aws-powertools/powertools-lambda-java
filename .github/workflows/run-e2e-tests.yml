@@ -24,7 +24,6 @@ on:
   pull_request:
     branches:
       - main
-      - v2
     paths:
       - 'powertools-e2e-tests/**'
 
