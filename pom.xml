@@ -77,7 +77,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.2</lambda.events.version>
-        <lambda.serial.version>1.1.2</lambda.serial.version>
+        <lambda.serial.version>1.1.5</lambda.serial.version>
         <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
