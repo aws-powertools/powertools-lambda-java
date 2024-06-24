@@ -18,6 +18,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -66,11 +70,19 @@ public class MetricsE2ET {
     @Test
     public void test_recordMetrics() {
         // GIVEN
-        String event1 =
-                "{ \"metrics\": {\"orders\": 1, \"products\": 4}, \"dimensions\": { \"Environment\": \"test\"} }";
 
+        Instant currentTimeTruncatedToMinutes =
+                LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).toInstant(ZoneOffset.UTC);
+
+        String event1 =
+                "{ \"metrics\": {\"orders\": 1, \"products\": 4}, \"dimensions\": { \"Environment\": \"test\"}, \"highResolution\": \"false\"}";
+
+        String event2 =
+                "{ \"metrics\": {\"orders\": 1, \"products\": 8}, \"dimensions\": { \"Environment\": \"test\"}, \"highResolution\": \"true\"}";
         // WHEN
         InvocationResult invocationResult = invokeFunction(functionName, event1);
+
+        invokeFunction(functionName, event2);
 
         // THEN
         MetricsFetcher metricsFetcher = new MetricsFetcher();
@@ -84,18 +96,35 @@ public class MetricsE2ET {
         List<Double> orderMetrics =
                 metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace,
                         "orders", Collections.singletonMap("Environment", "test"));
-        assertThat(orderMetrics.get(0)).isEqualTo(1);
+        assertThat(orderMetrics.get(0)).isEqualTo(2);
         List<Double> productMetrics =
                 metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace,
                         "products", Collections.singletonMap("Environment", "test"));
-        assertThat(productMetrics.get(0)).isEqualTo(4);
+
+        //        When searching across a 1 minute time period with a period of 60 we find both metrics and the sum is 12
+
+        assertThat(productMetrics.get(0)).isEqualTo(12);
+
         orderMetrics =
                 metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace,
                         "orders", Collections.singletonMap("Service", service));
-        assertThat(orderMetrics.get(0)).isEqualTo(1);
+        assertThat(orderMetrics.get(0)).isEqualTo(2);
         productMetrics =
                 metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60, namespace,
                         "products", Collections.singletonMap("Service", service));
-        assertThat(productMetrics.get(0)).isEqualTo(4);
+        assertThat(productMetrics.get(0)).isEqualTo(12);
+
+        Instant searchStartTime = currentTimeTruncatedToMinutes.plusSeconds(15);
+        Instant searchEndTime = currentTimeTruncatedToMinutes.plusSeconds(45);
+
+        List<Double> productMetricDataResult =
+                metricsFetcher.fetchMetrics(searchStartTime, searchEndTime, 1, namespace,
+                        "products", Collections.singletonMap("Environment", "test"));
+
+//  We are searching across the time period the metric was created but with a period of 1 second.  Only the high resolution metric will be available at this point
+
+        assertThat(productMetricDataResult.get(0)).isEqualTo(8);
+
+
     }
 }

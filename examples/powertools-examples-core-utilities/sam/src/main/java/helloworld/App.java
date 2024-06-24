@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
@@ -63,6 +64,8 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
             metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
         });
+
+        metricsLogger().putMetric("CustomMetric3", 1, Unit.COUNT, StorageResolution.HIGH);
 
         MDC.put("test", "willBeLogged");
 
