@@ -17,9 +17,7 @@ a provides functionality to reduce the overhead of performing common tracing tas
 
 ## Install
 
-Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
-
-=== "Maven Java 11+"
+=== "Maven"
 
     ```xml hl_lines="3-7 16 18 24-27"
     <dependencies>
@@ -64,52 +62,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     </build>
     ```
 
-=== "Maven Java 1.8"
-
-    ```xml hl_lines="3-7 16 18 24-27"
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-tracing</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
-                 <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-tracing</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-
-=== "Gradle Java 11+"
+=== "Gradle"
 
     ```groovy hl_lines="3 11"
         plugins {
@@ -128,27 +81,6 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         sourceCompatibility = 11
         targetCompatibility = 11
     ```
-
-=== "Gradle Java 1.8"
-
-    ```groovy hl_lines="3 11"
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-        
-        repositories {
-            mavenCentral()
-        }
-        
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    ```
-
 
 ## Initialization
 

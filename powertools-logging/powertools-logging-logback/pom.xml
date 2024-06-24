@@ -28,9 +28,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <!-- TODO: use 1.4 if we remove JDK 1.8 support -->
-            <version>1.5.5</version> <!-- v1.3.x compatible with JDK 1.8, v1.4.x only compatible with JDK 11 -->
-            <scope>provided</scope> <!-- provided to let users change to 1.4.x when using JDK 11 -->
+            <version>1.5.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>com.sun.mail</groupId>

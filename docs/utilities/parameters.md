@@ -26,10 +26,9 @@ package:
 
 You can easily mix and match parameter providers within the same project for different needs.  
 
-Depending on which Java version you are using, you configuration will differ. Note that you must also provide
-the concrete parameters module you want to use below - see the TODOs!
+Note that you must provide the concrete parameters module you want to use below - see the TODOs!
 
-=== "Maven Java 11+"
+=== "Maven"
 
     ```xml hl_lines="4-12 17 24 30-34"
     <dependencies>
@@ -81,59 +80,7 @@ the concrete parameters module you want to use below - see the TODOs!
     </build>
     ```
 
-=== "Maven Java 1.8"
-
-    ```xml hl_lines="4-12 17 24 30-34"
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-
-             <!-- TODO! Provide the parameters module you want to use here -->
-             <artifactId>powertools-parameters-secrets</artifactId>
-             <artifactId>powertools-parameters-ssm</artifactId>
-             <artifactId>powertools-parameters-dynamodb</artifactId>
-             <artifactId>powertools-parameters-appconfig</artifactId>
-
-             <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
-                 <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
-                     <aspectLibraries>
-                         <!-- TODO! Provide an aspectLibrary for each of the parameters module(s) you want to use here -->
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-parameters-secrets</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-
-=== "Gradle Java 11+"
+=== "Gradle"
 
     ```groovy hl_lines="3 11 12"
         plugins {
@@ -152,27 +99,6 @@ the concrete parameters module you want to use below - see the TODOs!
         
         sourceCompatibility = 11 // or higher
         targetCompatibility = 11 // or higher
-    ```
-
-=== "Gradle Java 1.8"
-
-    ```groovy hl_lines="3 11 12"
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-        
-        repositories {
-            mavenCentral()
-        }
-        
-         // TODO! Provide an aspectLibrary for each of the parameters module(s) you want to use here
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
     ```
 
 **IAM Permissions**

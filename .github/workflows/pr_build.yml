@@ -51,7 +51,7 @@ jobs:
     strategy:
       max-parallel: 5
       matrix:
-        java: [8, 11, 17, 21]
+        java: [11, 17, 21]
     name: Java ${{ matrix.java }}
     env:
       JAVA: ${{ matrix.java }}
