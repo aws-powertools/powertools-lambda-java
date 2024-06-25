@@ -28,9 +28,7 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
 
 ## Install
 
-  Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
-
-=== "Maven Java 11+"
+=== "Maven"
 
     ```xml hl_lines="3-7 16 18 24-27"
     <dependencies>
@@ -75,52 +73,7 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
     </build>
     ```
 
-=== "Maven Java 1.8"
-
-    ```xml hl_lines="3-7 16 18 24-27"
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-metrics</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
-                 <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-metrics</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-
-=== "Gradle Java 11+"
+=== "Gradle"
 
     ```groovy hl_lines="3 11"
         plugins {
@@ -140,34 +93,14 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
         targetCompatibility = 11
     ```
 
-=== "Gradle Java 1.8"
-
-    ```groovy hl_lines="3 11"
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-        
-        repositories {
-            mavenCentral()
-        }
-        
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    ```
-
 ## Getting started
 
 Metric has two global settings that will be used across all metrics emitted:
 
-Setting | Description | Environment variable | Constructor parameter
-------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
-**Metric namespace** | Logical container where all metrics will be placed e.g. `ServerlessAirline` |  `POWERTOOLS_METRICS_NAMESPACE` | `namespace`
-**Service** | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME` | `service`
+| Setting              | Description                                                                     | Environment variable           | Constructor parameter |
+|----------------------|---------------------------------------------------------------------------------|--------------------------------|-----------------------|
+| **Metric namespace** | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`           |
+| **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `service`             |
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
 
@@ -198,7 +131,7 @@ Setting | Description | Environment variable | Constructor parameter
         @Override
         @Metrics(namespace = "ExampleApplication", service = "booking")
         public Object handleRequest(Object input, Context context) {
-            ...
+            // ...
         }
     }
     ```
@@ -224,7 +157,7 @@ You can create metrics using `putMetric`, and manually create dimensions for all
         public Object handleRequest(Object input, Context context) {
             metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
             metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
-            ...
+            // ...
         }
     }
     ```
@@ -233,6 +166,35 @@ You can create metrics using `putMetric`, and manually create dimensions for all
 
 !!! note "Metrics overflow"
     CloudWatch EMF supports a max of 100 metrics. Metrics utility will flush all metrics when adding the 100th metric while subsequent metrics will be aggregated into a new EMF object, for your convenience.
+
+
+### Adding high-resolution metrics
+
+You can create [high-resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics)
+passing a `storageResolution` to the `putMetric` method:
+
+=== "HigResMetricsHandler.java"
+
+    ```java hl_lines="3 13"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+    import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
+
+    public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
+    
+        MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
+    
+        @Override
+        @Metrics(namespace = "ExampleApplication", service = "booking")
+        public Object handleRequest(Object input, Context context) {
+            // ...
+            metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT, StorageResolution.HIGH);
+        }
+    }
+    ```
+
+!!! info "When is it useful?"
+    High-resolution metrics are data with a granularity of one second and are very useful in several situations such as telemetry, time series, real-time incident management, and others.
 
 ### Flushing metrics
 

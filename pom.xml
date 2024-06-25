@@ -66,29 +66,29 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <maven.deploy.plugin.version>3.1.1</maven.deploy.plugin.version>
+        <maven.deploy.plugin.version>3.1.2</maven.deploy.plugin.version>
         <log4j.version>2.20.0</log4j.version>
-        <log4j.version>2.22.0</log4j.version>
+        <log4j.version>2.23.1</log4j.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <jackson.version>2.17.0</jackson.version>
-        <aws.sdk.version>2.25.21</aws.sdk.version>
-        <aws.xray.recorder.version>2.15.1</aws.xray.recorder.version>
-        <payloadoffloading-common.version>2.1.3</payloadoffloading-common.version>
+        <jackson.version>2.17.1</jackson.version>
+        <aws.sdk.version>2.25.35</aws.sdk.version>
+        <aws.xray.recorder.version>2.16.0</aws.xray.recorder.version>
+        <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.2</lambda.events.version>
-        <lambda.serial.version>1.1.2</lambda.serial.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <lambda.serial.version>1.1.5</lambda.serial.version>
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
+        <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.10</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
-        <junit.version>5.10.0</junit.version>
-        <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
+        <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
+        <junit.version>5.10.2</junit.version>
+        <aws-embedded-metrics.version>4.1.2</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
         <elastic.version>1.6.0</elastic.version>
 
@@ -96,6 +96,13 @@
             regardless of where maven is run - sub-module, or root. -->
         <project.rootdir>${maven.multiModuleProjectDirectory}</project.rootdir>
     </properties>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://aws.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -459,6 +466,28 @@
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-enforcer-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <id>enforce-snapshot-versions</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>enforce</goal>
+                                </goals>
+                                <configuration>
+                                    <rules>
+                                        <requireSnapshotVersion>
+                                            <message>Release build should not have snapshot dependencies!</message>
+                                        </requireSnapshotVersion>
+                                    </rules>
+                                    <fail>true</fail>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <executions>
                             <execution>
@@ -517,7 +546,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.7.3.6</version>
+                        <version>4.8.4.0</version>
                         <executions>
                             <execution>
                                 <id>test</id>
