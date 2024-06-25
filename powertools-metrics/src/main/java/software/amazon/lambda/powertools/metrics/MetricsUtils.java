@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.metrics;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.REQUEST_ID_PROPERTY;
