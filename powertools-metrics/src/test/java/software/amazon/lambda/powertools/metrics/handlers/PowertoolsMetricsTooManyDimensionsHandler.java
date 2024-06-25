@@ -26,13 +26,14 @@ import software.amazon.lambda.powertools.metrics.Metrics;
 public class PowertoolsMetricsTooManyDimensionsHandler implements RequestHandler<Object, Object> {
 
     @Override
-    @Metrics
+    @Metrics(namespace = "ExampleApplication",service = "booking")
     public Object handleRequest(Object input, Context context) {
         MetricsLogger metricsLogger = metricsLogger();
-
-        metricsLogger.setDimensions(IntStream.range(1, 15)
-                .mapToObj(value -> DimensionSet.of("Dimension" + value, "DimensionValue" + value))
-                .toArray(DimensionSet[]::new));
+        DimensionSet dimensionSet = new DimensionSet();
+        for (int i = 0; i < 35; i++) {
+            dimensionSet.addDimension("Dimension" + i, "value" + i);
+        }
+        metricsLogger.setDimensions(dimensionSet);
 
         return null;
     }
