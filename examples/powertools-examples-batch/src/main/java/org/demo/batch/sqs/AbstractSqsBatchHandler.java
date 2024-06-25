@@ -23,10 +23,12 @@ import java.util.Random;
 import org.demo.batch.model.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
 
@@ -42,10 +44,14 @@ public class AbstractSqsBatchHandler {
      * @param p deserialized product
      * @param context Lambda context
      */
+    @Logging
     @Tracing
     protected void processMessage(Product p, Context context) {
         TracingUtils.putAnnotation("productId", p.getId());
+        TracingUtils.putAnnotation("Thread", Thread.currentThread().getName());
+        MDC.put("product", String.valueOf(p.getId()));
         LOGGER.info("Processing product {}", p);
+
         char c = (char)(r.nextInt(26) + 'a');
         char[] chars = new char[1024 * 1000];
         Arrays.fill(chars, c);
@@ -57,6 +63,8 @@ public class AbstractSqsBatchHandler {
                     PutObjectRequest.builder().bucket(bucket).key(p.getId()+".json").build(), RequestBody.fromFile(file));
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            MDC.remove("product");
         }
     }
 }

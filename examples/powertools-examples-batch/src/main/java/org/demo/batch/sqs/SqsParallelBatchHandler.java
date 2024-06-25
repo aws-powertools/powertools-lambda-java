@@ -21,6 +21,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import org.demo.batch.model.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.logging.Logging;
@@ -41,6 +42,7 @@ public class SqsParallelBatchHandler extends AbstractSqsBatchHandler implements 
     @Override
     public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
         LOGGER.info("Processing batch of {} messages", sqsEvent.getRecords().size());
+        MDC.put("requestId", context.getAwsRequestId()); // should be propagated to other threads
         return handler.processBatchInParallel(sqsEvent, context);
     }
 }
