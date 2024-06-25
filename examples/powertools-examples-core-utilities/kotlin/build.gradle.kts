@@ -18,7 +18,7 @@ dependencies {
     aspect("software.amazon.lambda:powertools-tracing:2.0.0-SNAPSHOT")
     aspect("software.amazon.lambda:powertools-logging-log4j:2.0.0-SNAPSHOT")
     aspect("software.amazon.lambda:powertools-metrics:2.0.0-SNAPSHOT")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.10")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:1.9.24")
 }
 
 kotlin {
