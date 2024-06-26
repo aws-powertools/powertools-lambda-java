@@ -21,18 +21,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.networknt.schema.JsonSchema;
+import com.networknt.schema.SchemaLocation;
 import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.ValidationMessage;
-import com.networknt.schema.uri.URITranslator;
 import io.burt.jmespath.Expression;
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import software.amazon.lambda.powertools.validation.internal.ValidationAspect;
 
 /**
  * Validation utility, used to manually validate Json against Json Schema
@@ -255,27 +253,26 @@ public class ValidationUtils {
 
     private static JsonSchema createJsonSchema(String schema) {
         JsonSchema jsonSchema;
+        SchemaValidatorsConfig config = SchemaValidatorsConfig.builder().formatAssertionsEnabled(true)
+                .preloadJsonSchemaRefMaxNestingDepth(10).build();
         if (schema.startsWith(CLASSPATH)) {
-            String filePath = schema.substring(CLASSPATH.length());
-            try (InputStream schemaStream = ValidationAspect.class.getResourceAsStream(filePath)) {
-
-                SchemaValidatorsConfig config = new SchemaValidatorsConfig();
-                config.addUriTranslator(URITranslator.prefix("https://json-schema.org", "resource:"));
-
-                jsonSchema = ValidationConfig.get().getFactory().getSchema(schemaStream, config);
+            try {
+                jsonSchema = ValidationConfig.get().getFactory().getSchema(SchemaLocation.of(schema), config);
             } catch (Exception e) {
+                String filePath = schema.substring(CLASSPATH.length());
                 throw new IllegalArgumentException(
-                        "'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath");
+                        "'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath", e);
             }
         } else {
-            jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
+            jsonSchema = ValidationConfig.get().getFactory().getSchema(schema, config);
         }
 
         return jsonSchema;
     }
 
     private static void validateSchema(String schema, JsonSchema jsonSchema) {
-        String schemaId = ValidationConfig.get().getSchemaVersion().getId().replace("https://json-schema.org", "");
+        String schemaId = jsonSchema.getValidationContext().getMetaSchema().getIri()
+                .replace("https://json-schema.org", "").replace("http://json-schema.org", "");
         try {
             validate(jsonSchema.getSchemaNode(),
                     getJsonSchema(CLASSPATH + schemaId));
