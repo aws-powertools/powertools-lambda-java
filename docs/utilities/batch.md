@@ -472,7 +472,7 @@ instead of `BatchMessageHandler#processBatch()`. Partial batch failure works the
 in parallel rather than sequentially. 
 
 This feature is available for SQS, Kinesis and DynamoDB Streams but cannot be 
-used with SQS FIFO. In that case, items will be processed sequentially, even with the `processBatchInParallel` method.
+used with SQS FIFO. In that case, an `UnsupportedOperationException` is thrown.
 
 !!! warning
     Note that parallel processing is not always better than sequential processing, 
@@ -480,7 +480,7 @@ used with SQS FIFO. In that case, items will be processed sequentially, even wit
 
 !!! info
     To get more threads available (more vCPUs), you need to increase the amount of memory allocated to your Lambda function.
-    While the exact vCPU allocation isn't published, from observing common patterns customers see an allocation of one vCPU per 1024 MB of memory.
+
 
 === "Example with SQS"
 
