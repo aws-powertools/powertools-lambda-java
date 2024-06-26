@@ -14,8 +14,6 @@
 
 package software.amazon.lambda.powertools.parameters;
 
-import java.util.HashMap;
-import java.util.Map;
 import software.amazon.awssdk.core.SdkSystemSetting;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.core.client.config.SdkAdvancedClientOption;
@@ -25,9 +23,13 @@ import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionRequest;
+import software.amazon.awssdk.utils.StringUtils;
 import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
@@ -98,7 +100,7 @@ public class AppConfigProvider extends BaseProvider {
         // Get the value of the key. Note that AppConfig will return null if the value
         // has not changed since we last asked for it in this session - in this case
         // we return the value we stashed at last request.
-        String value = response.configuration() != null ?
+        String value = !(response.configuration() == null || StringUtils.isEmpty(response.configuration().asUtf8String())) ?
                 response.configuration().asUtf8String() : // if we have a new value, use it
                 establishedSession != null ?
                         establishedSession.lastConfigurationValue :
