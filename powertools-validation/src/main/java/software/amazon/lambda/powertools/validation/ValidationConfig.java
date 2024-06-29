@@ -47,9 +47,15 @@ public class ValidationConfig {
     }
 
     /**
-     * Set the version of the json schema specifications (default is V7)
+     * Set the version of the json schema specifications to use if $schema is not
+     * explicitly specified within the schema (default is V7). If $schema is
+     * explicitly specified within the schema is explicitly specified within the
+     * schema, the validator will use the specified dialect.
      *
      * @param version May be V4, V6, V7, V201909 or V202012
+     * @see <a href=
+     *      "https://json-schema.org/understanding-json-schema/reference/schema#declaring-a-dialect">Declaring
+     *      a Dialect</a>
      */
     public void setSchemaVersion(SpecVersion.VersionFlag version) {
         if (version != jsonSchemaVersion) {
