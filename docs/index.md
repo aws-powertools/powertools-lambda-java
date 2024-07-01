@@ -86,9 +86,7 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
 * [Maven](https://maven.apache.org/)
 * [Gradle](https://gradle.org)
 
-Depending on your version of Java (either Java 1.8 or 11+), the configuration slightly changes.
-
-=== "Maven Java 11+"
+=== "Maven"
 
     ```xml
     <dependencies>
@@ -151,70 +149,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     </build>
     ```
 
-=== "Maven Java 1.8"
-
-    ```xml
-    <dependencies>
-        ...
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-tracing</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        <dependency>
-            <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-metrics</artifactId>
-            <version>{{ powertools.version }}</version>
-        </dependency>
-        ...
-    </dependencies>
-    ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <build>
-        <plugins>
-            ...
-            <plugin>
-                 <groupId>org.codehaus.mojo</groupId>
-                 <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.14.0</version>
-                 <configuration>
-                     <source>1.8</source>
-                     <target>1.8</target>
-                     <complianceLevel>1.8</complianceLevel>
-                     <aspectLibraries>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-tracing</artifactId>
-                         </aspectLibrary>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-logging</artifactId>
-                         </aspectLibrary>
-                         <aspectLibrary>
-                             <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-metrics</artifactId>
-                         </aspectLibrary>
-                     </aspectLibraries>
-                 </configuration>
-                 <executions>
-                     <execution>
-                         <goals>
-                             <goal>compile</goal>
-                         </goals>
-                     </execution>
-                 </executions>
-            </plugin>
-            ...
-        </plugins>
-    </build>
-    ```
-
-=== "Gradle Java 11+"
+=== "Gradle"
 
     ```groovy
 
@@ -243,36 +178,6 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
         targetCompatibility = 11
     ```
 
-=== "Gradle Java 1.8"
-
-    ```groovy
-
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-
-        // the freefair aspect plugins targets gradle 7.6.1
-        // https://docs.freefair.io/gradle-plugins/6.6.3/reference/
-        wrapper {
-            gradleVersion = "7.6.1"
-        }
-
-        
-        repositories {
-            mavenCentral()
-        }
-        
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
-            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
-            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-    ```
-
 ???+ tip "Why a different configuration?"
      Powertools for AWS Lambda (Java) is using [AspectJ](https://eclipse.dev/aspectj/doc/released/progguide/starting.html) internally 
     to handle annotations. Recently, in order to support Java 17 we had to move to `dev.aspectj:aspectj-maven-plugin` because  
@@ -281,7 +186,7 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
     while `dev.aspectj:aspectj-maven-plugin` is based on AspectJ 1.9.8, compiled for Java 11+.
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the
+Powertools for AWS Lambda (Java) supports all Java version from 11 up to 21 as well as the
 [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 For the following modules, Powertools for AWS Lambda (Java) leverages the **aspectj** library to provide annotations:
@@ -308,7 +213,6 @@ Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj
 
 | JDK version | aspectj version |
 |-------------|-----------------|
-| `1.8`       | `1.9.7`         |
 | `11-17`     | `1.9.20.1`      |
 | `21`        | `1.9.21`        |
 
@@ -317,13 +221,13 @@ Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj
 !!! info
     **Explicit parameters take precedence over environment variables.**
 
-| Environment variable | Description | Utility |
-| ------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| **POWERTOOLS_SERVICE_NAME** | Sets service name used for tracing namespace, metrics dimension and structured logging | All |
-| **POWERTOOLS_METRICS_NAMESPACE** | Sets namespace used for metrics | [Metrics](./core/metrics) |
-| **POWERTOOLS_LOGGER_SAMPLE_RATE** | Debug log sampling | [Logging](./core/logging) |
-| **POWERTOOLS_LOG_LEVEL** | Sets logging level | [Logging](./core/logging) |
-| **POWERTOOLS_LOGGER_LOG_EVENT** | Enables/Disables whether to log the incoming event when using the aspect | [Logging](./core/logging) |
-| **POWERTOOLS_TRACER_CAPTURE_RESPONSE** | Enables/Disables tracing mode to capture method response | [Tracing](./core/tracing) |
-| **POWERTOOLS_TRACER_CAPTURE_ERROR** | Enables/Disables tracing mode to capture method error | [Tracing](./core/tracing) |
+| Environment variable                   | Description                                                                            | Utility                   |
+|----------------------------------------|----------------------------------------------------------------------------------------|---------------------------|
+| **POWERTOOLS_SERVICE_NAME**            | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       |
+| **POWERTOOLS_METRICS_NAMESPACE**       | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) |
+| **POWERTOOLS_LOGGER_SAMPLE_RATE**      | Debug log sampling                                                                     | [Logging](./core/logging) |
+| **POWERTOOLS_LOG_LEVEL**               | Sets logging level                                                                     | [Logging](./core/logging) |
+| **POWERTOOLS_LOGGER_LOG_EVENT**        | Enables/Disables whether to log the incoming event when using the aspect               | [Logging](./core/logging) |
+| **POWERTOOLS_TRACER_CAPTURE_RESPONSE** | Enables/Disables tracing mode to capture method response                               | [Tracing](./core/tracing) |
+| **POWERTOOLS_TRACER_CAPTURE_ERROR**    | Enables/Disables tracing mode to capture method error                                  | [Tracing](./core/tracing) |
 

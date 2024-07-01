@@ -12,8 +12,8 @@
     <properties>
         <lambda.powertools.version>2.0.0-SNAPSHOT</lambda.powertools.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
 
         <lambda.java.core>1.2.2</lambda.java.core>
         <lambda.java.serialization>1.1.2</lambda.java.serialization>
@@ -192,9 +192,9 @@
     <profiles>
         <!-- https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md -->
         <profile>
-            <id>jdk8to16</id>
+            <id>jdk11to16</id>
             <activation>
-                <jdk>[1.8,16]</jdk>
+                <jdk>[11,16]</jdk>
             </activation>
             <properties>
                 <aspectj.version>1.9.7</aspectj.version>
