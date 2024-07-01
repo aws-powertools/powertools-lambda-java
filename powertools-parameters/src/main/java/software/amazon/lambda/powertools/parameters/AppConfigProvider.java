@@ -29,6 +29,8 @@ import software.amazon.lambda.powertools.core.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+import static software.amazon.awssdk.utils.StringUtils.isBlank;
+
 /**
  * Implements a {@link ParamProvider} on top of the AppConfig service. AppConfig provides
  * a mechanism to retrieve and update configuration of applications over time.
@@ -98,7 +100,7 @@ public class AppConfigProvider extends BaseProvider {
         // Get the value of the key. Note that AppConfig will return null if the value
         // has not changed since we last asked for it in this session - in this case
         // we return the value we stashed at last request.
-        String value = response.configuration() != null ?
+        String value = response.configuration() != null && response.configuration().asByteArray().length > 0 ?
                 response.configuration().asUtf8String() : // if we have a new value, use it
                 establishedSession != null ?
                         establishedSession.lastConfigurationValue :
