@@ -236,6 +236,7 @@ public class ValidationAspect {
 
     /**
      * Validate each Kinesis record body. If an error occurs, do not fail the whole batch but only add invalid items in BatchItemFailure.
+     * Note that the valid records will be decoded twice (during validation and within the handler by the user), which will slightly reduce performance.
      * @param records Kinesis records
      * @param inboundJsonSchema validation schema
      * @return the stream response with items in failure
