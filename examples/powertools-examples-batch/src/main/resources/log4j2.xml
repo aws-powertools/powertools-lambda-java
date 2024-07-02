@@ -2,7 +2,8 @@
 <Configuration>
     <Appenders>
         <Console name="JsonAppender" target="SYSTEM_OUT">
-            <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json"/>
+            <!-- custom layout to show thread name in logs -->
+            <JsonTemplateLayout eventTemplateUri="classpath:LogLayout.json"/>
         </Console>
     </Appenders>
     <Loggers>

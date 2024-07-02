@@ -33,6 +33,21 @@ public interface BatchMessageHandler<E, R> {
      * @param context The lambda context
      * @return A partial batch response
      */
-    public abstract R processBatch(E event, Context context);
+    R processBatch(E event, Context context);
 
+    /**
+     * Processes the given batch in parallel returning a partial batch
+     * response indicating the success and failure of individual
+     * messages within the batch. <br/>
+     * Note that parallel processing is not always better than sequential processing,
+     * and you should benchmark your code to determine the best approach for your use case. <br/>
+     * Also note that to get more threads available (more vCPUs),
+     * you need to increase the amount of memory allocated to your Lambda function. <br/>
+
+     *
+     * @param event   The Lambda event containing the batch to process
+     * @param context The lambda context
+     * @return A partial batch response
+     */
+    R processBatchInParallel(E event, Context context);
 }

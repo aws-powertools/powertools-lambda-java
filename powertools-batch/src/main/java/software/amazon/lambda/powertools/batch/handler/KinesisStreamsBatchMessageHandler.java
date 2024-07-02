@@ -18,12 +18,14 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.batch.internal.MultiThreadMDC;
 import software.amazon.lambda.powertools.utilities.EventDeserializer;
 
 /**
@@ -57,42 +59,67 @@ public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler
 
     @Override
     public StreamsEventResponse processBatch(KinesisEvent event, Context context) {
-        List<StreamsEventResponse.BatchItemFailure> batchFailures = new ArrayList<>();
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = event.getRecords()
+                .stream()
+                .map(eventRecord -> processBatchItem(eventRecord, context))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-        for (KinesisEvent.KinesisEventRecord record : event.getRecords()) {
-            try {
-                if (this.rawMessageHandler != null) {
-                    rawMessageHandler.accept(record, context);
-                } else {
-                    M messageDeserialized = EventDeserializer.extractDataFrom(record).as(messageClass);
-                    messageHandler.accept(messageDeserialized, context);
-                }
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
+    }
 
-                // Report success if we have a handler
-                if (this.successHandler != null) {
-                    this.successHandler.accept(record);
-                }
-            } catch (Throwable t) {
-                String sequenceNumber = record.getEventID();
-                LOGGER.error("Error while processing record with eventID {}: {}, adding it to batch item failures",
-                        sequenceNumber, t.getMessage());
-                LOGGER.error("Error was", t);
+    @Override
+    public StreamsEventResponse processBatchInParallel(KinesisEvent event, Context context) {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
 
-                batchFailures.add(new StreamsEventResponse.BatchItemFailure(record.getKinesis().getSequenceNumber()));
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = event.getRecords()
+                .parallelStream() // Parallel processing
+                .map(eventRecord -> {
+                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                    return processBatchItem(eventRecord, context);
+                })
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
 
-                // Report failure if we have a handler
-                if (this.failureHandler != null) {
-                    // A failing failure handler is no reason to fail the batch
-                    try {
-                        this.failureHandler.accept(record, t);
-                    } catch (Throwable t2) {
-                        LOGGER.warn("failureHandler threw handling failure", t2);
-                    }
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
+    }
+
+    private Optional<StreamsEventResponse.BatchItemFailure> processBatchItem(KinesisEvent.KinesisEventRecord eventRecord, Context context) {
+        try {
+            LOGGER.debug("Processing item {}", eventRecord.getEventID());
+
+            if (this.rawMessageHandler != null) {
+                rawMessageHandler.accept(eventRecord, context);
+            } else {
+                M messageDeserialized = EventDeserializer.extractDataFrom(eventRecord).as(messageClass);
+                messageHandler.accept(messageDeserialized, context);
+            }
+
+            // Report success if we have a handler
+            if (this.successHandler != null) {
+                this.successHandler.accept(eventRecord);
+            }
+            return Optional.empty();
+        } catch (Throwable t) {
+            String sequenceNumber = eventRecord.getEventID();
+            LOGGER.error("Error while processing record with eventID {}: {}, adding it to batch item failures",
+                    sequenceNumber, t.getMessage());
+            LOGGER.error("Error was", t);
+
+            // Report failure if we have a handler
+            if (this.failureHandler != null) {
+                // A failing failure handler is no reason to fail the batch
+                try {
+                    this.failureHandler.accept(eventRecord, t);
+                } catch (Throwable t2) {
+                    LOGGER.warn("failureHandler threw handling failure", t2);
                 }
             }
-        }
 
-        return new StreamsEventResponse(batchFailures);
+            return Optional.of(StreamsEventResponse.BatchItemFailure.builder().withItemIdentifier(eventRecord.getKinesis().getSequenceNumber()).build());
+        }
     }
 }
 

@@ -10,14 +10,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.stream.IntStream;
+import org.demo.batch.model.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.demo.batch.model.Product;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
-import software.amazon.awssdk.services.sqs.model.SendMessageBatchResponse;
 
 
 /**
@@ -45,16 +44,12 @@ public class SqsBatchSender implements RequestHandler<ScheduledEvent, String> {
     public String handleRequest(ScheduledEvent scheduledEvent, Context context) {
         String queueUrl = System.getenv("QUEUE_URL");
 
-        LOGGER.info("handleRequest");
-
-        // Push 5 messages on each invoke.
-        List<SendMessageBatchRequestEntry> batchRequestEntries = IntStream.range(0, 5)
+        List<SendMessageBatchRequestEntry> batchRequestEntries = IntStream.range(0, 50)
                 .mapToObj(value -> {
-                    long id = random.nextLong();
-                    float price = random.nextFloat();
+                    long id = Math.abs(random.nextLong());
+                    float price = Math.abs(random.nextFloat() * 3465);
                     Product product = new Product(id, "product-" + id, price);
                     try {
-
                         return SendMessageBatchRequestEntry.builder()
                                 .id(scheduledEvent.getId() + value)
                                 .messageBody(objectMapper.writeValueAsString(product))
@@ -65,12 +60,12 @@ public class SqsBatchSender implements RequestHandler<ScheduledEvent, String> {
                     }
                 }).collect(toList());
 
-        SendMessageBatchResponse sendMessageBatchResponse = sqsClient.sendMessageBatch(SendMessageBatchRequest.builder()
-                .queueUrl(queueUrl)
-                .entries(batchRequestEntries)
-                .build());
-
-        LOGGER.info("Sent Message {}", sendMessageBatchResponse);
+        for (int i = 0; i < 50; i += 10) {
+            sqsClient.sendMessageBatch(SendMessageBatchRequest.builder()
+                    .queueUrl(queueUrl)
+                    .entries(batchRequestEntries.subList(i, i + 10))
+                    .build());
+        }
 
         return "Success";
     }
