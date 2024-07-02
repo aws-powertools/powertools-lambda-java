@@ -38,10 +38,10 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
 </dependencies>
 ```
 
-Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project. A different configuration is needed for projects on Java 8. 
+Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project.
 
 <details>
-    <summary><b>Maven - Java 11 and newer</b></summary>
+    <summary><b>Maven</b></summary>
     
 ```xml
 <build>
@@ -52,9 +52,9 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
              <artifactId>aspectj-maven-plugin</artifactId>
              <version>1.13.1</version>
              <configuration>
-                 <source>1.8</source>
-                 <target>1.8</target>
-                 <complianceLevel>1.8</complianceLevel>
+                 <source>11</source>
+                 <target>11</target>
+                 <complianceLevel>11</complianceLevel>
                  <aspectLibraries>
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
@@ -85,51 +85,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 </details>
 
 <details>
-<summary><b>Maven - Java 8</b></summary>    
-    
-```xml
-<build>
-    <plugins>
-        ...
-        <plugin>
-             <groupId>org.codehaus.mojo</groupId>
-             <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.14.0</version>
-             <configuration>
-                 <source>1.8</source>
-                 <target>1.8</target>
-                 <complianceLevel>1.8</complianceLevel>
-                 <aspectLibraries>
-                     <aspectLibrary>
-                         <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-logging</artifactId>
-                     </aspectLibrary>
-                     <aspectLibrary>
-                         <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-tracing</artifactId>
-                     </aspectLibrary>
-                     <aspectLibrary>
-                         <groupId>software.amazon.lambda</groupId>
-                         <artifactId>powertools-metrics</artifactId>
-                     </aspectLibrary>
-                 </aspectLibraries>
-             </configuration>
-             <executions>
-                 <execution>
-                     <goals>
-                         <goal>compile</goal>
-                     </goals>
-                 </execution>
-             </executions>
-        </plugin>
-        ...
-    </plugins>
-</build>
-```
-</details>
-
-<details>
-<summary><b>Gradle - Java 11+</b></summary>
+<summary><b>Gradle</b></summary>
 
 ```groovy
 
@@ -160,38 +116,9 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 ```
 </details>
 
-<details>
-<summary><b>Gradle - Java 8</b></summary>    
-
-```groovy
-        plugins {
-            id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '6.6.3'
-        }
-        
-        // the freefair aspect plugins targets gradle 7.6.1
-        // https://docs.freefair.io/gradle-plugins/6.6.3/reference/
-        wrapper {
-            gradleVersion = "7.6.1"
-        }
-
-        repositories {
-            mavenCentral()
-        }
-        
-        dependencies {
-            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
-            aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
-            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
-        }
-        
-        sourceCompatibility = 1.8
-        targetCompatibility = 1.8
-```
-</details>
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java version from 8 up to 21 as well as the
+Powertools for AWS Lambda (Java) supports all Java version from 11 up to 21 as well as the
 [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 For the modules that provide annotations, Powertools for AWS Lambda (Java) leverages the **aspectj** library.
 You may need to add the good version of `aspectjrt` to your dependencies based on the JDK used for building your function:
@@ -209,7 +136,6 @@ You may need to add the good version of `aspectjrt` to your dependencies based o
 
 | JDK version | aspectj version |
 |-------------|-----------------|
-| `1.8`       | `1.9.7`         |
 | `11-17`     | `1.9.20.1`      |
 | `21`        | `1.9.21`        |
 

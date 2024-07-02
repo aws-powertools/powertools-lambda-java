@@ -14,20 +14,12 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence;
 
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.burt.jmespath.Expression;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
-import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
-import software.amazon.lambda.powertools.utilities.JsonConfig;
-
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -41,8 +33,15 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyKeyException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyValidationException;
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
+import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 /**
  * Persistence layer that will store the idempotency result.
@@ -315,6 +314,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
         return String.format("%032x", new BigInteger(1, digest));
     }
 
+    @SuppressWarnings("java:S4790") // Usage of MessageDigest is OK
     private MessageDigest getHashAlgorithm() {
         MessageDigest hashAlgorithm;
         try {

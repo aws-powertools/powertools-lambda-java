@@ -517,9 +517,7 @@ public class Infrastructure {
             if (javaVersion == null) {
                 throw new IllegalArgumentException(environmentVariableName + " is not set");
             }
-            if (javaVersion.startsWith("8")) {
-                ret = JavaRuntime.JAVA8AL2;
-            } else if (javaVersion.startsWith("11")) {
+            if (javaVersion.startsWith("11")) {
                 ret = JavaRuntime.JAVA11;
             } else if (javaVersion.startsWith("17")) {
                 ret = JavaRuntime.JAVA17;

@@ -64,8 +64,8 @@
     </modules>
 
     <properties>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <maven.deploy.plugin.version>3.1.2</maven.deploy.plugin.version>
         <log4j.version>2.20.0</log4j.version>
         <log4j.version>2.23.1</log4j.version>
@@ -83,8 +83,8 @@
         <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
-        <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+        <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
+        <maven-javadoc-plugin.version>3.7.0</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.2.4</maven-gpg-plugin.version>
         <junit.version>5.10.2</junit.version>
@@ -661,7 +661,6 @@
                             <linkXRef>false</linkXRef>
                         </configuration>
                         <!-- does not work without this dependency -->
-                        <!-- does not work with this dependency on Java 8 -->
                         <dependencies>
                             <dependency>
                                 <groupId>com.puppycrawl.tools</groupId>
