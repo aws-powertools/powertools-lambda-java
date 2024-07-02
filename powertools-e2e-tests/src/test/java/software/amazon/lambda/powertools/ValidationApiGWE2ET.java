@@ -86,7 +86,7 @@ class ValidationApiGWE2ET {
 		// invocation should fail inbound validation and return 400
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
 		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-		assertThat(validJsonNode.get("body").asText()).contains("$.price: is missing but it is required");
+		assertThat(validJsonNode.get("body").asText()).contains(": required property 'price' not found");
 	}
 
 	@Test
@@ -102,6 +102,6 @@ class ValidationApiGWE2ET {
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
 		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
 		assertThat(validJsonNode.get("body").asText())
-				.contains("$.price: must have an exclusive maximum value of 1000");
+				.contains("/price: must have an exclusive maximum value of 1000");
 	}
 }
