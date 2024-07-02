@@ -85,7 +85,7 @@ class ValidationALBE2ET {
 		// THEN
 		// invocation should fail inbound validation and return an error message
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("errorMessage").asText()).contains("$.price: is missing but it is required");
+		assertThat(validJsonNode.get("errorMessage").asText()).contains(": required property 'price' not found");
 	}
 
 	@Test
@@ -99,6 +99,6 @@ class ValidationALBE2ET {
 		// THEN
 		// invocation should fail outbound validation and return 400
 		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("errorMessage").asText()).contains("$.price: must have an exclusive maximum value of 1000");
+		assertThat(validJsonNode.get("errorMessage").asText()).contains("/price: must have an exclusive maximum value of 1000");
 	}
 }
