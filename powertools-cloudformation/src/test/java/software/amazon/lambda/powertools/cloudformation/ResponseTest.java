@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
-public class ResponseTest {
+class ResponseTest {
 
     @Test
     void defaultValues() {
@@ -92,7 +92,7 @@ public class ResponseTest {
 
         String expected = "{\"foo\":\"bar\"}";
         assertThat(response.getJsonNode()).isNotNull();
-        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode()).hasToString(expected);
         assertThat(response.toString()).contains("JSON = " + expected);
     }
 
@@ -105,7 +105,7 @@ public class ResponseTest {
                 .build();
 
         String expected = "{\"PropertyWithLongName\":\"test\"}";
-        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode()).hasToString(expected);
         assertThat(response.toString()).contains("JSON = " + expected);
     }
 
@@ -119,7 +119,7 @@ public class ResponseTest {
                 .build();
 
         String expected = "{\"PropertyWithLongName\":\"test\"}";
-        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode()).hasToString(expected);
         assertThat(response.toString()).contains("JSON = " + expected);
     }
 
@@ -135,7 +135,7 @@ public class ResponseTest {
                 .build();
 
         String expected = "{\"property-with-long-name\":10}";
-        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode()).hasToString(expected);
         assertThat(response.toString()).contains("JSON = " + expected);
     }
 
@@ -154,13 +154,13 @@ public class ResponseTest {
         customMapper.setPropertyNamingStrategy(PropertyNamingStrategies.UPPER_CAMEL_CASE);
 
         String expected = "{\"property-with-long-name\":10}";
-        assertThat(response.getJsonNode().toString()).isEqualTo(expected);
+        assertThat(response.getJsonNode()).hasToString(expected);
         assertThat(response.toString()).contains("JSON = " + expected);
     }
 
     @Test
     void successFactoryMethod() {
-        Response response = Response.success();
+        Response response = Response.success(null);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(Response.Status.SUCCESS);
@@ -168,7 +168,7 @@ public class ResponseTest {
 
     @Test
     void failedFactoryMethod() {
-        Response response = Response.failed();
+        Response response = Response.failed(null);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatus()).isEqualTo(Response.Status.FAILED);

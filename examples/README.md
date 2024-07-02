@@ -14,7 +14,6 @@ Each example can be copied from its subdirectory and used independently of the r
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
-* [powertools-examples-sqs](powertools-examples-sqs) - Processes SQS batch requests (**Deprecated** - will be replaced by `powertools-examples-batch` in version 2 of this library)
 * [powertools-examples-validation](powertools-examples-validation) - Uses the validation module to validate user requests received via API Gateway
 * [powertools-examples-cloudformation](powertools-examples-cloudformation) - Deploys a Cloudformation custom resource
 * [powertools-examples-batch](powertools-examples-batch) - Examples for each of the different batch processing deployments

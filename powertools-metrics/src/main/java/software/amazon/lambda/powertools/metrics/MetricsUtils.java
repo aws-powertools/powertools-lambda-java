@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.metrics;
 
-import static java.util.Objects.requireNonNull;
 import static java.util.Optional.ofNullable;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.metrics.internal.LambdaMetricsAspect.REQUEST_ID_PROPERTY;
@@ -62,23 +61,6 @@ public final class MetricsUtils {
     public static void defaultDimensions(final DimensionSet... dimensionSets) {
         MetricsUtils.defaultDimensions = dimensionSets;
     }
-
-    /**
-     * Configure default dimension to be used by logger.
-     * By default, @{@link Metrics} annotation captures configured service as a dimension <i>Service</i>
-     *
-     * @param dimensionSet Default value of dimension set for logger
-     * @deprecated use {@link #defaultDimensions(DimensionSet...)} instead
-     */
-    @Deprecated
-    public static void defaultDimensionSet(final DimensionSet dimensionSet) {
-        requireNonNull(dimensionSet, "Null dimension set not allowed");
-
-        if (dimensionSet.getDimensionKeys().size() > 0) {
-            defaultDimensions(dimensionSet);
-        }
-    }
-
 
     /**
      * Add and immediately flush a single metric. It will use the default namespace
@@ -144,20 +126,6 @@ public final class MetricsUtils {
         } finally {
             metricsLogger.flush();
         }
-    }
-
-    /**
-     * Provide and immediately flush a {@link MetricsLogger}. It uses the default namespace
-     * specified either on {@link Metrics} annotation or via POWERTOOLS_METRICS_NAMESPACE env var.
-     * It by default captures function_request_id as property if used together with {@link Metrics} annotation. It will also
-     * capture xray_trace_id as property if tracing is enabled.
-     *
-     * @param logger the MetricsLogger
-     * @deprecated use {@link MetricsUtils#withMetricsLogger} instead
-     */
-    @Deprecated
-    public static void withMetricLogger(final Consumer<MetricsLogger> logger) {
-        withMetricsLogger(logger);
     }
 
     public static DimensionSet[] getDefaultDimensions() {

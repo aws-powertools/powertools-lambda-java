@@ -38,7 +38,7 @@ import software.amazon.awssdk.utils.IoUtils;
 import software.amazon.awssdk.utils.StringInputStream;
 import software.amazon.lambda.powertools.cloudformation.CloudFormationResponse.ResponseBody;
 
-public class CloudFormationResponseTest {
+class CloudFormationResponseTest {
 
     /**
      * Creates a mock CloudFormationCustomResourceEvent with a non-null response URL.
@@ -215,7 +215,7 @@ public class CloudFormationResponseTest {
     }
 
     @Test
-    public void sendWithNoResponseData() throws Exception {
+    void sendWithNoResponseData() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         Context context = mock(Context.class);
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
@@ -237,7 +237,7 @@ public class CloudFormationResponseTest {
     }
 
     @Test
-    public void sendWithNonNullResponseData() throws Exception {
+    void sendWithNonNullResponseData() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         Context context = mock(Context.class);
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
@@ -289,7 +289,7 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
-        StringInputStream stream = cfnResponse.responseBodyStream(event, context, Response.success());
+        StringInputStream stream = cfnResponse.responseBodyStream(event, context, Response.success(null));
 
         String expectedJson = "{" +
                 "\"Status\":\"SUCCESS\"," +
@@ -310,7 +310,7 @@ public class CloudFormationResponseTest {
         Context context = mock(Context.class);
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
-        StringInputStream stream = cfnResponse.responseBodyStream(event, context, Response.failed());
+        StringInputStream stream = cfnResponse.responseBodyStream(event, context, Response.failed(null));
 
         String expectedJson = "{" +
                 "\"Status\":\"FAILED\"," +
