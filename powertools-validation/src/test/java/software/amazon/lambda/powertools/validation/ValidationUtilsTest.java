@@ -48,7 +48,7 @@ public class ValidationUtilsTest {
         ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = getJsonSchema("classpath:/schema_v7.json", true);
         assertThat(jsonSchema).isNotNull();
-        assertThat(jsonSchema.getCurrentUri()).asString().isEqualTo("http://example.com/product.json");
+        assertThat(jsonSchema.getId()).isEqualTo("http://example.com/product.json");
     }
 
     @Test
@@ -57,7 +57,7 @@ public class ValidationUtilsTest {
         assertThatThrownBy(() -> getJsonSchema("classpath:/schema_v7_ko.json", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(
-                        "The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification /draft-07/schema");
+                        "The schema classpath:/schema_v7_ko.json is not valid, it does not respect the specification /draft-07/schema#");
     }
 
     @Test

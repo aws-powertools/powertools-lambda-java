@@ -83,7 +83,9 @@ You can validate inbound and outbound events using `@Validation` annotation.
 
 You can also use the `Validator#validate()` methods, if you want more control over the validation process such as handling a validation error.
 
-We support JSON schema version 4, 6, 7 and 201909 (from [jmespath-jackson library](https://github.com/burtcorp/jmespath-java)).
+We support JSON schema version 4, 6, 7, 2019-09 and 2020-12 using the [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator). ([Compatibility with JSON Schema versions](https://github.com/networknt/json-schema-validator/blob/master/doc/compatibility.md)).
+
+The validator is configured to enable format assertions by default even for 2019-09 and 2020-12.
 
 ### Validation annotation
 
@@ -233,7 +235,8 @@ and [function](https://jmespath.org/tutorial.html#functions) expressions, where 
 
 
 ## Change the schema version
-By default, powertools-validation is configured with [V7](https://json-schema.org/draft-07/json-schema-release-notes.html).
+By default, powertools-validation is configured to use [V7](https://json-schema.org/draft-07/json-schema-release-notes.html) as the default dialect if [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is not explicitly specified within the schema. If [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is explicitly specified within the schema, the validator will use the specified dialect.
+
 You can use the `ValidationConfig` to change that behaviour.
 
 === "Handler with custom schema version"
