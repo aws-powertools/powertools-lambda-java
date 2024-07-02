@@ -480,9 +480,11 @@ used with SQS FIFO. In that case, an `UnsupportedOperationException` is thrown.
 
 !!! info
     To get more threads available (more vCPUs), you need to increase the amount of memory allocated to your Lambda function.
-    While it is technically possible to increase the number of threads using Java options or custom thread pools, it can 
-    decrease performance when miss-used (see [here](https://www.baeldung.com/java-when-to-use-parallel-stream#fork-join-framework)
-    and [here](https://dzone.com/articles/be-aware-of-forkjoinpoolcommonpool) for more information) and we don't recommend it.
+    While it is possible to increase the number of threads using Java options or custom thread pools, 
+    in most cases the defaults work well, and changing them is more likely to decrease performance 
+    (see [here](https://www.baeldung.com/java-when-to-use-parallel-stream#fork-join-framework)
+    and [here](https://dzone.com/articles/be-aware-of-forkjoinpoolcommonpool)). 
+    In situations where this may be useful - such as performing IO-bound work in parallel - make sure to measure before and after!
 
 
 === "Example with SQS"
