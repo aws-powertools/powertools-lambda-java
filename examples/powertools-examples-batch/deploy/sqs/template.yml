@@ -7,12 +7,10 @@ Globals:
   Function:
     Timeout: 20
     Runtime: java11
-    MemorySize: 512
-    Tracing: Active
+    MemorySize: 5400
     Environment:
       Variables:
         POWERTOOLS_LOG_LEVEL: INFO
-        POWERTOOLS_LOGGER_SAMPLE_RATE: 1.0
         POWERTOOLS_LOGGER_LOG_EVENT: true
 
 Resources:
@@ -44,6 +42,9 @@ Resources:
     Properties:
       AliasName: alias/powertools-batch-sqs-demo
       TargetKeyId: !Ref CustomerKey
+
+  Bucket:
+    Type: AWS::S3::Bucket
 
   DemoDlqSqsQueue:
     Type: AWS::SQS::Queue
@@ -96,11 +97,13 @@ Resources:
   DemoSQSConsumerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      Tracing: Active
       CodeUri: ../..
       Handler: org.demo.batch.sqs.SqsBatchHandler::handleRequest
       Environment:
         Variables:
           POWERTOOLS_SERVICE_NAME: sqs-demo
+          BUCKET: !Ref Bucket
       Policies:
         - Statement:
             - Sid: SQSDeleteGetAttribute
@@ -121,13 +124,63 @@ Resources:
                 - kms:GenerateDataKey
                 - kms:Decrypt
               Resource: !GetAtt CustomerKey.Arn
+            - Sid: WriteToS3
+              Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub ${Bucket.Arn}/*
+
+#      Events:
+#        MySQSEvent:
+#          Type: SQS
+#          Properties:
+#            Queue: !GetAtt DemoSqsQueue.Arn
+#            BatchSize: 100
+#            MaximumBatchingWindowInSeconds: 60
+
+  DemoSQSParallelConsumerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Tracing: Active
+      CodeUri: ../..
+      Handler: org.demo.batch.sqs.SqsParallelBatchHandler::handleRequest
+      Environment:
+        Variables:
+          POWERTOOLS_SERVICE_NAME: sqs-demo
+          BUCKET: !Ref Bucket
+      Policies:
+        - Statement:
+            - Sid: SQSDeleteGetAttribute
+              Effect: Allow
+              Action:
+                - sqs:DeleteMessageBatch
+                - sqs:GetQueueAttributes
+              Resource: !GetAtt DemoSqsQueue.Arn
+            - Sid: SQSSendMessageBatch
+              Effect: Allow
+              Action:
+                - sqs:SendMessageBatch
+                - sqs:SendMessage
+              Resource: !GetAtt DemoDlqSqsQueue.Arn
+            - Sid: SQSKMSKey
+              Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+                - kms:Decrypt
+              Resource: !GetAtt CustomerKey.Arn
+            - Sid: WriteToS3
+              Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub ${Bucket.Arn}/*
+
       Events:
         MySQSEvent:
           Type: SQS
           Properties:
             Queue: !GetAtt DemoSqsQueue.Arn
-            BatchSize: 2
-            MaximumBatchingWindowInSeconds: 300
+            BatchSize: 100
+            MaximumBatchingWindowInSeconds: 60
 
 Outputs:
   DemoSqsQueue:
