@@ -33,6 +33,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
@@ -47,7 +48,6 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaData;
-import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaDataDeprecated;
 import software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler;
 
 class LambdaTracingAspectTest {
@@ -127,12 +127,35 @@ class LambdaTracingAspectTest {
                             .containsEntry("Service", "lambdaHandler");
 
                     assertThat(subsegment.getMetadata())
+                            .hasSize(0);
+                });
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_TRACER_CAPTURE_RESPONSE", value = "true")
+    void shouldCaptureTracesWithResponseMetadata() {
+        requestHandler.handleRequest(new Object(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
+                .hasSize(1)
+                .allSatisfy(subsegment ->
+                {
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "lambdaHandler");
+
+                    assertThat(subsegment.getMetadata())
                             .hasSize(1)
                             .containsKey("lambdaHandler");
                 });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_TRACER_CAPTURE_ERROR", value = "true")
     void shouldCaptureTracesWithExceptionMetaData() {
         requestHandler = new PowerTracerToolEnabledWithException();
 
@@ -162,6 +185,25 @@ class LambdaTracingAspectTest {
 
     @Test
     void shouldCaptureTracesForStream() throws IOException {
+        streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
+
+        assertThat(AWSXRay.getTraceEntity())
+                .isNotNull();
+
+        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
+                .hasSize(1)
+                .allSatisfy(subsegment ->
+                {
+                    assertThat(subsegment.getAnnotations())
+                            .hasSize(2)
+                            .containsEntry("ColdStart", true)
+                            .containsEntry("Service", "streamHandler");
+                });
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_TRACER_CAPTURE_RESPONSE", value = "true")
+    void shouldCaptureTracesForStreamWithResponseMetadata() throws IOException {
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
 
         assertThat(AWSXRay.getTraceEntity())
@@ -228,29 +270,6 @@ class LambdaTracingAspectTest {
         streamHandler = new PowerTracerToolEnabledForStreamWithNoMetaData();
 
         streamHandler.handleRequest(new ByteArrayInputStream("test".getBytes()), new ByteArrayOutputStream(), context);
-
-        assertThat(AWSXRay.getTraceEntity())
-                .isNotNull();
-
-        assertThat(AWSXRay.getTraceEntity().getSubsegmentsCopy())
-                .hasSize(1)
-                .allSatisfy(subsegment ->
-                {
-                    assertThat(subsegment.getAnnotations())
-                            .hasSize(2)
-                            .containsEntry("ColdStart", true)
-                            .containsEntry("Service", "service_undefined");
-
-                    assertThat(subsegment.getMetadata())
-                            .isEmpty();
-                });
-    }
-
-    @Test
-    void shouldCaptureTracesWithNoMetadataDeprecated() {
-        requestHandler = new PowerTracerToolEnabledWithNoMetaDataDeprecated();
-
-        requestHandler.handleRequest(new Object(), context);
 
         assertThat(AWSXRay.getTraceEntity())
                 .isNotNull();
