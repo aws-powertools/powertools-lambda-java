@@ -377,7 +377,8 @@ under a subsegment, or you are doing multithreaded programming. Refer examples b
 ## Instrumenting SDK clients and HTTP calls
 
 User should make sure to instrument the SDK clients explicitly based on the function dependency. Refer details on
-[how to instrument SDK client with Xray](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-awssdkclients.html) and [outgoing http calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-httpclients.html).
+[how to instrument SDK client with Xray](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html#xray-sdk-java-awssdkclients) 
+and [outgoing http calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html#xray-sdk-java-httpclients).
 
 ## Testing your code
 
