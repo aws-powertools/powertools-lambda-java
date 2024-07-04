@@ -376,9 +376,24 @@ under a subsegment, or you are doing multithreaded programming. Refer examples b
 
 ## Instrumenting SDK clients and HTTP calls
 
-User should make sure to instrument the SDK clients explicitly based on the function dependency. Refer details on
+Powertools for Lambda (Java) cannot intercept SDK clients instantiation to add X-Ray instrumentation. You should make sure to instrument the SDK clients explicitly. Refer details on
 [how to instrument SDK client with Xray](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html#xray-sdk-java-awssdkclients) 
-and [outgoing http calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html#xray-sdk-java-httpclients).
+and [outgoing http calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html#xray-sdk-java-httpclients). For example:
+
+=== "LambdaHandler.java"
+
+    ```java hl_lines="1 2 7"
+    import com.amazonaws.xray.AWSXRay;
+    import com.amazonaws.xray.handlers.TracingHandler;
+
+    public class LambdaHandler {
+        private AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard()
+            .withRegion(Regions.fromName(System.getenv("AWS_REGION")))
+            .withRequestHandlers(new TracingHandler(AWSXRay.getGlobalRecorder()))
+            .build();
+        // ...
+    }
+    ```
 
 ## Testing your code
 
