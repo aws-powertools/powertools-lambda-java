@@ -513,7 +513,7 @@ public class Infrastructure {
 
         private JavaRuntime mapRuntimeVersion(String environmentVariableName) {
             String javaVersion = System.getenv(environmentVariableName); // must be set in GitHub actions
-            JavaRuntime ret = null;
+            JavaRuntime ret;
             if (javaVersion == null) {
                 throw new IllegalArgumentException(environmentVariableName + " is not set");
             }
