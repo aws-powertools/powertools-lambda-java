@@ -187,7 +187,7 @@ You can also override log level by setting **`POWERTOOLS_LOG_LEVEL`** env var. H
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java8
+            Runtime: java11
             Environment:
                 Variables:
                     POWERTOOLS_LOG_LEVEL: DEBUG
@@ -590,7 +590,7 @@ via `samplingRate` attribute on annotation.
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java8
+            Runtime: java11
             Environment:
                 Variables:
                     POWERTOOLS_LOGGER_SAMPLE_RATE: 0.5

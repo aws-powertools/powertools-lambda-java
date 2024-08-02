@@ -179,7 +179,7 @@ Setting | Description | Environment variable | Constructor parameter
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java8
+            Runtime: java11
             Environment:
                 Variables:
                     POWERTOOLS_SERVICE_NAME: payment
