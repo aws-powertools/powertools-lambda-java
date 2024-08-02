@@ -5,7 +5,7 @@ on:
 
   push:
     branches:
-      - main
+      - v2
     paths: # add other modules when there are under e2e tests
       - 'powertools-e2e-tests/**'
       - 'powertools-batch/**'
@@ -23,7 +23,7 @@ on:
 
   pull_request:
     branches:
-      - main
+      - v2
     paths:
       - 'powertools-e2e-tests/**'
 
@@ -54,7 +54,5 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN_TO_ASSUME }}
           aws-region: ${{ env.AWS_DEFAULT_REGION }}
-      - name: Build with Maven
-        run: mvn -DskipTests install --file pom.xml
       - name: Run e2e test with Maven
-        run: mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
+        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml

@@ -1,0 +1,75 @@
+{
+  "level": {
+    "$resolver": "level",
+    "field": "name"
+  },
+  "message": {
+    "$resolver": "message"
+  },
+  "error": {
+    "message": {
+      "$resolver": "exception",
+      "field": "message"
+    },
+    "name": {
+      "$resolver": "exception",
+      "field": "className"
+    },
+    "stack": {
+      "$resolver": "exception",
+      "field": "stackTrace",
+      "stackTrace": {
+        "stringified": true
+      }
+    }
+  },
+  "cold_start": {
+    "$resolver": "powertools",
+    "field": "cold_start"
+  },
+  "thread": {
+    "$resolver": "thread",
+    "field": "name"
+  },
+  "function_arn": {
+    "$resolver": "powertools",
+    "field": "function_arn"
+  },
+  "function_memory_size": {
+    "$resolver": "powertools",
+    "field": "function_memory_size"
+  },
+  "function_name": {
+    "$resolver": "powertools",
+    "field": "function_name"
+  },
+  "function_request_id": {
+    "$resolver": "powertools",
+    "field": "function_request_id"
+  },
+  "function_version": {
+    "$resolver": "powertools",
+    "field": "function_version"
+  },
+  "sampling_rate": {
+    "$resolver": "powertools",
+    "field": "sampling_rate"
+  },
+  "service": {
+    "$resolver": "powertools",
+    "field": "service"
+  },
+  "timestamp": {
+    "$resolver": "timestamp",
+    "pattern": {
+      "format": "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+    }
+  },
+  "xray_trace_id": {
+    "$resolver": "powertools",
+    "field": "xray_trace_id"
+  },
+  "": {
+    "$resolver": "powertools"
+  }
+}

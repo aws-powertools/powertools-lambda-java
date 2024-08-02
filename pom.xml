@@ -70,8 +70,8 @@
         <log4j.version>2.20.0</log4j.version>
         <log4j.version>2.23.1</log4j.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <jackson.version>2.17.1</jackson.version>
-        <aws.sdk.version>2.25.35</aws.sdk.version>
+        <jackson.version>2.17.2</jackson.version>
+        <aws.sdk.version>2.26.28</aws.sdk.version>
         <aws.xray.recorder.version>2.16.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -287,7 +287,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.13.0</version>
+                <version>3.15.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -299,7 +299,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.25.3</version>
+                <version>3.26.3</version>
                 <scope>test</scope>
                 <exclusions>
                     <exclusion>
