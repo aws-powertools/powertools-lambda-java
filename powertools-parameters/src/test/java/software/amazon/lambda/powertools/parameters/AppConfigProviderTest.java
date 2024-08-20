@@ -14,11 +14,6 @@
 
 package software.amazon.lambda.powertools.parameters;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.assertj.core.api.Assertions.assertThatRuntimeException;
-import static org.mockito.MockitoAnnotations.openMocks;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +28,11 @@ import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSes
 import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSessionResponse;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
+import static org.assertj.core.api.Assertions.assertThatRuntimeException;
+import static org.mockito.MockitoAnnotations.openMocks;
 
 public class AppConfigProviderTest {
 
@@ -90,21 +90,29 @@ public class AppConfigProviderTest {
         GetLatestConfigurationResponse thirdResponse = GetLatestConfigurationResponse.builder()
                 .nextPollConfigurationToken("token4")
                 .build();
+        // Forth response returns empty, which means the provider should yield the previous value again
+        GetLatestConfigurationResponse forthResponse = GetLatestConfigurationResponse.builder()
+                .nextPollConfigurationToken("token5")
+                .configuration(SdkBytes.fromUtf8String(""))
+                .build();
         Mockito.when(client.startConfigurationSession(startSessionRequestCaptor.capture()))
                 .thenReturn(firstSession);
         Mockito.when(client.getLatestConfiguration(getLatestConfigurationRequestCaptor.capture()))
-                .thenReturn(firstResponse, secondResponse, thirdResponse);
+                .thenReturn(firstResponse, secondResponse, thirdResponse, forthResponse);
 
         // Act
         String returnedValue1 = provider.getValue(defaultTestKey);
         String returnedValue2 = provider.getValue(defaultTestKey);
         String returnedValue3 = provider.getValue(defaultTestKey);
+        String returnedValue4 = provider.getValue(defaultTestKey);
 
         // Assert
         assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
         assertThat(returnedValue2).isEqualTo(secondResponse.configuration().asUtf8String());
         assertThat(returnedValue3).isEqualTo(secondResponse.configuration()
                 .asUtf8String()); // Third response is mocked to return null and should re-use previous value
+        assertThat(returnedValue4).isEqualTo(secondResponse.configuration()
+                .asUtf8String()); // Forth response is mocked to return empty and should re-use previous value
         assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
         assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
         assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
