@@ -72,7 +72,7 @@
         <slf4j.version>2.0.7</slf4j.version>
         <jackson.version>2.17.2</jackson.version>
         <aws.sdk.version>2.26.28</aws.sdk.version>
-        <aws.xray.recorder.version>2.16.0</aws.xray.recorder.version>
+        <aws.xray.recorder.version>2.18.1</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.3</lambda.core.version>
