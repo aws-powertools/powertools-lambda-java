@@ -172,6 +172,12 @@
         </profile>
     </profiles>
     <build>
+        <resources>
+            <!-- GraalVM Native Image Configuration Files -->
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>dev.aspectj</groupId>
