@@ -15,45 +15,15 @@
   }, {
     "pattern":"\\QMETA-INF/services/org.assertj.core.presentation.Representation\\E"
   }, {
-    "pattern":"\\QMETA-INF/services/org.junit.platform.engine.TestEngine\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.junit.platform.launcher.LauncherDiscoveryListener\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.junit.platform.launcher.LauncherSessionListener\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.junit.platform.launcher.PostDiscoveryFilter\\E"
-  }, {
-    "pattern":"\\QMETA-INF/services/org.junit.platform.launcher.TestExecutionListener\\E"
-  }, {
     "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
   }, {
     "pattern":"\\QMETA-INF/services/software.amazon.lambda.powertools.logging.internal.LoggingManager\\E"
-  }, {
-    "pattern":"\\Qjunit-platform.properties\\E"
   }, {
     "pattern":"\\Qlogback-test.scmo\\E"
   }, {
     "pattern":"\\Qlogback-test.xml\\E"
   }, {
     "pattern":"\\Qlogback.scmo\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.AnnotationEngine\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.DoNotMockEnforcer\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.InstantiatorProvider2\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MemberAccessor\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MockMaker\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MockResolver\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.MockitoLogger\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.PluginSwitch\\E"
-  }, {
-    "pattern":"\\Qmockito-extensions/org.mockito.plugins.StackTraceCleanerProvider\\E"
   }]},
   "bundles":[]
 }

@@ -315,53 +315,6 @@
   "name":"org.joda.time.DateTime"
 },
 {
-  "name":"org.junit.internal.AssumptionViolatedException"
-},
-{
-  "name":"org.junit.jupiter.api.Test",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.jupiter.api.TestTemplate",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.jupiter.api.extension.ExtendWith",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.jupiter.params.ParameterizedTest",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.jupiter.params.ParameterizedTestExtension",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.junit.jupiter.params.provider.ArgumentsProvider",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.jupiter.params.provider.ArgumentsSource",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.jupiter.params.support.AnnotationConsumer",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.platform.commons.annotation.Testable",
-  "queryAllPublicMethods":true
-},
-{
-  "name":"org.junit.platform.launcher.LauncherSession",
-  "methods":[{"name":"getLauncher","parameterTypes":[] }]
-},
-{
-  "name":"org.junit.platform.launcher.core.LauncherFactory",
-  "methods":[{"name":"openSession","parameterTypes":[] }]
-},
-{
   "name":"org.slf4j.ILoggerFactory",
   "allDeclaredClasses":true,
   "queryAllPublicMethods":true
