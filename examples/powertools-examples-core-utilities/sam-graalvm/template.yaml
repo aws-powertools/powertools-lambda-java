@@ -8,12 +8,14 @@ Globals:
   Function:
     Timeout: 20
     MemorySize: 512
+    Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
     Environment:
       Variables:
         # Powertools for AWS Lambda (Java) env vars: https://docs.powertools.aws.dev/lambda/java/#environment-variables
         POWERTOOLS_LOG_LEVEL: INFO
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
+        POWERTOOLS_METRICS_NAMESPACE: Coreutilities
 
 Resources:
   HelloWorldFunction:
@@ -31,7 +33,7 @@ Resources:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
           Properties:
             Path: /hello
-            Method: POST
+            Method: get
     Metadata:
       BuildMethod: makefile
 
