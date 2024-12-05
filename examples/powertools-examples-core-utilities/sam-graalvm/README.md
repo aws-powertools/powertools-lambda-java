@@ -5,8 +5,14 @@ This project demonstrates the Lambda for Powertools Java module deployed using [
 For general information on the deployed example itself, you can refer to the parent [README](../README.md)
 
 ## Configuration
-SAM uses [template.yaml](template.yaml) to define the application's AWS resources.
+ - SAM uses [template.yaml](template.yaml) to define the application's AWS resources.
 This file defines the Lambda function to be deployed as well as API Gateway for it.
+
+ - Set the environment to use GraalVM
+
+```shell 
+      export JAVA_HOME=<path to GraalVM>
+````
 
 ## Build the sample application
 
