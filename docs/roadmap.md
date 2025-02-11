@@ -35,7 +35,7 @@ As part of a new major version `v2` release, we prioritize the Java project's co
 
 - [ ] [Add GraalVM support](https://github.com/aws-powertools/powertools-lambda-java/issues/764){target="\_blank"}
 - [ ] [Implement priming using CRaC to improve AWS Snapstart support](https://github.com/aws-powertools/powertools-lambda-java/issues/1588){target="\_blank"}
-- [ ] [Add integrations with popular Java frameworks such as Micronaut, Spring Cloud Function, or Quarkus](https://github.com/aws-powertools/powertools-lambda-java/issues/1701){target="\_blank"}
+- [ ] [Evaluate integration with popular Java frameworks such as Micronaut, Spring Cloud Function, or Quarkus](https://github.com/aws-powertools/powertools-lambda-java/issues/1701){target="\_blank"}
 
 ##### Other
 
