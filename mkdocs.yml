@@ -7,6 +7,7 @@ nav:
   - Changelog: changelog.md
   - Workshop 🆕: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
   - FAQs: FAQs.md
+  - Roadmap: roadmap.md
   - Core utilities:
       - core/logging.md
       - core/tracing.md
@@ -61,8 +62,10 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.details
   - pymdownx.snippets:
-      base_path: '.'
+      base_path: "."
       check_paths: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
