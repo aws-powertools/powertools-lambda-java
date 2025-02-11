@@ -7,6 +7,7 @@ nav:
   - Changelog: changelog.md
   - Workshop 🆕: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
   - FAQs: FAQs.md
+  - Roadmap: roadmap.md
   - Core utilities:
       - core/logging.md
       - core/tracing.md
