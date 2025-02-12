@@ -18,6 +18,9 @@ on:
       - 'mkdocs.yml'
       - 'Makefile'
 
+permissions:
+  contents: read
+
 jobs:
   docs:
     runs-on: ubuntu-latest

@@ -19,12 +19,13 @@ on:
     paths:
       - ".github/workflows/**"
 
+permissions:
+  contents: read
+
 jobs:
   enforce_pinned_workflows:
     name: Harden Security
     runs-on: ubuntu-latest
-    permissions:
-      contents: read  # checkout code and subsequently GitHub action workflows
     steps:
       - name: Checkout code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
