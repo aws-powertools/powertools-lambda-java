@@ -19,6 +19,10 @@ on:
       - 'powertools-test-suite/**'
       - 'pom.xml'
       - '.github/workflows/**'
+
+permissions:
+    contents: read
+
 jobs:
   codecheck:
     runs-on: ubuntu-latest
