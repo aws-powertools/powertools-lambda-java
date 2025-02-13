@@ -14,7 +14,7 @@
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <sdk.version>2.30.19</sdk.version>
+        <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
     </properties>
 
     <dependencies>
@@ -62,6 +62,13 @@
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kinesis</artifactId>
             <version>${sdk.version}</version>
+        </dependency>
+
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws.sdk.v1.version}</version>
         </dependency>
     </dependencies>
 

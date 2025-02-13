@@ -94,6 +94,7 @@
         <junit.version>5.10.0</junit.version>
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
+        <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
     </properties>
 
     <distributionManagement>
@@ -241,6 +242,13 @@
                 <groupId>software.amazon.cloudwatchlogs</groupId>
                 <artifactId>aws-embedded-metrics</artifactId>
                 <version>${aws-embedded-metrics.version}</version>
+            </dependency>
+
+            <!-- Transitive dependencies -->
+            <dependency>
+                <groupId>com.amazonaws</groupId>
+                <artifactId>aws-java-sdk-core</artifactId>
+                <version>${aws.sdk.v1.version}</version>
             </dependency>
 
             <!-- Test dependencies -->

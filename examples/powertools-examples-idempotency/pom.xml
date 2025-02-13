@@ -26,6 +26,7 @@
         <log4j.version>2.22.1</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
     </properties>
 
     <dependencies>
@@ -63,6 +64,13 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-api</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws.sdk.v1.version}</version>
         </dependency>
     </dependencies>
 
