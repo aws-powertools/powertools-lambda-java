@@ -12,6 +12,10 @@
     <packaging>jar</packaging>
     <name>A Lambda function using powertools logging</name>
 
+    <properties>
+        <netty.version>4.2.0.RC3</netty.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
@@ -26,6 +30,22 @@
             <artifactId>aws-lambda-java-events</artifactId>
         </dependency>
 
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
