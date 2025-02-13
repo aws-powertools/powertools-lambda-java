@@ -15,6 +15,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
+        <aws.sdk.version>2.30.19</aws.sdk.version>
     </properties>
 
     <dependencies>
@@ -41,27 +42,27 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sdk-core</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sqs</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb-enhanced</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kinesis</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
 
         <!-- Transitive dependencies -->
