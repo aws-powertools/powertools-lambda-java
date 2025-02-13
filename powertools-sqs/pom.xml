@@ -48,6 +48,10 @@
         </developer>
     </developers>
 
+    <properties>
+        <netty.version>4.2.0.RC3</netty.version>
+    </properties>
+
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -92,6 +96,23 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
+        </dependency>
+
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
         </dependency>
 
         <!-- Test dependencies -->
