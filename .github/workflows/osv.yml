@@ -15,10 +15,12 @@ on:
     branches: [main]
 
 permissions:
-  actions: read
   contents: read
-  security-events: write
 
 jobs:
   scan-pr:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
     uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.9.1"
