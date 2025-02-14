@@ -1,2 +1,4 @@
-FROM squidfunk/mkdocs-material:9
-RUN pip install mkdocs-git-revision-date-plugin==0.3.2 mkdocs-macros-plugin==1.3.7
+FROM squidfunk/mkdocs-material@sha256:6ffbcd0e1438f3278341e437048ba4507e7e0af70efe700dd6d8a1d76fc071dd
+
+COPY requirements.txt /tmp/
+RUN pip install --require-hashes -r /tmp/requirements.txt
