@@ -1,2 +1,2 @@
-FROM squidfunk/mkdocs-material
-RUN pip install mkdocs-git-revision-date-plugin mkdocs-macros-plugin
+FROM squidfunk/mkdocs-material:9
+RUN pip install mkdocs-git-revision-date-plugin==0.3.2 mkdocs-macros-plugin==1.3.7
