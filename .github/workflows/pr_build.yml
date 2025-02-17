@@ -78,7 +78,7 @@ jobs:
         run: |
           curl -L -o gradle/wrapper/gradle.zip https:$(cat gradle/wrapper/gradle-wrapper.properties  | grep distributionUrl | cut -d ':' -f 2)
           unzip gradle/wrapper/gradle.zip -d gradle/wrapper/gradle
-          mv gradle/wrapper/gradle/gradle-8.2.1/lib/gradle-wrapper-8.2.1.jar gradle/wrapper/gradle-wrapper.jar
+          ./gradle/wrapper/gradle/gradle-8.2.1/bin/gradle wrapper
       - name: Build Gradle Example - Java
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         working-directory: examples/powertools-examples-core/gradle
