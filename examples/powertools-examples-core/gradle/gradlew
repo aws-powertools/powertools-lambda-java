@@ -111,12 +111,6 @@ case "$( uname )" in                #(
   NONSTOP* )        nonstop=true ;;
 esac
 
-
-curl -L -o $APP_HOME/gradle/wrapper/gradle.zip https:$(cat $APP_HOME/gradle/wrapper/gradle-wrapper.properties  | grep distributionUrl | cut -d ':' -f 2)
-unzip $APP_HOME/gradle/wrapper/gradle.zip -d $APP_HOME/gradle/wrapper/gradle
-mv $APP_HOME/gradle/wrapper/gradle/gradle-7.3.3/lib/gradle-wrapper-7.3.3.jar $APP_HOME/gradle/wrapper/gradle-wrapper.jar
-
-
 CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
 
 
