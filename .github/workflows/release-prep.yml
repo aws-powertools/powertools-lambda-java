@@ -76,7 +76,6 @@ jobs:
         uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
         with:
           commit-message: chore:prep release ${{ github.event.inputs.targetRelease }}
-          token: ${{ secrets.RELEASE }}
           signoff: false
           branch: prep-release-${{ github.event.inputs.targetRelease }}
           delete-branch: true
