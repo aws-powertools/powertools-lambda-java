@@ -1,0 +1,1723 @@
+[[1;34mINFO[m] Scanning for projects...
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda:powertools-test-suite:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 175, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda:powertools-e2e-tests:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 184, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-core-sam:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 126, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-core-cdk:jar:1.17.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 125, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:cdk:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 34, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-core-serverless:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 127, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-core-terraform:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 125, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-idempotency:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 171, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-parameters:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 89, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-serialization:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 41, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-sqs:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 142, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-batch:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 149, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-validation:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 73, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-cloudformation:jar:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 149, column 19
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda:powertools-examples:pom:1.18.0
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 49, column 21
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] It is highly recommended to fix these problems because they threaten the stability of your build.
+[[1;33mWARNING[m] 
+[[1;33mWARNING[m] For this reason, future Maven versions might no longer support building such malformed projects.
+[[1;33mWARNING[m] 
+[[1;34mINFO[m] Inspecting build with total of 28 modules...
+[[1;34mINFO[m] Installing Nexus Staging features:
+[[1;34mINFO[m]   ... total of 15 executions of maven-deploy-plugin replaced with nexus-staging-maven-plugin
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1mReactor Build Order:[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parent                    [pom]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Core                      [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Serialization Utilities   [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Logging                   [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Tracing                   [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library SQS                       [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Metrics                   [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parameters                [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) validation library                [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Test Suite                [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java)library Cloudformation             [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Idempotency               [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Large messages            [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java)library End-to-end tests           [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) batch messages                    [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core           [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core           [jar]
+[[1;34mINFO[m] cdk                                                                [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core           [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core           [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Idempotency    [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Parameters     [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Serialization  [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - SQS            [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Batch          [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Validation     [jar]
+[[1;34mINFO[m] AWS Lambda Powertools for Java library Examples - CloudFormation   [jar]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples                  [pom]
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--------------< [0;36msoftware.amazon.lambda:powertools-parent[0;1m >--------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Parent 1.18.0   [1/28][m
+[[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-parent[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-parent:pom:1.18.0
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---------------< [0;36msoftware.amazon.lambda:powertools-core[0;1m >---------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Core 1.18.0     [2/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-core[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-core:jar:1.18.0
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----------< [0;36msoftware.amazon.lambda:powertools-serialization[0;1m >-----------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Serialization Utilities 1.18.0 [3/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-serialization[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-serialization:jar:1.18.0
+[[1;34mINFO[m] +- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |  \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-tests:jar:1.1.1:test
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-------------< [0;36msoftware.amazon.lambda:powertools-logging[0;1m >--------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Logging 1.18.0  [4/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-logging[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-logging:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:test
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-tests:jar:1.1.1:test
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:test
+[[1;34mINFO[m] |  \- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] +- org.skyscreamer:jsonassert:jar:1.5.1:test
+[[1;34mINFO[m] |  \- com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-------------< [0;36msoftware.amazon.lambda:powertools-tracing[0;1m >--------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Tracing 1.18.0  [5/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-tracing[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-tracing:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |     \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |     \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |     +- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m] |     |  +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m] |     |  +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m] |     |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m] |     |  |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m] |     |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |     |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |     |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |     |  +- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] |     |  \- joda-time:joda-time:jar:2.12.7:compile
+[[1;34mINFO[m] |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---------------< [0;36msoftware.amazon.lambda:powertools-sqs[0;1m >----------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library SQS 1.18.0      [6/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-sqs[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-sqs:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |     \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-tests:jar:1.1.1:test
+[[1;34mINFO[m] |  \- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- software.amazon.payloadoffloading:payloadoffloading-common:jar:2.2.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:sqs:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:apache-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:runtime
+[[1;34mINFO[m] |  |  |  \- commons-logging:commons-logging:jar:1.2:runtime
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:runtime
+[[1;34mINFO[m] |  |  \- commons-codec:commons-codec:jar:1.17.1:runtime
+[[1;34mINFO[m] |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |     +- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:runtime
+[[1;34mINFO[m] |     \- io.netty:netty-resolver:jar:4.1.118.Final:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:s3:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-xml-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:aws-query-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:arns:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:crt-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-buffer:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-transport:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-codec:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-base:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-compression:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-protobuf:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-codec-marshalling:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  \- io.netty:netty-handler:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |     \- io.netty:netty-transport-native-unix-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http2:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-------------< [0;36msoftware.amazon.lambda:powertools-metrics[0;1m >--------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Metrics 1.18.0  [7/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-metrics[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-metrics:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- software.amazon.cloudwatchlogs:aws-embedded-metrics:jar:1.0.6:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.17.2:runtime
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-api:jar:1.7.30:compile
+[[1;34mINFO[m] |  \- org.javatuples:javatuples:jar:1.2:runtime
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------< [0;36msoftware.amazon.lambda:powertools-parameters[0;1m >------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Parameters 1.18.0 [8/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-parameters[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-parameters:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |     \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- software.amazon.awssdk:ssm:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:secretsmanager:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:dynamodb:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:apache-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:runtime
+[[1;34mINFO[m] |  |  |  \- commons-logging:commons-logging:jar:1.2:runtime
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:runtime
+[[1;34mINFO[m] |  |  \- commons-codec:commons-codec:jar:1.17.1:runtime
+[[1;34mINFO[m] |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |     +- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:runtime
+[[1;34mINFO[m] |     \- io.netty:netty-resolver:jar:4.1.118.Final:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:appconfigdata:jar:2.30.19:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-buffer:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-transport:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-codec:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-base:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-compression:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-protobuf:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-codec-marshalling:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  \- io.netty:netty-handler:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |     \- io.netty:netty-transport-native-unix-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http2:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------< [0;36msoftware.amazon.lambda:powertools-validation[0;1m >------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) validation library 1.18.0 [9/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-validation[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-validation:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |  \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- com.networknt:json-schema-validator:jar:1.0.87:compile
+[[1;34mINFO[m] |  +- com.ethlo.time:itu:jar:1.7.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.15.2:compile
+[[1;34mINFO[m] |  |  \- org.yaml:snakeyaml:jar:2.0:compile
+[[1;34mINFO[m] |  \- org.slf4j:slf4j-api:jar:2.0.7:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------< [0;36msoftware.amazon.lambda:powertools-test-suite[0;1m >------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Test Suite 1.18.0 [10/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-test-suite[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-test-suite:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-jcl:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- commons-logging:commons-logging:jar:1.3.0:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     +- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m] |  |     |  \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-sqs:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.payloadoffloading:payloadoffloading-common:jar:2.2.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sqs:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:apache-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m] |  |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:compile
+[[1;34mINFO[m] |  |  |  \- commons-codec:commons-codec:jar:1.17.1:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |     \- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:runtime
+[[1;34mINFO[m] |  \- software.amazon.awssdk:s3:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:aws-xml-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |     |  \- software.amazon.awssdk:aws-query-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:arns:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:crt-core:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |     \- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-buffer:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-transport:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-resolver:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-codec:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-base:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-compression:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-protobuf:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-codec-marshalling:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  \- io.netty:netty-handler:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |     \- io.netty:netty-transport-native-unix-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http2:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.aspectj:aspectjweaver:jar:1.9.7:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- org.skyscreamer:jsonassert:jar:1.5.1:test
+[[1;34mINFO[m] |  \- com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----------< [0;36msoftware.amazon.lambda:powertools-cloudformation[0;1m >----------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java)library Cloudformation 1.18.0 [11/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-cloudformation[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-cloudformation:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- com.github.tomakehurst:wiremock-jre8:jar:2.35.1:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-server:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  +- javax.servlet:javax.servlet-api:jar:3.1.0:test
+[[1;34mINFO[m] |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-servlet:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  +- org.eclipse.jetty:jetty-security:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-util-ajax:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-servlets:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  +- org.eclipse.jetty:jetty-continuation:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-util:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-webapp:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-xml:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-proxy:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-client:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty.http2:http2-server:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty.http2:http2-common:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |     \- org.eclipse.jetty.http2:http2-hpack:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-alpn-server:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-alpn-java-server:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-alpn-openjdk8-server:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-alpn-java-client:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-alpn-client:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-alpn-openjdk8-client:jar:9.4.49.v20220914:test
+[[1;34mINFO[m] |  +- com.google.guava:guava:jar:31.1-jre:test
+[[1;34mINFO[m] |  |  +- com.google.guava:failureaccess:jar:1.0.1:test
+[[1;34mINFO[m] |  |  +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava:test
+[[1;34mINFO[m] |  |  +- com.google.code.findbugs:jsr305:jar:3.0.2:test
+[[1;34mINFO[m] |  |  +- org.checkerframework:checker-qual:jar:3.12.0:test
+[[1;34mINFO[m] |  |  +- com.google.errorprone:error_prone_annotations:jar:2.11.0:test
+[[1;34mINFO[m] |  |  \- com.google.j2objc:j2objc-annotations:jar:1.3:test
+[[1;34mINFO[m] |  +- org.apache.httpcomponents.client5:httpclient5:jar:5.1.3:test
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents.core5:httpcore5:jar:5.1.3:test
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents.core5:httpcore5-h2:jar:5.1.3:test
+[[1;34mINFO[m] |  |  \- commons-codec:commons-codec:jar:1.15:test
+[[1;34mINFO[m] |  +- org.xmlunit:xmlunit-core:jar:2.9.0:test
+[[1;34mINFO[m] |  |  \- jakarta.xml.bind:jakarta.xml.bind-api:jar:2.3.3:test
+[[1;34mINFO[m] |  |     \- jakarta.activation:jakarta.activation-api:jar:1.2.2:test
+[[1;34mINFO[m] |  +- org.xmlunit:xmlunit-legacy:jar:2.9.0:test
+[[1;34mINFO[m] |  +- org.xmlunit:xmlunit-placeholders:jar:2.9.0:test
+[[1;34mINFO[m] |  +- net.javacrumbs.json-unit:json-unit-core:jar:2.36.0:test
+[[1;34mINFO[m] |  |  \- org.hamcrest:hamcrest-core:jar:2.2:test
+[[1;34mINFO[m] |  |     \- org.hamcrest:hamcrest:jar:2.2:test
+[[1;34mINFO[m] |  +- com.jayway.jsonpath:json-path:jar:2.7.0:test
+[[1;34mINFO[m] |  |  \- net.minidev:json-smart:jar:2.4.7:test
+[[1;34mINFO[m] |  |     \- net.minidev:accessors-smart:jar:2.4.7:test
+[[1;34mINFO[m] |  +- org.ow2.asm:asm:jar:9.4:test
+[[1;34mINFO[m] |  +- net.sf.jopt-simple:jopt-simple:jar:5.0.4:test
+[[1;34mINFO[m] |  +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] |  +- com.github.jknack:handlebars:jar:4.3.1:test
+[[1;34mINFO[m] |  +- com.github.jknack:handlebars-helpers:jar:4.3.1:test
+[[1;34mINFO[m] |  +- commons-fileupload:commons-fileupload:jar:1.4:test
+[[1;34mINFO[m] |  +- commons-io:commons-io:jar:2.11.0:test
+[[1;34mINFO[m] |  \- org.slf4j:slf4j-api:jar:1.7.36:compile
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-----------< [0;36msoftware.amazon.lambda:powertools-idempotency[0;1m >------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Idempotency 1.18.0 [12/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-idempotency[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-idempotency:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |  |  \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |     +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |     \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:dynamodb:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.junit-pioneer:junit-pioneer:jar:1.9.1:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-launcher:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:test
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-tests:jar:1.1.1:test
+[[1;34mINFO[m] |  \- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:test
+[[1;34mINFO[m] +- com.amazonaws:DynamoDBLocal:jar:1.25.1:test
+[[1;34mINFO[m] |  +- org.antlr:antlr4-runtime:jar:4.5:test
+[[1;34mINFO[m] |  |  \- org.abego.treelayout:org.abego.treelayout.core:jar:1.0.1:test
+[[1;34mINFO[m] |  +- commons-cli:commons-cli:jar:1.6.0:test
+[[1;34mINFO[m] |  +- com.almworks.sqlite4java:libsqlite4java-linux-i386:so:1.0.392:test
+[[1;34mINFO[m] |  +- com.almworks.sqlite4java:libsqlite4java-linux-amd64:so:1.0.392:test
+[[1;34mINFO[m] |  +- com.almworks.sqlite4java:sqlite4java-win32-x64:dll:1.0.392:test
+[[1;34mINFO[m] |  +- com.almworks.sqlite4java:sqlite4java-win32-x86:dll:1.0.392:test
+[[1;34mINFO[m] |  +- com.almworks.sqlite4java:libsqlite4java-osx:dylib:1.0.392:test
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.17.2:test
+[[1;34mINFO[m] |  +- com.amazonaws:aws-java-sdk-core:jar:1.12.781:test
+[[1;34mINFO[m] |  |  +- commons-logging:commons-logging:jar:1.1.3:test
+[[1;34mINFO[m] |  |  +- commons-codec:commons-codec:jar:1.15:test
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:test
+[[1;34mINFO[m] |  |  |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:test
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:test
+[[1;34mINFO[m] |  +- com.amazonaws:aws-java-sdk-dynamodb:jar:1.12.619:test
+[[1;34mINFO[m] |  |  +- com.amazonaws:aws-java-sdk-s3:jar:1.12.619:test
+[[1;34mINFO[m] |  |  |  \- com.amazonaws:aws-java-sdk-kms:jar:1.12.619:test
+[[1;34mINFO[m] |  |  \- com.amazonaws:jmespath-java:jar:1.12.619:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:cognitoidentity:jar:2.30.19:test
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:apache-client:jar:2.30.19:test
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-codec-http:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-codec-http2:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-codec:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-transport:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-common:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-buffer:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-handler:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     |  \- io.netty:netty-transport-native-unix-common:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     +- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  |     \- io.netty:netty-resolver:jar:4.1.118.Final:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:cognitoidentityprovider:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:pinpoint:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:dynamodb-enhanced:jar:2.30.19:test
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-client:jar:9.4.48.v20220622:test
+[[1;34mINFO[m] |  |  +- org.eclipse.jetty:jetty-http:jar:9.4.48.v20220622:test
+[[1;34mINFO[m] |  |  |  \- org.eclipse.jetty:jetty-util:jar:9.4.48.v20220622:test
+[[1;34mINFO[m] |  |  \- org.eclipse.jetty:jetty-io:jar:9.4.48.v20220622:test
+[[1;34mINFO[m] |  +- org.eclipse.jetty:jetty-server:jar:9.4.48.v20220622:test
+[[1;34mINFO[m] |  |  \- javax.servlet:javax.servlet-api:jar:3.1.0:test
+[[1;34mINFO[m] |  \- com.google.guava:guava:jar:33.3.0-jre:test
+[[1;34mINFO[m] |     +- com.google.guava:failureaccess:jar:1.0.2:test
+[[1;34mINFO[m] |     +- com.google.guava:listenablefuture:jar:9999.0-empty-to-avoid-conflict-with-guava:test
+[[1;34mINFO[m] |     +- com.google.code.findbugs:jsr305:jar:3.0.2:test
+[[1;34mINFO[m] |     +- org.checkerframework:checker-qual:jar:3.43.0:test
+[[1;34mINFO[m] |     +- com.google.errorprone:error_prone_annotations:jar:2.28.0:test
+[[1;34mINFO[m] |     \- com.google.j2objc:j2objc-annotations:jar:3.0.0:test
+[[1;34mINFO[m] +- io.github.ganadist.sqlite4java:libsqlite4java-osx-aarch64:dylib:1.0.392:test
+[[1;34mINFO[m] |  \- com.almworks.sqlite4java:sqlite4java:jar:1.0.392:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----------< [0;36msoftware.amazon.lambda:powertools-large-messages[0;1m >----------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Large messages 1.18.0 [13/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-large-messages[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-large-messages:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- software.amazon.payloadoffloading:payloadoffloading-common:jar:2.2.0:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |     \- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-api:jar:1.7.36:compile
+[[1;34mINFO[m] |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:s3:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-xml-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:aws-query-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:arns:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:crt-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |     \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.junit-pioneer:junit-pioneer:jar:1.9.1:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-launcher:jar:1.10.0:test
+[[1;34mINFO[m] +- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:test
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:test
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-core:jar:2.22.1:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------------< [0;36msoftware.amazon.lambda:powertools-e2e-tests[0;1m >-------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java)library End-to-end tests 1.18.0 [14/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-e2e-tests[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-e2e-tests:jar:1.18.0
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:test
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:test
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-api:jar:2.0.9:test
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-core:jar:2.22.1:test
+[[1;34mINFO[m] +- software.amazon.awssdk:lambda:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:test
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:test
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:test
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:test
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:test
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:json-utils:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:apache-client:jar:2.30.19:test
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:test
+[[1;34mINFO[m] |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:test
+[[1;34mINFO[m] |  |  \- commons-codec:commons-codec:jar:1.17.1:test
+[[1;34mINFO[m] |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:test
+[[1;34mINFO[m] |     +- io.netty:netty-codec-http:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-codec-http2:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-codec:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-transport:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-common:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-buffer:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-handler:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     |  \- io.netty:netty-transport-native-unix-common:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     +- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:test
+[[1;34mINFO[m] |     \- io.netty:netty-resolver:jar:4.1.118.Final:test
+[[1;34mINFO[m] +- software.amazon.awssdk:dynamodb:jar:2.30.19:test
+[[1;34mINFO[m] |  \- software.amazon.awssdk:profiles:jar:2.30.19:test
+[[1;34mINFO[m] +- software.amazon.awssdk:kinesis:jar:2.30.19:test
+[[1;34mINFO[m] |  \- software.amazon.awssdk:aws-cbor-protocol:jar:2.30.19:test
+[[1;34mINFO[m] |     \- software.amazon.awssdk:third-party-jackson-dataformat-cbor:jar:2.30.19:test
+[[1;34mINFO[m] +- software.amazon.awssdk:cloudwatch:jar:2.30.19:test
+[[1;34mINFO[m] |  \- software.amazon.awssdk:aws-query-protocol:jar:2.30.19:test
+[[1;34mINFO[m] +- software.amazon.awssdk:xray:jar:2.30.19:test
+[[1;34mINFO[m] +- software.amazon.awssdk:sqs:jar:2.30.19:test
+[[1;34mINFO[m] +- com.amazonaws:amazon-sqs-java-extended-client-lib:jar:2.0.4:test
+[[1;34mINFO[m] |  +- software.amazon.payloadoffloading:payloadoffloading-common:jar:2.2.0:test
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:test
+[[1;34mINFO[m] |  \- commons-logging:commons-logging:jar:1.2:test
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.30.19:test
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- commons-io:commons-io:jar:2.16.1:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- com.evanlennick:retry4j:jar:0.15.0:test
+[[1;34mINFO[m] +- software.amazon.awscdk:aws-cdk-lib:jar:2.130.0:test
+[[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-awscli-v1:jar:2.2.223:test (version selected from constraint [2.2.202,3.0.0))
+[[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-kubectl-v20:jar:2.1.4:test (version selected from constraint [2.1.2,3.0.0))
+[[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-node-proxy-agent-v6:jar:2.1.0:test (version selected from constraint [2.0.1,3.0.0))
+[[1;34mINFO[m] |  +- software.amazon.jsii:jsii-runtime:jar:1.106.0:test (version selected from constraint [1.94.0,2.0.0))
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.17.2:test
+[[1;34mINFO[m] |  +- org.jetbrains:annotations:jar:19.0.0:test (version selected from constraint [16.0.3,20.0.0))
+[[1;34mINFO[m] |  \- javax.annotation:javax.annotation-api:jar:1.3.2:test (version selected from constraint [1.3.2,1.4.0))
+[[1;34mINFO[m] +- software.constructs:constructs:jar:10.3.0:test
+[[1;34mINFO[m] +- software.amazon.awssdk:s3:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-xml-protocol:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:arns:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:crt-core:jar:2.30.19:test
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums:jar:2.30.19:test
+[[1;34mINFO[m] |  \- software.amazon.awssdk:checksums-spi:jar:2.30.19:test
+[[1;34mINFO[m] +- software.amazon.awssdk:cloudformation:jar:2.30.19:test
+[[1;34mINFO[m] +- software.amazon.awssdk:sts:jar:2.30.19:test
+[[1;34mINFO[m] +- org.yaml:snakeyaml:jar:2.2:test
+[[1;34mINFO[m] +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-serialization:jar:1.18.0:test
+[[1;34mINFO[m] |  +- io.burt:jmespath-jackson:jar:0.6.0:test
+[[1;34mINFO[m] |  |  \- io.burt:jmespath-core:jar:0.6.0:test
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:test
+[[1;34mINFO[m] |  |  \- joda-time:joda-time:jar:2.10.8:test
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:test
+[[1;34mINFO[m] |     \- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--------------< [0;36msoftware.amazon.lambda:powertools-batch[0;1m >---------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) batch messages 1.18.0  [15/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-batch[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-batch:jar:1.18.0
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |  |  \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  |  +- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  |  \- org.apache.logging.log4j:log4j-core:jar:2.22.1:runtime
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |     +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |     \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m] |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m] |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m] |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m] +- org.assertj:assertj-core:jar:3.26.0:test
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-tests:jar:1.1.1:test
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m] |  |  \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] |  +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m] |  \- org.apache.commons:commons-lang3:jar:3.14.0:test
+[[1;34mINFO[m] \- org.mockito:mockito-core:jar:5.6.0:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy:jar:1.14.8:test
+[[1;34mINFO[m]    +- net.bytebuddy:byte-buddy-agent:jar:1.14.8:test
+[[1;34mINFO[m]    \- org.objenesis:objenesis:jar:3.3:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----< [0;36msoftware.amazon.lambda.examples:powertools-examples-core-sam[0;1m >----[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Core 1.18.0 [16/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-core-sam[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-core-sam:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |     \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-metrics:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- software.amazon.cloudwatchlogs:aws-embedded-metrics:jar:1.0.6:compile
+[[1;34mINFO[m] |     +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.11.1:runtime
+[[1;34mINFO[m] |     \- org.javatuples:javatuples:jar:1.2:runtime
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m]    +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m]    +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m]    +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m]    |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m]    \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----< [0;36msoftware.amazon.lambda.examples:powertools-examples-core-cdk[0;1m >----[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Core 1.17.0 [17/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-core-cdk[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-core-cdk:jar:1.17.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.17.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.17.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:json-utils:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  |     \- software.amazon.awssdk:third-party-jackson-core:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.3:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.20.129:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.14.0:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.14.0:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.14.0:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.14.0:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.17.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.15.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.15.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.15.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.20.0:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.20.0:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.6:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-metrics:jar:1.17.0:compile
+[[1;34mINFO[m] |  \- software.amazon.cloudwatchlogs:aws-embedded-metrics:jar:1.0.6:compile
+[[1;34mINFO[m] |     +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.11.1:runtime
+[[1;34mINFO[m] |     \- org.javatuples:javatuples:jar:1.2:runtime
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m]    +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m]    +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m]    +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m]    |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m]    \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m----------------< [0;36msoftware.amazon.lambda.examples:cdk[0;1m >-----------------[m
+[[1;34mINFO[m] [1mBuilding cdk 1.18.0                                              [18/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mcdk[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:cdk:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.awscdk:aws-cdk-lib:jar:2.130.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-awscli-v1:jar:2.2.223:compile (version selected from constraint [2.2.202,3.0.0))
+[[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-kubectl-v20:jar:2.1.4:compile (version selected from constraint [2.1.2,3.0.0))
+[[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-node-proxy-agent-v6:jar:2.1.0:compile (version selected from constraint [2.0.1,3.0.0))
+[[1;34mINFO[m] |  +- software.amazon.jsii:jsii-runtime:jar:1.106.0:compile (version selected from constraint [1.94.0,2.0.0))
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-core:jar:2.13.5:compile (version selected from constraint [2.11.3,2.14-a0))
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.13.5:compile (version selected from constraint [2.11.3,2.14-a0))
+[[1;34mINFO[m] |  |  |  \- com.fasterxml.jackson.core:jackson-annotations:jar:2.13.5:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.13.5:compile (version selected from constraint [2.11.3,2.14-a0))
+[[1;34mINFO[m] |  +- org.jetbrains:annotations:jar:19.0.0:compile (version selected from constraint [16.0.3,20.0.0))
+[[1;34mINFO[m] |  \- javax.annotation:javax.annotation-api:jar:1.3.2:compile (version selected from constraint [1.3.2,1.4.0))
+[[1;34mINFO[m] +- software.constructs:constructs:jar:10.4.2:compile
+[[1;34mINFO[m] \- org.junit.jupiter:junit-jupiter:jar:5.10.0:test
+[[1;34mINFO[m]    +- org.junit.jupiter:junit-jupiter-api:jar:5.10.0:test
+[[1;34mINFO[m]    |  +- org.opentest4j:opentest4j:jar:1.3.0:test
+[[1;34mINFO[m]    |  +- org.junit.platform:junit-platform-commons:jar:1.10.0:test
+[[1;34mINFO[m]    |  \- org.apiguardian:apiguardian-api:jar:1.1.2:test
+[[1;34mINFO[m]    +- org.junit.jupiter:junit-jupiter-params:jar:5.10.0:test
+[[1;34mINFO[m]    \- org.junit.jupiter:junit-jupiter-engine:jar:5.10.0:test
+[[1;34mINFO[m]       \- org.junit.platform:junit-platform-engine:jar:1.10.0:test
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--< [0;36msoftware.amazon.lambda.examples:powertools-examples-core-serverless[0;1m >--[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Core 1.18.0 [19/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-core-serverless[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-core-serverless:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |     \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-metrics:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- software.amazon.cloudwatchlogs:aws-embedded-metrics:jar:1.0.6:compile
+[[1;34mINFO[m] |     +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.11.1:runtime
+[[1;34mINFO[m] |     \- org.javatuples:javatuples:jar:1.2:runtime
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m]    +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m]    +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m]    +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m]    |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m]    \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--< [0;36msoftware.amazon.lambda.examples:powertools-examples-core-terraform[0;1m >--[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Core 1.18.0 [20/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-core-terraform[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-core-terraform:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |     \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-metrics:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- software.amazon.cloudwatchlogs:aws-embedded-metrics:jar:1.0.6:compile
+[[1;34mINFO[m] |     +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.11.1:runtime
+[[1;34mINFO[m] |     \- org.javatuples:javatuples:jar:1.2:runtime
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.2:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m]    +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m]    +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m]    +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m]    |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m]    \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--< [0;36msoftware.amazon.lambda.examples:powertools-examples-idempotency[0;1m >---[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Idempotency 1.18.0 [21/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-idempotency[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-idempotency:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-idempotency:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] |  |  \- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |  |     \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:dynamodb:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m]    +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m]    +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m]    +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m]    |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m]    \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---< [0;36msoftware.amazon.lambda.examples:powertools-examples-parameters[0;1m >---[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Parameters 1.18.0 [22/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-parameters[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-parameters:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  |  \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-parameters:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:ssm:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:secretsmanager:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:dynamodb:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:apache-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:runtime
+[[1;34mINFO[m] |  |  |  |  \- commons-logging:commons-logging:jar:1.2:runtime
+[[1;34mINFO[m] |  |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:runtime
+[[1;34mINFO[m] |  |  |  \- commons-codec:commons-codec:jar:1.17.1:runtime
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |     \- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:runtime
+[[1;34mINFO[m] |  \- software.amazon.awssdk:appconfigdata:jar:2.30.19:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-buffer:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-transport:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-resolver:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-codec:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-base:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-compression:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-protobuf:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-codec-marshalling:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  \- io.netty:netty-handler:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |     \- io.netty:netty-transport-native-unix-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http2:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] \- io.netty:netty-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--< [0;36msoftware.amazon.lambda.examples:powertools-examples-serialization[0;1m >--[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Serialization 1.18.0 [23/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-serialization[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-serialization:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  |  \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] |  \- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |     \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m]    \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m------< [0;36msoftware.amazon.lambda.examples:powertools-examples-sqs[0;1m >-------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - SQS 1.18.0 [24/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-sqs[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-sqs:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  |  \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  \- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-sqs:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.payloadoffloading:payloadoffloading-common:jar:2.2.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sqs:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:apache-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |  |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:runtime
+[[1;34mINFO[m] |  |  |  |  \- commons-logging:commons-logging:jar:1.2:runtime
+[[1;34mINFO[m] |  |  |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:runtime
+[[1;34mINFO[m] |  |  |  \- commons-codec:commons-codec:jar:1.17.1:runtime
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |     \- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:runtime
+[[1;34mINFO[m] |  \- software.amazon.awssdk:s3:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:aws-xml-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |     |  \- software.amazon.awssdk:aws-query-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:arns:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:crt-core:jar:2.30.19:compile
+[[1;34mINFO[m] |     +- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |     \- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.27.12:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.27.12:compile
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.27.12:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:http-client-spi:jar:2.27.12:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.datatype:jackson-datatype-joda:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] +- junit:junit:jar:4.13.2:test
+[[1;34mINFO[m] |  \- org.hamcrest:hamcrest-core:jar:1.3:test
+[[1;34mINFO[m] +- io.netty:netty-codec-http:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-buffer:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-transport:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-resolver:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-codec:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-base:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-compression:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-protobuf:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-codec-marshalling:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  \- io.netty:netty-handler:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |     \- io.netty:netty-transport-native-unix-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http2:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] \- io.netty:netty-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-----< [0;36msoftware.amazon.lambda.examples:powertools-examples-batch[0;1m >------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Batch 1.18.0 [25/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-batch[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-batch:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-tracing:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  |  \- com.amazonaws:aws-java-sdk-xray:jar:1.12.228:compile
+[[1;34mINFO[m] |  |     \- com.amazonaws:jmespath-java:jar:1.12.228:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-core:jar:2.18.1:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.18.1:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.18.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-batch:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] |     \- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |        \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- org.slf4j:slf4j-api:jar:1.7.36:compile
+[[1;34mINFO[m] |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:sqs:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-json-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:apache-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |  |  \- org.apache.httpcomponents:httpcore:jar:4.4.16:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:netty-nio-client:jar:2.30.19:runtime
+[[1;34mINFO[m] |     +- io.netty:netty-transport-classes-epoll:jar:4.1.118.Final:runtime
+[[1;34mINFO[m] |     \- io.netty:netty-resolver:jar:4.1.118.Final:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:dynamodb-enhanced:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:dynamodb:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:kinesis:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:aws-cbor-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |     \- software.amazon.awssdk:third-party-jackson-dataformat-cbor:jar:2.30.19:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m] |  +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m] |  +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.12.7:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-buffer:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-transport:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  +- io.netty:netty-codec:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-base:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-compression:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  +- io.netty:netty-codec-protobuf:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  |  \- io.netty:netty-codec-marshalling:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |  \- io.netty:netty-handler:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] |     \- io.netty:netty-transport-native-unix-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] +- io.netty:netty-codec-http2:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] \- io.netty:netty-common:jar:4.2.0.RC3:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m---< [0;36msoftware.amazon.lambda.examples:powertools-examples-validation[0;1m >---[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples - Validation 1.18.0 [26/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-validation[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-validation:jar:1.18.0
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |  |  \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-validation:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-serialization:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] |  +- io.burt:jmespath-jackson:jar:0.6.0:compile
+[[1;34mINFO[m] |  |  \- io.burt:jmespath-core:jar:0.6.0:compile
+[[1;34mINFO[m] |  +- com.networknt:json-schema-validator:jar:1.0.87:compile
+[[1;34mINFO[m] |  |  +- com.ethlo.time:itu:jar:1.7.0:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:2.15.2:compile
+[[1;34mINFO[m] |  |     \- org.yaml:snakeyaml:jar:2.0:compile
+[[1;34mINFO[m] |  \- com.amazonaws:aws-lambda-java-serialization:jar:1.1.5:compile
+[[1;34mINFO[m] \- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--< [0;36msoftware.amazon.lambda.examples:powertools-examples-cloudformation[0;1m >--[m
+[[1;34mINFO[m] [1mBuilding AWS Lambda Powertools for Java library Examples - CloudFormation 1.18.0 [27/28][m
+[[1;34mINFO[m] [1m--------------------------------[ jar ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples-cloudformation[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda.examples:powertools-examples-cloudformation:jar:1.18.0
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
+[[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-cloudformation:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-client-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- org.reactivestreams:reactive-streams:jar:1.0.4:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:url-connection-client:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- org.aspectj:aspectjrt:jar:1.9.7:compile
+[[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- software.amazon.lambda:powertools-core:jar:1.18.0:compile
+[[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.22.1:compile
+[[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.22.1:compile
+[[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.9:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
+[[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:s3:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-xml-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:aws-query-protocol:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:protocol-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:arns:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:profiles:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:crt-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:identity-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:http-auth-aws:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:checksums-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:retries-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:sdk-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:retries:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:auth:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  +- software.amazon.awssdk:http-auth-aws-eventstream:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:regions:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:annotations:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:aws-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:metrics-spi:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- software.amazon.awssdk:json-utils:jar:2.30.19:compile
+[[1;34mINFO[m] |  |  \- software.amazon.awssdk:third-party-jackson-core:jar:2.30.19:compile
+[[1;34mINFO[m] |  \- software.amazon.awssdk:endpoints-spi:jar:2.30.19:compile
+[[1;34mINFO[m] +- software.amazon.awssdk:apache-client:jar:2.30.19:compile
+[[1;34mINFO[m] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m] |  +- org.apache.httpcomponents:httpcore:jar:4.4.16:compile
+[[1;34mINFO[m] |  \- commons-codec:commons-codec:jar:1.17.1:compile
+[[1;34mINFO[m] \- org.apache.logging.log4j:log4j-jcl:jar:2.22.1:compile
+[[1;34mINFO[m]    \- commons-logging:commons-logging:jar:1.3.0:compile
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m-------------< [0;36msoftware.amazon.lambda:powertools-examples[0;1m >-------------[m
+[[1;34mINFO[m] [1mBuilding Powertools for AWS Lambda (Java) library Examples 1.18.0 [28/28][m
+[[1;34mINFO[m] [1m--------------------------------[ pom ]---------------------------------[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mpowertools-examples[0;1m ---[m
+[[1;34mINFO[m] software.amazon.lambda:powertools-examples:pom:1.18.0
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1mReactor Summary:[m
+[[1;34mINFO[m] 
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parent 1.18.0 [1;32mSUCCESS[m [  0.377 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Core 1.18.0 [1;32mSUCCESS[m [  0.048 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Serialization Utilities 1.18.0 [1;32mSUCCESS[m [  0.022 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Logging 1.18.0 [1;32mSUCCESS[m [  0.018 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Tracing 1.18.0 [1;32mSUCCESS[m [  0.069 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library SQS 1.18.0  [1;32mSUCCESS[m [  0.104 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Metrics 1.18.0 [1;32mSUCCESS[m [  0.011 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parameters 1.18.0 [1;32mSUCCESS[m [  0.020 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) validation library 1.18.0 [1;32mSUCCESS[m [  0.014 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Test Suite 1.18.0 [1;32mSUCCESS[m [  0.022 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java)library Cloudformation 1.18.0 [1;32mSUCCESS[m [  0.061 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Idempotency 1.18.0 [1;32mSUCCESS[m [  0.067 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Large messages 1.18.0 [1;32mSUCCESS[m [  0.011 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java)library End-to-end tests 1.18.0 [1;32mSUCCESS[m [  0.643 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) batch messages 1.18.0 [1;32mSUCCESS[m [  0.005 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.18.0 [1;32mSUCCESS[m [  0.146 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.17.0 [1;32mSUCCESS[m [  0.042 s]
+[[1;34mINFO[m] cdk 1.18.0 ......................................... [1;32mSUCCESS[m [  0.569 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.18.0 [1;32mSUCCESS[m [  0.015 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.18.0 [1;32mSUCCESS[m [  0.011 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Idempotency 1.18.0 [1;32mSUCCESS[m [  0.015 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Parameters 1.18.0 [1;32mSUCCESS[m [  0.011 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Serialization 1.18.0 [1;32mSUCCESS[m [  0.004 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - SQS 1.18.0 [1;32mSUCCESS[m [  0.066 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Batch 1.18.0 [1;32mSUCCESS[m [  0.012 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Validation 1.18.0 [1;32mSUCCESS[m [  0.004 s]
+[[1;34mINFO[m] AWS Lambda Powertools for Java library Examples - CloudFormation 1.18.0 [1;32mSUCCESS[m [  0.011 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples 1.18.0 [1;32mSUCCESS[m [  0.002 s]
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] [1;32mBUILD SUCCESS[m
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m
+[[1;34mINFO[m] Total time:  3.209 s
+[[1;34mINFO[m] Finished at: 2025-02-17T16:34:24Z
+[[1;34mINFO[m] [1m------------------------------------------------------------------------[m

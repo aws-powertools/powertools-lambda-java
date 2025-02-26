@@ -112,4 +112,4 @@ build/
 .terraform*
 terraform.tfstate*
 
-powertools-idempotency/dynamodb-local-metadata.js
+powertools-idempotency/dynamodb-local-metadata.json
