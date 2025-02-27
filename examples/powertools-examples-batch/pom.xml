@@ -14,7 +14,9 @@
         <log4j.version>2.20.0</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <sdk.version>2.27.12</sdk.version>
+        <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
+        <aws.sdk.version>2.30.19</aws.sdk.version>
+        <netty.version>4.2.0.RC3</netty.version>
     </properties>
 
     <dependencies>
@@ -41,27 +43,50 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sdk-core</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>sqs</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>dynamodb-enhanced</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
         </dependency>
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>kinesis</artifactId>
-            <version>${sdk.version}</version>
+            <version>${aws.sdk.version}</version>
+        </dependency>
+
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws.sdk.v1.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
         </dependency>
     </dependencies>
 

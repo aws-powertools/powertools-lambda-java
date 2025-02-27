@@ -23,6 +23,10 @@ on:
       - 'powertools-validation/**'
       - 'pom.xml'
       - '.github/workflows/pr_artifacts_size.yml'
+
+permissions:
+  contents: read
+
 jobs:
   codecheck:
     runs-on: ubuntu-latest

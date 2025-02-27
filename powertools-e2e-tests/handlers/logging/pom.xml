@@ -20,6 +20,7 @@
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
+            <version>1.9.7</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>

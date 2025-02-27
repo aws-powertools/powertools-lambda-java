@@ -27,6 +27,10 @@
         <version>1.19.0-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <netty.version>4.2.0.RC3</netty.version>
+    </properties>
+
     <name>Powertools for AWS Lambda (Java) library Test Suite</name>
     <description>
         A suite of tests for interactions between the various Powertools for AWS Lambda (Java) modules.
@@ -82,6 +86,23 @@
         <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-sqs</artifactId>
+        </dependency>
+
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

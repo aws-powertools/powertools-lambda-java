@@ -7,8 +7,9 @@
     <version>1.19.0-SNAPSHOT</version>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <cdk.version>2.130.0</cdk.version>
+        <cdk.version>2.178.1</cdk.version>
         <constructs.version>[10.0.0,11.0.0)</constructs.version>
+        <jackson.version>2.14.0</jackson.version>
         <junit.version>5.10.0</junit.version>
     </properties>
     <build>
@@ -41,6 +42,13 @@
         </plugins>
     </build>
     <dependencies>
+        <!-- Transitive Dep -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        
         <!-- AWS Cloud Development Kit -->
         <dependency>
             <groupId>software.amazon.awscdk</groupId>
