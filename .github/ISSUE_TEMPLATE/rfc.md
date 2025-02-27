@@ -1,52 +1,107 @@
----
-name: RFC
-about: Feature design and proposals
-title: 'RFC: '
-labels: RFC, triage
-assignees: ''
+name: Request for Comments (RFC)
+description: Feature design and detailed proposals
+title: "RFC: TITLE"
+labels: ["RFC", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for submitting a RFC. Please add as many details as possible to help further enrich this design.
+  - type: input
+    id: relation
+    attributes:
+      label: Is this related to an existing feature request or issue?
+      description: Please share a link, if applicable
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which Powertools for AWS Lambda (Java) utility does this relate to?
+      options:
+        - Tracer
+        - Logger
+        - Metrics
+        - Middleware factory
+        - Parameters
+        - Batch processing
+        - Typing
+        - Validation
+        - Event Source Data Classes
+        - Parser
+        - Idempotency
+        - Feature flags
+        - JMESPath functions
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Please provide an overview in one or two paragraphs
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case
+      description: Please share the use case and motivation behind this proposal
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: Please explain the design in detail, so anyone familiar with the project could implement it
+      placeholder: What the user experience looks like before and after this design?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Out of scope
+      description: Please explain what should be considered out of scope in your proposal
+    validations:
+      required: true
+  - type: textarea
+    id: challenges
+    attributes:
+      label: Potential challenges
+      description: Nothing is perfect. Please share what common challenges, edge cases, unresolved areas, and suggestions on how to mitigate them
+    validations:
+      required: true
+  - type: textarea
+    id: integrations
+    attributes:
+      label: Dependencies and Integrations
+      description: If applicable, please share whether this feature has additional dependencies, and how it might integrate with other utilities available
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative solutions
+      description: Please describe what alternative solutions to this use case, if any
+      render: markdown
+    validations:
+      required: false
+  - type: checkboxes
+    id: acknowledgment
+    attributes:
+      label: Acknowledgment
+      options:
+        - label: This feature request meets [Powertools for AWS Lambda (Java) Tenets](https://docs.powertools.aws.dev/lambda/Java/#tenets)
+          required: true
+        - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript/), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet/)
+          required: false
+  - type: markdown
+    attributes:
+      value: |
+        ---
 
----
+        **Disclaimer**: We value your time and bandwidth. As such, any pull requests created on non-triaged issues might not be successful.
 
-## Key information
+        Metadata information for admin purposes, please leave them empty.
 
-* RFC PR: (leave this empty)
-* Related issue(s), if known:
-* Area: (i.e. Tracer, Metrics, Logger, etc.)
-* Meet [tenets](https://docs.powertools.aws.dev/lambda-java/#tenets): (Yes/no)
-
-## Summary
-[summary]: #summary
-
-> One paragraph explanation of the feature.
-
-## Motivation
-[motivation]: #motivation
-
-> Why are we doing this? What use cases does it support? What is the expected outcome?
-
-## Proposal
-[proposal]: #proposal
-
-> This is the bulk of the RFC.
-
-> Explain the design in enough detail for somebody familiar with Powertools for AWS Lambda (Java) to understand it, and for somebody familiar with the implementation to implement it.
-
-> This should get into specifics and corner-cases, and include examples of how the feature is used. Any new terminology should be defined here.
-
-## Drawbacks
-[drawbacks]: #drawbacks
-
-> Why should we *not* do this?
-
-> Do we need additional dependencies? Impact performance/package size?
-
-## Rationale and alternatives
-[rationale-and-alternatives]: #rationale-and-alternatives
-
-* **What other designs have been considered? Why not them?**
-* **What is the impact of not doing this?**
-
-## Unresolved questions
-[unresolved-questions]: #unresolved-questions
-
-> Optional, stash area for topics that need further development e.g. TBD
+        * RFC PR:
+        * Approved by: ''
+        * Reviewed by: ''

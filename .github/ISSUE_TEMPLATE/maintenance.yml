@@ -57,7 +57,7 @@ body:
       options:
         - label: This request meets [Powertools for AWS Lambda (Java) Tenets](https://docs.powertools.aws.dev/lambda-java/#tenets)
           required: true
-        - label: Should this be considered in other Powertools for AWS Lambda (Java) languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript/)
+        - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript/)
           required: false
   - type: markdown
     attributes:
