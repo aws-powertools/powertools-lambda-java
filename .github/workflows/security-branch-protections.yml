@@ -1,0 +1,54 @@
+# Modified copy of: https://github.com/github/docs/blob/main/.github/workflows/alert-changed-branch-protections.yml
+
+on:
+  branch_protection_rule:
+  workflow_dispatch:
+  schedule:
+    - cron: '20 16 * * *' # Run daily at 16:20 UTC
+  pull_request:
+    paths:
+      - .github/workflows/security-branch-protections.yml
+      - .github/branch_protection_settings/*.json
+
+name: Alert Changed Branch Protections
+run-name: Alert Changed Branch Protections
+
+permissions:
+  contents: write
+
+jobs:
+  check-branch-protections:
+    runs-on: ubuntu-latest
+    environment: Security
+    if: github.repository == 'aws-powertools/powertools-lambda-java'
+    strategy:
+      matrix:
+        # List of branches we want to monitor for protection changes
+        branch:
+          - main
+          - v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Fetch branch protections
+        id: fetch
+        env:
+          GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+        run: |
+          # Fetch branch protections and store them in a file
+          gh api /repos/${{ github.repository }}/branches/${{ matrix.branch }}/protection \
+            > .github/branch_protection_settings/${{ matrix.branch }}.json
+      - name: Compare branch protections
+        id: compare
+        run: |
+          git diff --quiet .github/branch_protection_settings/${{ matrix.branch }}.json \
+            || echo "diff_failed=true" >> $GITHUB_ENV
+      - name: Send webhook
+        if: ${{ env.diff_failed == 'true' }}
+        run: |
+          curl -X POST -d '{"message": "Branch protections have changed for ${{ github.repository }} on ${{ matrix.branch }}. Please review the changes or revert the changes in GitHub. https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Fail workflow
+        if: ${{ env.diff_failed == 'true' }}
+        run: |
+          echo "::error::Branch protections have been changed"
