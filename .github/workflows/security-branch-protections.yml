@@ -36,7 +36,7 @@ jobs:
           GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
         run: |
           # Fetch branch protections and store them in a file
-          gh api /repos/${{ github.repository }}/branches/${{ matrix.branch }}/protection \
+          gh api /repos/${{ github.repository }}/branches/${{ matrix.branch }}/protection | jq \
             > .github/branch_protection_settings/${{ matrix.branch }}.json
       - name: Compare branch protections
         id: compare
@@ -51,4 +51,5 @@ jobs:
       - name: Fail workflow
         if: ${{ env.diff_failed == 'true' }}
         run: |
+          git diff .github/branch_protection_settings/${{ matrix.branch }}.json
           echo "::error::Branch protections have been changed"
