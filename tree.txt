@@ -1,5 +1,8 @@
 [[1;34mINFO[m] Scanning for projects...
 [[1;33mWARNING[m] 
+[[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda:powertools-logging:jar:1.19.0-SNAPSHOT
+[[1;33mWARNING[m] 'dependencies.dependency.(groupId:artifactId:type:classifier)' must be unique: com.fasterxml.jackson.core:jackson-databind:jar -> duplicate declaration of version (?) @ line 133, column 21
+[[1;33mWARNING[m] 
 [[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda:powertools-test-suite:jar:1.19.0-SNAPSHOT
 [[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 175, column 21
 [[1;33mWARNING[m] 
@@ -10,7 +13,7 @@
 [[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 126, column 21
 [[1;33mWARNING[m] 
 [[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:powertools-examples-core-cdk:jar:1.17.0
-[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 125, column 21
+[[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 137, column 21
 [[1;33mWARNING[m] 
 [[1;33mWARNING[m] Some problems were encountered while building the effective model for software.amazon.lambda.examples:cdk:jar:1.19.0-SNAPSHOT
 [[1;33mWARNING[m] 'build.plugins.plugin.version' for org.apache.maven.plugins:maven-deploy-plugin is missing. @ line 35, column 21
@@ -1094,27 +1097,30 @@
 [[1;34mINFO[m] |  +- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2:jar:2.14.0:compile
 [[1;34mINFO[m] |  \- com.amazonaws:aws-xray-recorder-sdk-aws-sdk-v2-instrumentor:jar:2.14.0:compile
 [[1;34mINFO[m] +- software.amazon.lambda:powertools-logging:jar:1.17.0:compile
-[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-databind:jar:2.15.2:compile
-[[1;34mINFO[m] |  |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.15.2:compile
-[[1;34mINFO[m] |  |  \- com.fasterxml.jackson.core:jackson-core:jar:2.15.2:compile
 [[1;34mINFO[m] |  +- org.apache.logging.log4j:log4j-layout-template-json:jar:2.20.0:compile
 [[1;34mINFO[m] |  \- org.apache.logging.log4j:log4j-slf4j2-impl:jar:2.20.0:compile
 [[1;34mINFO[m] |     \- org.slf4j:slf4j-api:jar:2.0.6:compile
 [[1;34mINFO[m] +- software.amazon.lambda:powertools-metrics:jar:1.17.0:compile
 [[1;34mINFO[m] |  \- software.amazon.cloudwatchlogs:aws-embedded-metrics:jar:1.0.6:compile
-[[1;34mINFO[m] |     +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.11.1:runtime
 [[1;34mINFO[m] |     \- org.javatuples:javatuples:jar:1.2:runtime
 [[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-core:jar:1.2.3:compile
 [[1;34mINFO[m] +- com.amazonaws:aws-lambda-java-events:jar:3.11.4:compile
 [[1;34mINFO[m] |  \- joda-time:joda-time:jar:2.10.8:compile
 [[1;34mINFO[m] +- org.apache.logging.log4j:log4j-core:jar:2.22.1:compile
 [[1;34mINFO[m] +- org.apache.logging.log4j:log4j-api:jar:2.22.1:compile
-[[1;34mINFO[m] \- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
-[[1;34mINFO[m]    +- commons-logging:commons-logging:jar:1.1.3:compile
-[[1;34mINFO[m]    +- commons-codec:commons-codec:jar:1.15:compile
-[[1;34mINFO[m]    +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
-[[1;34mINFO[m]    |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
-[[1;34mINFO[m]    \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] +- com.amazonaws:aws-java-sdk-core:jar:1.12.781:compile
+[[1;34mINFO[m] |  +- commons-logging:commons-logging:jar:1.1.3:compile
+[[1;34mINFO[m] |  +- commons-codec:commons-codec:jar:1.15:compile
+[[1;34mINFO[m] |  +- org.apache.httpcomponents:httpclient:jar:4.5.13:compile
+[[1;34mINFO[m] |  |  \- org.apache.httpcomponents:httpcore:jar:4.4.13:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.17.2:compile
+[[1;34mINFO[m] +- software.amazon.jsii:jsii-runtime:jar:1.108.0:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-core:jar:2.18.3:compile (version selected from constraint [2.11.3,2.19.0))
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.18.3:compile (version selected from constraint [2.11.3,2.19.0))
+[[1;34mINFO[m] |  +- org.jetbrains:annotations:jar:23.1.0:compile (version selected from constraint [13.0.0,24.0-a0))
+[[1;34mINFO[m] |  \- javax.annotation:javax.annotation-api:jar:1.3.2:compile (version selected from constraint [1.3.2,1.4.0))
+[[1;34mINFO[m] \- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m]    \- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m----------------< [0;36msoftware.amazon.lambda.examples:cdk[0;1m >-----------------[m
 [[1;34mINFO[m] [1mBuilding cdk 1.19.0-SNAPSHOT                                     [18/28][m
@@ -1122,9 +1128,9 @@
 [[1;34mINFO[m] 
 [[1;34mINFO[m] [1m--- [0;32mmaven-dependency-plugin:2.8:tree[m [1m(default-cli)[m @ [36mcdk[0;1m ---[m
 [[1;34mINFO[m] software.amazon.lambda.examples:cdk:jar:1.19.0-SNAPSHOT
-[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.14.0:compile
-[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.14.0:compile
-[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.14.0:compile
+[[1;34mINFO[m] +- com.fasterxml.jackson.core:jackson-databind:jar:2.17.2:compile
+[[1;34mINFO[m] |  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.17.2:compile
+[[1;34mINFO[m] |  \- com.fasterxml.jackson.core:jackson-core:jar:2.17.2:compile
 [[1;34mINFO[m] +- software.amazon.awscdk:aws-cdk-lib:jar:2.178.1:compile
 [[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-awscli-v1:jar:2.2.226:compile (version selected from constraint [2.2.208,3.0.0))
 [[1;34mINFO[m] |  +- software.amazon.awscdk:cdk-asset-kubectl-v20:jar:2.1.4:compile (version selected from constraint [2.1.3,3.0.0))
@@ -1688,37 +1694,37 @@
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1mReactor Summary:[m
 [[1;34mINFO[m] 
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parent 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.355 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.053 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Serialization Utilities 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.022 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Logging 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.023 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Tracing 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.069 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library SQS 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.096 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parent 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.353 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.049 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Serialization Utilities 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.021 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Logging 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.021 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Tracing 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.067 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library SQS 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.107 s]
 [[1;34mINFO[m] Powertools for AWS Lambda (Java) library Metrics 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.011 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parameters 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.023 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) validation library 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.015 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Parameters 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.022 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) validation library 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.014 s]
 [[1;34mINFO[m] Powertools for AWS Lambda (Java) library Test Suite 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.025 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java)library Cloudformation 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.063 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Idempotency 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.065 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Large messages 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.012 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java)library End-to-end tests 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.592 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java)library Cloudformation 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.064 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Idempotency 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.067 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Large messages 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.013 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java)library End-to-end tests 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.565 s]
 [[1;34mINFO[m] Powertools for AWS Lambda (Java) batch messages 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.005 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.147 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.17.0 [1;32mSUCCESS[m [  0.044 s]
-[[1;34mINFO[m] cdk 1.19.0-SNAPSHOT ................................ [1;32mSUCCESS[m [  0.671 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.009 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.009 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Idempotency 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.010 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Parameters 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.020 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.148 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.17.0 [1;32mSUCCESS[m [  0.245 s]
+[[1;34mINFO[m] cdk 1.19.0-SNAPSHOT ................................ [1;32mSUCCESS[m [  0.502 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.017 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Core 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.011 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Idempotency 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.012 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Parameters 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.013 s]
 [[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Serialization 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.005 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - SQS 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.069 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - SQS 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.065 s]
 [[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Batch 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.015 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Validation 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.006 s]
-[[1;34mINFO[m] AWS Lambda Powertools for Java library Examples - CloudFormation 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.012 s]
-[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.002 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples - Validation 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.016 s]
+[[1;34mINFO[m] AWS Lambda Powertools for Java library Examples - CloudFormation 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.010 s]
+[[1;34mINFO[m] Powertools for AWS Lambda (Java) library Examples 1.19.0-SNAPSHOT [1;32mSUCCESS[m [  0.001 s]
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
 [[1;34mINFO[m] [1;32mBUILD SUCCESS[m
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
-[[1;34mINFO[m] Total time:  3.280 s
-[[1;34mINFO[m] Finished at: 2025-03-07T09:14:56Z
+[[1;34mINFO[m] Total time:  3.252 s
+[[1;34mINFO[m] Finished at: 2025-03-07T09:50:36Z
 [[1;34mINFO[m] [1m------------------------------------------------------------------------[m
