@@ -66,6 +66,7 @@ java.lang.InternalError: com.oracle.svm.core.jdk.UnsupportedFeatureError: Defini
 Working example is available in the [examples](examples/powertools-examples-core-utilities/sam-graalvm). 
 
 ## Module-Specific Implementation
+Due to the Mockito issues described in the [Known Issues and Solutions](#known-issues-and-solutions) section, some tests needs to be skipped when generating the GRM files. This section shows the commands that need to be used for the modules.   
 
 ### 1. Powertools Common
 
