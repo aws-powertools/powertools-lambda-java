@@ -23,7 +23,7 @@
     <parent>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-parent</artifactId>
-        <version>1.19.0-SNAPSHOT</version>
+        <version>1.19.0</version>
     </parent>
 
     <artifactId>powertools-large-messages</artifactId>
