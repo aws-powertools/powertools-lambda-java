@@ -14,11 +14,13 @@ name: Alert Changed Branch Protections
 run-name: Alert Changed Branch Protections
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   check-branch-protections:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     environment: Security
     if: github.repository == 'aws-powertools/powertools-lambda-java'
     strategy:
