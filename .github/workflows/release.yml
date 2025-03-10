@@ -1,0 +1,28 @@
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Semver version to release
+      snapshot:
+        type: boolean
+        description: Create snapshot release
+        default: true
+      skip_publish:
+        type: boolean
+        description: Ship publish to Maven Central
+        default: false
+
+name: Release
+run-name: Release
+
+permissions: 
+  contents: read
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: noop
+        run: |
+          echo "noop"
