@@ -1,0 +1,25 @@
+on:
+  pull_request: 
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *' # Run daily at 12:00 UTC
+
+name: Verify Dependencies
+run-name: Verify Dependencies – ${{ github.event_name }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # 4.2.2
+      - name: 'Verify Contents'
+        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # 4.5.0
+        with:
+          config-file: ./.github/dependency-review-config.yml
+
