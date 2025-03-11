@@ -1,0 +1,31 @@
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * *' # Run daily at 12:00 UTC
+
+name: PMD
+run-name: PMD - ${{ github.event_name }}
+
+permissions:
+  contents: read
+
+jobs:
+  pmd_analyse:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
+        with:
+          java-version: 21
+          distribution: corretto
+          cache: maven
+      - uses: pmd/pmd-github-action@d9c1f3c5940cbf5923f1354e83fa858b4496ebaa # v2.0.0
+        with:
+          rulesets: 'ruleset.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
