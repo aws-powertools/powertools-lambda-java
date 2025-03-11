@@ -11,19 +11,19 @@ This file defines the Lambda function to be deployed as well as API Gateway for 
  - Set the environment to use GraalVM
 
 ```shell 
-      export JAVA_HOME=<path to GraalVM>
-````
+export JAVA_HOME=<path to GraalVM>
+```
 
 ## Build the sample application
 
 - Build the Docker image that will be used as the environment for SAM build:
 ```shell
-       docker build --platform linux/amd64 . -t powertools-examples-core-sam-graalvm
+docker build --platform linux/amd64 . -t powertools-examples-core-sam-graalvm
 ```
 
 - Build the SAM project using the docker image
 ```shell
-    sam build --use-container --build-image powertools-examples-core-sam-graalvm
+sam build --use-container --build-image powertools-examples-core-sam-graalvm
 
 ```
 #### [Optional] Building with -SNAPSHOT versions of PowerTools

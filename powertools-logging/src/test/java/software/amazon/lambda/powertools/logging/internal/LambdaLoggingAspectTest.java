@@ -18,11 +18,8 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getProperty;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -62,6 +59,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junitpioneer.jupiter.ClearEnvironmentVariable;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import org.junitpioneer.jupiter.SetSystemProperty;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
@@ -426,40 +426,31 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    @ClearEnvironmentVariable(key = "_X_AMZN_TRACE_ID")
+    @SetSystemProperty(key = "com.amazonaws.xray.traceHeader", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void shouldLogxRayTraceIdSystemPropertySet() {
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn(null);
-            mocked.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        requestHandler.handleRequest(new Object(), context);
 
-            requestHandler.handleRequest(new Object(), context);
-
-            assertThat(MDC.getCopyOfContextMap())
-                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
-                    .containsEntry("xray_trace_id", xRayTraceId);
-        }
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("xray_trace_id", xRayTraceId);
     }
 
     @Test
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void shouldLogxRayTraceIdEnvVarSet() {
         // GIVEN
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        // WHEN
+        requestHandler.handleRequest(new Object(), context);
 
-            // WHEN
-            requestHandler.handleRequest(new Object(), context);
-
-            // THEN
-            assertThat(MDC.getCopyOfContextMap())
-                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
-                    .containsEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId);
-        }
+        // THEN
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId);
     }
 
     @Test

@@ -199,6 +199,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
 },
 {
+  "name":"java.lang.ProcessEnvironment",
+  "fields":[{"name":"theCaseInsensitiveEnvironment"}, {"name":"theEnvironment"}]
+},
+{
   "name":"java.lang.ProcessHandle",
   "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
 },
@@ -275,6 +279,10 @@
 {
   "name":"java.security.AccessController",
   "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
+},
+{
+  "name":"java.util.Collections$UnmodifiableMap",
+  "fields":[{"name":"m"}]
 },
 {
   "name":"java.util.Map"
@@ -617,27 +625,9 @@
   "queryAllPublicMethods":true
 },
 {
-  "name":"software.amazon.lambda.powertools.logging.internal.JsonSerializerTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"writeBigDecimal_shouldWriteBigDecimal","parameterTypes":[] }, {"name":"writeBoolean_shouldWriteBooleanValue","parameterTypes":[] }, {"name":"writeCustomObject_shouldWriteObjectAsJson","parameterTypes":[] }, {"name":"writeDouble_shouldWriteDoubleValue","parameterTypes":[] }, {"name":"writeFloat_shouldWriteFloatValue","parameterTypes":[] }, {"name":"writeInt_shouldWriteIntValue","parameterTypes":[] }, {"name":"writeJsonNodeObject_shouldWriteObjectAsJson","parameterTypes":[] }, {"name":"writeListObject_shouldWriteListAsArray","parameterTypes":[] }, {"name":"writeLong_shouldWriteLongValue","parameterTypes":[] }, {"name":"writeMapObject_shouldWriteMapAsJson","parameterTypes":[] }, {"name":"writeNull_shouldWriteNullValue","parameterTypes":[] }, {"name":"writeStringObject_shouldWriteStringWithQuotes","parameterTypes":[] }, {"name":"writeString_shouldWriteStringWithQuotes","parameterTypes":[] }, {"name":"writeTreeNodeArrayObject_shouldWriteObjectAsJson","parameterTypes":[] }, {"name":"writeTreeNodeObject_shouldWriteObjectAsJson","parameterTypes":[] }]
-},
-{
   "name":"software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect",
   "fields":[{"name":"LEVEL_AT_INITIALISATION"}],
   "methods":[{"name":"setLogLevels","parameterTypes":["org.slf4j.event.Level"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspectTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"cleanUp","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"shouldClearStateWhenClearStateIsTrue","parameterTypes":[] }, {"name":"shouldHaveNoEffectIfNotUsedOnLambdaHandler","parameterTypes":[] }, {"name":"shouldLogCorrelationIdOnALBEvent","parameterTypes":["com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent"] }, {"name":"shouldLogCorrelationIdOnAPIGatewayProxyRequestEvent","parameterTypes":["com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent"] }, {"name":"shouldLogCorrelationIdOnAPIGatewayV2HTTPEvent","parameterTypes":["com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent"] }, {"name":"shouldLogCorrelationIdOnAppSyncEvent","parameterTypes":[] }, {"name":"shouldLogCorrelationIdOnStreamHandler","parameterTypes":[] }, {"name":"shouldLogDebugWhenPowertoolsLevelEnvVarIsDebug","parameterTypes":[] }, {"name":"shouldLogDebugWhenSamplingEnvVarEqualsOne","parameterTypes":[] }, {"name":"shouldLogDebugWhenSamplingEqualsOne","parameterTypes":[] }, {"name":"shouldLogErrorForHandlerWhenEnvVariableSetToTrue","parameterTypes":[] }, {"name":"shouldLogErrorForHandlerWithLogErrorAnnotation","parameterTypes":[] }, {"name":"shouldLogErrorWhenPowertoolsLevelEnvVarIsError","parameterTypes":[] }, {"name":"shouldLogErrorWhenPowertoolsLevelEnvVarIsFatal","parameterTypes":[] }, {"name":"shouldLogEventForHandlerWhenEnvVariableSetToTrue","parameterTypes":[] }, {"name":"shouldLogEventForHandlerWithLogEventAnnotation","parameterTypes":[] }, {"name":"shouldLogEventForStreamHandler","parameterTypes":[] }, {"name":"shouldLogInfoWhenPowertoolsLevelEnvVarIsInfo","parameterTypes":[] }, {"name":"shouldLogInfoWhenPowertoolsLevelEnvVarIsInfoAndLambdaLevelVarIsWarn","parameterTypes":[] }, {"name":"shouldLogInfoWhenPowertoolsLevelEnvVarIsInvalid","parameterTypes":[] }, {"name":"shouldLogResponseForHandlerWhenEnvVariableSetToTrue","parameterTypes":[] }, {"name":"shouldLogResponseForHandlerWithLogResponseAnnotation","parameterTypes":[] }, {"name":"shouldLogResponseForStreamHandler","parameterTypes":[] }, {"name":"shouldLogServiceNameWhenEnvVarSet","parameterTypes":[] }, {"name":"shouldLogWarnWhenPowertoolsLevelEnvVarINotSetAndLambdaLevelVarIsWarn","parameterTypes":[] }, {"name":"shouldLogWarnWhenPowertoolsLevelEnvVarIsWarn","parameterTypes":[] }, {"name":"shouldLogWarnWhenPowertoolsLevelEnvVarIsWarnAndLambdaLevelVarIsInfo","parameterTypes":[] }, {"name":"shouldNotLogDebugWhenSamplingEnvVarIsInvalid","parameterTypes":[] }, {"name":"shouldNotLogDebugWhenSamplingEnvVarIsTooBig","parameterTypes":[] }, {"name":"shouldNotLogDebugWhenSamplingEqualsZero","parameterTypes":[] }, {"name":"shouldNotLogEventForHandlerWhenEnvVariableSetToFalse","parameterTypes":[] }, {"name":"shouldNotSetLambdaContextForStreamHandlerWhenDisabled","parameterTypes":[] }, {"name":"shouldNotSetLambdaContextWhenDisabled","parameterTypes":[] }, {"name":"shouldSetColdStartFlagOnFirstCallNotOnSecondCall","parameterTypes":[] }, {"name":"shouldSetLambdaContextForStreamHandlerWhenEnabled","parameterTypes":[] }, {"name":"shouldSetLambdaContextWhenEnabled","parameterTypes":[] }, {"name":"testMultipleLoggingManagers_shouldWarnAndSelectFirstOne","parameterTypes":[] }, {"name":"testNoLoggingManagers_shouldWarnAndCreateDefault","parameterTypes":[] }]
 },
 {
   "name":"software.amazon.lambda.powertools.logging.internal.LoggingConstants",
