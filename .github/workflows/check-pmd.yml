@@ -27,5 +27,5 @@ jobs:
           cache: maven
       - uses: pmd/pmd-github-action@d9c1f3c5940cbf5923f1354e83fa858b4496ebaa # v2.0.0
         with:
-          rulesets: 'ruleset.xml'
+          rulesets: '.github/pmd-ruleset.xml'
           token: ${{ secrets.GITHUB_TOKEN }}
