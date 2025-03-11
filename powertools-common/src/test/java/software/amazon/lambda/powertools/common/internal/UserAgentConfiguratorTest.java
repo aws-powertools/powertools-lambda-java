@@ -15,19 +15,16 @@
 package software.amazon.lambda.powertools.common.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockStatic;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.AWS_EXECUTION_ENV;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.VERSION_KEY;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.VERSION_PROPERTIES_FILENAME;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.getVersionFromProperties;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
-
 
 import java.io.File;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 class UserAgentConfiguratorTest {
 
@@ -110,15 +107,13 @@ class UserAgentConfiguratorTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = AWS_EXECUTION_ENV, value = "AWS_Lambda_java8")
     void testGetUserAgent_SetAWSExecutionEnv() {
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            mockedSystemWrapper.when(() -> getenv(AWS_EXECUTION_ENV)).thenReturn("AWS_Lambda_java8");
-            String userAgent = UserAgentConfigurator.getUserAgent("test-feature");
+        String userAgent = UserAgentConfigurator.getUserAgent("test-feature");
 
-            assertThat(userAgent)
-                    .isNotNull()
-                    .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");
-        }
+        assertThat(userAgent)
+                .isNotNull()
+                .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");
     }
 
 }
