@@ -58,6 +58,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
 },
 {
+  "name":"java.lang.ProcessEnvironment",
+  "fields":[{"name":"theCaseInsensitiveEnvironment"}, {"name":"theEnvironment"}]
+},
+{
   "name":"java.lang.ProcessHandle",
   "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
 },
@@ -137,6 +141,10 @@
 {
   "name":"java.security.AccessController",
   "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
+},
+{
+  "name":"java.util.Collections$UnmodifiableMap",
+  "fields":[{"name":"m"}]
 },
 {
   "name":"java.util.concurrent.ForkJoinTask",

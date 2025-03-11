@@ -16,10 +16,6 @@ package software.amazon.lambda.powertools.metrics;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatNullPointerException;
-import static org.mockito.Mockito.mockStatic;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getProperty;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,28 +26,20 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
-import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 
+@SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
 class MetricsLoggerTest {
 
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
     private final ObjectMapper mapper = new ObjectMapper();
-
-    @BeforeAll
-    static void beforeAll() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-        }
-    }
 
     @BeforeEach
     void setUp() {
@@ -64,206 +52,170 @@ class MetricsLoggerTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void singleMetricsCaptureUtilityWithDefaultDimension() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        MetricsUtils.defaultDimensions(DimensionSet.of("Service", "Booking"));
 
-            MetricsUtils.defaultDimensions(DimensionSet.of("Service", "Booking"));
+        MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
+                metricsLogger ->
+                {
+                });
 
-            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
-                    metricsLogger ->
-                    {
-                    });
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
-
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Service", "Booking")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Service", "Booking")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void singleMetricsCaptureUtility() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
+                metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
 
-            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT, "test",
-                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Dimension1", "Value1")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Dimension1", "Value1")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
-
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=test");
-                    });
-        }
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=test");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     void singleMetricsCaptureUtilityWithNullNamespace() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            // POWERTOOLS_METRICS_NAMESPACE is not defined
+        // POWERTOOLS_METRICS_NAMESPACE is not defined
 
-            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
-                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+        MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
+                metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=aws-embedded-metrics");
-                    });
-        }
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=aws-embedded-metrics");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = "GlobalName")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void singleMetricsCaptureUtilityWithDefaultNameSpace() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
+                metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
 
-            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
-                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Dimension1", "Value1")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Dimension1", "Value1")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
-
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=GlobalName");
-                    });
-        }
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=GlobalName");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = "GlobalName")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void metricsLoggerCaptureUtilityWithDefaultNameSpace() {
         testLogger(MetricsUtils::withMetricsLogger);
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = "GlobalName")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void shouldUseTraceIdFromSystemPropertyIfEnvVarNotPresent() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn(null);
-            internalWrapper.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
+                metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
 
-            MetricsUtils.withSingleMetric("Metric1", 1, Unit.COUNT,
-                    metricsLogger -> metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1")));
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Dimension1", "Value1")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Dimension1", "Value1")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
-
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=GlobalName");
-                    });
-        }
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=GlobalName");
+                });
     }
 
     private void testLogger(Consumer<Consumer<MetricsLogger>> methodToTest) {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            mocked.when(() -> SystemWrapper.getenv("POWERTOOLS_METRICS_NAMESPACE")).thenReturn("GlobalName");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        methodToTest.accept(metricsLogger ->
+        {
+            metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
+            metricsLogger.putMetric("Metric1", 1, Unit.COUNT);
+            metricsLogger.putMetric("Metric2", 1, Unit.COUNT, StorageResolution.HIGH);
+        });
 
-            methodToTest.accept(metricsLogger ->
-            {
-                metricsLogger.setDimensions(DimensionSet.of("Dimension1", "Value1"));
-                metricsLogger.putMetric("Metric1", 1, Unit.COUNT);
-                metricsLogger.putMetric("Metric2", 1, Unit.COUNT, StorageResolution.HIGH);
-            });
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Dimension1", "Value1")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Dimension1", "Value1")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793");
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=GlobalName");
 
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=GlobalName");
-
-                        ArrayList cloudWatchMetrics = (ArrayList) aws.get("CloudWatchMetrics");
-                        LinkedHashMap<String, Object> values =
-                                (java.util.LinkedHashMap<String, Object>) cloudWatchMetrics.get(0);
-                        ArrayList metricArray = (ArrayList) values.get("Metrics");
-                        LinkedHashMap<String, Object> metricValues = (LinkedHashMap<String, Object>) metricArray.get(1);
-                        assertThat(metricValues).containsEntry("StorageResolution", 1);
-                    });
-        }
+                    ArrayList cloudWatchMetrics = (ArrayList) aws.get("CloudWatchMetrics");
+                    LinkedHashMap<String, Object> values =
+                            (java.util.LinkedHashMap<String, Object>) cloudWatchMetrics.get(0);
+                    ArrayList metricArray = (ArrayList) values.get("Metrics");
+                    LinkedHashMap<String, Object> metricValues = (LinkedHashMap<String, Object>) metricArray.get(1);
+                    assertThat(metricValues).containsEntry("StorageResolution", 1);
+                });
     }
 
     private Map<String, Object> readAsJson(String s) {
