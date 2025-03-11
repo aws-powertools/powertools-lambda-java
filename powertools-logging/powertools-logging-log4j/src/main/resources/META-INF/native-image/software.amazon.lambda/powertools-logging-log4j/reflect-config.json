@@ -108,6 +108,10 @@
   "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
 },
 {
+  "name":"java.lang.ProcessEnvironment",
+  "fields":[{"name":"theCaseInsensitiveEnvironment"}, {"name":"theEnvironment"}]
+},
+{
   "name":"java.lang.ProcessHandle",
   "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
 },
@@ -197,6 +201,10 @@
 },
 {
   "name":"java.sql.Time"
+},
+{
+  "name":"java.util.Collections$UnmodifiableMap",
+  "fields":[{"name":"m"}]
 },
 {
   "name":"java.util.concurrent.ForkJoinTask",
@@ -1119,15 +1127,6 @@
   "name":"org.apache.logging.log4j.layout.template.json.resolver.PowertoolsResolverFactory",
   "queryAllDeclaredMethods":true,
   "methods":[{"name":"getInstance","parameterTypes":[] }]
-},
-{
-  "name":"org.apache.logging.log4j.layout.template.json.resolver.PowertoolsResolverTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"shouldResolveAccountId","parameterTypes":[] }, {"name":"shouldResolveColdStart","parameterTypes":[] }, {"name":"shouldResolveFunctionStringInfo","parameterTypes":["software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields"] }, {"name":"shouldResolveMemorySize","parameterTypes":[] }, {"name":"shouldResolveSamplingRate","parameterTypes":[] }, {"name":"unknownField_shouldThrowException","parameterTypes":[] }]
 },
 {
   "name":"org.apache.logging.log4j.layout.template.json.resolver.SourceResolverFactory",

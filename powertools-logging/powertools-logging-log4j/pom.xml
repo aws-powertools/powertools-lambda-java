@@ -52,6 +52,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.junit-pioneer</groupId>
+            <artifactId>junit-pioneer</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <scope>test</scope>
@@ -100,7 +105,10 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.2.3</version>
                         <configuration>
-                            <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-logging-log4j,experimental-class-define-support</argLine>
+                            <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-logging-log4j,experimental-class-define-support
+                                --add-opens java.base/java.util=ALL-UNNAMED
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                            </argLine>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -133,12 +141,10 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <agent>
-                                <enabled>true</enabled>
-                                <defaultMode>Standard</defaultMode>
-                            </agent>
                             <imageName>powertools-logging-log4j</imageName>
                             <buildArgs>
+                                <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
+                                <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
                                 <buildArg>--no-fallback</buildArg>
                                 <buildArg>-Dorg.graalvm.nativeimage.imagecode=agent</buildArg>
                                 <buildArg>-H:ClassInitialization=net.bytebuddy.ClassFileVersion:rerun</buildArg>
