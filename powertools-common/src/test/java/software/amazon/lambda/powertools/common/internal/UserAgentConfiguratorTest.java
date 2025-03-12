@@ -21,8 +21,11 @@ import static software.amazon.lambda.powertools.common.internal.UserAgentConfigu
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.getVersionFromProperties;
 
 import java.io.File;
-import java.util.Objects;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
@@ -61,14 +64,18 @@ class UserAgentConfiguratorTest {
     }
 
     @Test
-    void testGetVersionFromProperties_InvalidFile() {
-        File f = new File(Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
-                .getResource("unreadable.properties")).getPath());
+    void testGetVersionFromProperties_InvalidFile() throws IOException {
+        Path tempFile = Files.createTempFile("unreadable", ".properties");
+        File f = tempFile.toFile();
         f.setReadable(false);
 
-        String version = getVersionFromProperties("unreadable.properties", VERSION_KEY);
+        String version = getVersionFromProperties(f.getName(), VERSION_KEY);
 
         assertThat(version).isEqualTo("NA");
+
+        // Cleanup
+        f.setReadable(true);
+        Files.deleteIfExists(tempFile);
     }
 
     @Test
