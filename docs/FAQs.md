@@ -148,7 +148,7 @@ but due to the impact on the developer experience it was decided to stick with t
 
 Powertools core utilities, i.e. [logging](./core/logging.md), [metrics](./core/metrics.md) and [tracing](./core/tracing.md), include the [GraalVM Reachability Metadata (GRM)](https://www.graalvm.org/latest/reference-manual/native-image/metadata/) in the `META-INF` directories of the respective JARs. You can find a working example of Serverless Application Model (SAM) based application in the [examples](../examples/powertools-examples-core-utilities/sam-graalvm/README.md) directory.
 
-These are typical steps you need to follow in a maven based Java project
+Below, you find typical steps you need to follow in a Maven based Java project:
 
 ### Set the environment to use GraalVM
 
@@ -156,8 +156,8 @@ These are typical steps you need to follow in a maven based Java project
 export JAVA_HOME=<path to GraalVM>
 ```
 
-### Use log4j > 2.24.0
-Log4j version `2.24.0` adds [support for GraalVM](https://github.com/apache/logging-log4j2/issues/1539#issuecomment-2106766878). Depending on your project's dependency hierarchy, older version of log4j might be included in the final dependency graph. Make sure version `>2.24.0` of these dependencies are used by your maven project:
+### Use log4j `>2.24.0`
+Log4j version `2.24.0` adds [support for GraalVM](https://github.com/apache/logging-log4j2/issues/1539#issuecomment-2106766878). Depending on your project's dependency hierarchy, older version of log4j might be included in the final dependency graph. Make sure version `>2.24.0` of these dependencies are used by your Maven project:
 
 ```xml
 <dependencies>
@@ -187,7 +187,7 @@ Log4j version `2.24.0` adds [support for GraalVM](https://github.com/apache/logg
 
 ### Add the AWS Lambda Java Runtime Interface Client dependency
 
-Runtime Interface Client allow your function to receive invocation events from Lambda, send the response back to Lambda, and report errors to the Lambda service. Add the below dependency to your maven project:
+The Runtime Interface Client allows your function to receive invocation events from Lambda, send the response back to Lambda, and report errors to the Lambda service. Add the below dependency to your Maven project:
 
 ```xml
 <dependency>
@@ -197,11 +197,11 @@ Runtime Interface Client allow your function to receive invocation events from L
 </dependency>
 ```
 
-Also include the AWS Lambda GRM files by copying the `com.amazonaws`[directory](../examples/powertools-examples-core-utilities/sam-graalvm/src/main/resources/META-INF/native-image/) in your project's `META-INF/native-image` directory
+Also include the AWS Lambda GRM files by copying the `com.amazonaws` [directory](../examples/powertools-examples-core-utilities/sam-graalvm/src/main/resources/META-INF/native-image/) in your project's `META-INF/native-image` directory
 
 ### Build the native image
 
-1. Use the `native-maven-plugin` to build the native image. You can do this by adding the plugin to your `pom.xml` and creating a build profile called `native-image` that can build the native image of your Lambda function:
+Use the `native-maven-plugin` to build the native image. You can do this by adding the plugin to your `pom.xml` and creating a build profile called `native-image` that can build the native image of your Lambda function:
 
 ```xml
 <profiles>
@@ -239,16 +239,16 @@ Also include the AWS Lambda GRM files by copying the `com.amazonaws`[directory](
 </profiles>
 ```
 
-2. Create a docker image using a Dockerfile like [this](../examples/powertools-examples-core-utilities/sam-graalvm/Dockerfile) to create an x86 based build image.
+Create a Docker image using a `Dockerfile` like [this](../examples/powertools-examples-core-utilities/sam-graalvm/Dockerfile) to create an x86 based build image.
 
 ```shell
 docker build --platform linux/amd64 . -t your-org/your-app-graalvm-builder
 ```
 
-3. Create the native image of you Lambda function using the docker command below. 
+Create the native image of you Lambda function using the Docker command below. 
 
 ```shell
 docker run --platform linux/amd64 -it -v `pwd`:`pwd` -w `pwd` -v ~/.m2:/root/.m2 your-org/your-app-graalvm-builder mvn clean -Pnative-image package
 
 ```
-The native image is created in the target directory.
+The native image is created in the `target/` directory.

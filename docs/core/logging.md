@@ -444,7 +444,7 @@ we provide [built-in JMESPath expressions](#built-in-correlation-id-expressions)
 
 #### Custom keys
 
-** Using StructuredArguments **
+**Using StructuredArguments**
 
 To append additional keys in your logs, you can use the `StructuredArguments` class:
 
@@ -624,7 +624,7 @@ To append additional keys in your logs, you can use the `StructuredArguments` cl
             }
         ```
 
-** Using MDC **
+**Using MDC**
 
 Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supported by the [SLF4J API](https://www.slf4j.org/manual.html#mdc){target="_blank"},
 [logback](https://logback.qos.ch/manual/mdc.html){target="_blank"} and log4j (known as [ThreadContext](https://logging.apache.org/log4j/2.x/manual/thread-context.html){target="_blank"}). You can use the following standard:
