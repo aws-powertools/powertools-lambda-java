@@ -1,0 +1,51 @@
+on:
+  workflow_dispatch:
+    inputs:
+      alias:
+        type: string
+        required: false
+        description: |
+          Alias to deploy the documentation into, this is mostly for testing pre-release
+          versions of the documentation, such as beta versions or snapshots.
+
+          https://docs.powertools.aws.dev/lambda/java/<alias>
+
+name: Build Docs
+run-name: Build Docs - ${{ contains(github.head_ref, 'main') && 'main' || inputs.alias }}
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    environment: Docs
+    steps:
+      - name: Sanity Check
+        if: ${{ github.head_ref != 'main' || inputs.alias == '' }}
+        run:
+          echo "::error::No buildable docs"
+
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with: 
+          fetch-depth: 0
+      - name: Build
+        run: |
+          mkdir -p dist
+          docker build -t squidfunk/mkdocs-material ./docs/
+          docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
+          cp -R site/* dist/
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+      - name: Deploy
+        run: |
+          aws s3 sync \
+            dist \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ github.head_ref == 'main' && '' || format('{0}/', inputs.alias )}}
