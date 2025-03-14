@@ -1,0 +1,33 @@
+on: 
+  pull_request:
+    branches: [ dependabot/* ]
+
+name: Dependabot updates
+run-name: Dependabot
+
+permissions:
+  contents: read
+
+jobs:
+  dependabot:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'aws-powertools/powertools-lambda-java' }}
+    permissions:
+      pull-requests: read
+    steps:
+      - id: dependabot-metadata
+        name: Fetch Dependabot metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7 # v2.3.0
+      - name: Fail workflow
+        if: ${{ steps.dependabot-metadata.outputs.update-type == 'version-update:semver-major' }}
+        run: |
+          echo "::error::Major version upgrades are not wanted"
+      - name: Approve PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr review "${{ github.event.pull_request.html_url }}" --approve --body '🤖 Approved by another robot.'
+      - name: Enable auto-merge on PR
+        run: gh pr merge --auto --squash "${{ github.event.pull_request.html_url }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
