@@ -9,6 +9,16 @@ on:
           versions of the documentation, such as beta versions or snapshots.
 
           https://docs.powertools.aws.dev/lambda/java/<alias>
+  workflow_call:
+    inputs:
+      alias:
+        type: string
+        required: false
+        description: |
+          Alias to deploy the documentation into, this is mostly for testing pre-release
+          versions of the documentation, such as beta versions or snapshots.
+
+          https://docs.powertools.aws.dev/lambda/java/<alias>
 
 name: Build Docs
 run-name: Build Docs - ${{ contains(github.head_ref, 'main') && 'main' || inputs.alias }}
