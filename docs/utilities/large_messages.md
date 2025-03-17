@@ -105,44 +105,44 @@ Depending on your version of Java (either Java 1.8 or 11+), the configuration sl
 === "Maven Java 11+"
 ```xml hl_lines="3-7 16 18 24-27"
 <dependencies>
-...
-<dependency>
-<groupId>software.amazon.lambda</groupId>
-<artifactId>powertools-large-messages</artifactId>
-<version>{{ powertools.version }}</version>
-</dependency>
-...
+    ...
+    <dependency>
+        <groupId>software.amazon.lambda</groupId>
+        <artifactId>powertools-large-messages</artifactId>
+        <version>{{ powertools.version }}</version>
+    </dependency>
+    ...
 </dependencies>
 ...
 <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
 <build>
-<plugins>
-...
-<plugin>
-<groupId>dev.aspectj</groupId>
-<artifactId>aspectj-maven-plugin</artifactId>
-<version>1.13.1</version>
-<configuration>
-<source>11</source> <!-- or higher -->
-<target>11</target> <!-- or higher -->
-<complianceLevel>11</complianceLevel> <!-- or higher -->
-<aspectLibraries>
-<aspectLibrary>
-<groupId>software.amazon.lambda</groupId>
-<artifactId>powertools-large-messages</artifactId>
-</aspectLibrary>
-</aspectLibraries>
-</configuration>
-<executions>
-<execution>
-<goals>
-<goal>compile</goal>
-</goals>
-</execution>
-</executions>
-</plugin>
-...
-</plugins>
+    <plugins>
+        ...
+        <plugin>
+            <groupId>dev.aspectj</groupId>
+            <artifactId>aspectj-maven-plugin</artifactId>
+            <version>1.13.1</version>
+            <configuration>
+                <source>11</source> <!-- or higher -->
+                <target>11</target> <!-- or higher -->
+                <complianceLevel>11</complianceLevel> <!-- or higher -->
+                <aspectLibraries>
+                    <aspectLibrary>
+                        <groupId>software.amazon.lambda</groupId>
+                        <artifactId>powertools-large-messages</artifactId>
+                    </aspectLibrary>
+                </aspectLibraries>
+            </configuration>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>compile</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        ...
+    </plugins>
 </build>
 ```
 
