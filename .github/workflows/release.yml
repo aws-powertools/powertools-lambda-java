@@ -20,9 +20,16 @@ permissions:
   contents: read
 
 jobs:
-  noop:
+  version_seal:
     runs-on: ubuntu-latest
     steps:
-      - name: noop
-        run: |
-          echo "noop"
+      - id: version
+        name: version
+        uses: ./.github/version
+        with:
+          new_version: ${{ inputs.version }}
+      - id: seal
+        name: seal
+        uses: ./.github/seal
+        with:
+          prefix: source
