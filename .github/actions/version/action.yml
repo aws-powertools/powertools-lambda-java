@@ -1,0 +1,28 @@
+name: Version Java Project
+description: |
+ ...
+
+inputs:
+  new_version:
+    description: New package version, expressed as SemVer (1.x.y)
+    required: true
+
+outputs:
+  old_version:
+    description: Current version of project
+    value: ${{ steps.current_version.outputs.current_version}}
+
+runs:
+  using: composite
+  steps:
+    - id: current_version
+      name: Get current version
+      shell: bash
+      run: |
+        echo "current_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+    - id: replace_version
+      name: Replace current version
+      shell: |
+      run: |
+        mvn versions:set -DnewVersion=${{ inputs.new_version }} -DprocessAllModules=true -DallowSnapshots=true
