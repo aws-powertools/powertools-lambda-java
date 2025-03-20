@@ -14,12 +14,21 @@
 
 package software.amazon.lambda.powertools.idempotency.internal;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.databind.JsonNode;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
+import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
+
+import java.time.Instant;
+import java.util.OptionalInt;
+import java.util.function.BiFunction;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlreadyInProgressException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
@@ -32,14 +41,9 @@ import software.amazon.lambda.powertools.idempotency.persistence.BasePersistence
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-import java.time.Instant;
-import java.util.OptionalInt;
-
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.EXPIRED;
-import static software.amazon.lambda.powertools.idempotency.persistence.DataRecord.Status.INPROGRESS;
-
 /**
- * Internal class that will handle the Idempotency, and use the {@link software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore}
+ * Internal class that will handle the Idempotency, and use the
+ * {@link software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore}
  * to store the result of previous calls.
  */
 public class IdempotencyHandler {
@@ -106,7 +110,8 @@ public class IdempotencyHandler {
 
     /**
      * Tries to determine the remaining time available for the current lambda invocation.
-     * Currently, it only works if the idempotent handler decorator is used or using {@link Idempotency#registerLambdaContext(Context)}
+     * Currently, it only works if the idempotent handler decorator is used or using
+     * {@link Idempotency#registerLambdaContext(Context)}
      *
      * @return the remaining time in milliseconds or empty if the context was not provided/found
      */
@@ -144,7 +149,8 @@ public class IdempotencyHandler {
     /**
      * Take appropriate action based on data_record's status
      *
-     * @param record DataRecord
+     * @param record
+     *            DataRecord
      * @return Function's response previously used for this idempotency key, if it has successfully executed already.
      */
     private Object handleForStatus(DataRecord record) {
@@ -167,10 +173,26 @@ public class IdempotencyHandler {
         try {
             LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function",
                     record.getIdempotencyKey());
+
+            final BiFunction<Object, DataRecord, Object> responseHook = Idempotency.getInstance().getConfig()
+                    .getResponseHook();
+            final Object responseData;
+
             if (returnType.equals(String.class)) {
-                return record.getResponseData();
+                // Primitive String data will be returned raw and not de-serialized from JSON.
+                responseData = record.getResponseData();
+            } else {
+                responseData = JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(),
+                        returnType);
             }
-            return JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(), returnType);
+
+            if (responseHook != null) {
+                LOG.debug(
+                        "Found user-defined idempotent response hook. Calling with response data and persistence store data record.");
+                return responseHook.apply(responseData, record);
+            }
+
+            return responseData;
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException(
                     "Unable to get function response as " + returnType.getSimpleName(), e);

@@ -45,20 +45,36 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     public App(DynamoDbClient client) {
         Idempotency.config().withConfig(
-                        IdempotencyConfig.builder()
-                                .withEventKeyJMESPath(
-                                        "powertools_json(body).address") // will retrieve the address field in the body which is a string transformed to json with `powertools_json`
-                                .build())
+                IdempotencyConfig.builder()
+                        .withEventKeyJMESPath("powertools_json(body).address")
+                        .withResponseHook((responseData, dataRecord) -> {
+                            if (responseData instanceof APIGatewayProxyResponseEvent) {
+                                APIGatewayProxyResponseEvent proxyResponse = (APIGatewayProxyResponseEvent) responseData;
+                                final Map<String, String> headers = new HashMap<>();
+                                headers.putAll(proxyResponse.getHeaders());
+                                headers.put("x-idempotency-response", "true");
+                                headers.put("x-idempotency-expiration",
+                                        String.valueOf(dataRecord.getExpiryTimestamp()));
+
+                                proxyResponse.setHeaders(headers);
+
+                                return proxyResponse;
+                            }
+
+                            return responseData;
+                        })
+                        .build())
                 .withPersistenceStore(
                         DynamoDBPersistenceStore.builder()
                                 .withDynamoDbClient(client)
                                 .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
-                                .build()
-                ).configure();
+                                .build())
+                .configure();
     }
 
     /**
-     * This is our Lambda event handler. It accepts HTTP POST  requests from API gateway and returns the contents of the given URL. Requests are made idempotent
+     * This is our Lambda event handler. It accepts HTTP POST requests from API gateway and returns the contents of the
+     * given URL. Requests are made idempotent
      * by the idempotency library, and results are cached for the default 1h expiry time.
      * <p>
      * You can test the endpoint like this:
@@ -67,8 +83,10 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
      *     curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/helloidem/ -H "Content-Type: application/json" -d '{"address": "https://checkip.amazonaws.com"}'
      * </pre>
      * <ul>
-     *     <li>First call will execute the handleRequest normally, and store the response in the idempotency table (Look into DynamoDB)</li>
-     *     <li>Second call (and next ones) will retrieve from the cache (if cache is enabled, which is by default) or from the store, the handler won't be called. Until the expiration happens (by default 1 hour).</li>
+     * <li>First call will execute the handleRequest normally, and store the response in the idempotency table (Look
+     * into DynamoDB)</li>
+     * <li>Second call (and next ones) will retrieve from the cache (if cache is enabled, which is by default) or from
+     * the store, the handler won't be called. Until the expiration happens (by default 1 hour).</li>
      * </ul>
      */
     @Idempotent // The magic is here!
@@ -101,14 +119,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         }
     }
 
-
     /**
      * Helper to retrieve the contents of the given URL and return them as a string.
      * <p>
      * We could also put the @Idempotent annotation here if we only wanted this sub-operation to be idempotent. Putting
      * it on the handler, however, reduces total execution time and saves us time!
      *
-     * @param address The URL to fetch
+     * @param address
+     *            The URL to fetch
      * @return The contents of the given URL
      * @throws IOException
      */
