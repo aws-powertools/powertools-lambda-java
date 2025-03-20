@@ -28,11 +28,18 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - id: version
         name: version
-        uses: ./.github/version
+        uses: ./.github/actions/version
         with:
           new_version: ${{ inputs.version }}
       - id: seal
         name: seal
-        uses: ./.github/seal
+        uses: ./.github/actions/seal
         with:
           prefix: source
+  
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - id: restore
+        name: restore
+        uses: ./.github/restore

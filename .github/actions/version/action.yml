@@ -1,6 +1,19 @@
 name: Version Java Project
 description: |
- ...
+  Versions the maven project using an input
+
+  Process:
+    1. Grab current version from project.version variable from maven
+    2. Set new version using maven-versions-plugin
+
+  Usage:
+  ```yml
+  - id: version
+    name: version 
+    uses: .github/actions/version
+    with:
+      new_version: 1.20.0
+```
 
 inputs:
   new_version:
