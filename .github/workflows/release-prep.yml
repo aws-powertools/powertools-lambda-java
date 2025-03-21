@@ -6,9 +6,16 @@ on:
         description: 'Release number to upgrade to. For example X.X.X. Follow Semantic Versioning when deciding on next version.'
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pull-requests: write
+      contents: write
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Get current date
@@ -69,7 +76,6 @@ jobs:
         uses: peter-evans/create-pull-request@18f7dc018cc2cd597073088f7c7591b9d1c02672 # v3.14.0
         with:
           commit-message: chore:prep release ${{ github.event.inputs.targetRelease }}
-          token: ${{ secrets.RELEASE }}
           signoff: false
           branch: prep-release-${{ github.event.inputs.targetRelease }}
           delete-branch: true

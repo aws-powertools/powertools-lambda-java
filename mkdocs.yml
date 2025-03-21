@@ -7,6 +7,7 @@ nav:
   - Changelog: changelog.md
   - Workshop 🆕: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
   - FAQs: FAQs.md
+  - Roadmap: roadmap.md
   - Core utilities:
       - core/logging.md
       - core/tracing.md
@@ -61,8 +62,10 @@ markdown_extensions:
       alternate_style: true
   - pymdownx.details
   - pymdownx.snippets:
-      base_path: '.'
+      base_path: "."
       check_paths: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -90,7 +93,7 @@ extra_javascript:
 
 extra:
   powertools:
-    version: 1.18.0 # to update after each release (we do not want snapshot version here)
+    version: 1.19.0 # to update after each release (we do not want snapshot version here)
 
 repo_url: https://github.com/aws-powertools/powertools-lambda-java
 edit_uri: edit/main/docs

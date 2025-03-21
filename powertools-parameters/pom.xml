@@ -21,7 +21,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>1.19.0-SNAPSHOT</version>
+        <version>1.19.0</version>
     </parent>
 
     <artifactId>powertools-parameters</artifactId>
@@ -46,6 +46,10 @@
             <organizationUrl>https://aws.amazon.com/</organizationUrl>
         </developer>
     </developers>
+
+    <properties>
+        <netty.version>4.2.0.RC3</netty.version>
+    </properties>
 
     <distributionManagement>
         <snapshotRepository>
@@ -109,6 +113,24 @@
             <artifactId>aspectjrt</artifactId>
             <scope>compile</scope>
         </dependency>
+
+        <!-- Transitive dependencies -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http2</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-common</artifactId>
+            <version>${netty.version}</version>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -1,6 +1,7 @@
 name: Build
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
@@ -45,6 +46,10 @@ on:
       - 'pom.xml'
       - 'examples/pom.xml'
       - '.github/workflows/**'
+
+permissions:
+  contents: read
+
 jobs:
   build-corretto:
     runs-on: ubuntu-latest
@@ -58,7 +63,6 @@ jobs:
       AWS_REGION: eu-west-1
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
-      contents: read
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java
@@ -69,14 +73,30 @@ jobs:
           cache: 'maven'
       - name: Build with Maven
         run: mvn -B install --file pom.xml
+      - name: Build Gradle Setup
+        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        working-directory: examples/powertools-examples-core/gradle
+        run: |
+          curl -L -o gradle/wrapper/gradle.zip https:$(cat gradle/wrapper/gradle-wrapper.properties  | grep distributionUrl | cut -d ':' -f 2)
+          unzip gradle/wrapper/gradle.zip -d gradle/wrapper/gradle
+          ./gradle/wrapper/gradle/gradle-8.2.1/bin/gradle wrapper
       - name: Build Gradle Example - Java
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         working-directory: examples/powertools-examples-core/gradle
         run: ./gradlew build
+
+      - name: Build Gradle Setup (Kotlin)
+        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
+        working-directory: examples/powertools-examples-core/kotlin
+        run: |
+          curl -L -o gradle/wrapper/gradle.zip https:$(cat gradle/wrapper/gradle-wrapper.properties  | grep distributionUrl | cut -d ':' -f 2)
+          unzip gradle/wrapper/gradle.zip -d gradle/wrapper/gradle
+          ./gradle/wrapper/gradle/gradle-8.2.1/bin/gradle wrapper
       - name: Build Gradle Example - Kotlin
         if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         working-directory: examples/powertools-examples-core/kotlin
         run: ./gradlew build
+        
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@d9f34f8cd5cb3b3eb79b3e4b5dae3a16df499a70 # v3.1.1
         if: ${{ matrix.java == '11' }} # publish results once

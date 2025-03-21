@@ -11,6 +11,10 @@ on:
       - v2
     paths:
       - 'examples/**'
+
+permissions:
+  contents: read
+
 jobs:
   linter:
     runs-on: ubuntu-latest
