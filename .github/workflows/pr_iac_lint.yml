@@ -29,7 +29,6 @@ jobs:
           distribution: 'corretto'
           java-version: 11
       - name: Build Gradle Setup
-        if: ${{ matrix.java == '8' }} # Gradle example can only be built on Java 8
         working-directory: examples/powertools-examples-core/gradle
         run: |
           curl -L -o gradle/wrapper/gradle.zip https:$(cat gradle/wrapper/gradle-wrapper.properties  | grep distributionUrl | cut -d ':' -f 2)
