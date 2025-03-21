@@ -187,8 +187,7 @@ public class IdempotencyHandler {
             }
 
             if (responseHook != null) {
-                LOG.debug(
-                        "Found user-defined idempotent response hook. Calling with response data and persistence store data record.");
+                LOG.debug("Applying user-defined response hook to idempotency data before returning.");
                 return responseHook.apply(responseData, record);
             }
 
