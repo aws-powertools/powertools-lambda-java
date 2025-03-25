@@ -20,17 +20,17 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.19.0</version>
+        <version>1.20.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.19.0</version>
+        <version>1.20.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.19.0</version>
+        <version>1.20.0</version>
     </dependency>
     ...
 </dependencies>
@@ -217,7 +217,7 @@ More info [here](https://github.com/aws-powertools/powertools-lambda-java/pull/1
 
 ## Examples
 
-See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.19.0/examples)** for example projects showcasing usage of different utilities.
+See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.20.0/examples)** for example projects showcasing usage of different utilities.
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
