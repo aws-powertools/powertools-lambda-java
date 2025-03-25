@@ -8,15 +8,75 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.20.0] - 2025-03-25
+
+* feat(cfn-custom-resource): Add optional 'reason' field for detailed failure reporting (#1758) by @moizsh
+
 ## [1.19.0] - 2025-03-07
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
-
-
-## [1.19.0-SNAPSHOT] - 2025-02-25
-
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
-
+* chore(deps): Update deps for jackson ([#1793](https://github.com/aws-powertools/powertools-lambda-java/pull/1793)) by [@sthulb](https://github.com/sthulb)
+* build(deps): bump log4j.version from 2.22.1 to 2.24.3 ([#1777](https://github.com/aws-powertools/powertools-lambda-java/pull/1777)) by [@dependabot](https://github.com/dependabot)
+* chore(deps): update JSII to 1.108 ([#1791](https://github.com/aws-powertools/powertools-lambda-java/pull/1791)) by [@sthulb](https://github.com/sthulb)
+* build(deps): bump jinja2 from 3.1.5 to 3.1.6 in /docs ([#1789](https://github.com/aws-powertools/powertools-lambda-java/pull/1789)) by [@dependabot](https://github.com/dependabot)
+* chore: Update netty version ([#1768](https://github.com/aws-powertools/powertools-lambda-java/pull/1768)) by [@sthulb](https://github.com/sthulb)
+* chore: Set versions of transitive dependencies ([#1767](https://github.com/aws-powertools/powertools-lambda-java/pull/1767)) by [@sthulb](https://github.com/sthulb)
+* chore: update Jackson in examples ([#1766](https://github.com/aws-powertools/powertools-lambda-java/pull/1766)) by [@sthulb](https://github.com/sthulb)
+* build(deps): bump org.apache.maven.plugins:maven-jar-plugin from 3.4.1 to 3.4.2 ([#1731](https://github.com/aws-powertools/powertools-lambda-java/pull/1731)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.xray.recorder.version from 2.15.3 to 2.18.1 ([#1726](https://github.com/aws-powertools/powertools-lambda-java/pull/1726)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.26.29 to 2.27.12 ([#1724](https://github.com/aws-powertools/powertools-lambda-java/pull/1724)) by [@dependabot](https://github.com/dependabot)
+* fix: Allow empty responses as well as null response in AppConfig ([#1673](https://github.com/aws-powertools/powertools-lambda-java/pull/1673)) by [@chrisclayson](https://github.com/chrisclayson)
+* build(deps): bump aws.sdk.version from 2.27.2 to 2.27.7 ([#1715](https://github.com/aws-powertools/powertools-lambda-java/pull/1715)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.26.29 to 2.27.2 ([#1714](https://github.com/aws-powertools/powertools-lambda-java/pull/1714)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.26 to 2.26.29 ([#1713](https://github.com/aws-powertools/powertools-lambda-java/pull/1713)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.26.25 to 2.26.29 ([#1712](https://github.com/aws-powertools/powertools-lambda-java/pull/1712)) by [@dependabot](https://github.com/dependabot)
+* chore: deprecate java1.8 al1 ([#1706](https://github.com/aws-powertools/powertools-lambda-java/pull/1706)) by [@jeromevdl](https://github.com/jeromevdl)
+* chore: java 1.8 AL1 is deprecated, fix E2E tests ([#1692](https://github.com/aws-powertools/powertools-lambda-java/pull/1692)) by [@jeromevdl](https://github.com/jeromevdl)
+* build(deps): bump aws.sdk.version from 2.26.21 to 2.26.25 ([#1703](https://github.com/aws-powertools/powertools-lambda-java/pull/1703)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.26.3 to 2.26.21 ([#1697](https://github.com/aws-powertools/powertools-lambda-java/pull/1697)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump jackson.version from 2.17.0 to 2.17.2 ([#1696](https://github.com/aws-powertools/powertools-lambda-java/pull/1696)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.commons:commons-lang3 from 3.13.0 to 3.14.0 ([#1694](https://github.com/aws-powertools/powertools-lambda-java/pull/1694)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump commons-io:commons-io from 2.15.1 to 2.16.1 ([#1691](https://github.com/aws-powertools/powertools-lambda-java/pull/1691)) by [@dependabot](https://github.com/dependabot)
+* docs: improve tracing doc for sdk instrumentation ([#1687](https://github.com/aws-powertools/powertools-lambda-java/pull/1687)) by [@jeromevdl](https://github.com/jeromevdl)
+* docs: fix tracing links for xray ([#1686](https://github.com/aws-powertools/powertools-lambda-java/pull/1686)) by [@jeromevdl](https://github.com/jeromevdl)
+* build(deps): bump org.apache.maven.plugins:maven-failsafe-plugin from 3.2.5 to 3.3.0 ([#1679](https://github.com/aws-powertools/powertools-lambda-java/pull/1679)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.69 to 2.26.3 ([#1658](https://github.com/aws-powertools/powertools-lambda-java/pull/1658)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump com.github.spotbugs:spotbugs-maven-plugin from 4.7.3.6 to 4.8.5.0 ([#1657](https://github.com/aws-powertools/powertools-lambda-java/pull/1657)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-checkstyle-plugin from 3.3.0 to 3.4.0 ([#1653](https://github.com/aws-powertools/powertools-lambda-java/pull/1653)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.50 to 2.25.69 ([#1652](https://github.com/aws-powertools/powertools-lambda-java/pull/1652)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-source-plugin from 3.3.0 to 3.3.1 ([#1646](https://github.com/aws-powertools/powertools-lambda-java/pull/1646)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.assertj:assertj-core from 3.25.3 to 3.26.0 ([#1644](https://github.com/aws-powertools/powertools-lambda-java/pull/1644)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.xray.recorder.version from 2.15.1 to 2.15.3 ([#1643](https://github.com/aws-powertools/powertools-lambda-java/pull/1643)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.35 to 2.25.50 ([#1642](https://github.com/aws-powertools/powertools-lambda-java/pull/1642)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump com.amazonaws:aws-lambda-java-events from 3.11.2 to 3.11.4 ([#1597](https://github.com/aws-powertools/powertools-lambda-java/pull/1597)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.24.10 to 2.25.6 ([#1603](https://github.com/aws-powertools/powertools-lambda-java/pull/1603)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-surefire-plugin from 3.1.2 to 3.2.5 ([#1596](https://github.com/aws-powertools/powertools-lambda-java/pull/1596)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.codehaus.mojo:exec-maven-plugin from 3.1.0 to 3.2.0 ([#1585](https://github.com/aws-powertools/powertools-lambda-java/pull/1585)) by [@dependabot](https://github.com/dependabot)
+* build(deps-dev): bump software.amazon.awscdk:aws-cdk-lib from 2.100.0 to 2.130.0 ([#1586](https://github.com/aws-powertools/powertools-lambda-java/pull/1586)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump io.burt:jmespath-jackson from 0.5.1 to 0.6.0 ([#1587](https://github.com/aws-powertools/powertools-lambda-java/pull/1587)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.21.0 to 2.24.10 ([#1581](https://github.com/aws-powertools/powertools-lambda-java/pull/1581)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump commons-io:commons-io from 2.13.0 to 2.15.1 ([#1584](https://github.com/aws-powertools/powertools-lambda-java/pull/1584)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.xray.recorder.version from 2.14.0 to 2.15.1 ([#1583](https://github.com/aws-powertools/powertools-lambda-java/pull/1583)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-shade-plugin from 3.5.0 to 3.5.2 ([#1582](https://github.com/aws-powertools/powertools-lambda-java/pull/1582)) by [@dependabot](https://github.com/dependabot)
+* build(deps-dev): bump org.yaml:snakeyaml from 2.1 to 2.2 ([#1400](https://github.com/aws-powertools/powertools-lambda-java/pull/1400)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump log4j.version from 2.20.0 to 2.22.1 ([#1547](https://github.com/aws-powertools/powertools-lambda-java/pull/1547)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-artifact-plugin from 3.4.1 to 3.5.0 ([#1485](https://github.com/aws-powertools/powertools-lambda-java/pull/1485)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump com.amazonaws:aws-lambda-java-serialization from 1.1.2 to 1.1.5 ([#1573](https://github.com/aws-powertools/powertools-lambda-java/pull/1573)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.jacoco:jacoco-maven-plugin from 0.8.10 to 0.8.11 ([#1509](https://github.com/aws-powertools/powertools-lambda-java/pull/1509)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aspectj to 1.9.21 for jdk21 ([#1536](https://github.com/aws-powertools/powertools-lambda-java/pull/1536)) by [@jeromevdl](https://github.com/jeromevdl)
+* docs: HelloWorldStreamFunction in examples fails with sam ([#1532](https://github.com/aws-powertools/powertools-lambda-java/pull/1532)) by [@jasoniharris](https://github.com/jasoniharris)
+* chore: Testing java21 aspectj pre-release ([#1519](https://github.com/aws-powertools/powertools-lambda-java/pull/1519)) by [@scottgerring](https://github.com/scottgerring)
+* fix: LargeMessageIdempotentE2ET Flaky ([#1518](https://github.com/aws-powertools/powertools-lambda-java/pull/1518)) by [@scottgerring](https://github.com/scottgerring)
+* build(deps): bump software.amazon.payloadoffloading:payloadoffloading-common from 2.1.3 to 2.2.0 ([#1639](https://github.com/aws-powertools/powertools-lambda-java/pull/1639)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-jar-plugin from 3.3.0 to 3.4.1 ([#1638](https://github.com/aws-powertools/powertools-lambda-java/pull/1638)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump jackson.version from 2.15.3 to 2.17.0 ([#1637](https://github.com/aws-powertools/powertools-lambda-java/pull/1637)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.31 to 2.25.35 ([#1629](https://github.com/aws-powertools/powertools-lambda-java/pull/1629)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.16 to 2.25.31 ([#1625](https://github.com/aws-powertools/powertools-lambda-java/pull/1625)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.21.1 to 2.25.26 ([#1622](https://github.com/aws-powertools/powertools-lambda-java/pull/1622)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-failsafe-plugin from 3.1.2 to 3.2.5 ([#1619](https://github.com/aws-powertools/powertools-lambda-java/pull/1619)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump com.fasterxml.jackson.datatype:jackson-datatype-joda from 2.15.2 to 2.17.0 ([#1616](https://github.com/aws-powertools/powertools-lambda-java/pull/1616)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump aws.sdk.version from 2.25.6 to 2.25.16 ([#1613](https://github.com/aws-powertools/powertools-lambda-java/pull/1613)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.apache.maven.plugins:maven-gpg-plugin from 3.1.0 to 3.2.1 ([#1610](https://github.com/aws-powertools/powertools-lambda-java/pull/1610)) by [@dependabot](https://github.com/dependabot)
+* build(deps): bump org.assertj:assertj-core from 3.24.2 to 3.25.3 ([#1609](https://github.com/aws-powertools/powertools-lambda-java/pull/1609)) by [@dependabot](https://github.com/dependabot)
 
 ## [1.18.0] - 2023-11-16
 
