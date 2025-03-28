@@ -73,7 +73,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     }
 
     /**
-     * This is our Lambda event handler. It accepts HTTP POST requests from API gateway and returns the contents of the
+     * This is your Lambda event handler. It accepts HTTP POST requests from API gateway and returns the contents of the
      * given URL. Requests are made idempotent
      * by the idempotency library, and results are cached for the default 1h expiry time.
      * <p>
