@@ -55,7 +55,7 @@ times with the same parameters**. This makes idempotent operations safe to retry
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
-                             <artifactId>powertools-idempotency-dynamodb</artifactId>
+                             <artifactId>powertools-idempotency-core</artifactId>
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
@@ -584,6 +584,7 @@ IdempotencyConfig.builder()
                 .withUseLocalCache(true)
                 .withLocalCacheMaxItems(432)
                 .withHashFunction("SHA-256")
+                .withResponseHook((responseData, dataRecord) -> responseData)
                 .build()
 ```
 
@@ -591,13 +592,14 @@ These are the available options for further configuration:
 
 | Parameter                                         | Default | Description                                                                                                                      |
 |---------------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------|
-| **EventKeyJMESPath**                              | `""`    | JMESPath expression to extract the idempotency key from the event record. See available [built-in functions](serialization) |
+| **EventKeyJMESPath**                              | `""`    | JMESPath expression to extract the idempotency key from the event record. See available [built-in functions](serialization)      |
 | **PayloadValidationJMESPath**                     | `""`    | JMESPath expression to validate whether certain parameters have changed in the event                                             |
-| **ThrowOnNoIdempotencyKey**                       | `False` | Throw exception if no idempotency key was found in the request                                                                   |
+| **ThrowOnNoIdempotencyKey**                       | `false` | Throw exception if no idempotency key was found in the request                                                                   |
 | **ExpirationInSeconds**                           | 3600    | The number of seconds to wait before a record is expired                                                                         |
 | **UseLocalCache**                                 | `false` | Whether to locally cache idempotency results (LRU cache)                                                                         |
 | **LocalCacheMaxItems**                            | 256     | Max number of items to store in local cache                                                                                      |
 | **HashFunction**                                  | `MD5`   | Algorithm to use for calculating hashes, as supported by `java.security.MessageDigest` (eg. SHA-1, SHA-256, ...)                 |
+| **ResponseHook**                                  | `null`  | Response hook to apply modifications to idempotent responses                                                                     |
 
 These features are detailed below.
 
@@ -854,6 +856,58 @@ You can extend the `BasePersistenceStore` class and implement the abstract metho
     Pay attention to the documentation for each method - you may need to perform additional checks inside these methods to ensure the idempotency guarantees remain intact.
 
     For example, the `putRecord` method needs to throw an exception if a non-expired record already exists in the data store with a matching key.
+
+### Manipulating the Idempotent Response
+
+You can set up a response hook in the Idempotency configuration to manipulate the returned data when an operation is idempotent. The hook function will be called with the current de-serialized response `Object` and the Idempotency `DataRecord`.
+
+The example below shows how to append an HTTP header to an `APIGatewayProxyResponseEvent`.
+
+=== "Using an Idempotent Response Hook"
+
+    ```java hl_lines="3-20"
+    Idempotency.config().withConfig(
+            IdempotencyConfig.builder()
+                    .withResponseHook((responseData, dataRecord) -> {
+                        if (responseData instanceof APIGatewayProxyResponseEvent) {
+                            APIGatewayProxyResponseEvent proxyResponse = 
+                                (APIGatewayProxyResponseEvent) responseData;
+                            final Map<String, String> headers = new HashMap<>();
+                            headers.putAll(proxyResponse.getHeaders());
+                            // Append idempotency headers
+                            headers.put("x-idempotency-response", "true");
+                            headers.put("x-idempotency-expiration",
+                                    String.valueOf(dataRecord.getExpiryTimestamp()));
+
+                            proxyResponse.setHeaders(headers);
+
+                            return proxyResponse;
+                        }
+
+                        return responseData;
+                    })
+                    .build())
+            .withPersistenceStore(
+                    DynamoDBPersistenceStore.builder()
+                            .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                            .build())
+            .configure();
+    ```
+
+???+ info "Info: Using custom de-serialization?"
+
+    The response hook is called after de-serialization so the payload you process will be the de-serialized Java object.
+
+#### Being a good citizen
+
+When using response hooks to manipulate returned data from idempotent operations, it's important to follow best practices to avoid introducing complexity or issues. Keep these guidelines in mind:
+
+1. **Response hook works exclusively when operations are idempotent.** The hook will not be called when an operation is not idempotent, or when the idempotent logic fails.
+
+2. **Catch and Handle Exceptions.** Your response hook code should catch and handle any exceptions that may arise from your logic. Unhandled exceptions will cause the Lambda function to fail unexpectedly.
+
+3. **Keep Hook Logic Simple** Response hooks should consist of minimal and straightforward logic for manipulating response data. Avoid complex conditional branching and aim for hooks that are easy to reason about.
+
 
 ## Compatibility with other utilities
 
