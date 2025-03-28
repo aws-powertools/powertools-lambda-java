@@ -14,15 +14,32 @@
 
 package software.amazon.lambda.powertools.idempotency.internal;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -43,21 +60,6 @@ import software.amazon.lambda.powertools.idempotency.persistence.BasePersistence
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-import java.time.Instant;
-import java.util.OptionalInt;
-import java.util.OptionalLong;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 public class IdempotencyAspectTest {
 
     @Mock
@@ -77,8 +79,8 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
 
@@ -104,26 +106,65 @@ public class IdempotencyAspectTest {
     }
 
     @Test
+    public void firstCall_shouldPutInStoreAndNotApplyResponseHook() {
+        Idempotency.config()
+                .withPersistenceStore(store)
+                .withConfig(IdempotencyConfig.builder()
+                        .withEventKeyJMESPath("id")
+                        // This hook will add a second product to the basket. It should not run here. Only for
+                        // idempotent responses.
+                        .withResponseHook((responseData, dataRecord) -> {
+                            final Basket basket = (Basket) responseData;
+                            basket.add(new Product(42, "fake product 2", 12));
+                            return basket;
+                        })
+                        .build())
+                .configure();
+
+        IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
+
+        when(context.getRemainingTimeInMillis()).thenReturn(30000);
+
+        Product p = new Product(42, "fake product", 12);
+        Basket basket = function.handleRequest(p, context);
+        assertThat(basket.getProducts()).hasSize(1); // Size should be 1 because response hook should not run
+        assertThat(function.handlerCalled()).isTrue();
+
+        ArgumentCaptor<JsonNode> nodeCaptor = ArgumentCaptor.forClass(JsonNode.class);
+        ArgumentCaptor<OptionalInt> expiryCaptor = ArgumentCaptor.forClass(OptionalInt.class);
+        verify(store).saveInProgress(nodeCaptor.capture(), any(), expiryCaptor.capture());
+        assertThat(nodeCaptor.getValue().get("id").asLong()).isEqualTo(p.getId());
+        assertThat(nodeCaptor.getValue().get("name").asText()).isEqualTo(p.getName());
+        assertThat(nodeCaptor.getValue().get("price").asDouble()).isEqualTo(p.getPrice());
+
+        assertThat(expiryCaptor.getValue().orElse(-1)).isEqualTo(30000);
+
+        ArgumentCaptor<Basket> resultCaptor = ArgumentCaptor.forClass(Basket.class);
+        verify(store).saveSuccess(any(), resultCaptor.capture(), any());
+        assertThat(resultCaptor.getValue()).isEqualTo(basket);
+    }
+
+    @Test
     public void secondCall_notExpired_shouldGetFromStore() throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
-        DataRecord record = new DataRecord(
+        DataRecord dr = new DataRecord(
                 "42",
                 DataRecord.Status.COMPLETED,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null);
-        doReturn(record).when(store).getRecord(any(), any());
+        doReturn(dr).when(store).getRecord(any(), any());
 
         // WHEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
@@ -141,19 +182,19 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
-        DataRecord record = new DataRecord(
+        DataRecord dr = new DataRecord(
                 "42",
                 DataRecord.Status.COMPLETED,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 p.getName(),
                 null);
-        doReturn(record).when(store).getRecord(any(), any());
+        doReturn(dr).when(store).getRecord(any(), any());
 
         // WHEN
         IdempotencyStringFunction function = new IdempotencyStringFunction();
@@ -165,6 +206,41 @@ public class IdempotencyAspectTest {
     }
 
     @Test
+    public void secondCall_notExpired_shouldGetStringFromStoreWithResponseHook() {
+        // GIVEN
+        final String RESPONSE_HOOK_SUFFIX = " ResponseHook";
+        Idempotency.config()
+                .withPersistenceStore(store)
+                .withConfig(IdempotencyConfig.builder()
+                        .withEventKeyJMESPath("id")
+                        .withResponseHook((responseData, dataRecord) -> {
+                            responseData += RESPONSE_HOOK_SUFFIX;
+                            return responseData;
+                        })
+                        .build())
+                .configure();
+
+        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+
+        Product p = new Product(42, "fake product", 12);
+        DataRecord dr = new DataRecord(
+                "42",
+                DataRecord.Status.COMPLETED,
+                Instant.now().plus(356, SECONDS).getEpochSecond(),
+                p.getName(),
+                null);
+        doReturn(dr).when(store).getRecord(any(), any());
+
+        // WHEN
+        IdempotencyStringFunction function = new IdempotencyStringFunction();
+        String name = function.handleRequest(p, context);
+
+        // THEN
+        assertThat(name).isEqualTo(p.getName() + RESPONSE_HOOK_SUFFIX);
+        assertThat(function.handlerCalled()).isFalse();
+    }
+
+    @Test
     public void secondCall_inProgress_shouldThrowIdempotencyAlreadyInProgressException()
             throws JsonProcessingException {
         // GIVEN
@@ -172,23 +248,23 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
-        OptionalLong timestampInFuture =
-                OptionalLong.of(Instant.now().toEpochMilli() + 1000); // timeout not expired (in 1sec)
-        DataRecord record = new DataRecord(
+        OptionalLong timestampInFuture = OptionalLong.of(Instant.now().toEpochMilli() + 1000); // timeout not expired
+                                                                                               // (in 1sec)
+        DataRecord dr = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null,
                 timestampInFuture);
-        doReturn(record).when(store).getRecord(any(), any());
+        doReturn(dr).when(store).getRecord(any(), any());
 
         // THEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
@@ -204,23 +280,23 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
-        OptionalLong timestampInThePast =
-                OptionalLong.of(Instant.now().toEpochMilli() - 100); // timeout expired 100ms ago
-        DataRecord record = new DataRecord(
+        OptionalLong timestampInThePast = OptionalLong.of(Instant.now().toEpochMilli() - 100); // timeout expired 100ms
+                                                                                               // ago
+        DataRecord dr = new DataRecord(
                 "42",
                 DataRecord.Status.INPROGRESS,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null,
                 timestampInThePast);
-        doReturn(record).when(store).getRecord(any(), any());
+        doReturn(dr).when(store).getRecord(any(), any());
 
         // THEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
@@ -235,8 +311,8 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         // WHEN / THEN
         IdempotencyWithErrorFunction function = new IdempotencyWithErrorFunction();
@@ -256,8 +332,8 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        .build()
-                ).configure();
+                        .build())
+                .configure();
 
         // WHEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
@@ -340,13 +416,13 @@ public class IdempotencyAspectTest {
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
-        DataRecord record = new DataRecord(
+        DataRecord dr = new DataRecord(
                 "fake",
                 DataRecord.Status.COMPLETED,
                 Instant.now().plus(356, SECONDS).getEpochSecond(),
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null);
-        doReturn(record).when(store).getRecord(any(), any());
+        doReturn(dr).when(store).getRecord(any(), any());
 
         // WHEN
         IdempotencyInternalFunction function = new IdempotencyInternalFunction(false);
@@ -405,8 +481,7 @@ public class IdempotencyAspectTest {
     public void idempotencyOnSubMethodNotAnnotated_shouldThrowException() {
         Idempotency.config()
                 .withPersistenceStore(store)
-                .withConfig(IdempotencyConfig.builder().build()
-                ).configure();
+                .withConfig(IdempotencyConfig.builder().build()).configure();
 
         // WHEN
         IdempotencyInternalFunctionInvalid function = new IdempotencyInternalFunctionInvalid();
@@ -421,8 +496,7 @@ public class IdempotencyAspectTest {
     public void idempotencyOnSubMethodVoid_shouldThrowException() {
         Idempotency.config()
                 .withPersistenceStore(store)
-                .withConfig(IdempotencyConfig.builder().build()
-                ).configure();
+                .withConfig(IdempotencyConfig.builder().build()).configure();
 
         // WHEN
         IdempotencyInternalFunctionVoid function = new IdempotencyInternalFunctionVoid();
