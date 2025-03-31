@@ -71,9 +71,7 @@ public class MetricsE2ET {
     public void test_recordMetrics() {
         // GIVEN
 
-        Instant currentTimeTruncatedToMinutes =
-                LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES).toInstant(ZoneOffset.UTC);
-
+        Instant currentTimeTruncatedToMinutes = Instant.now().truncatedTo(ChronoUnit.MINUTES);
         String event1 =
                 "{ \"metrics\": {\"orders\": 1, \"products\": 4}, \"dimensions\": { \"Environment\": \"test\"}, \"highResolution\": \"false\"}";
 
