@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 12 * * *' # Run daily at 12:00 UTC
-
+    
 name: PMD
 run-name: PMD - ${{ github.event_name }}
 

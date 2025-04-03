@@ -1,0 +1,50 @@
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'powertools-batch/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-core/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
+      - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'
+      - 'powertools-test-suite/**'
+      - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'examples/**'
+      - 'pom.xml'
+      - 'examples/pom.xml'
+      - '.github/workflows/**'
+  push:
+    branches:
+      - main
+    paths:
+      - 'powertools-batch/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-core/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
+      - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'
+      - 'powertools-test-suite/**'
+      - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'examples/**'
+      - 'pom.xml'
+      - 'examples/pom.xml'
+      - '.github/workflows/**'
+
+name: Build
+run-name: Build - ${{ github.event_name }}
+
+jobs:
+  ...
