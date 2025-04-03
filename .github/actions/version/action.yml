@@ -13,12 +13,16 @@ description: |
     uses: .github/actions/version
     with:
       new_version: 1.20.0
-```
+  ```
 
 inputs:
   new_version:
     description: New package version, expressed as SemVer (1.x.y)
     required: true
+  snapshot:
+    description: New version is a SNAPSHOT release
+    required: true
+    default: 'false'
 
 outputs:
   old_version:
@@ -36,6 +40,15 @@ runs:
 
     - id: replace_version
       name: Replace current version
-      shell: |
+      shell: bash
       run: |
         mvn versions:set -DnewVersion=${{ inputs.new_version }} -DprocessAllModules=true -DallowSnapshots=true
+
+    - id: asset_veersion
+      name: Replace version for assets
+      if: ${{ inputs.snapshot == 'true' }}
+      env:
+        current_version: ${{ steps.current_version.outputs.current_version }}
+      shell: bash
+      run: |
+        grep "${{ env.current_version }}" -r . --include build.gradle --include build.gradle.kts --include mkdocs.yml --include README.md -l | xargs sed -i 's#${{ env.current_version }}#${{ inputs.new_version }}#'

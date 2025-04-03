@@ -41,6 +41,7 @@ jobs:
         uses: ./.github/actions/version
         with:
           new_version: ${{ inputs.version }}
+          snapshot: ${{ inputs.snapshot}}
       - id: upload_source
         name: Upload artifacts
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
