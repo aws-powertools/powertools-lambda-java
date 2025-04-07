@@ -41,6 +41,10 @@ on:
       - 'pom.xml'
       - 'examples/pom.xml'
       - '.github/workflows/**'
+
+permissions:
+  contents: read
+
 jobs:
   build-corretto:
     runs-on: ubuntu-latest
@@ -54,7 +58,6 @@ jobs:
       AWS_REGION: eu-west-1
     permissions:
       id-token: write # needed to interact with GitHub's OIDC Token endpoint.
-      contents: read
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java

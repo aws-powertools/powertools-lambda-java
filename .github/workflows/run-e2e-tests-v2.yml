@@ -27,6 +27,9 @@ on:
     paths:
       - 'powertools-e2e-tests/**'
 
+permissions:
+  contents: read
+
 jobs:
   e2e:
     runs-on: ubuntu-latest

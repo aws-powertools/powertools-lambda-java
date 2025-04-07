@@ -24,7 +24,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>1.19.0-SNAPSHOT</version>
+        <version>1.20.0</version>
     </parent>
 
     <name>Powertools for AWS Lambda (Java) library Logging</name>
@@ -128,6 +128,11 @@
             <groupId>org.skyscreamer</groupId>
             <artifactId>jsonassert</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
 

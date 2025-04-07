@@ -12,6 +12,10 @@
     <packaging>jar</packaging>
     <name>A Lambda function using powertools tracing</name>
 
+    <properties>
+        <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
@@ -21,7 +25,11 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-events</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-core</artifactId>
+            <version>${aws.sdk.v1.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

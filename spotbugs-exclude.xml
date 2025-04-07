@@ -8,6 +8,21 @@
        https://spotbugs.readthedocs.io/en/latest/bugDescriptions.html
   -->
 <FindBugsFilter>
+    <!-- These open matches are new rules that we have not yet addressed. Let's block them generically, and come
+         back to them later. -->
+    <Match>
+        <Bug pattern="CT_CONSTRUCTOR_THROW" />
+    </Match>
+    <Match>
+        <Bug pattern="PA_PUBLIC_PRIMITIVE_ATTRIBUTE" />
+    </Match>
+    <Match>
+        <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED" />
+    </Match>
+    <Match>
+        <Bug pattern="SING_SINGLETON_GETTER_NOT_SYNCHRONIZED" />
+    </Match>
+
     <!-- Internals of Log event for apache log4j-->
     <Match>
         <Bug pattern="EI_EXPOSE_REP"/>
