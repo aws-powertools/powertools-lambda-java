@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.amazon.lambda.examples</groupId>
-    <version>1.19.0</version>
+    <version>1.20.0</version>
     <artifactId>powertools-examples-cloudformation</artifactId>
     <packaging>jar</packaging>
 
