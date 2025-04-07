@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.testutils;
 
 import static java.util.Collections.singletonList;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -27,13 +26,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.BundlingOptions;
 import software.amazon.awscdk.BundlingOutput;
 import software.amazon.awscdk.CfnOutput;
+import software.amazon.awscdk.DefaultStackSynthesizer;
 import software.amazon.awscdk.DockerVolume;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
@@ -45,7 +49,11 @@ import software.amazon.awscdk.services.appconfig.CfnDeployment;
 import software.amazon.awscdk.services.appconfig.CfnDeploymentStrategy;
 import software.amazon.awscdk.services.appconfig.CfnEnvironment;
 import software.amazon.awscdk.services.appconfig.CfnHostedConfigurationVersion;
-import software.amazon.awscdk.services.dynamodb.*;
+import software.amazon.awscdk.services.dynamodb.Attribute;
+import software.amazon.awscdk.services.dynamodb.AttributeType;
+import software.amazon.awscdk.services.dynamodb.BillingMode;
+import software.amazon.awscdk.services.dynamodb.StreamViewType;
+import software.amazon.awscdk.services.dynamodb.Table;
 import software.amazon.awscdk.services.iam.PolicyStatement;
 import software.amazon.awscdk.services.kinesis.Stream;
 import software.amazon.awscdk.services.kinesis.StreamMode;
@@ -89,7 +97,8 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  * CloudWatch log groups, ...
  * <br/>
  * It uses the Cloud Development Kit (CDK) to define required resources. The CDK stack is then synthesized to retrieve
- * the CloudFormation templates and the assets (function jars). Assets are uploaded to S3 (with the SDK `PutObjectRequest`)
+ * the CloudFormation templates and the assets (function jars). Assets are uploaded to S3 (with the SDK
+ * `PutObjectRequest`)
  * and the CloudFormation stack is created (with the SDK `createStack`)
  */
 public class Infrastructure {
@@ -174,11 +183,11 @@ public class Infrastructure {
                 .onFailure(OnFailure.ROLLBACK)
                 .capabilities(Capability.CAPABILITY_IAM)
                 .build());
-        WaiterResponse<DescribeStacksResponse> waiterResponse =
-                cfn.waiter().waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
+        WaiterResponse<DescribeStacksResponse> waiterResponse = cfn.waiter()
+                .waitUntilStackCreateComplete(DescribeStacksRequest.builder().stackName(stackName).build());
         if (waiterResponse.matched().response().isPresent()) {
-            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack =
-                    waiterResponse.matched().response().get().stacks().get(0);
+            software.amazon.awssdk.services.cloudformation.model.Stack deployedStack = waiterResponse.matched()
+                    .response().get().stacks().get(0);
             LOG.info("Stack " + deployedStack.stackName() + " successfully deployed");
             Map<String, String> outputs = new HashMap<>();
             deployedStack.outputs().forEach(output -> outputs.put(output.outputKey(), output.outputValue()));
@@ -203,7 +212,11 @@ public class Infrastructure {
      */
     private Stack createStackWithLambda() {
         boolean createTableForAsyncTests = false;
-        Stack stack = new Stack(app, stackName);
+        final Stack e2eStack = Stack.Builder.create(app, stackName)
+                .synthesizer(DefaultStackSynthesizer.Builder.create()
+                        .generateBootstrapVersionRule(false) // Disable bootstrap version check
+                        .build())
+                .build();
 
         List<String> packagingInstruction = Arrays.asList(
                 "/bin/sh",
@@ -213,8 +226,7 @@ public class Infrastructure {
                         " -Dmaven.test.skip=true " +
                         " -Dmaven.compiler.source=" + runtime.getMvnProperty() +
                         " -Dmaven.compiler.target=" + runtime.getMvnProperty() +
-                        " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/"
-        );
+                        " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/");
 
         BundlingOptions.Builder builderOptions = BundlingOptions.builder()
                 .command(packagingInstruction)
@@ -224,20 +236,19 @@ public class Infrastructure {
                         DockerVolume.builder()
                                 .hostPath(System.getProperty("user.home") + "/.m2/")
                                 .containerPath("/root/.m2/")
-                                .build()
-                ))
+                                .build()))
                 .user("root")
                 .outputType(BundlingOutput.ARCHIVED);
 
         functionName = stackName + "-function";
-        CfnOutput.Builder.create(stack, FUNCTION_NAME_OUTPUT)
+        CfnOutput.Builder.create(e2eStack, FUNCTION_NAME_OUTPUT)
                 .value(functionName)
                 .build();
 
         LOG.debug("Building Lambda function with command " +
                 packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
         Function function = Function.Builder
-                .create(stack, functionName)
+                .create(e2eStack, functionName)
                 .code(Code.fromAsset("handlers/", AssetOptions.builder()
                         .bundling(builderOptions
                                 .command(packagingInstruction)
@@ -253,7 +264,7 @@ public class Infrastructure {
                 .build();
 
         LogGroup.Builder
-                .create(stack, functionName + "-logs")
+                .create(e2eStack, functionName + "-logs")
                 .logGroupName("/aws/lambda/" + functionName)
                 .retention(RetentionDays.ONE_DAY)
                 .removalPolicy(RemovalPolicy.DESTROY)
@@ -261,7 +272,7 @@ public class Infrastructure {
 
         if (!StringUtils.isEmpty(idempotencyTable)) {
             Table table = Table.Builder
-                    .create(stack, "IdempotencyTable")
+                    .create(e2eStack, "IdempotencyTable")
                     .billingMode(BillingMode.PAY_PER_REQUEST)
                     .removalPolicy(RemovalPolicy.DESTROY)
                     .partitionKey(Attribute.builder().name("id").type(AttributeType.STRING).build())
@@ -275,7 +286,7 @@ public class Infrastructure {
 
         if (!StringUtils.isEmpty(queue)) {
             Queue sqsQueue = Queue.Builder
-                    .create(stack, "SQSQueue")
+                    .create(e2eStack, "SQSQueue")
                     .queueName(queue)
                     .visibilityTimeout(Duration.seconds(timeout * 6))
                     .retentionPeriod(Duration.seconds(timeout * 6))
@@ -293,14 +304,14 @@ public class Infrastructure {
                     .build();
             function.addEventSource(sqsEventSource);
             CfnOutput.Builder
-                    .create(stack, "QueueURL")
+                    .create(e2eStack, "QueueURL")
                     .value(sqsQueue.getQueueUrl())
                     .build();
             createTableForAsyncTests = true;
         }
         if (!StringUtils.isEmpty(kinesisStream)) {
             Stream stream = Stream.Builder
-                    .create(stack, "KinesisStream")
+                    .create(e2eStack, "KinesisStream")
                     .streamMode(StreamMode.ON_DEMAND)
                     .streamName(kinesisStream)
                     .build();
@@ -316,13 +327,13 @@ public class Infrastructure {
                     .build();
             function.addEventSource(kinesisEventSource);
             CfnOutput.Builder
-                    .create(stack, "KinesisStreamName")
+                    .create(e2eStack, "KinesisStreamName")
                     .value(stream.getStreamName())
                     .build();
         }
 
         if (!StringUtils.isEmpty(ddbStreamsTableName)) {
-            Table ddbStreamsTable = Table.Builder.create(stack, "DDBStreamsTable")
+            Table ddbStreamsTable = Table.Builder.create(e2eStack, "DDBStreamsTable")
                     .tableName(ddbStreamsTableName)
                     .stream(StreamViewType.KEYS_ONLY)
                     .removalPolicy(RemovalPolicy.DESTROY)
@@ -336,12 +347,12 @@ public class Infrastructure {
                     .reportBatchItemFailures(true)
                     .build();
             function.addEventSource(ddbEventSource);
-            CfnOutput.Builder.create(stack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();
+            CfnOutput.Builder.create(e2eStack, "DdbStreamsTestTable").value(ddbStreamsTable.getTableName()).build();
         }
 
         if (!StringUtils.isEmpty(largeMessagesBucket)) {
             Bucket offloadBucket = Bucket.Builder
-                    .create(stack, "LargeMessagesOffloadBucket")
+                    .create(e2eStack, "LargeMessagesOffloadBucket")
                     .removalPolicy(RemovalPolicy.RETAIN) // autodelete does not work without cdk deploy
                     .bucketName(largeMessagesBucket)
                     .build();
@@ -352,19 +363,19 @@ public class Infrastructure {
 
         if (appConfig != null) {
             CfnApplication app = CfnApplication.Builder
-                    .create(stack, "AppConfigApp")
+                    .create(e2eStack, "AppConfigApp")
                     .name(appConfig.getApplication())
                     .build();
 
             CfnEnvironment environment = CfnEnvironment.Builder
-                    .create(stack, "AppConfigEnvironment")
+                    .create(e2eStack, "AppConfigEnvironment")
                     .applicationId(app.getRef())
                     .name(appConfig.getEnvironment())
                     .build();
 
             // Create a fast deployment strategy, so we don't have to wait ages
             CfnDeploymentStrategy fastDeployment = CfnDeploymentStrategy.Builder
-                    .create(stack, "AppConfigDeployment")
+                    .create(e2eStack, "AppConfigDeployment")
                     .name("FastDeploymentStrategy")
                     .deploymentDurationInMinutes(0)
                     .finalBakeTimeInMinutes(0)
@@ -377,20 +388,19 @@ public class Infrastructure {
                     .create()
                     .actions(singletonList("appconfig:*"))
                     .resources(singletonList("*"))
-                    .build()
-            );
+                    .build());
 
             CfnDeployment previousDeployment = null;
             for (Map.Entry<String, String> entry : appConfig.getConfigurationValues().entrySet()) {
                 CfnConfigurationProfile configProfile = CfnConfigurationProfile.Builder
-                        .create(stack, "AppConfigProfileFor" + entry.getKey())
+                        .create(e2eStack, "AppConfigProfileFor" + entry.getKey())
                         .applicationId(app.getRef())
                         .locationUri("hosted")
                         .name(entry.getKey())
                         .build();
 
                 CfnHostedConfigurationVersion configVersion = CfnHostedConfigurationVersion.Builder
-                        .create(stack, "AppConfigHostedVersionFor" + entry.getKey())
+                        .create(e2eStack, "AppConfigHostedVersionFor" + entry.getKey())
                         .applicationId(app.getRef())
                         .contentType("text/plain")
                         .configurationProfileId(configProfile.getRef())
@@ -398,7 +408,7 @@ public class Infrastructure {
                         .build();
 
                 CfnDeployment deployment = CfnDeployment.Builder
-                        .create(stack, "AppConfigDepoymentFor" + entry.getKey())
+                        .create(e2eStack, "AppConfigDepoymentFor" + entry.getKey())
                         .applicationId(app.getRef())
                         .environmentId(environment.getRef())
                         .deploymentStrategyId(fastDeployment.getRef())
@@ -415,7 +425,7 @@ public class Infrastructure {
         }
         if (createTableForAsyncTests) {
             Table table = Table.Builder
-                    .create(stack, "TableForAsyncTests")
+                    .create(e2eStack, "TableForAsyncTests")
                     .billingMode(BillingMode.PAY_PER_REQUEST)
                     .removalPolicy(RemovalPolicy.DESTROY)
                     .partitionKey(Attribute.builder().name("functionName").type(AttributeType.STRING).build())
@@ -424,10 +434,10 @@ public class Infrastructure {
 
             table.grantReadWriteData(function);
             function.addEnvironment("TABLE_FOR_ASYNC_TESTS", table.getTableName());
-            CfnOutput.Builder.create(stack, "TableNameForAsyncTests").value(table.getTableName()).build();
+            CfnOutput.Builder.create(e2eStack, "TableNameForAsyncTests").value(table.getTableName()).build();
         }
 
-        return stack;
+        return e2eStack;
     }
 
     /**
@@ -444,13 +454,13 @@ public class Infrastructure {
      */
     private void uploadAssets() {
         Map<String, Asset> assets = findAssets();
-        assets.forEach((objectKey, asset) ->
-        {
+        assets.forEach((objectKey, asset) -> {
             if (!asset.assetPath.endsWith(".jar")) {
                 return;
             }
-            ListObjectsV2Response objects =
-                    s3.listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
+
+            ListObjectsV2Response objects = s3
+                    .listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
             if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
                 LOG.debug("Asset already exists, skipping");
                 return;
@@ -472,14 +482,13 @@ public class Infrastructure {
             JsonNode jsonNode = JsonConfig.get().getObjectMapper()
                     .readTree(new File(cfnAssetDirectory, stackName + ".assets.json"));
             JsonNode files = jsonNode.get("files");
-            files.iterator().forEachRemaining(file ->
-            {
+            files.iterator().forEachRemaining(file -> {
                 String assetPath = file.get("source").get("path").asText();
                 String assetPackaging = file.get("source").get("packaging").asText();
-                String bucketName =
-                        file.get("destinations").get("current_account-current_region").get("bucketName").asText();
-                String objectKey =
-                        file.get("destinations").get("current_account-current_region").get("objectKey").asText();
+                String bucketName = file.get("destinations").get("current_account-current_region").get("bucketName")
+                        .asText();
+                String objectKey = file.get("destinations").get("current_account-current_region").get("objectKey")
+                        .asText();
                 Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
                         .replace("${AWS::Region}", region.toString()));
                 assets.put(objectKey, asset);
@@ -508,8 +517,6 @@ public class Infrastructure {
         private Builder() {
             runtime = mapRuntimeVersion("JAVA_VERSION");
         }
-
-
 
         private JavaRuntime mapRuntimeVersion(String environmentVariableName) {
             String javaVersion = System.getenv(environmentVariableName); // must be set in GitHub actions

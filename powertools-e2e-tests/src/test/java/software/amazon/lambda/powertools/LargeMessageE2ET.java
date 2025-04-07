@@ -3,8 +3,6 @@ package software.amazon.lambda.powertools;
 import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 
-import com.amazon.sqs.javamessaging.AmazonSQSExtendedClient;
-import com.amazon.sqs.javamessaging.ExtendedClientConfiguration;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -22,6 +21,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.amazon.sqs.javamessaging.AmazonSQSExtendedClient;
+import com.amazon.sqs.javamessaging.ExtendedClientConfiguration;
+
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -101,21 +104,20 @@ public class LargeMessageE2ET {
     @Test
     public void bigSQSMessageOffloadedToS3_shouldLoadFromS3() throws IOException, InterruptedException {
         // given
-        final ExtendedClientConfiguration extendedClientConfig =
-                new ExtendedClientConfiguration()
-                        .withPayloadSupportEnabled(s3Client, bucketName);
-        AmazonSQSExtendedClient client =
-                new AmazonSQSExtendedClient(SqsClient.builder().httpClient(httpClient).build(), extendedClientConfig);
-        InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
-        String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
+                .withPayloadSupportEnabled(s3Client, bucketName);
+        try (AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(
+                SqsClient.builder().region(region).httpClient(httpClient).build(), extendedClientConfig)) {
+            InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
+            String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
-        // when
-        client.sendMessage(SendMessageRequest
-                .builder()
-                .queueUrl(queueUrl)
-                .messageBody(bigMessage)
-                .build());
-
+            // when
+            client.sendMessage(SendMessageRequest
+                    .builder()
+                    .queueUrl(queueUrl)
+                    .messageBody(bigMessage)
+                    .build());
+        }
         Thread.sleep(30000); // wait for function to be executed
 
         // then
@@ -137,36 +139,37 @@ public class LargeMessageE2ET {
     @Test
     public void smallSQSMessage_shouldNotReadFromS3() throws IOException, InterruptedException {
         // given
-        final ExtendedClientConfiguration extendedClientConfig =
-                new ExtendedClientConfiguration()
-                        .withPayloadSupportEnabled(s3Client, bucketName);
-        AmazonSQSExtendedClient client =
-                new AmazonSQSExtendedClient(SqsClient.builder().httpClient(httpClient).build(), extendedClientConfig);
-        String message = "Hello World";
+        final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
+                .withPayloadSupportEnabled(s3Client, bucketName);
+        try (AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(
+                SqsClient.builder().region(region).httpClient(httpClient).build(),
+                extendedClientConfig)) {
+            String message = "Hello World";
 
-        // when
-        client.sendMessage(SendMessageRequest
-                .builder()
-                .queueUrl(queueUrl)
-                .messageBody(message)
-                .build());
+            // when
+            client.sendMessage(SendMessageRequest
+                    .builder()
+                    .queueUrl(queueUrl)
+                    .messageBody(message)
+                    .build());
 
-        Thread.sleep(30000); // wait for function to be executed
+            Thread.sleep(30000); // wait for function to be executed
 
-        // then
-        QueryRequest request = QueryRequest
-                .builder()
-                .tableName(tableName)
-                .keyConditionExpression("functionName = :func")
-                .expressionAttributeValues(
-                        Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
-                .build();
-        QueryResponse response = dynamoDbClient.query(request);
-        List<Map<String, AttributeValue>> items = response.items();
-        assertThat(items).hasSize(1);
-        messageId = items.get(0).get("id").s();
-        assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(
-                message.getBytes(StandardCharsets.UTF_8).length);
-        assertThat(items.get(0).get("bodyMD5").s()).isEqualTo("b10a8db164e0754105b7a99be72e3fe5");
+            // then
+            QueryRequest request = QueryRequest
+                    .builder()
+                    .tableName(tableName)
+                    .keyConditionExpression("functionName = :func")
+                    .expressionAttributeValues(
+                            Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
+                    .build();
+            QueryResponse response = dynamoDbClient.query(request);
+            List<Map<String, AttributeValue>> items = response.items();
+            assertThat(items).hasSize(1);
+            messageId = items.get(0).get("id").s();
+            assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(
+                    message.getBytes(StandardCharsets.UTF_8).length);
+            assertThat(items.get(0).get("bodyMD5").s()).isEqualTo("b10a8db164e0754105b7a99be72e3fe5");
+        }
     }
 }
