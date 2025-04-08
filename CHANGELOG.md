@@ -10,8 +10,9 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [1.20.1] - 2025-04-08
 
-<PLEASE REMEBER TO UPDATE CHANGE LOG>
-
+* docs: fix 2 typos (#1739) by @ntestor
+* docs: Correct XML formatting for Maven configuration in Large Messages utility docs (#1796) by @jreijn
+* fix: Load version.properties file as resource stream to fix loading when packaged as jar (#1813) by @phipag
 
 ## [1.20.0] - 2025-03-25
 
