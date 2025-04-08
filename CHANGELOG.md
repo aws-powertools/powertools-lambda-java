@@ -8,6 +8,11 @@ This project follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) fo
 
 ## [Unreleased]
 
+## [1.20.1] - 2025-04-08
+
+<PLEASE REMEBER TO UPDATE CHANGE LOG>
+
+
 ## [1.20.0] - 2025-03-25
 
 * feat(cfn-custom-resource): Add optional 'reason' field for detailed failure reporting (#1758) by @moizsh

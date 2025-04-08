@@ -6,7 +6,7 @@
     <parent>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-parent</artifactId>
-        <version>1.20.0</version>
+        <version>1.20.1</version>
     </parent>
 
     <description>A suite of utilities that makes batch message processing using AWS Lambda easier.</description>
