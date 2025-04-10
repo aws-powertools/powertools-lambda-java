@@ -47,4 +47,26 @@ name: Build
 run-name: Build - ${{ github.event_name }}
 
 jobs:
-  ...
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java_version:
+          - 8
+          - 11
+          - 17
+          - 21
+    steps:
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: corretto
+          java-version: ${{ matrix.java_version }}
+          cache: maven
+      - id: build-maven
+        name: Build (Maven)
+        run: |
+          mvn -B install --file pom.xml
