@@ -136,7 +136,7 @@ Resources:
             TableName: !Ref IdempotencyTable
       Environment:
         Variables:
-          IDEMPOTENCY_TABLE: !Ref IdempotencyTable
+          TABLE_NAME: !Ref IdempotencyTable
 ```
 
 !!! warning "Warning: Large responses with DynamoDB persistence layer"
@@ -429,7 +429,7 @@ To prevent against extended failed retries when a [Lambda function times out](ht
             Idempotency.config()
                     .withPersistenceStore(
                             DynamoDBPersistenceStore.builder()
-                                    .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                                    .withTableName(System.getenv("TABLE_NAME"))
                                     .build())
                     .configure();
         }
@@ -889,7 +889,7 @@ The example below shows how to append an HTTP header to an `APIGatewayProxyRespo
                     .build())
             .withPersistenceStore(
                     DynamoDBPersistenceStore.builder()
-                            .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                            .withTableName(System.getenv("TABLE_NAME"))
                             .build())
             .configure();
     ```
@@ -1008,7 +1008,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
                 </systemPropertyVariables>
                 <!-- environment variables for the tests -->
                 <environmentVariables>
-                    <IDEMPOTENCY_TABLE_NAME>idempotency</IDEMPOTENCY_TABLE_NAME>
+                    <TABLE_NAME>idempotency</TABLE_NAME>
                     <AWS_REGION>eu-central-1</AWS_REGION>
                 </environmentVariables>
             </configuration>
@@ -1112,7 +1112,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
     public App(DynamoDbClient ddbClient) {
         Idempotency.config().withPersistenceStore(
                 DynamoDBPersistenceStore.builder()
-                        .withTableName(System.getenv("IDEMPOTENCY_TABLE_NAME"))
+                        .withTableName(System.getenv("TABLE_NAME"))
                         .withDynamoDbClient(ddbClient)
                         .build()
         ).configure();
@@ -1149,7 +1149,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
     
         Idempotency.config().withPersistenceStore(
            DynamoDBPersistenceStore.builder()
-              .withTableName(System.getenv("IDEMPOTENCY_TABLE_NAME"))
+              .withTableName(System.getenv("TABLE_NAME"))
               .withDynamoDbClient(ddbBuilder.build())
               .build()
         ).configure();
@@ -1194,7 +1194,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
     ```json hl_lines="3"
     {
         "IdempotentFunction": {
-            "IDEMPOTENCY_TABLE_NAME": "idempotency"
+            "TABLE_NAME": "idempotency"
         }
     }
     ```
