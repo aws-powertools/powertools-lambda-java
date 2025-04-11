@@ -45,7 +45,7 @@ to weave the code and make sure the annotation is processed.
             <plugin>
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
+                 <version>1.14</version>
                  <configuration>
                      <source>11</source> <!-- or higher -->
                      <target>11</target> <!-- or higher -->
@@ -57,6 +57,14 @@ to weave the code and make sure the annotation is processed.
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <!-- AspectJ compiler version, in sync with runtime -->
+                        <version>1.9.22</version>
+                    </dependency>
+                </dependencies>
                  <executions>
                      <execution>
                          <goals>
@@ -90,7 +98,7 @@ to weave the code and make sure the annotation is processed.
             <plugin>
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
+                 <version>1.14</version>
                  <configuration>
                      <source>11</source> <!-- or higher -->
                      <target>11</target> <!-- or higher -->
@@ -102,6 +110,14 @@ to weave the code and make sure the annotation is processed.
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <!-- AspectJ compiler version, in sync with runtime -->
+                        <version>1.9.22</version>
+                    </dependency>
+                </dependencies>
                  <executions>
                      <execution>
                          <goals>
