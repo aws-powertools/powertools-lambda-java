@@ -83,6 +83,29 @@ plugins:
   - git-revision-date
   - search
   - macros
+  - llmstxt:
+      markdown_description: Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+      full_output: llms-full.txt
+      sections:
+        Project Overview:
+          - index.md
+          - changelog.md
+          - FAQs.md
+          - roadmap.md
+        Core Utilities:
+          - core/logging.md
+          - core/metrics.md
+          - core/tracing.md
+        Utilities:
+          - utilities/idempotency.md
+          - utilities/parameters.md
+          - utilities/large_messages.md
+          - utilities/batch.md
+          - utilities/validation.md
+          - utilities/custom_resources.md
+          - utilities/serialization.md
+        Processes:
+          - processes/maintainers.md
 
 extra_css:
   - stylesheets/extra.css
