@@ -6,6 +6,7 @@ nav:
   - Homepage: index.md
   - Changelog: changelog.md
   - FAQs: FAQs.md
+  - Roadmap: roadmap.md
   - Core utilities:
       - core/logging.md
       - core/tracing.md
@@ -59,6 +60,8 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: "."
       check_paths: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -81,6 +84,11 @@ plugins:
       markdown_description: Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
       full_output: llms-full.txt
       sections:
+        Project Overview:
+          - index.md
+          - changelog.md
+          - FAQs.md
+          - roadmap.md
         Core Utilities:
           - core/logging.md
           - core/metrics.md
