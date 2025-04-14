@@ -21,6 +21,9 @@ nav:
       - utilities/serialization.md
   - Processes:
       - processes/maintainers.md
+  - Resources:
+      - "llms.txt": ./llms.txt
+      - "llms.txt (full version)": ./llms-full.txt
 
 theme:
   name: material
