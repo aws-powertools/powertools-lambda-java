@@ -35,12 +35,18 @@ jobs:
   process_version:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ format('{0}{1}', steps.version_release.outputs.version, steps.version_snapshot.outputs.version) }}
     steps:
-        - id: version
-          name: Version
-          run: |
-            echo version="$(grep -q "SNAPSHOT" <<< "${{ inputs.version }}" && echo "${{ inputs.version }}" || echo "${{ inputs.version }}-SNAPSHOT")" >> "$GITHUB_OUTPUT"
+      - id: version_snapshot
+        if: ${{ inputs.snapshot }}
+        name: Version
+        run: |
+          echo version="$(grep -q "SNAPSHOT" <<< "${{ inputs.version }}" && echo "${{ inputs.version }}" || echo "${{ inputs.version }}-SNAPSHOT")" >> "$GITHUB_OUTPUT"
+      - id: version_release
+        if: ${{ !inputs.snapshot }}
+        name: Version
+        run: |
+          echo version="${{ inputs.version }}" >> "$GITHUB_OUTPUT"
 
   version_seal:
     runs-on: ubuntu-latest
