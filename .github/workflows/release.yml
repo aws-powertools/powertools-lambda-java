@@ -139,6 +139,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' }}
     needs:
       - build
     environment: Release
@@ -166,6 +167,7 @@ jobs:
     if: ${{ inputs.snapshot == false }}
     needs:
       - publish
+      - build
     permissions:
       pull-requests: write
       contents: write
