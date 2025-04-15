@@ -79,7 +79,6 @@ Instead, set a specific classifier of the `aws-crt` to use the one for your targ
 By specifying the specific target runtime, we prevent other target runtimes from being included in the jar file, resulting in a smaller Lambda package and improved cold start times.
 
 ```xml
-
 <dependencies>
     <dependency>
         <groupId>software.amazon.awssdk</groupId>
@@ -108,39 +107,40 @@ Depending on the Powertools module, there is a different way to configure the SD
 
 The following example shows how to use the Lambda Powertools Parameters module while leveraging the AWS CRT Client.   
 
-    ```java hl_lines="11-16 19-20 22"
-    import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
-    
-    import com.amazonaws.services.lambda.runtime.Context;
-    import com.amazonaws.services.lambda.runtime.RequestHandler;
-    import software.amazon.awssdk.services.ssm.SsmClient;
-    import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
-    import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
+```java hl_lines="16 23-24"
+import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 
-    public class RequestHandlerWithParams implements RequestHandler<String, String> {
-    
-        // Get an instance of the SSMProvider with a custom HTTP client (aws crt).
-        SSMProvider ssmProvider = SSMProvider
-                .builder()
-                .withClient(
-                        SsmClient.builder()
-                                .httpClient(AwsCrtHttpClient.builder().build())
-                                .build()
-                )
-                .build();
-    
-        public String handleRequest(String input, Context context) {
-            // Retrieve a single param
-            String value = ssmProvider
-                    .get("/my/secret");
-                    // We might instead want to retrieve multiple parameters at once, returning a Map of key/value pairs
-                    // .getMultiple("/my/secret/path");
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import software.amazon.awssdk.services.ssm.SsmClient;
+import software.amazon.awssdk.http.crt.AwsCrtHttpClient;
+import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
-            // Return the result
-            return value;
-        }
+public class RequestHandlerWithParams implements RequestHandler<String, String> {
+
+    // Get an instance of the SSMProvider with a custom HTTP client (aws crt).
+    SSMProvider ssmProvider = SSMProvider
+            .builder()
+            .withClient(
+                    SsmClient.builder()
+                            .httpClient(AwsCrtHttpClient.builder().build())
+                            .build()
+            )
+            .build();
+
+    public String handleRequest(String input, Context context) {
+        // Retrieve a single param
+        String value = ssmProvider
+                .get("/my/secret");
+                // We might instead want to retrieve multiple parameters at once, returning a Map of key/value pairs
+                // .getMultiple("/my/secret/path");
+
+        // Return the result
+        return value;
     }
-    ```
+}
+```
+
 The `aws-crt-client` was considered for adoption as the default HTTP client in Lambda Powertools for Java as mentioned in [Move SDK http client to CRT](https://github.com/aws-powertools/powertools-lambda-java/issues/1092), 
 but due to the impact on the developer experience it was decided to stick with the `url-connection-client`.
 

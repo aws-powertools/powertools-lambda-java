@@ -28,7 +28,6 @@ native-libs/
 classes/
 out/
 
-
 ######################
 # Eclipse
 ######################
@@ -99,6 +98,7 @@ Desktop.ini
 
 docs/node_modules
 docs/.cache
+.cache
 docs/public
 /example/.aws-sam/
 /example/HelloWorldFunction/.aws-sam/
