@@ -25,6 +25,7 @@ nav:
       - utilities/sqs_batch.md
   - Processes:
       - processes/maintainers.md
+      - processes/versioning.md
   - Resources:
       - "llms.txt": ./llms.txt
       - "llms.txt (full version)": ./llms-full.txt
