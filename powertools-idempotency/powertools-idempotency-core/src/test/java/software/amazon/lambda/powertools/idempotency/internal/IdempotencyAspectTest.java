@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -154,7 +155,7 @@ public class IdempotencyAspectTest {
                         .build())
                 .configure();
 
-        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+        doThrow(new IdempotencyItemAlreadyExistsException()).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
@@ -176,6 +177,44 @@ public class IdempotencyAspectTest {
     }
 
     @Test
+    public void secondCall_notExpired_shouldNotGetFromStoreIfPresentOnIdempotencyException()
+            throws JsonProcessingException {
+        // GIVEN
+        Idempotency.config()
+                .withPersistenceStore(store)
+                .withConfig(IdempotencyConfig.builder()
+                        .withEventKeyJMESPath("id")
+                        .build())
+                .configure();
+
+        Product p = new Product(42, "fake product", 12);
+        Basket b = new Basket(p);
+        DataRecord dr = new DataRecord(
+                "42",
+                DataRecord.Status.COMPLETED,
+                Instant.now().plus(356, SECONDS).getEpochSecond(),
+                JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
+                null);
+
+        // A data record on this exception should take precedence over fetching a record from the store / cache
+        doThrow(new IdempotencyItemAlreadyExistsException(
+                "Test message",
+                new RuntimeException("Test Cause"),
+                dr))
+                        .when(store).saveInProgress(any(), any(), any());
+
+        // WHEN
+        IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
+        Basket basket = function.handleRequest(p, context);
+
+        // THEN
+        assertThat(basket).isEqualTo(b);
+        assertThat(function.handlerCalled()).isFalse();
+        // Should never call the store because item is already present on IdempotencyItemAlreadyExistsException
+        verify(store, never()).getRecord(any(), any());
+    }
+
+    @Test
     public void secondCall_notExpired_shouldGetStringFromStore() {
         // GIVEN
         Idempotency.config()
@@ -185,7 +224,7 @@ public class IdempotencyAspectTest {
                         .build())
                 .configure();
 
-        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+        doThrow(new IdempotencyItemAlreadyExistsException()).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         DataRecord dr = new DataRecord(
@@ -220,7 +259,7 @@ public class IdempotencyAspectTest {
                         .build())
                 .configure();
 
-        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+        doThrow(new IdempotencyItemAlreadyExistsException()).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         DataRecord dr = new DataRecord(
@@ -251,7 +290,7 @@ public class IdempotencyAspectTest {
                         .build())
                 .configure();
 
-        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+        doThrow(new IdempotencyItemAlreadyExistsException()).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
@@ -283,7 +322,7 @@ public class IdempotencyAspectTest {
                         .build())
                 .configure();
 
-        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+        doThrow(new IdempotencyItemAlreadyExistsException()).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
@@ -412,7 +451,7 @@ public class IdempotencyAspectTest {
                 .withPersistenceStore(store)
                 .configure();
 
-        doThrow(IdempotencyItemAlreadyExistsException.class).when(store).saveInProgress(any(), any(), any());
+        doThrow(new IdempotencyItemAlreadyExistsException()).when(store).saveInProgress(any(), any(), any());
 
         Product p = new Product(42, "fake product", 12);
         Basket b = new Basket(p);
