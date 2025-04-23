@@ -640,7 +640,7 @@ To append additional keys in your logs, you can use the `StructuredArguments` cl
             }
         ```
 
-???+ warning "Warning"
+???+ warning "Do not use arguments with reserved keys"
     If the key name of your structured argument matches any of the [standard structured keys](#standard-structured-keys) or any of the [additional structured keys](#additional-structured-keys) the whole argument will be ignored. This is to protect you from accidentally overwriting reserved keys such as the log level or Lambda context information.
     
 **Using MDC**
@@ -652,6 +652,9 @@ Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supporte
 
 ???+ warning "Custom keys stored in the MDC are persisted across warm invocations"
     Always set additional keys as part of your handler method to ensure they have the latest value, or explicitly clear them with [`clearState=true`](#clearing-state).
+
+???+ warning "Do not add reserved keys to MDC"
+    Avoid adding any of the keys listed in [standard structured keys](#standard-structured-keys) and [additional structured keys](#additional-structured-keys) to your MDC. This may cause unindented behavior and will overwrite the context set by Powertools. Unlike with StructuredArguments, Powertools will **not** ignore reserved keys set via MDC.
 
 
 ### Removing additional keys
