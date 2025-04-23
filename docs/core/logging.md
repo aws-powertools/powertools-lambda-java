@@ -640,6 +640,9 @@ To append additional keys in your logs, you can use the `StructuredArguments` cl
             }
         ```
 
+???+ warning "Warning"
+    If the key name of your structured argument matches any of the [standard structured keys](#standard-structured-keys) or any of the [additional structured keys](#additional-structured-keys) the whole argument will be ignored. This is to protect you from accidentally overwriting reserved keys such as the log level or Lambda context information.
+    
 **Using MDC**
 
 Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supported by the [SLF4J API](https://www.slf4j.org/manual.html#mdc){target="_blank"},
