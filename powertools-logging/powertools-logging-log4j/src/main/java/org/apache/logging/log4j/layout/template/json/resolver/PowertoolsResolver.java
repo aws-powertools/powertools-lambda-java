@@ -48,7 +48,8 @@ import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields
  */
 final class PowertoolsResolver implements EventResolver {
     private static final Set<String> RESERVED_LOG_KEYS = Stream
-            .concat(PowertoolsLoggedFields.stringValues().stream(), List.of("message", "level", "timestamp").stream())
+            .concat(PowertoolsLoggedFields.stringValues().stream(),
+                    List.of("message", "level", "timestamp", "error").stream())
             .collect(Collectors.toSet());
 
     private static final EventResolver COLD_START_RESOLVER = new EventResolver() {
