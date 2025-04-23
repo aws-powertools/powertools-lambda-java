@@ -49,6 +49,7 @@ class StructuredArgumentsTest {
         // THEN
         assertThat(sb.toString()).hasToString("\"basket\":{\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]}");
         assertThat(argument.toString()).hasToString("basket=Basket{products=[Product{id=42, name='Nintendo DS', price=299.45}, Product{id=98, name='Playstation 5', price=499.99}]}");
+        assertThat(argument.keys()).containsExactlyInAnyOrder("basket");
     }
 
     @Test
@@ -64,11 +65,27 @@ class StructuredArgumentsTest {
 
         // THEN
         assertThat(sb.toString())
-                .contains("\"nds\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}")
+                .contains("\"nds\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},")
                 .contains("\"ps5\":{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}");
         assertThat(argument.toString())
                 .contains("nds=Product{id=42, name='Nintendo DS', price=299.45}")
                 .contains("ps5=Product{id=98, name='Playstation 5', price=499.99}");
+        assertThat(argument.keys()).containsExactlyInAnyOrder("nds", "ps5");
+    }
+
+    @Test
+    void emptyMapArgument() throws IOException {
+        // GIVEN
+        Map<String, Product> catalog = new HashMap<>();
+
+        // WHEN
+        StructuredArgument argument = StructuredArguments.entries(catalog);
+        argument.writeTo(serializer);
+
+        // THEN
+        assertThat(sb.toString()).isEmpty();
+        assertThat(argument.toString()).hasToString("{}");
+        assertThat(argument.keys()).isEmpty();
     }
 
     @Test
@@ -86,6 +103,7 @@ class StructuredArgumentsTest {
         // THEN
         assertThat(sb.toString()).contains("\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]");
         assertThat(argument.toString()).contains("products=[Product{id=42, name='Nintendo DS', price=299.45}, Product{id=98, name='Playstation 5', price=499.99}]");
+        assertThat(argument.keys()).containsExactlyInAnyOrder("products");
     }
 
     @Test
@@ -100,6 +118,7 @@ class StructuredArgumentsTest {
         // THEN
         assertThat(sb.toString()).contains("\"product\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}");
         assertThat(argument.toString()).contains("product={\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}");
+        assertThat(argument.keys()).containsExactlyInAnyOrder("product");
     }
 
 }

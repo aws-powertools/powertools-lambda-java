@@ -29,6 +29,8 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.util.JSONPObject;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -126,6 +128,10 @@ class LambdaJsonEncoderTest {
                 .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 .contains("\"message\":\"Message body = plop and id = \"1212abcd\"\"");
+        // Reserved keys should be ignored
+        PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
+            assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
+        });
     }
 
     @Test
@@ -150,6 +156,10 @@ class LambdaJsonEncoderTest {
                 .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 .contains("\"message\":\"Message body = plop and id = \"1212abcd\"\"");
+        // Reserved keys should be ignored
+        PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
+            assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
+        });
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);

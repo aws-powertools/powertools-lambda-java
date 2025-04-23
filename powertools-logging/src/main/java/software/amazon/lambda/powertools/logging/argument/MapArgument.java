@@ -15,8 +15,12 @@
 package software.amazon.lambda.powertools.logging.argument;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
+import java.util.Set;
 
 /**
  * See {@link StructuredArguments#entries(Map)}
@@ -35,8 +39,13 @@ public class MapArgument implements StructuredArgument {
     @Override
     public void writeTo(JsonSerializer serializer) {
         if (map != null) {
-            for (Map.Entry<?, ?> entry : map.entrySet()) {
+            for (Iterator<? extends Map.Entry<?, ?>> entries = map.entrySet().iterator(); entries.hasNext();) {
+                Map.Entry<?, ?> entry = entries.next();
                 serializer.writeObjectField(String.valueOf(entry.getKey()), entry.getValue());
+                // If the map has more than one entry, we need to print a (comma) separator to avoid breaking the JSON
+                if (entries.hasNext()) {
+                    serializer.writeSeparator();
+                }
             }
         }
     }
@@ -44,5 +53,16 @@ public class MapArgument implements StructuredArgument {
     @Override
     public String toString() {
         return String.valueOf(map);
+    }
+
+    @Override
+    public Iterable<String> keys() {
+        if (map == null) {
+            return Set.of();
+        }
+
+        // Object::toString is used to convert the key to a string, as per the behavior of Map.toString() in case the
+        // key is not already a String.
+        return map.keySet().stream().map(Object::toString).collect(Collectors.toSet());
     }
 }

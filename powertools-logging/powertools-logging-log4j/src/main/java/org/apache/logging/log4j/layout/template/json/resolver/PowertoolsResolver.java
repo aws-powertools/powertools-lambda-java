@@ -27,7 +27,9 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.core.LogEvent;
@@ -45,6 +47,9 @@ import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields
  * to be able to recognize powertools fields in the LambdaJsonLayout.json file.
  */
 final class PowertoolsResolver implements EventResolver {
+    private static final Set<String> RESERVED_LOG_KEYS = Stream
+            .concat(PowertoolsLoggedFields.stringValues().stream(), List.of("message", "level", "timestamp").stream())
+            .collect(Collectors.toSet());
 
     private static final EventResolver COLD_START_RESOLVER = new EventResolver() {
         @Override
@@ -191,9 +196,17 @@ final class PowertoolsResolver implements EventResolver {
                     Object[] arguments = logEvent.getMessage().getParameters();
                     if (arguments != null) {
                         stream(arguments).filter(StructuredArgument.class::isInstance).forEach(argument -> {
-                            serializer.writeRaw(',');
                             try {
-                                ((StructuredArgument) argument).writeTo(serializer);
+                                final StructuredArgument structArg = (StructuredArgument) argument;
+                                final Iterable<String> logKeys = structArg.keys();
+                                // If any of the logKeys are a reserved key we are going to ignore the argument
+                                for (final String logKey : logKeys) {
+                                    if (RESERVED_LOG_KEYS.contains(logKey)) {
+                                        return;
+                                    }
+                                }
+                                serializer.writeRaw(',');
+                                structArg.writeTo(serializer);
                             } catch (IOException e) {
                                 System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
                             }
