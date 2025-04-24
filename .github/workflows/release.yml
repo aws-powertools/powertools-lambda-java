@@ -22,7 +22,7 @@ on:
         default: false
 
 name: Release
-run-name: Release
+run-name: Release – ${{ inputs.version }}
 
 permissions: 
   contents: read
@@ -208,3 +208,33 @@ jobs:
           gh release create v${{ inputs.version }} --target $(git rev-parse HEAD)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docs:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.snapshot == false }}
+    permissions:
+      contents: read
+      id-token: write
+    environment: Docs
+    steps:
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - name: Build
+        run: |
+          mkdir -p dist
+          docker build -t squidfunk/mkdocs-material ./docs/
+          docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
+          cp -R site/* dist/
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+      - name: Deploy
+        run: |
+          aws s3 sync \
+            dist \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/
