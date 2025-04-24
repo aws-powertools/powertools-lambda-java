@@ -15,7 +15,6 @@
 package software.amazon.lambda.powertools.logging.argument;
 
 import java.util.Objects;
-import java.util.Set;
 
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
@@ -42,8 +41,4 @@ class JsonArgument implements StructuredArgument {
         return key + "=" + rawJson;
     }
 
-    @Override
-    public Iterable<String> keys() {
-        return Set.of(key);
-    }
 }

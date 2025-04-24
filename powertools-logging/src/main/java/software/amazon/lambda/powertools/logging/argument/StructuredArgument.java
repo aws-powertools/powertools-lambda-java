@@ -46,12 +46,4 @@ public interface StructuredArgument {
      */
     String toString();
 
-    /**
-     * Returns the root-level log keys associated with this argument. If the argument has only one key, this method
-     * will return a single-element iterable.
-     *
-     * @return the keys associated with this argument
-     */
-    Iterable<String> keys();
-
 }

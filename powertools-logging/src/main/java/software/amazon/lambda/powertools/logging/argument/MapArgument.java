@@ -17,10 +17,8 @@ package software.amazon.lambda.powertools.logging.argument;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
-import java.util.Set;
 
 /**
  * See {@link StructuredArguments#entries(Map)}
@@ -55,14 +53,4 @@ class MapArgument implements StructuredArgument {
         return String.valueOf(map);
     }
 
-    @Override
-    public Iterable<String> keys() {
-        if (map == null) {
-            return Set.of();
-        }
-
-        // Object::toString is used to convert the key to a string, as per the behavior of Map.toString() in case the
-        // key is not already a String.
-        return map.keySet().stream().map(Object::toString).collect(Collectors.toSet());
-    }
 }
