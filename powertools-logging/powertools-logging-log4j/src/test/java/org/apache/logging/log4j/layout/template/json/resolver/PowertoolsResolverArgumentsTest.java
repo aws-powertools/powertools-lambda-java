@@ -92,6 +92,9 @@ class PowertoolsResolverArgumentsTest {
         // Reserved keys should be ignored
         PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
             assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
+            assertThat(contentOf(logFile)).contains(
+                    "\"message\":\"Attempted to use reserved key '" + reservedKey
+                            + "' in structured argument. This key will be ignored.\"");
         });
     }
 
@@ -122,6 +125,9 @@ class PowertoolsResolverArgumentsTest {
         // Reserved keys should be ignored
         PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
             assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
+            assertThat(contentOf(logFile)).contains(
+                    "\"message\":\"Attempted to use reserved key '" + reservedKey
+                            + "' in structured argument. This key will be ignored.\"");
         });
     }
 

@@ -27,9 +27,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.core.LogEvent;
@@ -47,10 +45,6 @@ import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields
  * to be able to recognize powertools fields in the LambdaJsonLayout.json file.
  */
 final class PowertoolsResolver implements EventResolver {
-    private static final Set<String> RESERVED_LOG_KEYS = Stream
-            .concat(PowertoolsLoggedFields.stringValues().stream(),
-                    List.of("message", "level", "timestamp", "error").stream())
-            .collect(Collectors.toSet());
 
     private static final EventResolver COLD_START_RESOLVER = new EventResolver() {
         @Override
@@ -198,16 +192,8 @@ final class PowertoolsResolver implements EventResolver {
                     if (arguments != null) {
                         stream(arguments).filter(StructuredArgument.class::isInstance).forEach(argument -> {
                             try {
-                                final StructuredArgument structArg = (StructuredArgument) argument;
-                                final Iterable<String> logKeys = structArg.keys();
-                                // If any of the logKeys are a reserved key we are going to ignore the argument
-                                for (final String logKey : logKeys) {
-                                    if (RESERVED_LOG_KEYS.contains(logKey)) {
-                                        return;
-                                    }
-                                }
                                 serializer.writeRaw(',');
-                                structArg.writeTo(serializer);
+                                ((StructuredArgument) argument).writeTo(serializer);
                             } catch (IOException e) {
                                 System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
                             }
@@ -218,19 +204,20 @@ final class PowertoolsResolver implements EventResolver {
 
     private final EventResolver internalResolver;
 
-    private static final Map<String, EventResolver> eventResolverMap = Collections.unmodifiableMap(Stream.of(new Object[][] {
-            { SERVICE.getName(), SERVICE_RESOLVER },
-            { FUNCTION_NAME.getName(), FUNCTION_NAME_RESOLVER },
-            { FUNCTION_VERSION.getName(), FUNCTION_VERSION_RESOLVER },
-            { FUNCTION_ARN.getName(), FUNCTION_ARN_RESOLVER },
-            { FUNCTION_MEMORY_SIZE.getName(), FUNCTION_MEMORY_RESOLVER },
-            { FUNCTION_REQUEST_ID.getName(), FUNCTION_REQ_RESOLVER },
-            { FUNCTION_COLD_START.getName(), COLD_START_RESOLVER },
-            { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
-            { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
-            { "region", REGION_RESOLVER },
-            { "account_id", ACCOUNT_ID_RESOLVER }
-    }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1])));
+    private static final Map<String, EventResolver> eventResolverMap = Collections
+            .unmodifiableMap(Stream.of(new Object[][] {
+                    { SERVICE.getName(), SERVICE_RESOLVER },
+                    { FUNCTION_NAME.getName(), FUNCTION_NAME_RESOLVER },
+                    { FUNCTION_VERSION.getName(), FUNCTION_VERSION_RESOLVER },
+                    { FUNCTION_ARN.getName(), FUNCTION_ARN_RESOLVER },
+                    { FUNCTION_MEMORY_SIZE.getName(), FUNCTION_MEMORY_RESOLVER },
+                    { FUNCTION_REQUEST_ID.getName(), FUNCTION_REQ_RESOLVER },
+                    { FUNCTION_COLD_START.getName(), COLD_START_RESOLVER },
+                    { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
+                    { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
+                    { "region", REGION_RESOLVER },
+                    { "account_id", ACCOUNT_ID_RESOLVER }
+            }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1])));
 
 
     PowertoolsResolver(final TemplateResolverConfig config) {

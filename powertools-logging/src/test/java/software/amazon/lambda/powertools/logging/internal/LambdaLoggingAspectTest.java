@@ -486,15 +486,14 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(message, context);
 
         // THEN
-        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar)requestHandler).getLogger();
+        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar) requestHandler).getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
             StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
-            // assertThat(argument.getKey()).isEqualTo("event");
-            // assertThat(argument.getValue()).isEqualTo(message);
+            assertThat(argument.toString()).hasToString("event={messageId: 1234abcd,awsRegion: eu-west-1,body: body,}");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_EVENT = false;
-            if (logger != null){
+            if (logger != null) {
                 logger.clearArguments();
             }
         }

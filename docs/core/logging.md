@@ -641,7 +641,7 @@ To append additional keys in your logs, you can use the `StructuredArguments` cl
         ```
 
 ???+ warning "Do not use arguments with reserved keys"
-    If the key name of your structured argument matches any of the [standard structured keys](#standard-structured-keys) or any of the [additional structured keys](#additional-structured-keys) the whole argument will be ignored. This is to protect you from accidentally overwriting reserved keys such as the log level or Lambda context information.
+    If the key name of your structured argument matches any of the [standard structured keys](#standard-structured-keys) or any of the [additional structured keys](#additional-structured-keys) the key will be ignored. This is to protect you from accidentally overwriting reserved keys such as the log level or Lambda context information.
     
 **Using MDC**
 
