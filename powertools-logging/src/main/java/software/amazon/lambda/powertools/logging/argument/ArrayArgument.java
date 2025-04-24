@@ -22,7 +22,7 @@ import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 /**
  * See {@link StructuredArguments#array(String, Object...)}
  */
-public class ArrayArgument implements StructuredArgument {
+class ArrayArgument implements StructuredArgument {
     private final String key;
     private final Object[] values;
 

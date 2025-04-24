@@ -22,7 +22,7 @@ import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 /**
  * See {@link StructuredArguments#json(String, String)}
  */
-public class JsonArgument implements StructuredArgument {
+class JsonArgument implements StructuredArgument {
     private final String key;
     private final String rawJson;
 

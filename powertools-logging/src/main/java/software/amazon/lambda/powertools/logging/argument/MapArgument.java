@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * See {@link StructuredArguments#entries(Map)}
  */
-public class MapArgument implements StructuredArgument {
+class MapArgument implements StructuredArgument {
     private final Map<?, ?> map;
 
     public MapArgument(Map<?, ?> map) {
