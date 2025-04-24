@@ -24,7 +24,7 @@ import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
  * A wrapper for an argument passed to a log method (e.g. {@link Logger#info(String, Object...)})
  * that adds data to the JSON event.
  */
-interface StructuredArgument {
+public interface StructuredArgument {
     /**
      * Writes the data associated with this argument to the given {@link JsonSerializer}.
      *
