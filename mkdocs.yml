@@ -111,6 +111,7 @@ plugins:
           - utilities/serialization.md
         Processes:
           - processes/maintainers.md
+          - processes/versioning.md
 
 extra_css:
   - stylesheets/extra.css
