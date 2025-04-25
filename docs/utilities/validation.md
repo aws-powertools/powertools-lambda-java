@@ -176,7 +176,8 @@ While it is easier to specify a json schema file in the classpath (using the not
     }
     ```
 
-**NOTE**: It's not a requirement to validate both inbound and outbound schemas - You can either use one, or both.
+!!! note
+    It is not a requirement to validate both inbound and outbound schemas - You can either use one, or both.
 
 ### Validate function
 
@@ -206,13 +207,14 @@ You can also gracefully handle schema validation errors by catching `ValidationE
     }
     ```
 
-**NOTE**: Schemas are stored in memory for reuse, to avoid loading them from file each time.
+!!! note
+    Schemas are stored in memory for re-use, to avoid loading them from file each time.
 
 ## Built-in events and responses
 
 For the following events and responses, the Validator will automatically perform validation on the content.
 
-** Events **
+**Events**
 
  Type of event | Class | Path to content |
  ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
@@ -230,7 +232,7 @@ For the following events and responses, the Validator will automatically perform
  SNS |  SNSEvent | `Records[*].Sns.Message`
  SQS |  SQSEvent | `Records[*].body`
 
-** Responses **
+**Responses**
 
  Type of response | Class | Path to content (envelope)
  ------------------------------------------------- | ------------------------------------------------- | -------------------------------------------------
