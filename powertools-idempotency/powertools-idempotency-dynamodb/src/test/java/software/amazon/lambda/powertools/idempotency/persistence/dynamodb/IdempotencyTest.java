@@ -12,20 +12,21 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.dynamodb;
-
+package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import com.amazonaws.services.lambda.runtime.tests.EventLoader;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.amazonaws.services.lambda.runtime.tests.EventLoader;
+
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
-import software.amazon.lambda.powertools.idempotency.dynamodb.handlers.IdempotencyFunction;
+import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.handlers.IdempotencyFunction;
 
 public class IdempotencyTest extends DynamoDBConfig {
 
@@ -41,14 +42,14 @@ public class IdempotencyTest extends DynamoDBConfig {
     public void endToEndTest() {
         IdempotencyFunction function = new IdempotencyFunction(client);
 
-        APIGatewayProxyResponseEvent response =
-                function.handleRequest(EventLoader.loadApiGatewayRestEvent("apigw_event2.json"), context);
+        APIGatewayProxyResponseEvent response = function
+                .handleRequest(EventLoader.loadApiGatewayRestEvent("apigw_event2.json"), context);
         assertThat(function.handlerExecuted).isTrue();
 
         function.handlerExecuted = false;
 
-        APIGatewayProxyResponseEvent response2 =
-                function.handleRequest(EventLoader.loadApiGatewayRestEvent("apigw_event2.json"), context);
+        APIGatewayProxyResponseEvent response2 = function
+                .handleRequest(EventLoader.loadApiGatewayRestEvent("apigw_event2.json"), context);
         assertThat(function.handlerExecuted).isFalse();
 
         assertThat(response).isEqualTo(response2);

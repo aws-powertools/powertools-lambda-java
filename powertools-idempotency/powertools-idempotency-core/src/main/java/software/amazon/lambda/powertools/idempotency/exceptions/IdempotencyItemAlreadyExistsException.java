@@ -14,11 +14,17 @@
 
 package software.amazon.lambda.powertools.idempotency.exceptions;
 
+import java.util.Optional;
+
+import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
+
 /**
  * Exception thrown when trying to store an item which already exists.
  */
 public class IdempotencyItemAlreadyExistsException extends RuntimeException {
     private static final long serialVersionUID = 9027152772149436500L;
+    // transient because we don't want to accidentally dump any payloads in logs / stack traces
+    private transient Optional<DataRecord> dr = Optional.empty();
 
     public IdempotencyItemAlreadyExistsException() {
         super();
@@ -26,5 +32,14 @@ public class IdempotencyItemAlreadyExistsException extends RuntimeException {
 
     public IdempotencyItemAlreadyExistsException(String msg, Throwable e) {
         super(msg, e);
+    }
+
+    public IdempotencyItemAlreadyExistsException(String msg, Throwable e, DataRecord dr) {
+        super(msg, e);
+        this.dr = Optional.ofNullable(dr);
+    }
+
+    public Optional<DataRecord> getDataRecord() {
+        return dr;
     }
 }

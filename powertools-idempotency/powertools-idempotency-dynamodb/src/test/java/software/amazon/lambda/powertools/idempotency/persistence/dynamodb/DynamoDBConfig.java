@@ -12,15 +12,18 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.dynamodb;
+package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
-import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
-import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+
+import com.amazonaws.services.dynamodbv2.local.main.ServerRunner;
+import com.amazonaws.services.dynamodbv2.local.server.DynamoDBProxyServer;
+
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -66,13 +69,12 @@ public class DynamoDBConfig {
                 .tableName(TABLE_NAME)
                 .keySchema(KeySchemaElement.builder().keyType(KeyType.HASH).attributeName("id").build())
                 .attributeDefinitions(
-                        AttributeDefinition.builder().attributeName("id").attributeType(ScalarAttributeType.S).build()
-                )
+                        AttributeDefinition.builder().attributeName("id").attributeType(ScalarAttributeType.S).build())
                 .billingMode(BillingMode.PAY_PER_REQUEST)
                 .build());
 
-        DescribeTableResponse response =
-                client.describeTable(DescribeTableRequest.builder().tableName(TABLE_NAME).build());
+        DescribeTableResponse response = client
+                .describeTable(DescribeTableRequest.builder().tableName(TABLE_NAME).build());
         if (response == null) {
             throw new RuntimeException("Table was not created within expected time");
         }

@@ -72,7 +72,7 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.argument.KeyValueArgument;
+import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayRestApiCorrelationId;
@@ -466,9 +466,8 @@ class LambdaLoggingAspectTest {
         // THEN
         TestLogger logger = (TestLogger) PowertoolsLogEvent.getLogger();
         assertThat(logger.getArguments()).hasSize(1);
-        KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-        assertThat(argument.getKey()).isEqualTo("event");
-        assertThat(argument.getValue()).isEqualTo(listOfOneElement);
+        StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+        assertThat(argument.toString()).hasToString("event=" + listOfOneElement.toString());
     }
 
     @Test
@@ -487,15 +486,14 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(message, context);
 
         // THEN
-        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar)requestHandler).getLogger();
+        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar) requestHandler).getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("event");
-            assertThat(argument.getValue()).isEqualTo(message);
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("event={messageId: 1234abcd,awsRegion: eu-west-1,body: body,}");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_EVENT = false;
-            if (logger != null){
+            if (logger != null) {
                 logger.clearArguments();
             }
         }
@@ -532,9 +530,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogEventForStream.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("event");
-            assertThat(argument.getValue()).isEqualTo("{\"key\":\"value\"}");
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("event={\"key\":\"value\"}");
         } finally {
             logger.clearArguments();
         }
@@ -552,9 +549,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogResponse.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("response");
-            assertThat(argument.getValue()).isEqualTo("Hola mundo");
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("response=Hola mundo");
         } finally {
             logger.clearArguments();
         }
@@ -574,9 +570,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogEnabled.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("response");
-            assertThat(argument.getValue()).isEqualTo("Bonjour le monde");
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("response=Bonjour le monde");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_RESPONSE = false;
             logger.clearArguments();
@@ -600,9 +595,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogResponseForStream.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("response");
-            assertThat(argument.getValue()).isEqualTo(input);
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("response=" + input);
         } finally {
             logger.clearArguments();
         }

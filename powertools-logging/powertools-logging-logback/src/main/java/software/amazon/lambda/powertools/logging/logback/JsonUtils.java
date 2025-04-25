@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
+
 import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
@@ -36,7 +37,7 @@ final class JsonUtils {
     }
 
     static void serializeTimestamp(JsonSerializer generator, long timestamp, String timestampFormat,
-                                          String timestampFormatTimezoneId, String timestampAttributeName) {
+            String timestampFormatTimezoneId, String timestampAttributeName) {
         String formattedTimestamp;
         if (timestampFormat == null || timestamp < 0) {
             formattedTimestamp = String.valueOf(timestamp);

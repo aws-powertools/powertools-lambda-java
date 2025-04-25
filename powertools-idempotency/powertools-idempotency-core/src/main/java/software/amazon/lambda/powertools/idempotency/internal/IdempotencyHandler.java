@@ -94,9 +94,11 @@ public class IdempotencyHandler {
             // already exists. If it succeeds, there's no need to call getRecord.
             persistenceStore.saveInProgress(data, Instant.now(), getRemainingTimeInMillis());
         } catch (IdempotencyItemAlreadyExistsException iaee) {
-            DataRecord record = getIdempotencyRecord();
-            if (record != null) {
-                return handleForStatus(record);
+            // If a DataRecord is already present on the Exception we can immediately take that one instead of trying
+            // to fetch it first.
+            DataRecord dr = iaee.getDataRecord().orElseGet(this::getIdempotencyRecord);
+            if (dr != null) {
+                return handleForStatus(dr);
             }
         } catch (IdempotencyKeyException ike) {
             throw ike;
