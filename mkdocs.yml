@@ -1,7 +1,7 @@
 site_name: Powertools for AWS Lambda (Java) Preview
 site_description: Powertools for AWS Lambda (Java) Preview
 site_author: Amazon Web Services
-site_url: https://docs.powertools.aws.dev/lambda-java/
+site_url: https://docs.powertools.aws.dev/lambda/java/preview/
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
