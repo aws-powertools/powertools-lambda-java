@@ -212,6 +212,8 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     if: ${{ inputs.snapshot == false }}
+    needs:
+      - create_pr
     permissions:
       contents: read
       id-token: write
