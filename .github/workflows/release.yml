@@ -137,36 +137,37 @@ jobs:
         run: |
           mvn -B install --file pom.xml
 
-  # publish:
-  #   runs-on: ubuntu-latest
-  #   if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' }}
-  #   needs:
-  #     - build
-  #   environment: Release
-  #   steps:
-  #     - id: download_source
-  #       name: Download artifacts
-  #       uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
-  #       with:
-  #         name: source
-  #     - name: Setup Java
-  #       uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
-  #       with:
-  #         distribution: corretto
-  #         java-version: 21
-  #         cache: maven
-  #     - name: Publish package
-  #       run: mvn -Prelease clean deploy -DskipTests
-  #       env:
-  #         MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
-  #         MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
-  #         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' }}
+    needs:
+      - build
+    environment: Release
+    steps:
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: corretto
+          java-version: 21
+          cache: maven
+      - name: Publish package
+        run: mvn -Prelease clean deploy -DskipTests
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
   
   create_pr:
     runs-on: ubuntu-latest
     if: ${{ inputs.snapshot == false }}
     needs:
       - build
+      - publish
     permissions:
       pull-requests: write
       contents: write
