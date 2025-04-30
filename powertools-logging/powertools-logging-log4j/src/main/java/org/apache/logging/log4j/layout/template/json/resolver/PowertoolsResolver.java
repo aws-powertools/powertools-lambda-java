@@ -191,8 +191,8 @@ final class PowertoolsResolver implements EventResolver {
                     Object[] arguments = logEvent.getMessage().getParameters();
                     if (arguments != null) {
                         stream(arguments).filter(StructuredArgument.class::isInstance).forEach(argument -> {
-                            serializer.writeRaw(',');
                             try {
+                                serializer.writeRaw(',');
                                 ((StructuredArgument) argument).writeTo(serializer);
                             } catch (IOException e) {
                                 System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
@@ -204,19 +204,20 @@ final class PowertoolsResolver implements EventResolver {
 
     private final EventResolver internalResolver;
 
-    private static final Map<String, EventResolver> eventResolverMap = Collections.unmodifiableMap(Stream.of(new Object[][] {
-            { SERVICE.getName(), SERVICE_RESOLVER },
-            { FUNCTION_NAME.getName(), FUNCTION_NAME_RESOLVER },
-            { FUNCTION_VERSION.getName(), FUNCTION_VERSION_RESOLVER },
-            { FUNCTION_ARN.getName(), FUNCTION_ARN_RESOLVER },
-            { FUNCTION_MEMORY_SIZE.getName(), FUNCTION_MEMORY_RESOLVER },
-            { FUNCTION_REQUEST_ID.getName(), FUNCTION_REQ_RESOLVER },
-            { FUNCTION_COLD_START.getName(), COLD_START_RESOLVER },
-            { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
-            { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
-            { "region", REGION_RESOLVER },
-            { "account_id", ACCOUNT_ID_RESOLVER }
-    }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1])));
+    private static final Map<String, EventResolver> eventResolverMap = Collections
+            .unmodifiableMap(Stream.of(new Object[][] {
+                    { SERVICE.getName(), SERVICE_RESOLVER },
+                    { FUNCTION_NAME.getName(), FUNCTION_NAME_RESOLVER },
+                    { FUNCTION_VERSION.getName(), FUNCTION_VERSION_RESOLVER },
+                    { FUNCTION_ARN.getName(), FUNCTION_ARN_RESOLVER },
+                    { FUNCTION_MEMORY_SIZE.getName(), FUNCTION_MEMORY_RESOLVER },
+                    { FUNCTION_REQUEST_ID.getName(), FUNCTION_REQ_RESOLVER },
+                    { FUNCTION_COLD_START.getName(), COLD_START_RESOLVER },
+                    { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
+                    { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
+                    { "region", REGION_RESOLVER },
+                    { "account_id", ACCOUNT_ID_RESOLVER }
+            }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1])));
 
 
     PowertoolsResolver(final TemplateResolverConfig config) {

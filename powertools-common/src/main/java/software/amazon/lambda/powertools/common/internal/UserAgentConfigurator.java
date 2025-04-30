@@ -16,9 +16,8 @@ package software.amazon.lambda.powertools.common.internal;
 
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,11 +65,12 @@ public class UserAgentConfigurator {
      */
     static String getVersionFromProperties(String propertyFileName, String versionKey) {
 
-        URL propertiesFileURI = Thread.currentThread().getContextClassLoader().getResource(propertyFileName);
-        if (propertiesFileURI != null) {
-            try (FileInputStream fis = new FileInputStream(propertiesFileURI.getPath())) {
+        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFileName);
+
+        if (is != null) {
+            try {
                 Properties properties = new Properties();
-                properties.load(fis);
+                properties.load(is);
                 String version = properties.getProperty(versionKey);
                 if (version != null && !version.isEmpty()) {
                     return version;

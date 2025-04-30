@@ -53,7 +53,7 @@ public class DataRecord {
     private final OptionalLong inProgressExpiryTimestamp;
 
     public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData,
-                      String payloadHash) {
+            String payloadHash) {
         this.idempotencyKey = idempotencyKey;
         this.status = status.toString();
         this.expiryTimestamp = expiryTimestamp;
@@ -63,7 +63,7 @@ public class DataRecord {
     }
 
     public DataRecord(String idempotencyKey, Status status, long expiryTimestamp, String responseData,
-                      String payloadHash, OptionalLong inProgressExpiryTimestamp) {
+            String payloadHash, OptionalLong inProgressExpiryTimestamp) {
         this.idempotencyKey = idempotencyKey;
         this.status = status.toString();
         this.expiryTimestamp = expiryTimestamp;
@@ -131,13 +131,22 @@ public class DataRecord {
         return Objects.hash(idempotencyKey, status, expiryTimestamp, responseData, payloadHash);
     }
 
+    @Override
+    public String toString() {
+        return "DataRecord{" +
+                "idempotencyKey='" + idempotencyKey + '\'' +
+                ", status='" + status + '\'' +
+                ", expiryTimestamp=" + expiryTimestamp +
+                ", payloadHash='" + payloadHash + '\'' +
+                '}';
+    }
 
     /**
      * Status of the record:
      * <ul>
-     *  <li>INPROGRESS: record initialized when function starts</li>
-     *  <li>COMPLETED: record updated with the result of the function when it ends</li>
-     *  <li>EXPIRED: record expired, idempotency will not happen</li>
+     * <li>INPROGRESS: record initialized when function starts</li>
+     * <li>COMPLETED: record updated with the result of the function when it ends</li>
+     * <li>EXPIRED: record expired, idempotency will not happen</li>
      * </ul>
      */
     public enum Status {

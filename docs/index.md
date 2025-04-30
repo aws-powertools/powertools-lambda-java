@@ -106,6 +106,12 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
             <artifactId>powertools-metrics</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
+        <!-- Make sure to include AspectJ runtime compatible with plugin version -->
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjrt</artifactId>
+            <version>1.9.22</version>
+        </dependency>
         ...
     </dependencies>
     ...
@@ -116,7 +122,7 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
             <plugin>
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
+                 <version>1.14</version>
                  <configuration>
                      <source>11</source> <!-- or higher -->
                      <target>11</target> <!-- or higher -->
@@ -136,6 +142,14 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <!-- AspectJ compiler version, in sync with runtime -->
+                        <version>1.9.22</version>
+                    </dependency>
+                </dependencies>
                  <executions>
                      <execution>
                          <goals>
@@ -211,10 +225,10 @@ You may need to add the good version of `aspectjrt` to your dependencies based o
 
 Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md) between this library and the JDK:
 
-| JDK version | aspectj version |
-|-------------|-----------------|
-| `11-17`     | `1.9.20.1`      |
-| `21`        | `1.9.21`        |
+| JDK version | aspectj version        |
+|-------------|------------------------|
+| `11-17`     | `1.9.20.1` (or higher) |
+| `21`        | `1.9.21` (or higher)   |
 
 ## Environment variables
 
