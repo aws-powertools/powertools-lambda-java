@@ -35,6 +35,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.slf4j.MDC;
+
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments;
 
 @Order(2)
@@ -83,9 +85,17 @@ class PowertoolsResolverArgumentsTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                .contains(
+                        "\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
+        // Reserved keys should be ignored
+        PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
+            assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
+            assertThat(contentOf(logFile)).contains(
+                    "\"message\":\"Attempted to use reserved key '" + reservedKey
+                            + "' in structured argument. This key will be ignored.\"");
+        });
     }
 
     @Test
@@ -107,9 +117,18 @@ class PowertoolsResolverArgumentsTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                .contains(
+                        "\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
+
+        // Reserved keys should be ignored
+        PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
+            assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
+            assertThat(contentOf(logFile)).contains(
+                    "\"message\":\"Attempted to use reserved key '" + reservedKey
+                            + "' in structured argument. This key will be ignored.\"");
+        });
     }
 
     private void setupContext() {

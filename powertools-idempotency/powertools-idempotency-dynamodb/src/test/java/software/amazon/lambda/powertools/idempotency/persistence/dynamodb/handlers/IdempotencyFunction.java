@@ -12,14 +12,16 @@
  *
  */
 
-package software.amazon.lambda.powertools.idempotency.dynamodb.handlers;
+package software.amazon.lambda.powertools.idempotency.persistence.dynamodb.handlers;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
-import java.util.HashMap;
-import java.util.Map;
+
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -32,15 +34,15 @@ public class IdempotencyFunction implements RequestHandler<APIGatewayProxyReques
     public IdempotencyFunction(DynamoDbClient client) {
         // we need to initialize idempotency configuration before the handleRequest method is called
         Idempotency.config().withConfig(
-                        IdempotencyConfig.builder()
-                                .withEventKeyJMESPath("powertools_json(body).address")
-                                .build())
+                IdempotencyConfig.builder()
+                        .withEventKeyJMESPath("powertools_json(body).address")
+                        .build())
                 .withPersistenceStore(
                         DynamoDBPersistenceStore.builder()
                                 .withTableName("idempotency_table")
                                 .withDynamoDbClient(client)
-                                .build()
-                ).configure();
+                                .build())
+                .configure();
     }
 
     @Idempotent
@@ -56,9 +58,9 @@ public class IdempotencyFunction implements RequestHandler<APIGatewayProxyReques
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
 
-            return response
-                    .withStatusCode(200)
-                    .withBody("{ \"message\": \"hello world\"}");
+        return response
+                .withStatusCode(200)
+                .withBody("{ \"message\": \"hello world\"}");
 
     }
 }

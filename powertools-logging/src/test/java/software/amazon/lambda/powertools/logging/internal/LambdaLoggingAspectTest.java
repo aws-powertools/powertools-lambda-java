@@ -18,11 +18,8 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getProperty;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -32,15 +29,6 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
-import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
-import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -58,20 +46,33 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junitpioneer.jupiter.ClearEnvironmentVariable;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import org.junitpioneer.jupiter.SetSystemProperty;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import org.slf4j.test.TestLogger;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.common.internal.SystemWrapper;
-import software.amazon.lambda.powertools.logging.argument.KeyValueArgument;
+import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayRestApiCorrelationId;
@@ -426,40 +427,31 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
+    @ClearEnvironmentVariable(key = "_X_AMZN_TRACE_ID")
+    @SetSystemProperty(key = "com.amazonaws.xray.traceHeader", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void shouldLogxRayTraceIdSystemPropertySet() {
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn(null);
-            mocked.when(() -> getProperty("com.amazonaws.xray.traceHeader"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        requestHandler.handleRequest(new Object(), context);
 
-            requestHandler.handleRequest(new Object(), context);
-
-            assertThat(MDC.getCopyOfContextMap())
-                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
-                    .containsEntry("xray_trace_id", xRayTraceId);
-        }
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry("xray_trace_id", xRayTraceId);
     }
 
     @Test
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     void shouldLogxRayTraceIdEnvVarSet() {
         // GIVEN
         String xRayTraceId = "1-5759e988-bd862e3fe1be46a994272793";
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        // WHEN
+        requestHandler.handleRequest(new Object(), context);
 
-            // WHEN
-            requestHandler.handleRequest(new Object(), context);
-
-            // THEN
-            assertThat(MDC.getCopyOfContextMap())
-                    .hasSize(EXPECTED_CONTEXT_SIZE + 1)
-                    .containsEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId);
-        }
+        // THEN
+        assertThat(MDC.getCopyOfContextMap())
+                .hasSize(EXPECTED_CONTEXT_SIZE + 1)
+                .containsEntry(FUNCTION_TRACE_ID.getName(), xRayTraceId);
     }
 
     @Test
@@ -474,9 +466,8 @@ class LambdaLoggingAspectTest {
         // THEN
         TestLogger logger = (TestLogger) PowertoolsLogEvent.getLogger();
         assertThat(logger.getArguments()).hasSize(1);
-        KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-        assertThat(argument.getKey()).isEqualTo("event");
-        assertThat(argument.getValue()).isEqualTo(listOfOneElement);
+        StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+        assertThat(argument.toString()).hasToString("event=" + listOfOneElement.toString());
     }
 
     @Test
@@ -495,15 +486,14 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(message, context);
 
         // THEN
-        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar)requestHandler).getLogger();
+        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar) requestHandler).getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("event");
-            assertThat(argument.getValue()).isEqualTo(message);
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("event={messageId: 1234abcd,awsRegion: eu-west-1,body: body,}");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_EVENT = false;
-            if (logger != null){
+            if (logger != null) {
                 logger.clearArguments();
             }
         }
@@ -540,9 +530,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogEventForStream.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("event");
-            assertThat(argument.getValue()).isEqualTo("{\"key\":\"value\"}");
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("event={\"key\":\"value\"}");
         } finally {
             logger.clearArguments();
         }
@@ -560,9 +549,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogResponse.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("response");
-            assertThat(argument.getValue()).isEqualTo("Hola mundo");
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("response=Hola mundo");
         } finally {
             logger.clearArguments();
         }
@@ -582,9 +570,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogEnabled.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("response");
-            assertThat(argument.getValue()).isEqualTo("Bonjour le monde");
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("response=Bonjour le monde");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_RESPONSE = false;
             logger.clearArguments();
@@ -608,9 +595,8 @@ class LambdaLoggingAspectTest {
         TestLogger logger = (TestLogger) PowertoolsLogResponseForStream.getLogger();
         try {
             assertThat(logger.getArguments()).hasSize(1);
-            KeyValueArgument argument = (KeyValueArgument) logger.getArguments()[0];
-            assertThat(argument.getKey()).isEqualTo("response");
-            assertThat(argument.getValue()).isEqualTo(input);
+            StructuredArgument argument = (StructuredArgument) logger.getArguments()[0];
+            assertThat(argument.toString()).hasToString("response=" + input);
         } finally {
             logger.clearArguments();
         }

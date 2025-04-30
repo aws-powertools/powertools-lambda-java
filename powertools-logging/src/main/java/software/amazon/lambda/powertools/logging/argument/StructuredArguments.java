@@ -15,7 +15,16 @@
 package software.amazon.lambda.powertools.logging.argument;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 /**
  * Factory for creating {@link StructuredArgument}s.
@@ -23,54 +32,109 @@ import java.util.Map;
  */
 public class StructuredArguments {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StructuredArguments.class);
+
+    /**
+     * Set of reserved keys that should not be used in structured arguments.
+     * When a reserved key is used, the method will return null.
+     */
+    private static final Set<String> RESERVED_KEYS = Stream
+            .concat(PowertoolsLoggedFields.stringValues().stream(),
+                    List.of("message", "level", "timestamp", "error").stream())
+            .collect(Collectors.toSet());
+
     private StructuredArguments() {
         // nothing to do, use static methods only
     }
 
     /**
+     * Checks if the provided key is a reserved key.
+     * If the key is reserved, logs a warning message.
+     *
+     * @param key the key to check
+     * @return true if the key is reserved, false otherwise
+     */
+    private static boolean isReservedKey(String key) {
+        if (key != null && RESERVED_KEYS.contains(key)) {
+            LOGGER.warn(
+                    "Attempted to use reserved key '{}' in structured argument. This key will be ignored.", key);
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Adds "key": "value" to the JSON structure and "key=value" to the formatted message.
+     * Returns null if the key is a reserved key.
      *
      * @param key the field name
      * @param value the value associated with the key (can be any kind of object)
-     * @return a {@link StructuredArgument} populated with the data
+     * @return a {@link StructuredArgument} populated with the data, or null if key is reserved
      */
     public static StructuredArgument entry(String key, Object value) {
+        if (isReservedKey(key)) {
+            return null;
+        }
         return new KeyValueArgument(key, value);
     }
 
     /**
      * Adds a "key": "value" to the JSON structure for each entry in the map
      * and {@code map.toString()} to the formatted message.
+     * If the map contains any reserved keys, those entries will be filtered out.
      *
      * @param map {@link Map} holding the key/value pairs
-     * @return a {@link MapArgument} populated with the data
+     * @return a {@link MapArgument} populated with the data, with reserved keys filtered out
      */
     public static StructuredArgument entries(Map<?, ?> map) {
-        return new MapArgument(map);
+        if (map == null) {
+            return null;
+        }
+
+        // Create a new map without reserved keys
+        Map<Object, Object> filteredMap = new java.util.HashMap<>();
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            if (entry.getKey() != null) {
+                String keyStr = String.valueOf(entry.getKey());
+                if (!isReservedKey(keyStr)) {
+                    filteredMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
+        return new MapArgument(filteredMap);
     }
 
     /**
      * Adds a field to the JSON structure with key as the key and where value
      * is a JSON array of objects AND a string version of the array to the formatted message:
      * {@code "key": [value, value]}
+     * Returns null if the key is a reserved key.
      *
      * @param key the field name
      * @param values elements of the array associated with the key
-     * @return an {@link ArrayArgument} populated with the data
+     * @return an {@link ArrayArgument} populated with the data, or null if key is reserved
      */
     public static StructuredArgument array(String key, Object... values) {
+        if (isReservedKey(key)) {
+            return null;
+        }
         return new ArrayArgument(key, values);
     }
 
     /**
      * Adds the {@code rawJson} to the JSON structure and
      * the {@code rawJson} to the formatted message.
+     * Returns null if the key is a reserved key.
      *
      * @param key the field name
      * @param rawJson the raw JSON String
-     * @return a {@link JsonArgument} populated with the data
+     * @return a {@link JsonArgument} populated with the data, or null if key is reserved
      */
     public static StructuredArgument json(String key, String rawJson) {
+        if (isReservedKey(key)) {
+            return null;
+        }
         return new JsonArgument(key, rawJson);
     }
 
