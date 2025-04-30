@@ -16,13 +16,12 @@ package software.amazon.lambda.powertools.core.internal;
 
 import static software.amazon.lambda.powertools.core.internal.SystemWrapper.getenv;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * Can be used to create a string that can server as a User-Agent suffix in requests made with the AWS SDK clients
@@ -54,32 +53,36 @@ public class UserAgentConfigurator {
         return getVersionFromProperties(VERSION_PROPERTIES_FILENAME, VERSION_KEY);
     }
 
-
     /**
      * Retrieves the project version from a properties file.
      * The file should be in the resources folder.
      * The version is retrieved from the property with the given key.
      *
-     * @param propertyFileName the name of the properties file
-     * @param versionKey       the key of the property that contains the version
+     * @param propertyFileName
+     *            the name of the properties file
+     * @param versionKey
+     *            the key of the property that contains the version
      * @return the version of the project as configured in the given properties file
      */
     static String getVersionFromProperties(String propertyFileName, String versionKey) {
-
-        URL propertiesFileURI = Thread.currentThread().getContextClassLoader().getResource(propertyFileName);
-        if (propertiesFileURI != null) {
-            try (FileInputStream fis = new FileInputStream(propertiesFileURI.getPath())) {
-                Properties properties = new Properties();
-                properties.load(fis);
-                String version = properties.getProperty(versionKey);
-                if (version != null && !version.isEmpty()) {
-                    return version;
-                }
-            } catch (IOException e) {
+        try (final InputStream is = Thread.currentThread().getContextClassLoader()
+                .getResourceAsStream(propertyFileName)) {
+            if (is == null) {
                 LOG.warn("Unable to read {} file. Using default version.", propertyFileName);
-                LOG.debug("Exception:", e);
+                return NA;
             }
+
+            Properties properties = new Properties();
+            properties.load(is);
+            String version = properties.getProperty(versionKey);
+            if (version != null && !version.isEmpty()) {
+                return version;
+            }
+        } catch (IOException e) {
+            LOG.warn("Unable to read {} file. Using default version.", propertyFileName);
+            LOG.debug("Exception:", e);
         }
+
         return NA;
     }
 
@@ -90,9 +93,10 @@ public class UserAgentConfigurator {
      * The PT_EXEC_ENV is automatically retrieved from the AWS_EXECUTION_ENV environment variable.
      * If it AWS_EXECUTION_ENV is not set, PT_EXEC_ENV defaults to "NA"
      *
-     * @param ptFeature a custom feature to be added to the user agent string (e.g. idempotency).
-     *                  If null or empty, the default PT_FEATURE is used.
-     *                  The default PT_FEATURE is "no-op".
+     * @param ptFeature
+     *            a custom feature to be added to the user agent string (e.g. idempotency).
+     *            If null or empty, the default PT_FEATURE is used.
+     *            The default PT_FEATURE is "no-op".
      * @return the user agent string
      */
     public static String getUserAgent(String ptFeature) {
