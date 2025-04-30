@@ -20,7 +20,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>1.19.0-SNAPSHOT</version>
+    <version>1.20.1</version>
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) library Parent</name>
@@ -73,16 +73,16 @@
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <log4j.version>2.22.1</log4j.version>
+        <log4j.version>2.24.3</log4j.version>
         <jackson.version>2.17.2</jackson.version>
-        <aws.sdk.version>2.30.19</aws.sdk.version>
+        <aws.sdk.version>2.31.17</aws.sdk.version>
         <aws.xray.recorder.version>2.18.1</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.11.4</lambda.events.version>
         <lambda.serial.version>1.1.5</lambda.serial.version>
-        <maven-compiler-plugin.version>3.11.0</maven-compiler-plugin.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
