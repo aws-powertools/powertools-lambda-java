@@ -15,12 +15,15 @@
 package software.amazon.lambda.powertools.logging.argument;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 import software.amazon.lambda.powertools.logging.model.Basket;
 import software.amazon.lambda.powertools.logging.model.Product;
@@ -47,8 +50,10 @@ class StructuredArgumentsTest {
         argument.writeTo(serializer);
 
         // THEN
-        assertThat(sb.toString()).hasToString("\"basket\":{\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]}");
-        assertThat(argument.toString()).hasToString("basket=Basket{products=[Product{id=42, name='Nintendo DS', price=299.45}, Product{id=98, name='Playstation 5', price=499.99}]}");
+        assertThat(sb.toString()).hasToString(
+                "\"basket\":{\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]}");
+        assertThat(argument.toString()).hasToString(
+                "basket=Basket{products=[Product{id=42, name='Nintendo DS', price=299.45}, Product{id=98, name='Playstation 5', price=499.99}]}");
     }
 
     @Test
@@ -64,7 +69,7 @@ class StructuredArgumentsTest {
 
         // THEN
         assertThat(sb.toString())
-                .contains("\"nds\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}")
+                .contains("\"nds\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},")
                 .contains("\"ps5\":{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}");
         assertThat(argument.toString())
                 .contains("nds=Product{id=42, name='Nintendo DS', price=299.45}")
@@ -72,9 +77,24 @@ class StructuredArgumentsTest {
     }
 
     @Test
+    void emptyMapArgument() throws IOException {
+        // GIVEN
+        Map<String, Product> catalog = new HashMap<>();
+
+        // WHEN
+        assertNull(StructuredArguments.entries(null));
+        StructuredArgument argument = StructuredArguments.entries(catalog);
+        argument.writeTo(serializer);
+
+        // THEN
+        assertThat(sb.toString()).isEmpty();
+        assertThat(argument.toString()).hasToString("{}");
+    }
+
+    @Test
     void arrayArgument() throws IOException {
         // GIVEN
-        Product[] products = new Product[]{
+        Product[] products = new Product[] {
                 new Product(42, "Nintendo DS", 299.45),
                 new Product(98, "Playstation 5", 499.99)
         };
@@ -84,8 +104,10 @@ class StructuredArgumentsTest {
         argument.writeTo(serializer);
 
         // THEN
-        assertThat(sb.toString()).contains("\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]");
-        assertThat(argument.toString()).contains("products=[Product{id=42, name='Nintendo DS', price=299.45}, Product{id=98, name='Playstation 5', price=499.99}]");
+        assertThat(sb.toString()).contains(
+                "\"products\":[{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45},{\"id\":98,\"name\":\"Playstation 5\",\"price\":499.99}]");
+        assertThat(argument.toString()).contains(
+                "products=[Product{id=42, name='Nintendo DS', price=299.45}, Product{id=98, name='Playstation 5', price=499.99}]");
     }
 
     @Test
@@ -100,6 +122,36 @@ class StructuredArgumentsTest {
         // THEN
         assertThat(sb.toString()).contains("\"product\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}");
         assertThat(argument.toString()).contains("product={\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}");
+    }
+
+    @Test
+    void reservedKeywordArgumentIgnored() throws IOException {
+        // GIVEN
+        Basket basket = new Basket();
+        basket.add(new Product(42, "Nintendo DS", 299.45));
+        basket.add(new Product(98, "Playstation 5", 499.99));
+        Product[] products = new Product[] {
+                new Product(42, "Nintendo DS", 299.45),
+                new Product(98, "Playstation 5", 499.99)
+        };
+        String rawJson = "{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}";
+        Map<String, Product> catalog = new HashMap<>();
+        catalog.put("nds", new Product(42, "Nintendo DS", 299.45));
+        catalog.put("message", new Product(98, "Playstation 5", 499.99));
+
+        // THEN
+        assertNull(StructuredArguments.entry("message", basket));
+        assertNull(StructuredArguments.array("message", products));
+        assertNull(StructuredArguments.json("message", rawJson));
+
+        StructuredArgument mapArg = StructuredArguments.entries(catalog);
+        mapArg.writeTo(serializer);
+        assertThat(sb.toString())
+                .contains("\"nds\":{\"id\":42,\"name\":\"Nintendo DS\",\"price\":299.45}");
+        assertThat(sb.toString()).doesNotContain("message");
+        assertThat(mapArg.toString())
+                .contains("nds=Product{id=42, name='Nintendo DS', price=299.45}");
+        assertThat(mapArg.toString()).doesNotContain("message");
     }
 
 }

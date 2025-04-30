@@ -17,20 +17,21 @@ package software.amazon.lambda.powertools.common.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
+
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Optional;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.ClearEnvironmentVariable;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Optional;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.Signature;
-import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 
 class LambdaHandlerProcessorTest {
 
@@ -139,27 +140,23 @@ class LambdaHandlerProcessorTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = LambdaConstants.X_AMZN_TRACE_ID, value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"")
     void getXrayTraceId_present() {
         String traceID = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1\"";
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            mockedSystemWrapper.when(() -> getenv(LambdaConstants.X_AMZN_TRACE_ID)).thenReturn(traceID);
 
-            Optional xRayTraceId = LambdaHandlerProcessor.getXrayTraceId();
+        Optional xRayTraceId = LambdaHandlerProcessor.getXrayTraceId();
 
-            assertThat(xRayTraceId.isPresent()).isTrue();
-            assertThat(traceID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, "")).isEqualTo(xRayTraceId.get());
-        }
+        assertThat(xRayTraceId.isPresent()).isTrue();
+        assertThat(traceID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, "")).isEqualTo(xRayTraceId.get());
     }
 
     @Test
+    @ClearEnvironmentVariable(key = LambdaConstants.X_AMZN_TRACE_ID)
     void getXrayTraceId_notPresent() {
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            mockedSystemWrapper.when(() -> getenv(LambdaConstants.X_AMZN_TRACE_ID)).thenReturn(null);
 
-            boolean isXRayTraceIdPresent = LambdaHandlerProcessor.getXrayTraceId().isPresent();
+        boolean isXRayTraceIdPresent = LambdaHandlerProcessor.getXrayTraceId().isPresent();
 
-            assertThat(isXRayTraceIdPresent).isFalse();
-        }
+        assertThat(isXRayTraceIdPresent).isFalse();
     }
 
     @Test
@@ -209,37 +206,28 @@ class LambdaHandlerProcessorTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = LambdaConstants.AWS_SAM_LOCAL, value = "true")
     void isSamLocal() {
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            mockedSystemWrapper.when(() -> getenv(LambdaConstants.AWS_SAM_LOCAL)).thenReturn("true");
 
-            boolean isSamLocal = LambdaHandlerProcessor.isSamLocal();
+        boolean isSamLocal = LambdaHandlerProcessor.isSamLocal();
 
-            assertThat(isSamLocal).isTrue();
-        }
+        assertThat(isSamLocal).isTrue();
     }
 
     @Test
+    @SetEnvironmentVariable(key = LambdaConstants.POWERTOOLS_SERVICE_NAME, value = "MyService")
     void serviceName() {
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            String expectedServiceName = "MyService";
-            mockedSystemWrapper.when(() -> getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME))
-                    .thenReturn(expectedServiceName);
+        String expectedServiceName = "MyService";
+        String actualServiceName = LambdaHandlerProcessor.serviceName();
 
-            String actualServiceName = LambdaHandlerProcessor.serviceName();
-
-            assertThat(actualServiceName).isEqualTo(expectedServiceName);
-        }
+        assertThat(actualServiceName).isEqualTo(expectedServiceName);
     }
 
     @Test
+    @ClearEnvironmentVariable(key = LambdaConstants.POWERTOOLS_SERVICE_NAME)
     void serviceName_Undefined() {
         LambdaHandlerProcessor.resetServiceName();
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            mockedSystemWrapper.when(() -> getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME)).thenReturn(null);
-
-            assertThat(LambdaHandlerProcessor.serviceName()).isEqualTo(LambdaConstants.SERVICE_UNDEFINED);
-        }
+        assertThat(LambdaHandlerProcessor.serviceName()).isEqualTo(LambdaConstants.SERVICE_UNDEFINED);
     }
 
     private ProceedingJoinPoint mockRequestHandlerPjp(Class handlerClass, Object[] handlerArgs) {

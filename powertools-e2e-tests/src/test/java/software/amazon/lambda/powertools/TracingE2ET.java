@@ -18,14 +18,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSegment;
@@ -45,7 +46,9 @@ public class TracingE2ET {
                 .testName(TracingE2ET.class.getSimpleName())
                 .pathToFunction("tracing")
                 .tracing(true)
-                .environmentVariables(Collections.singletonMap("POWERTOOLS_SERVICE_NAME", service))
+                .environmentVariables(
+                        Map.of("POWERTOOLS_SERVICE_NAME", service,
+                                "POWERTOOLS_TRACER_CAPTURE_RESPONSE", "true"))
                 .build();
         Map<String, String> outputs = infrastructure.deploy();
         functionName = outputs.get(FUNCTION_NAME_OUTPUT);
@@ -61,45 +64,58 @@ public class TracingE2ET {
     @Test
     public void test_tracing() {
         // GIVEN
-        String message = "Hello World";
-        String event = String.format("{\"message\":\"%s\"}", message);
-        String result = String.format("%s (%s)", message, functionName);
+        final String message = "Hello World";
+        final String event = String.format("{\"message\":\"%s\"}", message);
+        final String result = String.format("%s (%s)", message, functionName);
 
         // WHEN
-        InvocationResult invocationResult = invokeFunction(functionName, event);
+        final InvocationResult invocationResult = invokeFunction(functionName, event);
 
         // THEN
-        Trace trace = TraceFetcher.builder()
+        final Trace trace = TraceFetcher.builder()
                 .start(invocationResult.getStart())
                 .end(invocationResult.getEnd())
                 .functionName(functionName)
                 .build()
                 .fetchTrace();
 
-        assertThat(trace.getSubsegments()).hasSize(1);
-        SubSegment handleRequest = trace.getSubsegments().get(0);
-        assertThat(handleRequest.getName()).isEqualTo("## handleRequest");
-        assertThat(handleRequest.getAnnotations()).hasSize(2);
-        assertThat(handleRequest.getAnnotations().get("ColdStart")).isEqualTo(true);
-        assertThat(handleRequest.getAnnotations().get("Service")).isEqualTo(service);
-        assertThat(handleRequest.getMetadata()).hasSize(1);
-        Map<String, Object> metadata = (Map<String, Object>) handleRequest.getMetadata().get(service);
-        assertThat(metadata.get("handleRequest response")).isEqualTo(result);
-        assertThat(handleRequest.getSubsegments()).hasSize(2);
+        assertThat(trace.getSubsegments()).hasSize(2);
 
-        SubSegment sub = handleRequest.getSubsegments().get(0);
+        // We need to filter segments based on name because they are not returned in-order from the X-Ray API
+        // The Init segment is created by default for Lambda functions in X-Ray
+        final SubSegment initSegment = trace.getSubsegments().stream()
+                .filter(subSegment -> subSegment.getName().equals("Init"))
+                .findFirst().orElse(null);
+        assertThat(initSegment.getName()).isEqualTo("Init");
+        assertThat(initSegment.getAnnotations()).isNull();
+
+        final SubSegment handleRequestSegment = trace.getSubsegments().stream()
+                .filter(subSegment -> subSegment.getName().equals("## handleRequest"))
+                .findFirst().orElse(null);
+        assertThat(handleRequestSegment.getName()).isEqualTo("## handleRequest");
+        assertThat(handleRequestSegment.getAnnotations()).hasSize(2);
+        assertThat(handleRequestSegment.getAnnotations()).containsEntry("ColdStart", true);
+        assertThat(handleRequestSegment.getAnnotations()).containsEntry("Service", service);
+        assertThat(handleRequestSegment.getMetadata()).hasSize(1);
+        final Map<String, Object> metadata = (Map<String, Object>) handleRequestSegment.getMetadata().get(service);
+        assertThat(metadata).containsEntry("handleRequest response", result);
+        assertThat(handleRequestSegment.getSubsegments()).hasSize(2);
+
+        SubSegment sub = handleRequestSegment.getSubsegments().get(0);
         assertThat(sub.getName()).isIn("## internal_stuff", "## buildMessage");
 
-        sub = handleRequest.getSubsegments().get(1);
+        sub = handleRequestSegment.getSubsegments().get(1);
         assertThat(sub.getName()).isIn("## internal_stuff", "## buildMessage");
 
-        SubSegment buildMessage = handleRequest.getSubsegments().stream()
-                .filter(subSegment -> subSegment.getName().equals("## buildMessage")).findFirst().orElse(null);
+        SubSegment buildMessage = handleRequestSegment.getSubsegments().stream()
+                .filter(subSegment -> subSegment.getName().equals("## buildMessage"))
+                .findFirst().orElse(null);
         assertThat(buildMessage).isNotNull();
         assertThat(buildMessage.getAnnotations()).hasSize(1);
-        assertThat(buildMessage.getAnnotations().get("message")).isEqualTo(message);
+        assertThat(buildMessage.getAnnotations()).containsEntry("message", message);
         assertThat(buildMessage.getMetadata()).hasSize(1);
-        metadata = (Map<String, Object>) buildMessage.getMetadata().get(service);
-        assertThat(metadata.get("buildMessage response")).isEqualTo(result);
+        final Map<String, Object> buildMessageSegmentMetadata = (Map<String, Object>) buildMessage.getMetadata()
+                .get(service);
+        assertThat(buildMessageSegmentMetadata).containsEntry("buildMessage response", result);
     }
 }

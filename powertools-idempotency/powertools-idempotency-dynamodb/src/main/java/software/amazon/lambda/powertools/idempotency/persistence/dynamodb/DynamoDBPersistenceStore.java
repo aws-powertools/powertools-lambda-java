@@ -189,10 +189,17 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                                     "attribute_not_exists(#id) OR #expiry < :now OR (attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_milliseconds AND #status = :inprogress)")
                             .expressionAttributeNames(expressionAttributeNames)
                             .expressionAttributeValues(expressionAttributeValues)
-                            .build()
-            );
+                            .returnValuesOnConditionCheckFailure("ALL_OLD")
+                            .build());
         } catch (ConditionalCheckFailedException e) {
             LOG.debug("Failed to put record for already existing idempotency key: {}", record.getIdempotencyKey());
+            if (e.hasItem()) {
+                DataRecord existingRecord = itemToRecord(e.item());
+                throw new IdempotencyItemAlreadyExistsException(
+                        "Failed to put record for already existing idempotency key: " + record.getIdempotencyKey()
+                                + ". Existing record: " + existingRecord,
+                        e, existingRecord);
+            }
             throw new IdempotencyItemAlreadyExistsException(
                     "Failed to put record for already existing idempotency key: " + record.getIdempotencyKey(), e);
         }

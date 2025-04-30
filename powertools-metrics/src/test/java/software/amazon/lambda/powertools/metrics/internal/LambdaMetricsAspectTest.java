@@ -18,28 +18,27 @@ import static java.util.Collections.emptyMap;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.openMocks;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.Map;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
+import org.mockito.Mock;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.util.Map;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import software.amazon.cloudwatchlogs.emf.config.SystemWrapper;
+
 import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
@@ -55,6 +54,7 @@ import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoExc
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsTooManyDimensionsHandler;
 import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsWithExceptionInHandler;
 
+@SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
 public class LambdaMetricsAspectTest {
     private final ByteArrayOutputStream out = new ByteArrayOutputStream();
     private final PrintStream originalOut = System.out;
@@ -62,14 +62,6 @@ public class LambdaMetricsAspectTest {
     @Mock
     private Context context;
     private RequestHandler<Object, Object> requestHandler;
-
-
-    @BeforeAll
-    static void beforeAll() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-        }
-    }
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
@@ -85,341 +77,292 @@ public class LambdaMetricsAspectTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     public void metricsWithoutColdStart() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
 
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        MetricsUtils.defaultDimensions(null);
+        requestHandler = new PowertoolsMetricsEnabledHandler();
+        requestHandler.handleRequest("input", context);
 
-            MetricsUtils.defaultDimensions(null);
-            requestHandler = new PowertoolsMetricsEnabledHandler();
-            requestHandler.handleRequest("input", context);
+        assertThat(out.toString().split("\n"))
+                .hasSize(2)
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s[0]);
 
-            assertThat(out.toString().split("\n"))
-                    .hasSize(2)
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s[0]);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric2", 1.0)
+                            .containsEntry("Dimension1", "Value1")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                            .containsEntry("function_request_id", "123ABC");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric2", 1.0)
-                                .containsEntry("Dimension1", "Value1")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                                .containsEntry("function_request_id", "123ABC");
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=ExampleApplication");
 
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=ExampleApplication");
+                    logAsJson = readAsJson(s[1]);
 
-                        logAsJson = readAsJson(s[1]);
-
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     public void metricsWithDefaultDimensionSpecified() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
+        requestHandler = new PowertoolsMetricsEnabledDefaultDimensionHandler();
 
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        requestHandler.handleRequest("input", context);
 
-            requestHandler = new PowertoolsMetricsEnabledDefaultDimensionHandler();
+        assertThat(out.toString().split("\n"))
+                .hasSize(2)
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s[0]);
 
-            requestHandler.handleRequest("input", context);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric2", 1.0)
+                            .containsEntry("CustomDimension", "booking")
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                            .containsEntry("function_request_id", "123ABC");
 
-            assertThat(out.toString().split("\n"))
-                    .hasSize(2)
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s[0]);
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric2", 1.0)
-                                .containsEntry("CustomDimension", "booking")
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                                .containsEntry("function_request_id", "123ABC");
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=ExampleApplication");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                    logAsJson = readAsJson(s[1]);
 
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=ExampleApplication");
-
-                        logAsJson = readAsJson(s[1]);
-
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("CustomDimension", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("CustomDimension", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
+    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
     public void metricsWithDefaultNoDimensionSpecified() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class);
-             MockedStatic<software.amazon.lambda.powertools.common.internal.SystemWrapper> internalWrapper = mockStatic(
-                     software.amazon.lambda.powertools.common.internal.SystemWrapper.class)) {
+        requestHandler = new PowertoolsMetricsEnabledDefaultNoDimensionHandler();
 
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            internalWrapper.when(() -> getenv("_X_AMZN_TRACE_ID"))
-                    .thenReturn("Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1");
+        requestHandler.handleRequest("input", context);
 
-            requestHandler = new PowertoolsMetricsEnabledDefaultNoDimensionHandler();
+        assertThat(out.toString().split("\n"))
+                .hasSize(2)
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s[0]);
 
-            requestHandler.handleRequest("input", context);
+                    assertThat(logAsJson)
+                            .containsEntry("Metric2", 1.0)
+                            .containsKey("_aws")
+                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
+                            .containsEntry("function_request_id", "123ABC");
 
-            assertThat(out.toString().split("\n"))
-                    .hasSize(2)
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s[0]);
+                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
 
-                        assertThat(logAsJson)
-                                .containsEntry("Metric2", 1.0)
-                                .containsKey("_aws")
-                                .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                                .containsEntry("function_request_id", "123ABC");
+                    assertThat(aws.get("CloudWatchMetrics"))
+                            .asString()
+                            .contains("Namespace=ExampleApplication");
 
-                        Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
+                    logAsJson = readAsJson(s[1]);
 
-                        assertThat(aws.get("CloudWatchMetrics"))
-                                .asString()
-                                .contains("Namespace=ExampleApplication");
-
-                        logAsJson = readAsJson(s[1]);
-
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void metricsWithColdStart() {
+        MetricsUtils.defaultDimensions(null);
+        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
+        requestHandler.handleRequest("input", context);
 
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        assertThat(out.toString().split("\n"))
+                .hasSize(2)
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s[0]);
 
-            MetricsUtils.defaultDimensions(null);
-            requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+                    assertThat(logAsJson)
+                            .doesNotContainKey("Metric1")
+                            .containsEntry("ColdStart", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
 
-            requestHandler.handleRequest("input", context);
+                    logAsJson = readAsJson(s[1]);
 
-            assertThat(out.toString().split("\n"))
-                    .hasSize(2)
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s[0]);
-
-                        assertThat(logAsJson)
-                                .doesNotContainKey("Metric1")
-                                .containsEntry("ColdStart", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-
-                        logAsJson = readAsJson(s[1]);
-
-                        assertThat(logAsJson)
-                                .doesNotContainKey("ColdStart")
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .doesNotContainKey("ColdStart")
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void noColdStartMetricsWhenColdStartDone() {
+        MetricsUtils.defaultDimensions(null);
+        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        requestHandler.handleRequest("input", context);
+        requestHandler.handleRequest("input", context);
 
-            MetricsUtils.defaultDimensions(null);
-            requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+        assertThat(out.toString().split("\n"))
+                .hasSize(3)
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s[0]);
 
-            requestHandler.handleRequest("input", context);
-            requestHandler.handleRequest("input", context);
+                    assertThat(logAsJson)
+                            .doesNotContainKey("Metric1")
+                            .containsEntry("ColdStart", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
 
-            assertThat(out.toString().split("\n"))
-                    .hasSize(3)
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s[0]);
+                    logAsJson = readAsJson(s[1]);
 
-                        assertThat(logAsJson)
-                                .doesNotContainKey("Metric1")
-                                .containsEntry("ColdStart", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
+                    assertThat(logAsJson)
+                            .doesNotContainKey("ColdStart")
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
 
-                        logAsJson = readAsJson(s[1]);
+                    logAsJson = readAsJson(s[2]);
 
-                        assertThat(logAsJson)
-                                .doesNotContainKey("ColdStart")
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-
-                        logAsJson = readAsJson(s[2]);
-
-                        assertThat(logAsJson)
-                                .doesNotContainKey("ColdStart")
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .doesNotContainKey("ColdStart")
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void metricsWithStreamHandler() throws IOException {
+        MetricsUtils.defaultDimensions(null);
+        RequestStreamHandler streamHandler = new PowertoolsMetricsEnabledStreamHandler();
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        streamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(), context);
 
-            MetricsUtils.defaultDimensions(null);
-            RequestStreamHandler streamHandler = new PowertoolsMetricsEnabledStreamHandler();
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            streamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(), context);
-
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
-
-                        assertThat(logAsJson)
-                                .containsEntry("Metric1", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .containsEntry("Metric1", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void exceptionWhenNoMetricsEmitted() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        MetricsUtils.defaultDimensions(null);
+        requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
 
-            MetricsUtils.defaultDimensions(null);
-            requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
-
-            assertThatExceptionOfType(ValidationException.class)
-                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("No metrics captured, at least one metrics must be emitted");
-        }
+        assertThatExceptionOfType(ValidationException.class)
+                .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                .withMessage("No metrics captured, at least one metrics must be emitted");
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void noExceptionWhenNoMetricsEmitted() {
+        MetricsUtils.defaultDimensions(null);
+        requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        requestHandler.handleRequest("input", context);
 
-            MetricsUtils.defaultDimensions(null);
-            requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
 
-            requestHandler.handleRequest("input", context);
-
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
-
-                        assertThat(logAsJson)
-                                .containsEntry("Service", "booking")
-                                .doesNotContainKey("_aws");
-                    });
-        }
+                    assertThat(logAsJson)
+                            .containsEntry("Service", "booking")
+                            .doesNotContainKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void allowWhenNoDimensionsSet() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
-            MetricsUtils.defaultDimensions(null);
+        MetricsUtils.defaultDimensions(null);
 
-            requestHandler = new PowertoolsMetricsNoDimensionsHandler();
-            requestHandler.handleRequest("input", context);
+        requestHandler = new PowertoolsMetricsNoDimensionsHandler();
+        requestHandler.handleRequest("input", context);
 
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
-                        assertThat(logAsJson)
-                                .containsEntry("CoolMetric", 1.0)
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
+                    assertThat(logAsJson)
+                            .containsEntry("CoolMetric", 1.0)
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void exceptionWhenTooManyDimensionsSet() {
+        MetricsUtils.defaultDimensions(null);
 
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
 
-            MetricsUtils.defaultDimensions(null);
-
-            requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
-
-            assertThatExceptionOfType(DimensionSetExceededException.class)
-                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage(
-                            "Maximum number of dimensions allowed are 30. Account for default dimensions if not using setDimensions.");
-        }
+        assertThatExceptionOfType(DimensionSetExceededException.class)
+                .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                .withMessage(
+                        "Maximum number of dimensions allowed are 30. Account for default dimensions if not using setDimensions.");
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
     public void metricsPublishedEvenHandlerThrowsException() {
-        try (MockedStatic<SystemWrapper> mocked = mockStatic(SystemWrapper.class)) {
-            mocked.when(() -> SystemWrapper.getenv("AWS_EMF_ENVIRONMENT")).thenReturn("Lambda");
+        MetricsUtils.defaultDimensions(null);
+        requestHandler = new PowertoolsMetricsWithExceptionInHandler();
 
-            MetricsUtils.defaultDimensions(null);
-            requestHandler = new PowertoolsMetricsWithExceptionInHandler();
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> requestHandler.handleRequest("input", context))
+                .withMessage("Whoops, unexpected exception");
 
-            assertThatExceptionOfType(IllegalStateException.class)
-                    .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                    .withMessage("Whoops, unexpected exception");
-
-            assertThat(out.toString())
-                    .satisfies(s ->
-                    {
-                        Map<String, Object> logAsJson = readAsJson(s);
-                        assertThat(logAsJson)
-                                .containsEntry("CoolMetric", 1.0)
-                                .containsEntry("Service", "booking")
-                                .containsEntry("function_request_id", "123ABC")
-                                .containsKey("_aws");
-                    });
-        }
+        assertThat(out.toString())
+                .satisfies(s ->
+                {
+                    Map<String, Object> logAsJson = readAsJson(s);
+                    assertThat(logAsJson)
+                            .containsEntry("CoolMetric", 1.0)
+                            .containsEntry("Service", "booking")
+                            .containsEntry("function_request_id", "123ABC")
+                            .containsKey("_aws");
+                });
     }
 
     private void setupContext() {
