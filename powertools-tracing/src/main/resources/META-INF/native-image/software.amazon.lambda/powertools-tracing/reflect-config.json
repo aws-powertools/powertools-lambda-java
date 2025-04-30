@@ -1,0 +1,365 @@
+[
+{
+  "name":"[Lcom.fasterxml.jackson.databind.deser.Deserializers;"
+},
+{
+  "name":"[Lcom.fasterxml.jackson.databind.ser.BeanSerializerModifier;"
+},
+{
+  "name":"[Lcom.fasterxml.jackson.databind.ser.Serializers;"
+},
+{
+  "name":"[Ljava.lang.StackTraceElement;"
+},
+{
+  "name":"[Ljava.lang.Throwable;"
+},
+{
+  "name":"com.amazonaws.services.lambda.runtime.Context",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getAwsRequestId","parameterTypes":[] }, {"name":"getClientContext","parameterTypes":[] }, {"name":"getFunctionName","parameterTypes":[] }, {"name":"getFunctionVersion","parameterTypes":[] }, {"name":"getIdentity","parameterTypes":[] }, {"name":"getInvokedFunctionArn","parameterTypes":[] }, {"name":"getLogGroupName","parameterTypes":[] }, {"name":"getLogStreamName","parameterTypes":[] }, {"name":"getLogger","parameterTypes":[] }, {"name":"getMemoryLimitInMB","parameterTypes":[] }, {"name":"getRemainingTimeInMillis","parameterTypes":[] }]
+},
+{
+  "name":"com.amazonaws.xray.entities.Cause",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.amazonaws.xray.entities.Entity",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.amazonaws.xray.entities.EntityImpl",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getAnnotations","parameterTypes":[] }, {"name":"getAws","parameterTypes":[] }, {"name":"getCause","parameterTypes":[] }, {"name":"getEndTime","parameterTypes":[] }, {"name":"getHttp","parameterTypes":[] }, {"name":"getId","parameterTypes":[] }, {"name":"getMetadata","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getNamespace","parameterTypes":[] }, {"name":"getParentId","parameterTypes":[] }, {"name":"getSql","parameterTypes":[] }, {"name":"getStartTime","parameterTypes":[] }, {"name":"getSubsegments","parameterTypes":[] }, {"name":"getTraceId","parameterTypes":[] }, {"name":"isError","parameterTypes":[] }, {"name":"isFault","parameterTypes":[] }, {"name":"isInProgress","parameterTypes":[] }, {"name":"isThrottle","parameterTypes":[] }]
+},
+{
+  "name":"com.amazonaws.xray.entities.Segment",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.amazonaws.xray.entities.SegmentImpl",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getOrigin","parameterTypes":[] }, {"name":"getResourceArn","parameterTypes":[] }, {"name":"getService","parameterTypes":[] }, {"name":"getUser","parameterTypes":[] }]
+},
+{
+  "name":"com.amazonaws.xray.entities.Subsegment",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"com.amazonaws.xray.entities.SubsegmentImpl",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getNamespace","parameterTypes":[] }, {"name":"getPrecursorIds","parameterTypes":[] }]
+},
+{
+  "name":"com.amazonaws.xray.strategy.sampling.manifest.SamplingRuleManifest",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setDefaultRule","parameterTypes":["com.amazonaws.xray.strategy.sampling.rule.SamplingRule"] }, {"name":"setRules","parameterTypes":["java.util.List"] }, {"name":"setVersion","parameterTypes":["int"] }]
+},
+{
+  "name":"com.amazonaws.xray.strategy.sampling.reservoir.Reservoir",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"com.amazonaws.xray.strategy.sampling.rule.SamplingRule",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setFixedTarget","parameterTypes":["int"] }, {"name":"setRate","parameterTypes":["float"] }]
+},
+{
+  "name":"com.fasterxml.jackson.databind.ext.Java7SupportImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.tools.attach.VirtualMachine"
+},
+{
+  "name":"double",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.io.InputStream"
+},
+{
+  "name":"java.io.OutputStream"
+},
+{
+  "name":"java.io.Serializable",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "fields":[{"name":"handleRequest response"}]
+},
+{
+  "name":"java.lang.AutoCloseable",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Class",
+  "methods":[{"name":"forName","parameterTypes":["java.lang.String"] }, {"name":"getAnnotatedInterfaces","parameterTypes":[] }, {"name":"getAnnotatedSuperclass","parameterTypes":[] }, {"name":"getDeclaredMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getModule","parameterTypes":[] }, {"name":"getNestHost","parameterTypes":[] }, {"name":"getNestMembers","parameterTypes":[] }, {"name":"getPermittedSubclasses","parameterTypes":[] }, {"name":"getRecordComponents","parameterTypes":[] }, {"name":"isNestmateOf","parameterTypes":["java.lang.Class"] }, {"name":"isRecord","parameterTypes":[] }, {"name":"isSealed","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.ClassLoader",
+  "methods":[{"name":"getDefinedPackage","parameterTypes":["java.lang.String"] }, {"name":"getUnnamedModule","parameterTypes":[] }, {"name":"registerAsParallelCapable","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Exception",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.lang.Module",
+  "methods":[{"name":"addExports","parameterTypes":["java.lang.String","java.lang.Module"] }, {"name":"addReads","parameterTypes":["java.lang.Module"] }, {"name":"canRead","parameterTypes":["java.lang.Module"] }, {"name":"getClassLoader","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getPackages","parameterTypes":[] }, {"name":"getResourceAsStream","parameterTypes":["java.lang.String"] }, {"name":"isExported","parameterTypes":["java.lang.String"] }, {"name":"isExported","parameterTypes":["java.lang.String","java.lang.Module"] }, {"name":"isNamed","parameterTypes":[] }, {"name":"isOpen","parameterTypes":["java.lang.String","java.lang.Module"] }]
+},
+{
+  "name":"java.lang.Object",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "fields":[{"name":"handleRequest response"}],
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"getHandleRequest response","parameterTypes":[] }, {"name":"isHandleRequest response","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.ProcessEnvironment",
+  "fields":[{"name":"theCaseInsensitiveEnvironment"}, {"name":"theEnvironment"}]
+},
+{
+  "name":"java.lang.ProcessHandle",
+  "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Runtime",
+  "methods":[{"name":"version","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Runtime$Version",
+  "methods":[{"name":"feature","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.RuntimeException",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.StackTraceElement",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.StackWalker"
+},
+{
+  "name":"java.lang.String"
+},
+{
+  "name":"java.lang.System",
+  "methods":[{"name":"getSecurityManager","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Thread",
+  "fields":[{"name":"threadLocalRandomProbe"}],
+  "methods":[{"name":"getContextClassLoader","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Throwable",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"getCause","parameterTypes":[] }, {"name":"getLocalizedMessage","parameterTypes":[] }, {"name":"getMessage","parameterTypes":[] }, {"name":"getStackTrace","parameterTypes":[] }, {"name":"getSuppressed","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.annotation.Retention",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.annotation.Target",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.invoke.MethodHandle",
+  "methods":[{"name":"bindTo","parameterTypes":["java.lang.Object"] }, {"name":"invokeWithArguments","parameterTypes":["java.lang.Object[]"] }]
+},
+{
+  "name":"java.lang.invoke.MethodHandles",
+  "methods":[{"name":"lookup","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.invoke.MethodHandles$Lookup",
+  "methods":[{"name":"findVirtual","parameterTypes":["java.lang.Class","java.lang.String","java.lang.invoke.MethodType"] }]
+},
+{
+  "name":"java.lang.invoke.MethodType",
+  "methods":[{"name":"methodType","parameterTypes":["java.lang.Class","java.lang.Class[]"] }]
+},
+{
+  "name":"java.lang.reflect.AccessibleObject",
+  "methods":[{"name":"setAccessible","parameterTypes":["boolean"] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedArrayType",
+  "methods":[{"name":"getAnnotatedGenericComponentType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedType",
+  "methods":[{"name":"getType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.Executable",
+  "methods":[{"name":"getAnnotatedExceptionTypes","parameterTypes":[] }, {"name":"getAnnotatedParameterTypes","parameterTypes":[] }, {"name":"getAnnotatedReceiverType","parameterTypes":[] }, {"name":"getParameterCount","parameterTypes":[] }, {"name":"getParameters","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.Method",
+  "methods":[{"name":"getAnnotatedReturnType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.Parameter",
+  "methods":[{"name":"getModifiers","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"isNamePresent","parameterTypes":[] }]
+},
+{
+  "name":"java.security.AccessController",
+  "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.util.AbstractMap",
+  "fields":[{"name":"handleRequest response"}],
+  "methods":[{"name":"getHandleRequest response","parameterTypes":[] }, {"name":"isHandleRequest response","parameterTypes":[] }]
+},
+{
+  "name":"java.util.Collections$UnmodifiableMap",
+  "fields":[{"name":"m"}]
+},
+{
+  "name":"java.util.Map",
+  "fields":[{"name":"handleRequest response"}]
+},
+{
+  "name":"java.util.concurrent.ConcurrentHashMap",
+  "fields":[{"name":"handleRequest response"}],
+  "methods":[{"name":"getHandleRequest response","parameterTypes":[] }, {"name":"isHandleRequest response","parameterTypes":[] }]
+},
+{
+  "name":"java.util.concurrent.ConcurrentMap",
+  "fields":[{"name":"handleRequest response"}]
+},
+{
+  "name":"java.util.concurrent.ForkJoinTask",
+  "fields":[{"name":"aux"}, {"name":"status"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicBoolean",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicReference",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.Striped64",
+  "fields":[{"name":"base"}, {"name":"cellsBusy"}]
+},
+{
+  "name":"jdk.internal.misc.Unsafe"
+},
+
+{
+  "name":"org.apache.commons.logging.LogFactory"
+},
+{
+  "name":"org.apache.commons.logging.impl.Jdk14Logger",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.String"] }, {"name":"setLogFactory","parameterTypes":["org.apache.commons.logging.LogFactory"] }]
+},
+{
+  "name":"org.apache.commons.logging.impl.Log4JLogger"
+},
+{
+  "name":"org.apache.commons.logging.impl.LogFactoryImpl",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.commons.logging.impl.WeakHashtable",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor",
+  "fields":[{"name":"IS_COLD_START"}]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledExplicitlyForResponseAndError",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForError",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponse",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponseWithCustomMapper",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponseWithCustomMapper$ParentClass",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStream",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.io.InputStream","java.io.OutputStream","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.io.InputStream","java.io.OutputStream","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithException",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledWithNoMetaData",
+  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
+},
+
+{
+  "name":"software.amazon.lambda.powertools.tracing.nonhandler.PowerToolNonHandler",
+  "methods":[{"name":"doSomething","parameterTypes":[] }, {"name":"doSomethingCustomName","parameterTypes":[] }]
+},
+{
+  "name":"sun.reflect.ReflectionFactory",
+  "methods":[{"name":"getReflectionFactory","parameterTypes":[] }, {"name":"newConstructorForSerialization","parameterTypes":["java.lang.Class","java.lang.reflect.Constructor"] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+}
+]

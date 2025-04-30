@@ -54,7 +54,8 @@ public class MetricsFetcher {
             .build();
 
     /**
-     * Retrieve the metric values from start to end. Different parameters are required (see {@link CloudWatchClient#getMetricData} for more info).
+     * Retrieve the metric values from start to end. Different parameters are required (see
+     * {@link CloudWatchClient#getMetricData} for more info).
      * Use a retry mechanism as metrics may not be available instantaneously after a function runs.
      *
      * @param start
@@ -66,14 +67,13 @@ public class MetricsFetcher {
      * @return
      */
     public List<Double> fetchMetrics(Instant start, Instant end, int period, String namespace, String metricName,
-                                     Map<String, String> dimensions) {
+            Map<String, String> dimensions) {
         List<Dimension> dimensionsList = new ArrayList<>();
         if (dimensions != null) {
             dimensions.forEach((key, value) -> dimensionsList.add(Dimension.builder().name(key).value(value).build()));
         }
 
-        Callable<List<Double>> callable = () ->
-        {
+        Callable<List<Double>> callable = () -> {
             LOG.debug("Get Metrics for namespace {}, start {}, end {}, metric {}, dimensions {}", namespace, start,
                     end, metricName, dimensionsList);
             GetMetricDataResponse metricData = cloudwatch.getMetricData(GetMetricDataRequest.builder()
@@ -109,9 +109,8 @@ public class MetricsFetcher {
                 .build();
         CallExecutor<List<Double>> callExecutor = new CallExecutorBuilder<List<Double>>()
                 .config(retryConfig)
-                .afterFailedTryListener(s ->
-                {
-                    LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
+                .afterFailedTryListener(s -> {
+                    LOG.warn("{}, attempts: {}", s.getLastExceptionThatCausedRetry().getMessage(), s.getTotalTries());
                 })
                 .build();
         Status<List<Double>> status = callExecutor.execute(callable);

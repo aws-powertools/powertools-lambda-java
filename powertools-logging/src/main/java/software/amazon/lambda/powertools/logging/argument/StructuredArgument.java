@@ -15,7 +15,9 @@
 package software.amazon.lambda.powertools.logging.argument;
 
 import java.io.IOException;
+
 import org.slf4j.Logger;
+
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
 /**
@@ -26,8 +28,10 @@ public interface StructuredArgument {
     /**
      * Writes the data associated with this argument to the given {@link JsonSerializer}.
      *
-     * @param serializer the {@link JsonSerializer} to produce JSON content
-     * @throws IOException if an I/O error occurs
+     * @param serializer
+     *            the {@link JsonSerializer} to produce JSON content
+     * @throws IOException
+     *             if an I/O error occurs
      */
     void writeTo(JsonSerializer serializer) throws IOException;
 
