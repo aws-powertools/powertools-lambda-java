@@ -18,8 +18,8 @@ Security and operational excellence take precedence above all else. This means b
 Our top priority is to establish the processes and infrastructure needed for a fully automated and secure end-to-end release process of new versions to Maven Central.
 
 - [ ] Implement GitHub workflows and create infrastructure to release to Maven Central
-- [ ] Implement end-to-end tests
-- [ ] Implement [OpenSSF Scorecard](https://openssf.org/projects/scorecard/){target="\_blank"}
+- [x] [Implement end-to-end tests](https://github.com/aws-powertools/powertools-lambda-java/issues/1815){target="\_blank"}
+- [x] Implement [OpenSSF Scorecard](https://openssf.org/projects/scorecard/){target="\_blank"}
 
 #### `v2` Release: Consistency and Ecosystem (p1)
 
@@ -28,26 +28,28 @@ As part of a new major version `v2` release, we prioritize the Java project's co
 ##### Core Utilities
 
 - [ ] [Review public interfaces and reduce public API surface area](https://github.com/aws-powertools/powertools-lambda-java/issues/1283){target="\_blank"}
-- [ ] [Release Logging `v2` module](https://github.com/aws-powertools/powertools-lambda-java/issues/965){target="\_blank"}
-- [ ] [Support high resolution metrics](https://github.com/aws-powertools/powertools-lambda-java/issues/1041){target="\_blank"}
+- [x] [Release Logging `v2` module](https://github.com/aws-powertools/powertools-lambda-java/issues/965){target="\_blank"} allowing customers to choose the logging framework and adding support for logging deeply nested objects as JSON
+- [x] [Support high resolution metrics](https://github.com/aws-powertools/powertools-lambda-java/issues/1041){target="\_blank"}
 
 ##### Ecosystem
 
-- [ ] [Add GraalVM support](https://github.com/aws-powertools/powertools-lambda-java/issues/764){target="\_blank"}
+- [x] [Add GraalVM support for core utilities](https://github.com/aws-powertools/powertools-lambda-java/issues/764){target="\_blank"}
 - [ ] [Implement priming using CRaC to improve AWS Snapstart support](https://github.com/aws-powertools/powertools-lambda-java/issues/1588){target="\_blank"}
 - [ ] [Evaluate integration with popular Java frameworks such as Micronaut, Spring Cloud Function, or Quarkus](https://github.com/aws-powertools/powertools-lambda-java/issues/1701){target="\_blank"}
 
 ##### Other
 
-- [ ] [Validation module integration with HTTP requests](https://github.com/aws-powertools/powertools-lambda-java/issues/1298){target="\_blank"}
-- [ ] [Support validation module from within the batch module](https://github.com/aws-powertools/powertools-lambda-java/issues/1496){target="\_blank"}
-- [ ] Documentation: Review and improve documentation to be consistent with other runtimes
+- [x] [Validation module integration with HTTP requests](https://github.com/aws-powertools/powertools-lambda-java/issues/1298){target="\_blank"}
+- [x] [Support validation module from within the batch module](https://github.com/aws-powertools/powertools-lambda-java/issues/1496){target="\_blank"}
+- [x] [Add support for parallel processing in Batch Processing utility](https://github.com/aws-powertools/powertools-lambda-java/issues/1540){target="\_blank"}
+- [ ] [Documentation: Review and improve documentation to be consistent with other runtimes](https://github.com/aws-powertools/powertools-lambda-java/issues/1352){target="\_blank"}
 
 #### Feature Parity (p2)
 
 If priorities `p0` and `p1` are addressed, we will also focus on feature parity of non-core utilities. This allows customers to achieve better standardization of their development processes across different Powertools runtimes.
 
 - [ ] [Re-evaluate if there is a need for adding a lightweight customer Powertools event handler](https://github.com/aws-powertools/powertools-lambda-java/issues/1103){target="\_blank"}
+- [ ] [Add comprehensive GraalVM support for all utilities](){target="\_blank"}
 - [ ] [Add Feature Flags module](https://github.com/aws-powertools/powertools-lambda-java/issues/1086){target="\_blank"}
 - [ ] [Add S3 Streaming module](https://github.com/aws-powertools/powertools-lambda-java/issues/1085){target="\_blank"}
 - [ ] Add support for Data Masking during JSON serialization

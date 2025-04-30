@@ -1,11 +1,11 @@
 site_name: Powertools for AWS Lambda (Java)
 site_description: Powertools for AWS Lambda (Java)
 site_author: Amazon Web Services
-site_url: https://docs.powertools.aws.dev/lambda-java/
+site_url: https://docs.powertools.aws.dev/lambda/java/
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
-  - Workshop 🆕: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
+  - Workshop: https://s12d.com/powertools-for-aws-lambda-workshop" target="_blank
   - FAQs: FAQs.md
   - Roadmap: roadmap.md
   - Core utilities:
@@ -25,6 +25,10 @@ nav:
       - utilities/sqs_batch.md
   - Processes:
       - processes/maintainers.md
+      - processes/versioning.md
+  - Resources:
+      - "llms.txt": ./llms.txt
+      - "llms.txt (full version)": ./llms-full.txt
 
 theme:
   name: material
@@ -83,6 +87,31 @@ plugins:
   - git-revision-date
   - search
   - macros
+  - privacy
+  - llmstxt:
+      markdown_description: Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity. It provides a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+      full_output: llms-full.txt
+      sections:
+        Project Overview:
+          - index.md
+          - changelog.md
+          - FAQs.md
+          - roadmap.md
+        Core Utilities:
+          - core/logging.md
+          - core/metrics.md
+          - core/tracing.md
+        Utilities:
+          - utilities/idempotency.md
+          - utilities/parameters.md
+          - utilities/large_messages.md
+          - utilities/batch.md
+          - utilities/validation.md
+          - utilities/custom_resources.md
+          - utilities/serialization.md
+        Processes:
+          - processes/maintainers.md
+          - processes/versioning.md
 
 extra_css:
   - stylesheets/extra.css
