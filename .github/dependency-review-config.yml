@@ -1,4 +1,4 @@
-allow_licenses:
+allow-licenses:
   - 'Apache-1.1'
   - 'Apache-2.0'
   - 'MIT'
