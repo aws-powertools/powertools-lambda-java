@@ -14,7 +14,7 @@ on:
         default: false
       skip_publish:
         type: boolean
-        description: Ship publish to Maven Central
+        description: Skip publish to Maven Central
         default: false
       continue_on_error: 
         type: boolean
