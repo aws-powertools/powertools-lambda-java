@@ -95,6 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: 
       - version_seal
+    if: ${{ inputs.skip_checks == false }}
     permissions:
       contents: write
       id-token: write
