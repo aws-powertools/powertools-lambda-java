@@ -8,10 +8,6 @@ on:
         type: boolean
         description: Create snapshot release
         default: true
-      is_v2_build:
-        type: boolean
-        description: Create a v2 build
-        default: false
       skip_checks: 
         type: boolean
         description: Skip quality checks
