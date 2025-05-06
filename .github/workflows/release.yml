@@ -52,14 +52,18 @@ jobs:
         name: Version
         run: |
           echo version="${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+      - id: base
+        name: Base
+        run: |
+          echo build_version=$(test ${{ github.ref_name }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
       - id: build_matrix_v1
         name: Build matrix (v1)
-        if: ${{ inputs.is_v2_build == false }}
+        if: ${{ steps.base.outputs.build_version == 'v1' }}
         run: |
           echo build_matrix='["8", "11", "17", "21"]' >> "$GITHUB_OUTPUT"
       - id: build_matrix_v2
         name: Build matrix (v2)
-        if: ${{ inputs.is_v2_build == true }} 
+        if: ${{ steps.base.outputs.build_version == 'v2' }}
         run: |
           echo build_matrix='["11", "17", "21"]'>> "$GITHUB_OUTPUT"
 
