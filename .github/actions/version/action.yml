@@ -47,7 +47,7 @@ runs:
 
     - id: asset_version
       name: Replace version for assets
-      if: ${{ inputs.snapshot == 'true' }}
+      if: ${{ inputs.snapshot == 'false' }}
       env:
         current_version: ${{ steps.current_version.outputs.current_version }}
       shell: bash
