@@ -22,7 +22,7 @@ jobs:
     permissions:
       contents: write
     environment: Security
-    if: github.repository == 'aws-powertools/powertools-lambda-java'
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' }}
     strategy:
       matrix:
         # List of branches we want to monitor for protection changes

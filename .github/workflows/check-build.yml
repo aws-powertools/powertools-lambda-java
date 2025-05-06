@@ -3,8 +3,9 @@ on:
   pull_request:
     paths:
       - 'powertools-batch/**'
-      - 'powertools-cloudformation/**'
       - 'powertools-core/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-common/**'
       - 'powertools-e2e-tests/**'
       - 'powertools-idempotency/**'
       - 'powertools-large-messages/**'
@@ -13,7 +14,7 @@ on:
       - 'powertools-parameters/**'
       - 'powertools-serialization/**'
       - 'powertools-sqs/**'
-      - 'powertools-test-suite/**'
+      - 'powertools-tracing/**'
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
       - 'examples/**'
@@ -23,10 +24,12 @@ on:
   push:
     branches:
       - main
-    paths:
+      - v2
+    paths: # add other modules when there are under e2e tests
       - 'powertools-batch/**'
-      - 'powertools-cloudformation/**'
       - 'powertools-core/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-common/**'
       - 'powertools-e2e-tests/**'
       - 'powertools-idempotency/**'
       - 'powertools-large-messages/**'
@@ -35,11 +38,11 @@ on:
       - 'powertools-parameters/**'
       - 'powertools-serialization/**'
       - 'powertools-sqs/**'
-      - 'powertools-test-suite/**'
+      - 'powertools-tracing/**'
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
-      - 'examples/**'
       - 'pom.xml'
+      - 'examples/**'
       - 'examples/pom.xml'
       - '.github/workflows/**'
 
@@ -51,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        java_version:
+        java:
           - 8
           - 11
           - 17
@@ -64,9 +67,10 @@ jobs:
         uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
         with:
           distribution: corretto
-          java-version: ${{ matrix.java_version }}
+          java-version: ${{ matrix.java }}
           cache: maven
       - id: build-maven
         name: Build (Maven)
+        if: ${{ matrix.java != '8' }}
         run: |
           mvn -B install --file pom.xml

@@ -65,17 +65,6 @@ body:
         - "provided.al2023"
     validations:
       required: true
-  - type: dropdown
-    id: packaging
-    attributes:
-      label: Packaging format used
-      options:
-        - Lambda Layers
-        - Serverless Application Repository (SAR) App
-        - PyPi
-      multiple: true
-    validations:
-      required: true
   - type: textarea
     id: logs
     attributes:

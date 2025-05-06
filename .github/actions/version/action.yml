@@ -13,6 +13,7 @@ description: |
     uses: .github/actions/version
     with:
       new_version: 1.20.0
+      snapshot: 'false'
   ```
 
 inputs:
@@ -44,7 +45,7 @@ runs:
       run: |
         mvn versions:set -DnewVersion=${{ inputs.new_version }} -DprocessAllModules=true -DallowSnapshots=true
 
-    - id: asset_veersion
+    - id: asset_version
       name: Replace version for assets
       if: ${{ inputs.snapshot == 'true' }}
       env:

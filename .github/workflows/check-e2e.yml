@@ -4,22 +4,27 @@ on:
   push:
       branches:
         - main
+        - v2
       paths: # add other modules when there are under e2e tests
-        - 'powertools-e2e-tests/**'
         - 'powertools-batch/**'
         - 'powertools-core/**'
+        - 'powertools-cloudformation/**'
         - 'powertools-common/**'
+        - 'powertools-e2e-tests/**'
         - 'powertools-idempotency/**'
-        - 'powertools-large-message/**'
+        - 'powertools-large-messages/**'
         - 'powertools-logging/**'
         - 'powertools-metrics/**'
         - 'powertools-parameters/**'
         - 'powertools-serialization/**'
+        - 'powertools-sqs/**'
         - 'powertools-tracing/**'
+        - 'powertools-tracing/**'
+        - 'powertools-validation/**'
         - 'pom.xml'
 
 name: E2E Tests
-run-name: 
+run-name: E2E Tests - ${{ github.event_name }}
 
 permissions:
   contents: read
@@ -32,9 +37,12 @@ jobs:
       id-token: write
     environment: E2E
     strategy:
-      max-parallel: 4
+      max-parallel: 3
       matrix:
-        java: [ 8, 11, 17, 21 ]
+        java:
+          - 11
+          - 17
+          - 21
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java

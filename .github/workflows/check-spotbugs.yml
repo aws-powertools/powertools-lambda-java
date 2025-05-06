@@ -2,17 +2,23 @@ on:
   pull_request:
     branches:
       - main
+      - v2
     paths:
-      - 'powertools-cloudformation/**'
+      - 'powertools-batch/**'
       - 'powertools-core/**'
-      - 'powertools-serialization/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-common/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
       - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
       - 'powertools-sqs/**'
       - 'powertools-tracing/**'
+      - 'powertools-tracing/**'
       - 'powertools-validation/**'
-      - 'powertools-parameters/**'
-      - 'powertools-idempotency/**'
-      - 'powertools-metrics/**'
       - 'powertools-test-suite/**'
       - 'pom.xml'
       - '.github/workflows/**'
