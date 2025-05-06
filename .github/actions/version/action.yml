@@ -37,7 +37,7 @@ runs:
       name: Get current version
       shell: bash
       run: |
-        echo "current_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+        echo "current_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
 
     - id: replace_version
       name: Replace current version
@@ -48,8 +48,6 @@ runs:
     - id: asset_version
       name: Replace version for assets
       if: ${{ inputs.snapshot == 'false' }}
-      env:
-        current_version: ${{ steps.current_version.outputs.current_version }}
       shell: bash
       run: |
-        grep "${{ env.current_version }}" -r . --include build.gradle --include build.gradle.kts --include mkdocs.yml --include README.md -l | xargs sed -i 's#${{ env.current_version }}#${{ inputs.new_version }}#'
+        grep "${{ steps.current_version.outputs.current_version }}" -r . --include build.gradle --include build.gradle.kts --include mkdocs.yml --include README.md -l | xargs sed -i 's#${{ env.current_version }}#${{ inputs.new_version }}#'
