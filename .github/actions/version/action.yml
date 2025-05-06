@@ -50,4 +50,4 @@ runs:
       if: ${{ inputs.snapshot == 'false' }}
       shell: bash
       run: |
-        grep "${{ steps.current_version.outputs.current_version }}" -r . --include build.gradle --include build.gradle.kts --include mkdocs.yml --include README.md -l | xargs sed -i 's#${{ env.current_version }}#${{ inputs.new_version }}#'
+        grep "${{ steps.current_version.outputs.current_version }}" -r . --include build.gradle --include build.gradle.kts --include mkdocs.yml --include README.md -l | xargs sed -i 's#${{ steps.current_version.outputs.current_version }}#${{ inputs.new_version }}#'
