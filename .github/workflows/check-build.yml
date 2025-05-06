@@ -50,6 +50,25 @@ name: Build
 run-name: Build - ${{ github.event_name }}
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      build_matrix: ${{ format('{0}{1}', steps.build_matrix_v1.outputs.build_matrix, steps.build_matrix_v1.outputs.build_matrix) }}
+    steps:
+      - id: base
+        name: Base
+        run: |
+          echo build_version=$(test ${{ github.base_ref }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
+      - id: build_matrix_v1
+        name: Build matrix (v1)
+        if: ${{ steps.base.outputs.build_version == 'v1' }}
+        run: |
+          echo build_matrix='["8", "11", "17", "21"]' >> "$GITHUB_OUTPUT"
+      - id: build_matrix_v2
+        name: Build matrix (v2)
+        if: ${{ steps.base.outputs.build_version == 'v2' }}
+        run: |
+          echo build_matrix='["11", "17", "21"]'>> "$GITHUB_OUTPUT"
   build:
     runs-on: ubuntu-latest
     strategy:

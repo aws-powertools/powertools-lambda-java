@@ -40,6 +40,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ format('{0}{1}', steps.version_release.outputs.version, steps.version_snapshot.outputs.version) }}
+      build_matrix: ${{ format('{0}{1}', steps.build_matrix_v1.outputs.build_matrix, steps.build_matrix_v1.outputs.build_matrix) }}
     steps:
       - id: version_snapshot
         if: ${{ inputs.snapshot }}
