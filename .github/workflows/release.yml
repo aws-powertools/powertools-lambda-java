@@ -115,7 +115,7 @@ jobs:
         run: mvn -B test --file pom.xml
         continue-on-error: ${{ inputs.continue_on_error }}
       - name: Run Spotbugs
-        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=${{ !inputs.continue_on_error }} 
+        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=true
         continue-on-error: ${{ inputs.continue_on_error }}
       - uses: pmd/pmd-github-action@d9c1f3c5940cbf5923f1354e83fa858b4496ebaa # v2.0.0
         with:
