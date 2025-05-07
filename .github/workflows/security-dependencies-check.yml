@@ -38,3 +38,4 @@ jobs:
         with:
           config-file: './.github/dependency-review-config.yml'
           head-ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          base-ref: ${{ github.event_name == 'pull_request' && github.base_ref || github.ref_name }}
