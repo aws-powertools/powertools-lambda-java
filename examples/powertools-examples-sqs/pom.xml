@@ -2,13 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>software.amazon.lambda.examples</groupId>
-    <version>1.19.0-SNAPSHOT</version>
+    <version>1.20.1</version>
     <artifactId>powertools-examples-sqs</artifactId>
     <packaging>jar</packaging>
     <name>Powertools for AWS Lambda (Java) library Examples - SQS</name>
 
     <properties>
-        <log4j.version>2.22.1</log4j.version>
+        <log4j.version>2.24.3</log4j.version>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
 
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>url-connection-client</artifactId>
-            <version>2.27.12</version>
+            <version>2.31.17</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -114,7 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
