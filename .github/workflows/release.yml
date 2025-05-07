@@ -67,7 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       version: ${{ format('{0}{1}', steps.version_release.outputs.version, steps.version_snapshot.outputs.version) }}
-      build_matrix: ${{ format('{0}{1}', steps.build_matrix_v1.outputs.build_matrix, steps.build_matrix_v1.outputs.build_matrix) }}
+      build_matrix: ${{ format('{0}{1}', steps.build_matrix_v1.outputs.build_matrix, steps.build_matrix_v2.outputs.build_matrix) }}
     steps:
       - id: version_snapshot
         if: ${{ inputs.snapshot }}
@@ -161,6 +161,7 @@ jobs:
       - setup
       - quality
       - version_seal
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     strategy:
       matrix:
         java: ${{ fromJson(needs.setup.outputs.build_matrix) }}
@@ -183,7 +184,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' }}
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false }}
     needs:
       - build
     environment: Release
@@ -213,7 +214,7 @@ jobs:
   
   create_pr:
     runs-on: ubuntu-latest
-    if: ${{ inputs.snapshot == false }}
+    if: ${{ inputs.snapshot == false && always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     needs:
       - build
       - publish
