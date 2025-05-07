@@ -1,13 +1,27 @@
-name: Scorecard supply-chain security
+# Runs OSSF
+#
+# Description:
+#   Runs OpenSSF Scorecard scan on the project
+#
+# Triggers:
+#   - branch_protection_rule
+#   - cron: 09:00AM  
+#   - push
+#   - workflow_dispatch
+#
+# Secrets:
+#   - Security.SCORECARD_TOKEN
+
 on:
-  # For Branch-Protection check. Only the default branch is supported. See
-  # https://github.com/ossf/scorecard/blob/main/docs/checks.md#branch-protection
   branch_protection_rule:
   schedule:
     - cron: "0 9 * * *"
   push:
     branches: [main]
-  workflow_dispatch:
+  workflow_dispatch: {}
+
+name: OpenSSF Scorecard
+run-name: OpenSSF Scorecard
 
 permissions: read-all
 
@@ -15,34 +29,29 @@ jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
-    # environment: scorecard
+    environment: Security
     permissions:
-      security-events: write  # update code-scanning dashboard
-      id-token: write  # confirm org+repo identity before publish results
-
+      security-events: write  
+      id-token: write
     steps:
-      - name: "Checkout code"
+      - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           persist-credentials: false
-
-      - name: "Run analysis"
+      - name: Run Analysis
         uses: ossf/scorecard-action@62b2cac7ed8198b15735ed49ab1e5cf35480ba46 # v2.4.0
         with:
           results_file: results.sarif
           results_format: sarif
-          publish_results: true  # publish to OSSF Scorecard REST API
-          # repo_token: ${{ secrets.SCORECARD_TOKEN }}  # read-only fine-grained token to read branch protection settings
-
-      - name: "Upload results"
+          publish_results: true 
+          repo_token: ${{ secrets.SCORECARD_TOKEN }}
+      - name: Upload Results
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           name: SARIF file
           path: results.sarif
           retention-days: 5
-
-      # Upload the results to GitHub's code scanning dashboard.
-      - name: "Upload to code-scanning"
+      - name: Upload to Code-Scanning
         uses: github/codeql-action/upload-sarif@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
         with:
           sarif_file: results.sarif
