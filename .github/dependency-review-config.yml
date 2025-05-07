@@ -1,6 +1,7 @@
 allow-licenses:
   - 'Apache-1.1'
   - 'Apache-2.0'
+  - 'ISC'
   - 'MIT'
   - 'MIT-0'
   - 'MIT-CMU'
