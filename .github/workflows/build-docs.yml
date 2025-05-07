@@ -1,15 +1,19 @@
+# Build Docs
+#
+# Description:
+#   Builds the docs and stores them in S3 to be served by our docs platform
+#
+#   The workflow allows us to build to the main location (/lambda/java/) and to an alias
+#   (i.e. /lambda/java/preview/) if needed
+#
+# Triggers:
+#   - workflow_dispatch
+#
+# Inputs:
+#   alias – subdirectory to store the docs in for previews or in progress work
+
 on:
   workflow_dispatch:
-    inputs:
-      alias:
-        type: string
-        required: false
-        description: |
-          Alias to deploy the documentation into, this is mostly for testing pre-release
-          versions of the documentation, such as beta versions or snapshots.
-
-          https://docs.powertools.aws.dev/lambda/java/<alias>
-  workflow_call:
     inputs:
       alias:
         type: string

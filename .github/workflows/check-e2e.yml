@@ -1,3 +1,14 @@
+# Run E2E tests for a branch
+#
+# Description: 
+#   Runs E2E tests for a specified branch
+#
+# Triggers:
+#   - push
+#
+# Secrets:
+#   - E2E.AWS_IAM_ROLE
+
 on:
   workflow_dispatch:
 

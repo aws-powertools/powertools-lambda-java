@@ -1,3 +1,12 @@
+# Auto merges dependabot PRs
+#
+# Description:
+#   Auto-merges dependabot PRs if all checks pass
+#   We verify all commits in the PR to ensure no one else has committed to the PR
+#
+# Triggers:
+#   - pull_request
+
 on: 
   pull_request:
     branches: [ dependabot/* ]

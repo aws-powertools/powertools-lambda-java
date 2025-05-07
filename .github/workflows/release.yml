@@ -1,3 +1,34 @@
+# Release
+#
+# Description:
+#   Creates a release for the project
+#
+#   1. Runs a setup job to set needed variables (build_matrix & version)
+#   2. Versions to the project and stores as an artifact
+#   3. Run quality checks
+#   4. Build
+#   5. Publish to Maven Central
+#   6. Create PR
+#   7. Publish docs
+#
+# Inputs:
+#   - version (string): SemVer of the new release (X.Y.Z)
+#   - snapshot (bool): If it's a snapshot release, this skips versioning assets like docs
+#   - skip_checks (bool): Don't run quality checks if it's an emergency release
+#   - skip_publish (bool): Don't publish to maven central
+#   - continue_on_error (bool): Don't fail the workflow if a quality check fails
+#
+# Triggers:
+#   - workflow_dispatch
+# 
+#  Secrets:
+#   - RELEASE.GPG_SIGNING_KEY
+#   - RELEASE.OSSRH_JIRA_USERNAME
+#   - RELEASE.OSSRH_JIRA_PASSWORD
+#   - RELEASE.GPG_PASSPHRASE
+#   - DOCS.AWS_DOCS_ROLE_ARN
+#   - DOCS.AWS_DOCS_BUCKET
+
 on:
   workflow_dispatch:
     inputs:
@@ -7,7 +38,7 @@ on:
       snapshot:
         type: boolean
         description: Create snapshot release
-        default: true
+        default: false
       skip_checks: 
         type: boolean
         description: Skip quality checks
@@ -168,6 +199,8 @@ jobs:
           distribution: corretto
           java-version: 21
           cache: maven
+          gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
       - name: Publish package
         run: mvn -Prelease clean deploy -DskipTests
         env:

@@ -1,3 +1,14 @@
+# Runs PMD for a Pull Request
+#
+# Description:
+#   Runs PMD (pmd.github.io) for a pull request and daily. 
+#   This does not error on failure yet, our rules are too strong and would fail on every run
+# 
+# Triggers:
+#   - pull_request
+#   - workflow_dispatch
+#   - cron: every day at 12:00PM
+
 on:
   pull_request:
   workflow_dispatch:

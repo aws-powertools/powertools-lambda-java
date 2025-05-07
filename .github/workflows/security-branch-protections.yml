@@ -1,8 +1,23 @@
-# Modified copy of: https://github.com/github/docs/blob/main/.github/workflows/alert-changed-branch-protections.yml
+# Branch Protections
+#
+# Description:
+#   This workflow compares current security branch protections against those stored, 
+#   if there's any changes, it'll fail the job and alert using a Slack webhook
+#
+# Triggers:
+#   - pull_request
+#   - branch_protection_rule
+#   - cron: daily at 16:40
+#
+# Secrets:
+#   - SECURITY.BRANCH_PROTECTION_TOKEN
+#   - SECURITY.SLACK_WEBHOOK_URL
+#
+# Notes:
+#   Modified copy of: https://github.com/github/docs/blob/main/.github/workflows/alert-changed-branch-protections.yml
 
 on:
   branch_protection_rule:
-  workflow_dispatch:
   schedule:
     - cron: '20 16 * * *' # Run daily at 16:20 UTC
   pull_request:

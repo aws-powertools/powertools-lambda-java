@@ -1,3 +1,17 @@
+# Check Build
+#
+# Description:
+#   Runs the build for every java version we support
+#   
+# Triggers:
+#   - pull_request: when a PR is sent to us
+#   - push: when code is pushed to a specified branch
+#
+# Notes:
+#   The matrix build for this workflow is unusual, we need to make it dyanmic since 
+#   we need to change java versions we build for depending on the branch.
+
+
 on:
   workflow_dispatch:
   pull_request:
@@ -58,7 +72,7 @@ jobs:
       - id: base
         name: Base
         run: |
-          echo build_version=$(test ${{ github.base_ref }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
+          echo build_version=$(test ${{ github.ref }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
       - id: build_matrix_v1
         name: Build matrix (v1)
         if: ${{ steps.base.outputs.build_version == 'v1' }}

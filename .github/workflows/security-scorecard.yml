@@ -1,3 +1,17 @@
+# Runs OSSF
+#
+# Description:
+#   Runs OpenSSF Scorecard scan on the project
+#
+# Triggers:
+#   - branch_protection_rule
+#   - cron: 09:00AM  
+#   - push
+#   - workflow_dispatch
+#
+# Secrets:
+#   - Security.SCORECARD_TOKEN
+
 on:
   branch_protection_rule:
   schedule:

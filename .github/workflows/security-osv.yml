@@ -1,13 +1,26 @@
+# Runs OSV scan
+# 
+# Description:
+#   Checks dependencies already in the project for known issues
+#
+# Triggers:
+#   - pull_request 
+#   - workflow_dispatch
+#   - cron
+#   - push
+
 on:
   pull_request:
-    branches: [main]
-  merge_group:
-    branches: [main]
+    branches: 
+      - main
+      - v2
   workflow_dispatch: {}
   schedule:
     - cron: "30 12 * * 1"
   push:
-    branches: [main]
+    branches:
+      - main
+      - v2
 
 name: OpenSource Vulnerability Scanner
 run-name: OpenSource Vulnerability Scanner

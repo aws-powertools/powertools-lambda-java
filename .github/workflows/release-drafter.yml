@@ -1,3 +1,12 @@
+# Generates release notes
+#
+# Description:
+#   Generates release notes based on pull request history. This is based on the config
+#   stored in .github/release-drafter.yml
+#
+# Triggers:
+#   - push: main
+
 on:
   push:
     branches: [ main ]

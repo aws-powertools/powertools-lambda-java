@@ -1,3 +1,15 @@
+# Dependency checks
+#
+# Description:
+#   Verifies that dependencies are compatible with our project
+#   by checking licenses and their security posture
+#
+# Triggers:
+#   - pull_request
+#   - push
+#   - workflow_dispatch
+#   - cron: daily at 12:00PM
+
 on:
   pull_request: 
   workflow_dispatch:
