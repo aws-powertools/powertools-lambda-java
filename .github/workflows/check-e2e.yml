@@ -68,4 +68,4 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
           aws-region: us-east-1
       - name: Run e2e test with Maven
-        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
+        run: JAVA_VERSION=${{ matrix.java }} mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
