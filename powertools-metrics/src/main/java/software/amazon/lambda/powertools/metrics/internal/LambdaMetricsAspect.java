@@ -30,20 +30,27 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.crac.Core;
+import org.crac.Resource;
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import software.amazon.lambda.powertools.metrics.ValidationException;
 
 @Aspect
-public class LambdaMetricsAspect {
+public class LambdaMetricsAspect implements Resource {
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
+
+    public LambdaMetricsAspect() {
+        Core.getGlobalContext().register(this);
+    }
 
     private static String service(Metrics metrics) {
         return !"".equals(metrics.service()) ? metrics.service() : serviceName();
@@ -147,5 +154,15 @@ public class LambdaMetricsAspect {
             refreshMetricsContext(metrics);
             throw e;
         }
+    }
+
+    @Override
+    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        System.out.println("before preloading");
+        ClassPreLoader.preloadClasses(true);
+        System.out.println("after preloading");
+    }
+    @Override
+    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
     }
 }
