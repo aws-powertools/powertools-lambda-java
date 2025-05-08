@@ -9,7 +9,7 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 > Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
 
-**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
+**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/preview)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
 
 ## Installation
 
@@ -22,17 +22,17 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>1.18.0</version>
+        <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging</artifactId>
-        <version>1.18.0</version>
+        <version>2.0.0-SNAPSHOT</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>1.18.0</version>
+        <version>2.0.0-SNAPSHOT</version>
     </dependency>
     ...
 </dependencies>
@@ -50,7 +50,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
         <plugin>
              <groupId>dev.aspectj</groupId>
              <artifactId>aspectj-maven-plugin</artifactId>
-             <version>1.13.1</version>
+             <version>1.14</version>
              <configuration>
                  <source>11</source>
                  <target>11</target>
@@ -70,6 +70,14 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
                      </aspectLibrary>
                  </aspectLibraries>
              </configuration>
+            <dependencies>
+                <dependency>
+                    <groupId>org.aspectj</groupId>
+                    <artifactId>aspectjtools</artifactId>
+                    <!-- AspectJ compiler version, in sync with runtime -->
+                    <version>1.9.22</version>
+                </dependency>
+            </dependencies>
              <executions>
                  <execution>
                      <goals>
@@ -108,7 +116,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
             aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
-            implementation "org.aspectj:aspectjrt:1.9.8.RC3"
+            implementation "org.aspectj:aspectjrt:1.9.22"
         }
         
         sourceCompatibility = 11
@@ -134,10 +142,10 @@ You may need to add the good version of `aspectjrt` to your dependencies based o
 <details>
     <summary><b>JDK - aspectj dependency matrix</b></summary>
 
-| JDK version | aspectj version |
-|-------------|-----------------|
-| `11-17`     | `1.9.20.1`      |
-| `21`        | `1.9.21`        |
+| JDK version | aspectj version        |
+|-------------|------------------------|
+| `11-17`     | `1.9.20.1` (or higher) |
+| `21`        | `1.9.21` (or higher)   |
 
 More info [here](https://github.com/aws-powertools/powertools-lambda-java/pull/1519/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R191).
 

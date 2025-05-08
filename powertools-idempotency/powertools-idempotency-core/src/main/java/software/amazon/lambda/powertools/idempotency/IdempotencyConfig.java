@@ -14,10 +14,13 @@
 
 package software.amazon.lambda.powertools.idempotency;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
-
 import java.time.Duration;
+import java.util.function.BiFunction;
+
+import com.amazonaws.services.lambda.runtime.Context;
+
+import software.amazon.lambda.powertools.idempotency.internal.cache.LRUCache;
+import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 
 /**
  * Configuration of the idempotency feature. Use the {@link Builder} to create an instance.
@@ -30,11 +33,12 @@ public class IdempotencyConfig {
     private final String payloadValidationJMESPath;
     private final boolean throwOnNoIdempotencyKey;
     private final String hashFunction;
+    private final BiFunction<Object, DataRecord, Object> responseHook;
     private Context lambdaContext;
 
     private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath,
-                              boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems,
-                              long expirationInSeconds, String hashFunction) {
+            boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems,
+            long expirationInSeconds, String hashFunction, BiFunction<Object, DataRecord, Object> responseHook) {
         this.localCacheMaxItems = localCacheMaxItems;
         this.useLocalCache = useLocalCache;
         this.expirationInSeconds = expirationInSeconds;
@@ -42,6 +46,7 @@ public class IdempotencyConfig {
         this.payloadValidationJMESPath = payloadValidationJMESPath;
         this.throwOnNoIdempotencyKey = throwOnNoIdempotencyKey;
         this.hashFunction = hashFunction;
+        this.responseHook = responseHook;
     }
 
     /**
@@ -89,6 +94,10 @@ public class IdempotencyConfig {
         this.lambdaContext = lambdaContext;
     }
 
+    public BiFunction<Object, DataRecord, Object> getResponseHook() {
+        return responseHook;
+    }
+
     public static class Builder {
 
         private int localCacheMaxItems = 256;
@@ -98,14 +107,18 @@ public class IdempotencyConfig {
         private String payloadValidationJMESPath;
         private boolean throwOnNoIdempotencyKey = false;
         private String hashFunction = "MD5";
+        private BiFunction<Object, DataRecord, Object> responseHook;
 
         /**
          * Initialize and return an instance of {@link IdempotencyConfig}.<br>
          * Example:<br>
+         * 
          * <pre>
          * IdempotencyConfig.builder().withUseLocalCache().build();
          * </pre>
+         * 
          * This instance must then be passed to the {@link Idempotency.Config}:
+         * 
          * <pre>
          * Idempotency.config().withConfig(config).configure();
          * </pre>
@@ -120,13 +133,15 @@ public class IdempotencyConfig {
                     useLocalCache,
                     localCacheMaxItems,
                     expirationInSeconds,
-                    hashFunction);
+                    hashFunction,
+                    responseHook);
         }
 
         /**
          * A JMESPath expression to extract the idempotency key from the event record. <br>
          * See <a href="https://jmespath.org/">https://jmespath.org/</a> for more details.<br>
-         * Common paths are: <ul>
+         * Common paths are:
+         * <ul>
          * <li><code>powertools_json(body)</code> for APIGatewayProxyRequestEvent and APIGatewayV2HTTPEvent</li>
          * <li><code>Records[*].powertools_json(body)</code> for SQSEvent</li>
          * <li><code>Records[0].Sns.Message | powertools_json(@)</code> for SNSEvent</li>
@@ -136,7 +151,8 @@ public class IdempotencyConfig {
          * <li>...</li>
          * </ul>
          *
-         * @param eventKeyJMESPath path of the key in the Lambda event
+         * @param eventKeyJMESPath
+         *            path of the key in the Lambda event
          * @return the instance of the builder (to chain operations)
          */
         public Builder withEventKeyJMESPath(String eventKeyJMESPath) {
@@ -147,7 +163,8 @@ public class IdempotencyConfig {
         /**
          * Set the maximum number of items to store in local cache, by default 256
          *
-         * @param localCacheMaxItems maximum number of items to store in local cache
+         * @param localCacheMaxItems
+         *            maximum number of items to store in local cache
          * @return the instance of the builder (to chain operations)
          */
         public Builder withLocalCacheMaxItems(int localCacheMaxItems) {
@@ -158,8 +175,9 @@ public class IdempotencyConfig {
         /**
          * Whether to locally cache idempotency results, by default false
          *
-         * @param useLocalCache boolean that indicate if a local cache must be used in addition to the persistence store.
-         *                      If set to true, will use the {@link LRUCache}
+         * @param useLocalCache
+         *            boolean that indicate if a local cache must be used in addition to the persistence store.
+         *            If set to true, will use the {@link LRUCache}
          * @return the instance of the builder (to chain operations)
          */
         public Builder withUseLocalCache(boolean useLocalCache) {
@@ -170,7 +188,8 @@ public class IdempotencyConfig {
         /**
          * The number of seconds to wait before a record is expired
          *
-         * @param expiration expiration of the record in the store
+         * @param expiration
+         *            expiration of the record in the store
          * @return the instance of the builder (to chain operations)
          */
         public Builder withExpiration(Duration expiration) {
@@ -182,7 +201,8 @@ public class IdempotencyConfig {
          * A JMESPath expression to extract the payload to be validated from the event record. <br/>
          * See <a href="https://jmespath.org/">https://jmespath.org/</a> for more details.
          *
-         * @param payloadValidationJMESPath JMES Path of a part of the payload to be used for validation
+         * @param payloadValidationJMESPath
+         *            JMES Path of a part of the payload to be used for validation
          * @return the instance of the builder (to chain operations)
          */
         public Builder withPayloadValidationJMESPath(String payloadValidationJMESPath) {
@@ -193,8 +213,9 @@ public class IdempotencyConfig {
         /**
          * Whether to throw an exception if no idempotency key was found in the request, by default false
          *
-         * @param throwOnNoIdempotencyKey boolean to indicate if we must throw an Exception when
-         *                                idempotency key could not be found in the payload.
+         * @param throwOnNoIdempotencyKey
+         *            boolean to indicate if we must throw an Exception when idempotency key could not be found in the
+         *            payload.
          * @return the instance of the builder (to chain operations)
          */
         public Builder withThrowOnNoIdempotencyKey(boolean throwOnNoIdempotencyKey) {
@@ -215,14 +236,42 @@ public class IdempotencyConfig {
         /**
          * Function to use for calculating hashes, by default MD5.
          *
-         * @param hashFunction Can be any algorithm supported by {@link java.security.MessageDigest}, most commons are<ul>
-         *                     <li>MD5</li>
-         *                     <li>SHA-1</li>
-         *                     <li>SHA-256</li></ul>
+         * @param hashFunction
+         *            Can be any algorithm supported by {@link java.security.MessageDigest}, most commons are
+         *            <ul>
+         *            <li>MD5</li>
+         *            <li>SHA-1</li>
+         *            <li>SHA-256</li>
+         *            </ul>
          * @return the instance of the builder (to chain operations)
          */
         public Builder withHashFunction(String hashFunction) {
             this.hashFunction = hashFunction;
+            return this;
+        }
+
+        /**
+         * Response hook that will be called for each idempotent response. This hook will receive the de-serialized
+         * response data from the persistence store as first argument and the original DataRecord from the persistence
+         * store as second argument.
+         * 
+         * Usage:
+         * 
+         * <pre>
+         * IdempotencyConfig.builder().withResponseHook((responseData, dataRecord) -> {
+         *     // do something with the response data, for example:
+         *     if(responseData instanceof APIGatewayProxyRequestEvent) {
+         *         ((APIGatewayProxyRequestEvent) responseData).setHeaders(Map.of("x-idempotency-response", "true")
+         *     }
+         *     return responseData;
+         * })
+         * </pre>
+         * 
+         * @param responseHook
+         * @return
+         */
+        public Builder withResponseHook(BiFunction<Object, DataRecord, Object> responseHook) {
+            this.responseHook = responseHook;
             return this;
         }
     }

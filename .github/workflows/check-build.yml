@@ -1,0 +1,109 @@
+# Check Build
+#
+# Description:
+#   Runs the build for every java version we support
+#   
+# Triggers:
+#   - pull_request: when a PR is sent to us
+#   - push: when code is pushed to a specified branch
+#
+# Notes:
+#   The matrix build for this workflow is unusual, we need to make it dyanmic since 
+#   we need to change java versions we build for depending on the branch.
+
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'powertools-batch/**'
+      - 'powertools-core/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-common/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
+      - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'
+      - 'powertools-tracing/**'
+      - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'examples/**'
+      - 'pom.xml'
+      - 'examples/pom.xml'
+      - '.github/workflows/**'
+  push:
+    branches:
+      - main
+      - v2
+    paths: # add other modules when there are under e2e tests
+      - 'powertools-batch/**'
+      - 'powertools-core/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-common/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
+      - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'
+      - 'powertools-tracing/**'
+      - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'pom.xml'
+      - 'examples/**'
+      - 'examples/pom.xml'
+      - '.github/workflows/**'
+
+name: Build
+run-name: Build - ${{ github.event_name }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      build_matrix: ${{ format('{0}{1}', steps.build_matrix_v1.outputs.build_matrix, steps.build_matrix_v1.outputs.build_matrix) }}
+    steps:
+      - id: base
+        name: Base
+        run: |
+          echo build_version=$(test ${{ github.ref }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
+      - id: build_matrix_v1
+        name: Build matrix (v1)
+        if: ${{ steps.base.outputs.build_version == 'v1' }}
+        run: |
+          echo build_matrix='["8", "11", "17", "21"]' >> "$GITHUB_OUTPUT"
+      - id: build_matrix_v2
+        name: Build matrix (v2)
+        if: ${{ steps.base.outputs.build_version == 'v2' }}
+        run: |
+          echo build_matrix='["11", "17", "21"]'>> "$GITHUB_OUTPUT"
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java:
+          - 8
+          - 11
+          - 17
+          - 21
+    steps:
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: corretto
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - id: build-maven
+        name: Build (Maven)
+        if: ${{ matrix.java != '8' }}
+        run: |
+          mvn -B install --file pom.xml
