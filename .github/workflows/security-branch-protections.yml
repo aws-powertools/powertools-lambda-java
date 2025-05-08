@@ -1,0 +1,72 @@
+# Branch Protections
+#
+# Description:
+#   This workflow compares current security branch protections against those stored, 
+#   if there's any changes, it'll fail the job and alert using a Slack webhook
+#
+# Triggers:
+#   - pull_request
+#   - branch_protection_rule
+#   - cron: daily at 16:40
+#
+# Secrets:
+#   - SECURITY.BRANCH_PROTECTION_TOKEN
+#   - SECURITY.SLACK_WEBHOOK_URL
+#
+# Notes:
+#   Modified copy of: https://github.com/github/docs/blob/main/.github/workflows/alert-changed-branch-protections.yml
+
+on:
+  branch_protection_rule:
+  schedule:
+    - cron: '20 16 * * *' # Run daily at 16:20 UTC
+  pull_request:
+    paths:
+      - .github/workflows/security-branch-protections.yml
+      - .github/branch_protection_settings/*.json
+
+name: Alert Changed Branch Protections
+run-name: Alert Changed Branch Protections
+
+permissions:
+  contents: read
+
+jobs:
+  check-branch-protections:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    environment: Security
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' }}
+    strategy:
+      matrix:
+        # List of branches we want to monitor for protection changes
+        branch:
+          - main
+          - v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Fetch branch protections
+        id: fetch
+        env:
+          GH_TOKEN: ${{ secrets.BRANCH_PROTECTION_TOKEN }}
+        run: |
+          # Fetch branch protections and store them in a file
+          gh api /repos/${{ github.repository }}/branches/${{ matrix.branch }}/protection | jq \
+            > .github/branch_protection_settings/${{ matrix.branch }}.json
+      - name: Compare branch protections
+        id: compare
+        run: |
+          git diff --quiet .github/branch_protection_settings/${{ matrix.branch }}.json \
+            || echo "diff_failed=true" >> $GITHUB_ENV
+      - name: Send webhook
+        if: ${{ env.diff_failed == 'true' }}
+        run: |
+          curl -X POST -d '{"message": "Branch protections have changed for ${{ github.repository }} on ${{ matrix.branch }}. Please review the changes or revert the changes in GitHub. https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Fail workflow
+        if: ${{ env.diff_failed == 'true' }}
+        run: |
+          git diff .github/branch_protection_settings/${{ matrix.branch }}.json
+          echo "::error::Branch protections have been changed"

@@ -1,0 +1,37 @@
+# Runs OSV scan
+# 
+# Description:
+#   Checks dependencies already in the project for known issues
+#
+# Triggers:
+#   - pull_request 
+#   - workflow_dispatch
+#   - cron
+#   - push
+
+on:
+  pull_request:
+    branches: 
+      - main
+      - v2
+  workflow_dispatch: {}
+  schedule:
+    - cron: "30 12 * * 1"
+  push:
+    branches:
+      - main
+      - v2
+
+name: OpenSource Vulnerability Scanner
+run-name: OpenSource Vulnerability Scanner
+
+permissions:
+  contents: read
+
+jobs:
+  scan-pr:
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@764c91816374ff2d8fc2095dab36eecd42d61638 # v1.9.2
