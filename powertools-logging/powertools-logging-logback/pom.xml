@@ -87,7 +87,7 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.6.0</version>
+                    <version>5.17.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -110,7 +110,7 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.6.0</version>
+                    <version>5.17.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
