@@ -1,0 +1,39 @@
+# Dependency checks
+#
+# Description:
+#   Verifies that dependencies are compatible with our project
+#   by checking licenses and their security posture
+#
+# Triggers:
+#   - pull_request
+#   - push
+#   - workflow_dispatch
+#   - cron: daily at 12:00PM
+
+on:
+  pull_request: 
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  schedule:
+    - cron: '0 12 * * *' # Run daily at 12:00 UTC
+
+name: Verify Dependencies
+run-name: Verify Dependencies – ${{ github.event_name }}
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Verify Contents
+        uses: actions/dependency-review-action@3b139cfc5fae8b618d3eae3675e383bb1769c019 # v4.5.0
+        with:
+          config-file: './.github/dependency-review-config.yml'

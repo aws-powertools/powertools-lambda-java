@@ -16,15 +16,21 @@ package software.amazon.lambda.powertools.logging.internal.handler;
 
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class PowertoolsArguments implements RequestHandler<SQSEvent.SQSMessage, String> {
@@ -41,11 +47,27 @@ public class PowertoolsArguments implements RequestHandler<SQSEvent.SQSMessage, 
         try {
             MDC.put(CORRELATION_ID.getName(), input.getMessageId());
             if (argumentFormat == ArgumentFormat.JSON) {
-                LOG.debug("SQS Event", StructuredArguments.json("input",
-                        JsonConfig.get().getObjectMapper().writeValueAsString(input)));
+                LOG.debug("SQS Event",
+                        StructuredArguments.json("input",
+                                JsonConfig.get().getObjectMapper().writeValueAsString(input)),
+                        // function_name is a reserved key by PowertoolsLoggedFields and should be omitted
+                        StructuredArguments.entry("function_name", "shouldBeIgnored"));
             } else {
-                LOG.debug("SQS Event", StructuredArguments.entry("input", input));
+                LOG.debug("SQS Event",
+                        StructuredArguments.entry("input", input),
+                        // function_name is a reserved key by PowertoolsLoggedFields and should be omitted
+                        StructuredArguments.entry("function_name", "shouldBeIgnored"));
             }
+
+            // Attempt logging all reserved keys, the values should not be overwritten by "shouldBeIgnored"
+            final Map<String, String> reservedKeysMap = new HashMap<>();
+            for (String field : PowertoolsLoggedFields.stringValues()) {
+                reservedKeysMap.put(field, "shouldBeIgnored");
+            }
+            reservedKeysMap.put("message", "shouldBeIgnored");
+            reservedKeysMap.put("level", "shouldBeIgnored");
+            reservedKeysMap.put("timestamp", "shouldBeIgnored");
+            LOG.debug("Reserved keys", StructuredArguments.entries(reservedKeysMap));
             LOG.debug("{}", input.getMessageId());
             LOG.warn("Message body = {} and id = \"{}\"", input.getBody(), input.getMessageId());
         } catch (JsonProcessingException e) {

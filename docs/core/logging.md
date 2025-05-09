@@ -45,7 +45,7 @@ to weave the code and make sure the annotation is processed.
             <plugin>
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
+                 <version>1.14</version>
                  <configuration>
                      <source>11</source> <!-- or higher -->
                      <target>11</target> <!-- or higher -->
@@ -57,6 +57,14 @@ to weave the code and make sure the annotation is processed.
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <!-- AspectJ compiler version, in sync with runtime -->
+                        <version>1.9.22</version>
+                    </dependency>
+                </dependencies>
                  <executions>
                      <execution>
                          <goals>
@@ -90,7 +98,7 @@ to weave the code and make sure the annotation is processed.
             <plugin>
                  <groupId>dev.aspectj</groupId>
                  <artifactId>aspectj-maven-plugin</artifactId>
-                 <version>1.13.1</version>
+                 <version>1.14</version>
                  <configuration>
                      <source>11</source> <!-- or higher -->
                      <target>11</target> <!-- or higher -->
@@ -102,6 +110,14 @@ to weave the code and make sure the annotation is processed.
                          </aspectLibrary>
                      </aspectLibraries>
                  </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <!-- AspectJ compiler version, in sync with runtime -->
+                        <version>1.9.22</version>
+                    </dependency>
+                </dependencies>
                  <executions>
                      <execution>
                          <goals>
@@ -338,6 +354,9 @@ Your logs will always include the following keys in your structured logging:
 | **xray_trace_id** | String | "1-5759e988-bd862e3fe1be46a994272793"                                                               | X-Ray Trace ID when [Tracing is enabled](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html){target="_blank"} |
 | **error**         | Map    | `{ "name": "InvalidAmountException", "message": "Amount must be superior to 0", "stack": "at..." }` | Eventual exception (e.g. when doing `logger.error("Error", new InvalidAmountException("Amount must be superior to 0"));`)  |
 
+???+ note
+    If you emit a log message with a key that matches one of the [standard structured keys](#standard-structured-keys) or one of the [additional structured keys](#additional-structured-keys), the Logger will log a warning message and ignore the key.
+
 ## Additional structured keys
 
 ### Logging Lambda context information
@@ -444,7 +463,7 @@ we provide [built-in JMESPath expressions](#built-in-correlation-id-expressions)
 
 #### Custom keys
 
-** Using StructuredArguments **
+**Using StructuredArguments**
 
 To append additional keys in your logs, you can use the `StructuredArguments` class:
 
@@ -624,7 +643,10 @@ To append additional keys in your logs, you can use the `StructuredArguments` cl
             }
         ```
 
-** Using MDC **
+???+ warning "Do not use reserved keys in `StructuredArguments`"
+    If the key name of your structured argument matches any of the [standard structured keys](#standard-structured-keys) or any of the [additional structured keys](#additional-structured-keys), the Logger will log a warning message and ignore the key. This is to protect you from accidentally overwriting reserved keys such as the log level or Lambda context information.
+    
+**Using MDC**
 
 Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supported by the [SLF4J API](https://www.slf4j.org/manual.html#mdc){target="_blank"},
 [logback](https://logback.qos.ch/manual/mdc.html){target="_blank"} and log4j (known as [ThreadContext](https://logging.apache.org/log4j/2.x/manual/thread-context.html){target="_blank"}). You can use the following standard:
@@ -633,6 +655,9 @@ Mapped Diagnostic Context (MDC) is essentially a Key-Value store. It is supporte
 
 ???+ warning "Custom keys stored in the MDC are persisted across warm invocations"
     Always set additional keys as part of your handler method to ensure they have the latest value, or explicitly clear them with [`clearState=true`](#clearing-state).
+
+???+ warning "Do not add reserved keys to MDC"
+    Avoid adding any of the keys listed in [standard structured keys](#standard-structured-keys) and [additional structured keys](#additional-structured-keys) to your MDC. This may cause unindented behavior and will overwrite the context set by the Logger. Unlike with `StructuredArguments`, the Logger will **not** ignore reserved keys set via MDC.
 
 
 ### Removing additional keys

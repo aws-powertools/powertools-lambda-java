@@ -1,0 +1,53 @@
+name: Version Java Project
+description: |
+  Versions the maven project using an input
+
+  Process:
+    1. Grab current version from project.version variable from maven
+    2. Set new version using maven-versions-plugin
+
+  Usage:
+  ```yml
+  - id: version
+    name: version 
+    uses: .github/actions/version
+    with:
+      new_version: 1.20.0
+      snapshot: 'false'
+  ```
+
+inputs:
+  new_version:
+    description: New package version, expressed as SemVer (1.x.y)
+    required: true
+  snapshot:
+    description: New version is a SNAPSHOT release
+    required: true
+    default: 'false'
+
+outputs:
+  old_version:
+    description: Current version of project
+    value: ${{ steps.current_version.outputs.current_version}}
+
+runs:
+  using: composite
+  steps:
+    - id: current_version
+      name: Get current version
+      shell: bash
+      run: |
+        echo "current_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+    - id: replace_version
+      name: Replace current version
+      shell: bash
+      run: |
+        mvn versions:set -DnewVersion=${{ inputs.new_version }} -DprocessAllModules=true -DallowSnapshots=true
+
+    - id: asset_version
+      name: Replace version for assets
+      if: ${{ inputs.snapshot == 'false' }}
+      shell: bash
+      run: |
+        grep "${{ steps.current_version.outputs.current_version }}" -r . --include build.gradle --include build.gradle.kts --include mkdocs.yml --include README.md -l | xargs sed -i 's#${{ steps.current_version.outputs.current_version }}#${{ inputs.new_version }}#'
