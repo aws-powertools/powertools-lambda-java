@@ -1,0 +1,71 @@
+# Run E2E tests for a branch
+#
+# Description: 
+#   Runs E2E tests for a specified branch
+#
+# Triggers:
+#   - push
+#
+# Secrets:
+#   - E2E.AWS_IAM_ROLE
+
+on:
+  workflow_dispatch:
+
+  push:
+      branches:
+        - main
+        - v2
+      paths: # add other modules when there are under e2e tests
+        - 'powertools-batch/**'
+        - 'powertools-core/**'
+        - 'powertools-cloudformation/**'
+        - 'powertools-common/**'
+        - 'powertools-e2e-tests/**'
+        - 'powertools-idempotency/**'
+        - 'powertools-large-messages/**'
+        - 'powertools-logging/**'
+        - 'powertools-metrics/**'
+        - 'powertools-parameters/**'
+        - 'powertools-serialization/**'
+        - 'powertools-sqs/**'
+        - 'powertools-tracing/**'
+        - 'powertools-tracing/**'
+        - 'powertools-validation/**'
+        - 'pom.xml'
+
+name: E2E Tests
+run-name: E2E Tests - ${{ github.event_name }}
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:  
+    name: End-to-end Tests (Java ${{ matrix.java }})
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    environment: E2E
+    strategy:
+      max-parallel: 3
+      matrix:
+        java:
+          - 11
+          - 17
+          - 21
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
+      - name: Setup java
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'corretto'
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - name: Setup AWS credentials
+        uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 # v2.2.0
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: us-east-1
+      - name: Run e2e test with Maven
+        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
