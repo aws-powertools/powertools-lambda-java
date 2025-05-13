@@ -1,0 +1,78 @@
+name: Seal and hash source code
+description: |
+  Seals and creates a SHA256SUM of an artifact for storage
+
+  Process:
+    1. Create a unique name based on environment details
+    2. Compress work directory or specified path
+    3. Hash compressed file
+    4. Upload archive using `actions/upload-artifact`
+
+  Usage:
+  ```yml
+  - id: seal
+    name: Seal
+    uses: .github/actions/seal
+    with:
+      prefix: foo
+  ```
+
+inputs:
+  prefix:
+    description: Prefix to use when exporting artifact
+    required: true
+outputs:
+  hash:
+    description: SHA256SUM hash of compressed files
+    value: ${{ steps.hash.outputs.hash }}
+  artifact_name:
+    description: Artifact name
+    value: ${{ steps.artifact_name.outputs.artifact_name }}
+
+runs:
+  using: composite
+  steps:
+    - id: adjust_path
+      name: Adjust path
+      shell: bash
+      run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+
+    - id: artifact_name
+      name: Export final artifact name
+      env:
+        GITHUB_RUN_ID: ${{ github.run_id }}
+        ARTIFACT_PREFIX: ${{ inputs.prefix }}
+      shell: bash
+      run: |
+        echo "artifact_name=${ARTIFACT_PREFIX}-${GITHUB_RUN_ID}" >> "$GITHUB_OUTPUT"
+
+    - id: compress
+      name: Create tarball for entire source
+      env:
+        ARTIFACT_NAME: ${{ steps.artifact_name.outputs.artifact_name }}
+      shell: bash
+      run: |
+        tar --exclude-vcs -cvf "${ARTIFACT_NAME}".tar *
+
+    - id: hash
+      name: Hash
+      env:
+        ARTIFACT_NAME: ${{ steps.artifact_name.outputs.artifact_name }}
+      shell: bash
+      run: |
+         echo "hash=$(openssl dgst -sha256 -binary "${{ ARTIFACT_NAME }}".tar | openssl enc -base64)" >> "$GITHUB_OUTPUT" 
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      with:
+        if-no-files-found: error
+        name: ${{ steps.artifact_name.outputs.artifact_name }}
+        path: ${{ steps.artifact_name.outputs.artifact_name }}.tar
+        retention-days: 1
+
+    - name: Remove archive
+      env:
+        ARTIFACT_NAME: ${{ steps.artifact_name.outputs.artifact_name }}
+      shell: bash
+      run: |
+        rm -f "${ARTIFACT_NAME}.tar"

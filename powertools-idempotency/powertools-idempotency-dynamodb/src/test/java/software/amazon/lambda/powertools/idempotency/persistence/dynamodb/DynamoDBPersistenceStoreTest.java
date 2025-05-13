@@ -32,7 +32,7 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.dynamodb.DynamoDBConfig;
+
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
@@ -155,13 +155,14 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                         DataRecord.Status.INPROGRESS,
                         expiry2,
                         null,
-                        null
-                ), now)
-        ).isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+                        null),
+                now)).isInstanceOf(IdempotencyItemAlreadyExistsException.class)
+                        // DataRecord should be present due to returnValuesOnConditionCheckFailure("ALL_OLD")
+                        .matches(e -> ((IdempotencyItemAlreadyExistsException) e).getDataRecord().isPresent());
 
         // THEN: item was not updated, retrieve the initial one
-        Map<String, AttributeValue> itemInDb =
-                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb = client
+                .getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("COMPLETED");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));
@@ -190,13 +191,16 @@ public class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                         DataRecord.Status.INPROGRESS,
                         expiry2,
                         "Fake Data 2",
-                        null
-                ), now))
-                .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+                        null),
+                now))
+                        .isInstanceOf(IdempotencyItemAlreadyExistsException.class)
+                        // DataRecord should be present due to returnValuesOnConditionCheckFailure("ALL_OLD")
+                        .matches(e -> ((IdempotencyItemAlreadyExistsException) e).getDataRecord().isPresent());
+        ;
 
         // THEN: item was not updated, retrieve the initial one
-        Map<String, AttributeValue> itemInDb =
-                client.getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
+        Map<String, AttributeValue> itemInDb = client
+                .getItem(GetItemRequest.builder().tableName(TABLE_NAME).key(key).build()).item();
         assertThat(itemInDb).isNotNull();
         assertThat(itemInDb.get("status").s()).isEqualTo("INPROGRESS");
         assertThat(itemInDb.get("expiration").n()).isEqualTo(String.valueOf(expiry));

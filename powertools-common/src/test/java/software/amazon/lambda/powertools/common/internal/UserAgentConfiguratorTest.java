@@ -15,19 +15,19 @@
 package software.amazon.lambda.powertools.common.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mockStatic;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.AWS_EXECUTION_ENV;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.VERSION_KEY;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.VERSION_PROPERTIES_FILENAME;
 import static software.amazon.lambda.powertools.common.internal.UserAgentConfigurator.getVersionFromProperties;
-import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
-
 
 import java.io.File;
-import java.util.Objects;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.regex.Pattern;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 class UserAgentConfiguratorTest {
 
@@ -64,14 +64,18 @@ class UserAgentConfiguratorTest {
     }
 
     @Test
-    void testGetVersionFromProperties_InvalidFile() {
-        File f = new File(Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
-                .getResource("unreadable.properties")).getPath());
+    void testGetVersionFromProperties_InvalidFile() throws IOException {
+        Path tempFile = Files.createTempFile("unreadable", ".properties");
+        File f = tempFile.toFile();
         f.setReadable(false);
 
-        String version = getVersionFromProperties("unreadable.properties", VERSION_KEY);
+        String version = getVersionFromProperties(f.getName(), VERSION_KEY);
 
         assertThat(version).isEqualTo("NA");
+
+        // Cleanup
+        f.setReadable(true);
+        Files.deleteIfExists(tempFile);
     }
 
     @Test
@@ -110,15 +114,13 @@ class UserAgentConfiguratorTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = AWS_EXECUTION_ENV, value = "AWS_Lambda_java8")
     void testGetUserAgent_SetAWSExecutionEnv() {
-        try (MockedStatic<SystemWrapper> mockedSystemWrapper = mockStatic(SystemWrapper.class)) {
-            mockedSystemWrapper.when(() -> getenv(AWS_EXECUTION_ENV)).thenReturn("AWS_Lambda_java8");
-            String userAgent = UserAgentConfigurator.getUserAgent("test-feature");
+        String userAgent = UserAgentConfigurator.getUserAgent("test-feature");
 
-            assertThat(userAgent)
-                    .isNotNull()
-                    .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");
-        }
+        assertThat(userAgent)
+                .isNotNull()
+                .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");
     }
 
 }
