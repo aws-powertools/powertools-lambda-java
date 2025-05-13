@@ -1,0 +1,323 @@
+[
+{
+  "name":"com.sun.crypto.provider.AESCipher$General",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.ARCFOURCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.ChaCha20Cipher$ChaCha20Poly1305",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DESCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.DESedeCipher",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.crypto.provider.GaloisCounterMode$AESGCM",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"com.sun.tools.attach.VirtualMachine"
+},
+{
+  "name":"java.io.Serializable",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.AutoCloseable",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.Class",
+  "methods":[{"name":"forName","parameterTypes":["java.lang.String"] }, {"name":"getAnnotatedInterfaces","parameterTypes":[] }, {"name":"getAnnotatedSuperclass","parameterTypes":[] }, {"name":"getDeclaredMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getModule","parameterTypes":[] }, {"name":"getNestHost","parameterTypes":[] }, {"name":"getNestMembers","parameterTypes":[] }, {"name":"getPermittedSubclasses","parameterTypes":[] }, {"name":"getRecordComponents","parameterTypes":[] }, {"name":"isNestmateOf","parameterTypes":["java.lang.Class"] }, {"name":"isRecord","parameterTypes":[] }, {"name":"isSealed","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.ClassLoader",
+  "methods":[{"name":"getDefinedPackage","parameterTypes":["java.lang.String"] }, {"name":"getUnnamedModule","parameterTypes":[] }, {"name":"registerAsParallelCapable","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Module",
+  "methods":[{"name":"addExports","parameterTypes":["java.lang.String","java.lang.Module"] }, {"name":"addReads","parameterTypes":["java.lang.Module"] }, {"name":"canRead","parameterTypes":["java.lang.Module"] }, {"name":"getClassLoader","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getPackages","parameterTypes":[] }, {"name":"getResourceAsStream","parameterTypes":["java.lang.String"] }, {"name":"isExported","parameterTypes":["java.lang.String"] }, {"name":"isExported","parameterTypes":["java.lang.String","java.lang.Module"] }, {"name":"isNamed","parameterTypes":[] }, {"name":"isOpen","parameterTypes":["java.lang.String","java.lang.Module"] }]
+},
+{
+  "name":"java.lang.Object",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.ProcessHandle",
+  "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Runtime",
+  "methods":[{"name":"version","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.Runtime$Version",
+  "methods":[{"name":"feature","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.StackWalker"
+},
+{
+  "name":"java.lang.String"
+},
+{
+  "name":"java.lang.System",
+  "methods":[{"name":"getSecurityManager","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.annotation.Retention",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.annotation.Target",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.lang.invoke.MethodHandle",
+  "methods":[{"name":"bindTo","parameterTypes":["java.lang.Object"] }, {"name":"invokeWithArguments","parameterTypes":["java.lang.Object[]"] }]
+},
+{
+  "name":"java.lang.invoke.MethodHandles",
+  "methods":[{"name":"lookup","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.invoke.MethodHandles$Lookup",
+  "methods":[{"name":"findVirtual","parameterTypes":["java.lang.Class","java.lang.String","java.lang.invoke.MethodType"] }]
+},
+{
+  "name":"java.lang.invoke.MethodType",
+  "methods":[{"name":"methodType","parameterTypes":["java.lang.Class","java.lang.Class[]"] }]
+},
+{
+  "name":"java.lang.reflect.AccessibleObject",
+  "methods":[{"name":"setAccessible","parameterTypes":["boolean"] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedArrayType",
+  "methods":[{"name":"getAnnotatedGenericComponentType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedParameterizedType",
+  "methods":[{"name":"getAnnotatedActualTypeArguments","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedType",
+  "methods":[{"name":"getType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedTypeVariable",
+  "methods":[{"name":"getAnnotatedBounds","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.AnnotatedWildcardType",
+  "methods":[{"name":"getAnnotatedUpperBounds","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.Executable",
+  "methods":[{"name":"getAnnotatedExceptionTypes","parameterTypes":[] }, {"name":"getAnnotatedParameterTypes","parameterTypes":[] }, {"name":"getAnnotatedReceiverType","parameterTypes":[] }, {"name":"getParameterCount","parameterTypes":[] }, {"name":"getParameters","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.Method",
+  "methods":[{"name":"getAnnotatedReturnType","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.Parameter",
+  "methods":[{"name":"getModifiers","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"isNamePresent","parameterTypes":[] }]
+},
+{
+  "name":"java.lang.reflect.TypeVariable",
+  "methods":[{"name":"getAnnotatedBounds","parameterTypes":[] }]
+},
+{
+  "name":"java.security.AccessController",
+  "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
+},
+{
+  "name":"java.security.AlgorithmParametersSpi"
+},
+{
+  "name":"java.security.KeyStoreSpi"
+},
+{
+  "name":"java.security.SecureRandomParameters"
+},
+{
+  "name":"java.util.concurrent.ForkJoinTask",
+  "fields":[{"name":"aux"}, {"name":"status"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicBoolean",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"java.util.concurrent.atomic.AtomicReference",
+  "fields":[{"name":"value"}]
+},
+{
+  "name":"javax.security.auth.x500.X500Principal",
+  "fields":[{"name":"thisX500Name"}],
+  "methods":[{"name":"<init>","parameterTypes":["sun.security.x509.X500Name"] }]
+},
+{
+  "name":"jdk.internal.misc.Unsafe"
+},
+{
+  "name":"kotlin.jvm.JvmInline"
+},
+{
+  "name":"org.apiguardian.api.API",
+  "queryAllPublicMethods":true
+},
+{
+  "name":"scala.util.Properties"
+},
+{
+  "name":"software.amazon.awssdk.awscore.AwsClient",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"software.amazon.awssdk.core.SdkClient",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"serviceName","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.awssdk.services.ssm.SsmClient",
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"addTagsToResource","parameterTypes":["java.util.function.Consumer"] }, {"name":"addTagsToResource","parameterTypes":["software.amazon.awssdk.services.ssm.model.AddTagsToResourceRequest"] }, {"name":"associateOpsItemRelatedItem","parameterTypes":["java.util.function.Consumer"] }, {"name":"associateOpsItemRelatedItem","parameterTypes":["software.amazon.awssdk.services.ssm.model.AssociateOpsItemRelatedItemRequest"] }, {"name":"cancelCommand","parameterTypes":["java.util.function.Consumer"] }, {"name":"cancelCommand","parameterTypes":["software.amazon.awssdk.services.ssm.model.CancelCommandRequest"] }, {"name":"cancelMaintenanceWindowExecution","parameterTypes":["java.util.function.Consumer"] }, {"name":"cancelMaintenanceWindowExecution","parameterTypes":["software.amazon.awssdk.services.ssm.model.CancelMaintenanceWindowExecutionRequest"] }, {"name":"createActivation","parameterTypes":["java.util.function.Consumer"] }, {"name":"createActivation","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateActivationRequest"] }, {"name":"createAssociation","parameterTypes":["java.util.function.Consumer"] }, {"name":"createAssociation","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateAssociationRequest"] }, {"name":"createAssociationBatch","parameterTypes":["java.util.function.Consumer"] }, {"name":"createAssociationBatch","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateAssociationBatchRequest"] }, {"name":"createDocument","parameterTypes":["java.util.function.Consumer"] }, {"name":"createDocument","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateDocumentRequest"] }, {"name":"createMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"createMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateMaintenanceWindowRequest"] }, {"name":"createOpsItem","parameterTypes":["java.util.function.Consumer"] }, {"name":"createOpsItem","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateOpsItemRequest"] }, {"name":"createOpsMetadata","parameterTypes":["java.util.function.Consumer"] }, {"name":"createOpsMetadata","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateOpsMetadataRequest"] }, {"name":"createPatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"createPatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreatePatchBaselineRequest"] }, {"name":"createResourceDataSync","parameterTypes":["java.util.function.Consumer"] }, {"name":"createResourceDataSync","parameterTypes":["software.amazon.awssdk.services.ssm.model.CreateResourceDataSyncRequest"] }, {"name":"deleteActivation","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteActivation","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteActivationRequest"] }, {"name":"deleteAssociation","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteAssociation","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteAssociationRequest"] }, {"name":"deleteDocument","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteDocument","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteDocumentRequest"] }, {"name":"deleteInventory","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteInventory","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteInventoryRequest"] }, {"name":"deleteMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteMaintenanceWindowRequest"] }, {"name":"deleteOpsItem","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteOpsItem","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteOpsItemRequest"] }, {"name":"deleteOpsMetadata","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteOpsMetadata","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteOpsMetadataRequest"] }, {"name":"deleteParameter","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteParameter","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteParameterRequest"] }, {"name":"deleteParameters","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteParameters","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteParametersRequest"] }, {"name":"deletePatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"deletePatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeletePatchBaselineRequest"] }, {"name":"deleteResourceDataSync","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteResourceDataSync","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteResourceDataSyncRequest"] }, {"name":"deleteResourcePolicy","parameterTypes":["java.util.function.Consumer"] }, {"name":"deleteResourcePolicy","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeleteResourcePolicyRequest"] }, {"name":"deregisterManagedInstance","parameterTypes":["java.util.function.Consumer"] }, {"name":"deregisterManagedInstance","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeregisterManagedInstanceRequest"] }, {"name":"deregisterPatchBaselineForPatchGroup","parameterTypes":["java.util.function.Consumer"] }, {"name":"deregisterPatchBaselineForPatchGroup","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeregisterPatchBaselineForPatchGroupRequest"] }, {"name":"deregisterTargetFromMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"deregisterTargetFromMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeregisterTargetFromMaintenanceWindowRequest"] }, {"name":"deregisterTaskFromMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"deregisterTaskFromMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.DeregisterTaskFromMaintenanceWindowRequest"] }, {"name":"describeActivations","parameterTypes":[] }, {"name":"describeActivations","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeActivations","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeActivationsRequest"] }, {"name":"describeActivationsPaginator","parameterTypes":[] }, {"name":"describeActivationsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeActivationsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeActivationsRequest"] }, {"name":"describeAssociation","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAssociation","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAssociationRequest"] }, {"name":"describeAssociationExecutionTargets","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAssociationExecutionTargets","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAssociationExecutionTargetsRequest"] }, {"name":"describeAssociationExecutionTargetsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAssociationExecutionTargetsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAssociationExecutionTargetsRequest"] }, {"name":"describeAssociationExecutions","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAssociationExecutions","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAssociationExecutionsRequest"] }, {"name":"describeAssociationExecutionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAssociationExecutionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAssociationExecutionsRequest"] }, {"name":"describeAutomationExecutions","parameterTypes":[] }, {"name":"describeAutomationExecutions","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAutomationExecutions","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAutomationExecutionsRequest"] }, {"name":"describeAutomationExecutionsPaginator","parameterTypes":[] }, {"name":"describeAutomationExecutionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAutomationExecutionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAutomationExecutionsRequest"] }, {"name":"describeAutomationStepExecutions","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAutomationStepExecutions","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAutomationStepExecutionsRequest"] }, {"name":"describeAutomationStepExecutionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAutomationStepExecutionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAutomationStepExecutionsRequest"] }, {"name":"describeAvailablePatches","parameterTypes":[] }, {"name":"describeAvailablePatches","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAvailablePatches","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAvailablePatchesRequest"] }, {"name":"describeAvailablePatchesPaginator","parameterTypes":[] }, {"name":"describeAvailablePatchesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeAvailablePatchesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeAvailablePatchesRequest"] }, {"name":"describeDocument","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeDocument","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeDocumentRequest"] }, {"name":"describeDocumentPermission","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeDocumentPermission","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeDocumentPermissionRequest"] }, {"name":"describeEffectiveInstanceAssociations","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeEffectiveInstanceAssociations","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeEffectiveInstanceAssociationsRequest"] }, {"name":"describeEffectiveInstanceAssociationsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeEffectiveInstanceAssociationsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeEffectiveInstanceAssociationsRequest"] }, {"name":"describeEffectivePatchesForPatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeEffectivePatchesForPatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeEffectivePatchesForPatchBaselineRequest"] }, {"name":"describeEffectivePatchesForPatchBaselinePaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeEffectivePatchesForPatchBaselinePaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeEffectivePatchesForPatchBaselineRequest"] }, {"name":"describeInstanceAssociationsStatus","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstanceAssociationsStatus","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstanceAssociationsStatusRequest"] }, {"name":"describeInstanceAssociationsStatusPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstanceAssociationsStatusPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstanceAssociationsStatusRequest"] }, {"name":"describeInstanceInformation","parameterTypes":[] }, {"name":"describeInstanceInformation","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstanceInformation","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest"] }, {"name":"describeInstanceInformationPaginator","parameterTypes":[] }, {"name":"describeInstanceInformationPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstanceInformationPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstanceInformationRequest"] }, {"name":"describeInstancePatchStates","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePatchStates","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePatchStatesRequest"] }, {"name":"describeInstancePatchStatesForPatchGroup","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePatchStatesForPatchGroup","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePatchStatesForPatchGroupRequest"] }, {"name":"describeInstancePatchStatesForPatchGroupPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePatchStatesForPatchGroupPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePatchStatesForPatchGroupRequest"] }, {"name":"describeInstancePatchStatesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePatchStatesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePatchStatesRequest"] }, {"name":"describeInstancePatches","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePatches","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePatchesRequest"] }, {"name":"describeInstancePatchesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePatchesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePatchesRequest"] }, {"name":"describeInstanceProperties","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstanceProperties","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePropertiesRequest"] }, {"name":"describeInstancePropertiesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInstancePropertiesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInstancePropertiesRequest"] }, {"name":"describeInventoryDeletions","parameterTypes":[] }, {"name":"describeInventoryDeletions","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInventoryDeletions","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInventoryDeletionsRequest"] }, {"name":"describeInventoryDeletionsPaginator","parameterTypes":[] }, {"name":"describeInventoryDeletionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeInventoryDeletionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeInventoryDeletionsRequest"] }, {"name":"describeMaintenanceWindowExecutionTaskInvocations","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowExecutionTaskInvocations","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowExecutionTaskInvocationsRequest"] }, {"name":"describeMaintenanceWindowExecutionTaskInvocationsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowExecutionTaskInvocationsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowExecutionTaskInvocationsRequest"] }, {"name":"describeMaintenanceWindowExecutionTasks","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowExecutionTasks","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowExecutionTasksRequest"] }, {"name":"describeMaintenanceWindowExecutionTasksPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowExecutionTasksPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowExecutionTasksRequest"] }, {"name":"describeMaintenanceWindowExecutions","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowExecutions","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowExecutionsRequest"] }, {"name":"describeMaintenanceWindowExecutionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowExecutionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowExecutionsRequest"] }, {"name":"describeMaintenanceWindowSchedule","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowSchedule","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowScheduleRequest"] }, {"name":"describeMaintenanceWindowSchedulePaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowSchedulePaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowScheduleRequest"] }, {"name":"describeMaintenanceWindowTargets","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowTargets","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowTargetsRequest"] }, {"name":"describeMaintenanceWindowTargetsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowTargetsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowTargetsRequest"] }, {"name":"describeMaintenanceWindowTasks","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowTasks","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowTasksRequest"] }, {"name":"describeMaintenanceWindowTasksPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowTasksPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowTasksRequest"] }, {"name":"describeMaintenanceWindows","parameterTypes":[] }, {"name":"describeMaintenanceWindows","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindows","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowsRequest"] }, {"name":"describeMaintenanceWindowsForTarget","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowsForTarget","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowsForTargetRequest"] }, {"name":"describeMaintenanceWindowsForTargetPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowsForTargetPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowsForTargetRequest"] }, {"name":"describeMaintenanceWindowsPaginator","parameterTypes":[] }, {"name":"describeMaintenanceWindowsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeMaintenanceWindowsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeMaintenanceWindowsRequest"] }, {"name":"describeOpsItems","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeOpsItems","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeOpsItemsRequest"] }, {"name":"describeOpsItemsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeOpsItemsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeOpsItemsRequest"] }, {"name":"describeParameters","parameterTypes":[] }, {"name":"describeParameters","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeParameters","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeParametersRequest"] }, {"name":"describeParametersPaginator","parameterTypes":[] }, {"name":"describeParametersPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeParametersPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeParametersRequest"] }, {"name":"describePatchBaselines","parameterTypes":[] }, {"name":"describePatchBaselines","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchBaselines","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchBaselinesRequest"] }, {"name":"describePatchBaselinesPaginator","parameterTypes":[] }, {"name":"describePatchBaselinesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchBaselinesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchBaselinesRequest"] }, {"name":"describePatchGroupState","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchGroupState","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchGroupStateRequest"] }, {"name":"describePatchGroups","parameterTypes":[] }, {"name":"describePatchGroups","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchGroups","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchGroupsRequest"] }, {"name":"describePatchGroupsPaginator","parameterTypes":[] }, {"name":"describePatchGroupsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchGroupsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchGroupsRequest"] }, {"name":"describePatchProperties","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchProperties","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchPropertiesRequest"] }, {"name":"describePatchPropertiesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describePatchPropertiesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribePatchPropertiesRequest"] }, {"name":"describeSessions","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeSessions","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeSessionsRequest"] }, {"name":"describeSessionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"describeSessionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.DescribeSessionsRequest"] }, {"name":"disassociateOpsItemRelatedItem","parameterTypes":["java.util.function.Consumer"] }, {"name":"disassociateOpsItemRelatedItem","parameterTypes":["software.amazon.awssdk.services.ssm.model.DisassociateOpsItemRelatedItemRequest"] }, {"name":"getAutomationExecution","parameterTypes":["java.util.function.Consumer"] }, {"name":"getAutomationExecution","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetAutomationExecutionRequest"] }, {"name":"getCalendarState","parameterTypes":["java.util.function.Consumer"] }, {"name":"getCalendarState","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetCalendarStateRequest"] }, {"name":"getCommandInvocation","parameterTypes":["java.util.function.Consumer"] }, {"name":"getCommandInvocation","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetCommandInvocationRequest"] }, {"name":"getConnectionStatus","parameterTypes":["java.util.function.Consumer"] }, {"name":"getConnectionStatus","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetConnectionStatusRequest"] }, {"name":"getDefaultPatchBaseline","parameterTypes":[] }, {"name":"getDefaultPatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"getDefaultPatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetDefaultPatchBaselineRequest"] }, {"name":"getDeployablePatchSnapshotForInstance","parameterTypes":["java.util.function.Consumer"] }, {"name":"getDeployablePatchSnapshotForInstance","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetDeployablePatchSnapshotForInstanceRequest"] }, {"name":"getDocument","parameterTypes":["java.util.function.Consumer"] }, {"name":"getDocument","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetDocumentRequest"] }, {"name":"getInventory","parameterTypes":[] }, {"name":"getInventory","parameterTypes":["java.util.function.Consumer"] }, {"name":"getInventory","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetInventoryRequest"] }, {"name":"getInventoryPaginator","parameterTypes":[] }, {"name":"getInventoryPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"getInventoryPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetInventoryRequest"] }, {"name":"getInventorySchema","parameterTypes":[] }, {"name":"getInventorySchema","parameterTypes":["java.util.function.Consumer"] }, {"name":"getInventorySchema","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetInventorySchemaRequest"] }, {"name":"getInventorySchemaPaginator","parameterTypes":[] }, {"name":"getInventorySchemaPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"getInventorySchemaPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetInventorySchemaRequest"] }, {"name":"getMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"getMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetMaintenanceWindowRequest"] }, {"name":"getMaintenanceWindowExecution","parameterTypes":["java.util.function.Consumer"] }, {"name":"getMaintenanceWindowExecution","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetMaintenanceWindowExecutionRequest"] }, {"name":"getMaintenanceWindowExecutionTask","parameterTypes":["java.util.function.Consumer"] }, {"name":"getMaintenanceWindowExecutionTask","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetMaintenanceWindowExecutionTaskRequest"] }, {"name":"getMaintenanceWindowExecutionTaskInvocation","parameterTypes":["java.util.function.Consumer"] }, {"name":"getMaintenanceWindowExecutionTaskInvocation","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetMaintenanceWindowExecutionTaskInvocationRequest"] }, {"name":"getMaintenanceWindowTask","parameterTypes":["java.util.function.Consumer"] }, {"name":"getMaintenanceWindowTask","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetMaintenanceWindowTaskRequest"] }, {"name":"getOpsItem","parameterTypes":["java.util.function.Consumer"] }, {"name":"getOpsItem","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetOpsItemRequest"] }, {"name":"getOpsMetadata","parameterTypes":["java.util.function.Consumer"] }, {"name":"getOpsMetadata","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetOpsMetadataRequest"] }, {"name":"getOpsSummary","parameterTypes":["java.util.function.Consumer"] }, {"name":"getOpsSummary","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetOpsSummaryRequest"] }, {"name":"getOpsSummaryPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"getOpsSummaryPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetOpsSummaryRequest"] }, {"name":"getParameter","parameterTypes":["java.util.function.Consumer"] }, {"name":"getParameter","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetParameterRequest"] }, {"name":"getParameterHistory","parameterTypes":["java.util.function.Consumer"] }, {"name":"getParameterHistory","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetParameterHistoryRequest"] }, {"name":"getParameterHistoryPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"getParameterHistoryPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetParameterHistoryRequest"] }, {"name":"getParameters","parameterTypes":["java.util.function.Consumer"] }, {"name":"getParameters","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetParametersRequest"] }, {"name":"getParametersByPath","parameterTypes":["java.util.function.Consumer"] }, {"name":"getParametersByPath","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest"] }, {"name":"getParametersByPathPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"getParametersByPathPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest"] }, {"name":"getPatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"getPatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetPatchBaselineRequest"] }, {"name":"getPatchBaselineForPatchGroup","parameterTypes":["java.util.function.Consumer"] }, {"name":"getPatchBaselineForPatchGroup","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetPatchBaselineForPatchGroupRequest"] }, {"name":"getResourcePolicies","parameterTypes":["java.util.function.Consumer"] }, {"name":"getResourcePolicies","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetResourcePoliciesRequest"] }, {"name":"getResourcePoliciesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"getResourcePoliciesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetResourcePoliciesRequest"] }, {"name":"getServiceSetting","parameterTypes":["java.util.function.Consumer"] }, {"name":"getServiceSetting","parameterTypes":["software.amazon.awssdk.services.ssm.model.GetServiceSettingRequest"] }, {"name":"labelParameterVersion","parameterTypes":["java.util.function.Consumer"] }, {"name":"labelParameterVersion","parameterTypes":["software.amazon.awssdk.services.ssm.model.LabelParameterVersionRequest"] }, {"name":"listAssociationVersions","parameterTypes":["java.util.function.Consumer"] }, {"name":"listAssociationVersions","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListAssociationVersionsRequest"] }, {"name":"listAssociationVersionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listAssociationVersionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListAssociationVersionsRequest"] }, {"name":"listAssociations","parameterTypes":[] }, {"name":"listAssociations","parameterTypes":["java.util.function.Consumer"] }, {"name":"listAssociations","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListAssociationsRequest"] }, {"name":"listAssociationsPaginator","parameterTypes":[] }, {"name":"listAssociationsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listAssociationsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListAssociationsRequest"] }, {"name":"listCommandInvocations","parameterTypes":[] }, {"name":"listCommandInvocations","parameterTypes":["java.util.function.Consumer"] }, {"name":"listCommandInvocations","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListCommandInvocationsRequest"] }, {"name":"listCommandInvocationsPaginator","parameterTypes":[] }, {"name":"listCommandInvocationsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listCommandInvocationsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListCommandInvocationsRequest"] }, {"name":"listCommands","parameterTypes":[] }, {"name":"listCommands","parameterTypes":["java.util.function.Consumer"] }, {"name":"listCommands","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListCommandsRequest"] }, {"name":"listCommandsPaginator","parameterTypes":[] }, {"name":"listCommandsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listCommandsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListCommandsRequest"] }, {"name":"listComplianceItems","parameterTypes":["java.util.function.Consumer"] }, {"name":"listComplianceItems","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListComplianceItemsRequest"] }, {"name":"listComplianceItemsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listComplianceItemsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListComplianceItemsRequest"] }, {"name":"listComplianceSummaries","parameterTypes":[] }, {"name":"listComplianceSummaries","parameterTypes":["java.util.function.Consumer"] }, {"name":"listComplianceSummaries","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListComplianceSummariesRequest"] }, {"name":"listComplianceSummariesPaginator","parameterTypes":[] }, {"name":"listComplianceSummariesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listComplianceSummariesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListComplianceSummariesRequest"] }, {"name":"listDocumentMetadataHistory","parameterTypes":["java.util.function.Consumer"] }, {"name":"listDocumentMetadataHistory","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListDocumentMetadataHistoryRequest"] }, {"name":"listDocumentVersions","parameterTypes":["java.util.function.Consumer"] }, {"name":"listDocumentVersions","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListDocumentVersionsRequest"] }, {"name":"listDocumentVersionsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listDocumentVersionsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListDocumentVersionsRequest"] }, {"name":"listDocuments","parameterTypes":[] }, {"name":"listDocuments","parameterTypes":["java.util.function.Consumer"] }, {"name":"listDocuments","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListDocumentsRequest"] }, {"name":"listDocumentsPaginator","parameterTypes":[] }, {"name":"listDocumentsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listDocumentsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListDocumentsRequest"] }, {"name":"listInventoryEntries","parameterTypes":["java.util.function.Consumer"] }, {"name":"listInventoryEntries","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListInventoryEntriesRequest"] }, {"name":"listOpsItemEvents","parameterTypes":["java.util.function.Consumer"] }, {"name":"listOpsItemEvents","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListOpsItemEventsRequest"] }, {"name":"listOpsItemEventsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listOpsItemEventsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListOpsItemEventsRequest"] }, {"name":"listOpsItemRelatedItems","parameterTypes":["java.util.function.Consumer"] }, {"name":"listOpsItemRelatedItems","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListOpsItemRelatedItemsRequest"] }, {"name":"listOpsItemRelatedItemsPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listOpsItemRelatedItemsPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListOpsItemRelatedItemsRequest"] }, {"name":"listOpsMetadata","parameterTypes":["java.util.function.Consumer"] }, {"name":"listOpsMetadata","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListOpsMetadataRequest"] }, {"name":"listOpsMetadataPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listOpsMetadataPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListOpsMetadataRequest"] }, {"name":"listResourceComplianceSummaries","parameterTypes":[] }, {"name":"listResourceComplianceSummaries","parameterTypes":["java.util.function.Consumer"] }, {"name":"listResourceComplianceSummaries","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListResourceComplianceSummariesRequest"] }, {"name":"listResourceComplianceSummariesPaginator","parameterTypes":[] }, {"name":"listResourceComplianceSummariesPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listResourceComplianceSummariesPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListResourceComplianceSummariesRequest"] }, {"name":"listResourceDataSync","parameterTypes":[] }, {"name":"listResourceDataSync","parameterTypes":["java.util.function.Consumer"] }, {"name":"listResourceDataSync","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListResourceDataSyncRequest"] }, {"name":"listResourceDataSyncPaginator","parameterTypes":[] }, {"name":"listResourceDataSyncPaginator","parameterTypes":["java.util.function.Consumer"] }, {"name":"listResourceDataSyncPaginator","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListResourceDataSyncRequest"] }, {"name":"listTagsForResource","parameterTypes":["java.util.function.Consumer"] }, {"name":"listTagsForResource","parameterTypes":["software.amazon.awssdk.services.ssm.model.ListTagsForResourceRequest"] }, {"name":"modifyDocumentPermission","parameterTypes":["java.util.function.Consumer"] }, {"name":"modifyDocumentPermission","parameterTypes":["software.amazon.awssdk.services.ssm.model.ModifyDocumentPermissionRequest"] }, {"name":"putComplianceItems","parameterTypes":["java.util.function.Consumer"] }, {"name":"putComplianceItems","parameterTypes":["software.amazon.awssdk.services.ssm.model.PutComplianceItemsRequest"] }, {"name":"putInventory","parameterTypes":["java.util.function.Consumer"] }, {"name":"putInventory","parameterTypes":["software.amazon.awssdk.services.ssm.model.PutInventoryRequest"] }, {"name":"putParameter","parameterTypes":["java.util.function.Consumer"] }, {"name":"putParameter","parameterTypes":["software.amazon.awssdk.services.ssm.model.PutParameterRequest"] }, {"name":"putResourcePolicy","parameterTypes":["java.util.function.Consumer"] }, {"name":"putResourcePolicy","parameterTypes":["software.amazon.awssdk.services.ssm.model.PutResourcePolicyRequest"] }, {"name":"registerDefaultPatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"registerDefaultPatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.RegisterDefaultPatchBaselineRequest"] }, {"name":"registerPatchBaselineForPatchGroup","parameterTypes":["java.util.function.Consumer"] }, {"name":"registerPatchBaselineForPatchGroup","parameterTypes":["software.amazon.awssdk.services.ssm.model.RegisterPatchBaselineForPatchGroupRequest"] }, {"name":"registerTargetWithMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"registerTargetWithMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.RegisterTargetWithMaintenanceWindowRequest"] }, {"name":"registerTaskWithMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"registerTaskWithMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.RegisterTaskWithMaintenanceWindowRequest"] }, {"name":"removeTagsFromResource","parameterTypes":["java.util.function.Consumer"] }, {"name":"removeTagsFromResource","parameterTypes":["software.amazon.awssdk.services.ssm.model.RemoveTagsFromResourceRequest"] }, {"name":"resetServiceSetting","parameterTypes":["java.util.function.Consumer"] }, {"name":"resetServiceSetting","parameterTypes":["software.amazon.awssdk.services.ssm.model.ResetServiceSettingRequest"] }, {"name":"resumeSession","parameterTypes":["java.util.function.Consumer"] }, {"name":"resumeSession","parameterTypes":["software.amazon.awssdk.services.ssm.model.ResumeSessionRequest"] }, {"name":"sendAutomationSignal","parameterTypes":["java.util.function.Consumer"] }, {"name":"sendAutomationSignal","parameterTypes":["software.amazon.awssdk.services.ssm.model.SendAutomationSignalRequest"] }, {"name":"sendCommand","parameterTypes":["java.util.function.Consumer"] }, {"name":"sendCommand","parameterTypes":["software.amazon.awssdk.services.ssm.model.SendCommandRequest"] }, {"name":"serviceClientConfiguration","parameterTypes":[] }, {"name":"startAssociationsOnce","parameterTypes":["java.util.function.Consumer"] }, {"name":"startAssociationsOnce","parameterTypes":["software.amazon.awssdk.services.ssm.model.StartAssociationsOnceRequest"] }, {"name":"startAutomationExecution","parameterTypes":["java.util.function.Consumer"] }, {"name":"startAutomationExecution","parameterTypes":["software.amazon.awssdk.services.ssm.model.StartAutomationExecutionRequest"] }, {"name":"startChangeRequestExecution","parameterTypes":["java.util.function.Consumer"] }, {"name":"startChangeRequestExecution","parameterTypes":["software.amazon.awssdk.services.ssm.model.StartChangeRequestExecutionRequest"] }, {"name":"startSession","parameterTypes":["java.util.function.Consumer"] }, {"name":"startSession","parameterTypes":["software.amazon.awssdk.services.ssm.model.StartSessionRequest"] }, {"name":"stopAutomationExecution","parameterTypes":["java.util.function.Consumer"] }, {"name":"stopAutomationExecution","parameterTypes":["software.amazon.awssdk.services.ssm.model.StopAutomationExecutionRequest"] }, {"name":"terminateSession","parameterTypes":["java.util.function.Consumer"] }, {"name":"terminateSession","parameterTypes":["software.amazon.awssdk.services.ssm.model.TerminateSessionRequest"] }, {"name":"unlabelParameterVersion","parameterTypes":["java.util.function.Consumer"] }, {"name":"unlabelParameterVersion","parameterTypes":["software.amazon.awssdk.services.ssm.model.UnlabelParameterVersionRequest"] }, {"name":"updateAssociation","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateAssociation","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateAssociationRequest"] }, {"name":"updateAssociationStatus","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateAssociationStatus","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateAssociationStatusRequest"] }, {"name":"updateDocument","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateDocument","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateDocumentRequest"] }, {"name":"updateDocumentDefaultVersion","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateDocumentDefaultVersion","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateDocumentDefaultVersionRequest"] }, {"name":"updateDocumentMetadata","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateDocumentMetadata","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateDocumentMetadataRequest"] }, {"name":"updateMaintenanceWindow","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateMaintenanceWindow","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateMaintenanceWindowRequest"] }, {"name":"updateMaintenanceWindowTarget","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateMaintenanceWindowTarget","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateMaintenanceWindowTargetRequest"] }, {"name":"updateMaintenanceWindowTask","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateMaintenanceWindowTask","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateMaintenanceWindowTaskRequest"] }, {"name":"updateManagedInstanceRole","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateManagedInstanceRole","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateManagedInstanceRoleRequest"] }, {"name":"updateOpsItem","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateOpsItem","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateOpsItemRequest"] }, {"name":"updateOpsMetadata","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateOpsMetadata","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateOpsMetadataRequest"] }, {"name":"updatePatchBaseline","parameterTypes":["java.util.function.Consumer"] }, {"name":"updatePatchBaseline","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdatePatchBaselineRequest"] }, {"name":"updateResourceDataSync","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateResourceDataSync","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateResourceDataSyncRequest"] }, {"name":"updateServiceSetting","parameterTypes":["java.util.function.Consumer"] }, {"name":"updateServiceSetting","parameterTypes":["software.amazon.awssdk.services.ssm.model.UpdateServiceSettingRequest"] }, {"name":"waiter","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.awssdk.utils.SdkAutoCloseable",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"close","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.parameters.BaseProvider",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"get","parameterTypes":["java.lang.String"] }, {"name":"get","parameterTypes":["java.lang.String","java.lang.Class"] }, {"name":"getMultiple","parameterTypes":["java.lang.String"] }, {"name":"now","parameterTypes":[] }, {"name":"withMaxAge","parameterTypes":["int","java.time.temporal.ChronoUnit"] }, {"name":"withTransformation","parameterTypes":["java.lang.Class"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.parameters.ParamProvider",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"software.amazon.lambda.powertools.parameters.ssm.SSMParamAspect",
+  "fields":[{"name":"providerBuilder"}]
+},
+{
+  "name":"software.amazon.lambda.powertools.parameters.ssm.SSMProvider",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"getMultipleValues","parameterTypes":["java.lang.String"] }, {"name":"getValue","parameterTypes":["java.lang.String"] }, {"name":"recursive","parameterTypes":[] }, {"name":"resetToDefaults","parameterTypes":[] }, {"name":"withDecryption","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.parameters.transform.TransformationManager",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"performBasicTransformation","parameterTypes":["java.lang.String"] }, {"name":"performComplexTransformation","parameterTypes":["java.lang.String","java.lang.Class"] }, {"name":"setTransformer","parameterTypes":["java.lang.Class"] }, {"name":"shouldTransform","parameterTypes":[] }]
+},
+{
+  "name":"sun.reflect.ReflectionFactory",
+  "methods":[{"name":"getReflectionFactory","parameterTypes":[] }, {"name":"newConstructorForSerialization","parameterTypes":["java.lang.Class","java.lang.reflect.Constructor"] }]
+},
+{
+  "name":"sun.security.pkcs12.PKCS12KeyStore",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.pkcs12.PKCS12KeyStore$DualFormatPKCS12",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.NativePRNG",
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"<init>","parameterTypes":["java.security.SecureRandomParameters"] }]
+},
+{
+  "name":"sun.security.provider.SHA",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.provider.X509Factory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.rsa.RSAKeyFactory$Legacy",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.SSLContextImpl$TLSContext",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.ssl.TrustManagerFactoryImpl$PKIXFactory",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"sun.security.x509.AuthorityInfoAccessExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.AuthorityKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.BasicConstraintsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CRLDistributionPointsExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.CertificatePoliciesExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.ExtendedKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.IssuerAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.KeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.NetscapeCertTypeExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.PrivateKeyUsageExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectAlternativeNameExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"sun.security.x509.SubjectKeyIdentifierExtension",
+  "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+}
+]
