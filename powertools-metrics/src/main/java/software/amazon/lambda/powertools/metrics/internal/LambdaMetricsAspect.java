@@ -158,10 +158,9 @@ public class LambdaMetricsAspect implements Resource {
 
     @Override
     public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
-        System.out.println("before preloading");
-        ClassPreLoader.preloadClasses(true);
-        System.out.println("after preloading");
+        ClassPreLoader.preloadClasses();
     }
+
     @Override
     public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
     }

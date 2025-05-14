@@ -22,32 +22,37 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
 
+/**
+ * Used to preload classes to support automatic priming for SnapStart
+ */
 public class ClassPreLoader {
     public static final String CLASSES_FILE = "classesloaded.txt";
-    public static void preloadClass(String classname, boolean initialize) {
-        try {
-            Class.forName(classname, initialize, ClassPreLoader.class.getClassLoader());
-        } catch (Throwable ignored) {
-        }
-    }
-    public static void preloadClasses(boolean initialize) {
+
+    /**
+     * Initializes the classes listed in the classesloaded resource
+     */
+    public static void preloadClasses() {
         try {
             Enumeration<URL> files = ClassPreLoader.class.getClassLoader().getResources(CLASSES_FILE);
+            // If there are multiple files, preload classes from all of them
             while (files.hasMoreElements()) {
                 URL url = files.nextElement();
                 URLConnection conn = url.openConnection();
                 conn.setUseCaches(false);
                 InputStream is = conn.getInputStream();
-                preloadClassesFromStream(is, initialize);
+                preloadClassesFromStream(is);
             }
         } catch (IOException ignored) {
+            // No action is required if preloading fails for any reason
         }
-        InputStream is = ClassPreLoader.class
-                .getResourceAsStream( CLASSES_FILE);
-        if (is != null)
-            preloadClassesFromStream(is, initialize);
     }
-    public static void preloadClassesFromStream(InputStream is, boolean initialize) {
+
+    /**
+     * Loads the list of classes passed as a stream
+     *
+     * @param is
+     */
+    private static void preloadClassesFromStream(InputStream is) {
         try (is;
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
@@ -59,13 +64,11 @@ public class ClassPreLoader {
                 }
                 final String className = line.stripTrailing();
                 if (!className.isBlank()) {
-                    preloadClass(className, initialize);
+                    Class.forName(className, true, ClassPreLoader.class.getClassLoader());
                 }
             }
         } catch (Exception ignored) {
+            // No action is required if preloading fails for any reason
         }
-    }
-    public void invokePreloadClasses(boolean initialize) {
-        preloadClasses(initialize);
     }
 }
