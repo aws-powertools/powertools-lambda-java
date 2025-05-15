@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Kafka Deserialization example with Kafka Lambda ESM
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+
+Resources:
+  KafkaJsonConsumerDeserializationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: org.demo.kafka.KafkaJsonConsumerDeserializationFunction::handleRequest
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_SERVICE_NAME: KafkaJsonConsumerDeserialization
+          POWERTOOLS_METRICS_NAMESPACE: KafkaJsonConsumerDeserializationFunction
+
+  KafkaAvroConsumerDeserializationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: org.demo.kafka.KafkaAvroConsumerDeserializationFunction::handleRequest
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_SERVICE_NAME: KafkaAvroConsumerDeserialization
+          POWERTOOLS_METRICS_NAMESPACE: KafkaAvroConsumerDeserializationFunction
+
+Outputs:
+  JsonFunction:
+    Description: "Kafka JSON Lambda Function ARN"
+    Value: !GetAtt KafkaJsonConsumerDeserializationFunction.Arn
+  AvroFunction:
+    Description: "Kafka Avro Lambda Function ARN"
+    Value: !GetAtt KafkaAvroConsumerDeserializationFunction.Arn
