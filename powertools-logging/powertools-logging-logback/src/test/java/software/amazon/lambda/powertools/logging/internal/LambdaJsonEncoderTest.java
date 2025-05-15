@@ -127,7 +127,8 @@ class LambdaJsonEncoderTest {
         assertThat(contentOf(logFile))
                 .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
-                .contains("\"message\":\"Message body = plop and id = \"1212abcd\"\"");
+                // Should auto-escape double quotes around id
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
         // Reserved keys should be ignored
         PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
             assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
@@ -158,7 +159,8 @@ class LambdaJsonEncoderTest {
         assertThat(contentOf(logFile))
                 .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
-                .contains("\"message\":\"Message body = plop and id = \"1212abcd\"\"");
+                // Should auto-escape double quotes around id
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
         // Reserved keys should be ignored
         PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
             assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
@@ -295,7 +297,8 @@ class LambdaJsonEncoderTest {
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
                 .contains("\"message\":\"Handler Event\"")
-                .contains("\"event\":\"{\"key\":\"value\"}\""); // logged as String for StreamHandler
+                // logged as String for StreamHandler (should auto-escape double-quotes to avoid breaking JSON format)
+                .contains("\"event\":\"{\\\"key\\\":\\\"value\\\"}\"");
     }
 
     @Test
