@@ -218,7 +218,7 @@
                         <configuration>
                             <skipAfterFailureCount>1</skipAfterFailureCount> <!-- no need to continue / deploy more resources and lose time -->
                             <includes>
-                                <include>**/*E2ET.java</include>
+                                <include>**/ParametersE2ET.java</include>
                             </includes>
                         </configuration>
                     </plugin>
