@@ -18,7 +18,7 @@ import java.lang.reflect.Type;
 /**
  * Interface for deserializers that can handle both String and InputStream inputs.
  * 
- * Similar to {@link com.amazonaws.services.lambda.runtime.CustomPojoSerializer} but only for input serialization.
+ * Similar to {@link com.amazonaws.services.lambda.runtime.CustomPojoSerializer} but only for input deserialization.
  */
 public interface PowertoolsDeserializer {
     <T> T fromJson(InputStream input, Type type);

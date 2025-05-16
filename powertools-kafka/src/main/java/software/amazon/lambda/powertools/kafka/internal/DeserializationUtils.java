@@ -55,7 +55,7 @@ public final class DeserializationUtils {
                         }
                     }
                 } else {
-                    LOGGER.warn("Candidate class for custom deserialization '{}'' does not implement RequestHandler. "
+                    LOGGER.warn("Candidate class for custom deserialization '{}' does not implement RequestHandler. "
                             + "Ignoring.", className);
                 }
             } else {

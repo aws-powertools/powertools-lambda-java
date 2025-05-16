@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * Abstract base class for Kafka deserializers that implements common functionality.
  */
-public abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
+abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
     protected static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
