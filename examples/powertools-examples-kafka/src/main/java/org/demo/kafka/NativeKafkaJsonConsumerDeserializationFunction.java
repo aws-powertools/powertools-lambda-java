@@ -8,24 +8,28 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.kafka.KafkaJsonRequestHandler;
+import software.amazon.lambda.powertools.kafka.Deserialization;
+import software.amazon.lambda.powertools.kafka.DeserializationType;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 
-public class KafkaJsonConsumerDeserializationFunction extends KafkaJsonRequestHandler<String, Product, String> {
+public class NativeKafkaJsonConsumerDeserializationFunction
+        implements RequestHandler<ConsumerRecords<String, Product>, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaJsonConsumerDeserializationFunction.class);
-    private static final MetricsLogger metrics = MetricsUtils.metricsLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeKafkaJsonConsumerDeserializationFunction.class);
+    private final MetricsLogger metrics = MetricsUtils.metricsLogger();
 
     @Override
     @Logging
     @Metrics
-    public String handleRecords(ConsumerRecords<String, Product> records, Context context) {
-        for (ConsumerRecord<String, Product> consumerRecord : records) {
+    @Deserialization(type = DeserializationType.KAFKA_JSON)
+    public String handleRequest(ConsumerRecords<String, Product> consumerRecords, Context context) {
+        for (ConsumerRecord<String, Product> consumerRecord : consumerRecords) {
             LOGGER.info("{}", consumerRecord, entry("value", consumerRecord.value()));
             metrics.putMetric("ProcessedRecord", 1, Unit.COUNT);
         }

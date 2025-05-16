@@ -13,23 +13,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.kafka.KafkaAvroRequestHandler;
+import software.amazon.lambda.powertools.kafka.Deserialization;
+import software.amazon.lambda.powertools.kafka.DeserializationType;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 
-public class KafkaAvroConsumerDeserializationFunction extends KafkaAvroRequestHandler<String, AvroProduct, String> {
+public class NativeKafkaAvroConsumerDeserializationFunction
+        implements RequestHandler<ConsumerRecords<String, AvroProduct>, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaAvroConsumerDeserializationFunction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NativeKafkaAvroConsumerDeserializationFunction.class);
     private static final MetricsLogger metrics = MetricsUtils.metricsLogger();
 
     @Override
     @Logging
     @Metrics
-    public String handleRecords(ConsumerRecords<String, AvroProduct> records, Context context) {
+    @Deserialization(type = DeserializationType.KAFKA_AVRO)
+    public String handleRequest(ConsumerRecords<String, AvroProduct> records, Context context) {
         for (ConsumerRecord<String, AvroProduct> consumerRecord : records) {
             LOGGER.info("{}", consumerRecord, entry("value", avroToMap(consumerRecord.value())));
             metrics.putMetric("ProcessedAvroRecord", 1, Unit.COUNT);
