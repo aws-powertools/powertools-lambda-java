@@ -134,6 +134,7 @@ public abstract class AbstractKafkaDeserializer implements PowertoolsDeserialize
             }
         }
 
+        // TODO: Understand what nextOffsets is and if we need to use it.
         return new ConsumerRecords<>(recordsMap, Map.of());
     }
 
@@ -184,6 +185,7 @@ public abstract class AbstractKafkaDeserializer implements PowertoolsDeserialize
                 eventRecord.getPartition(),
                 eventRecord.getOffset(),
                 eventRecord.getTimestamp(),
+                // TODO: Do not hardcode this
                 TimestampType.CREATE_TIME,
                 keySize,
                 valueSize,
