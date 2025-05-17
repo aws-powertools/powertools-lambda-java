@@ -48,6 +48,10 @@
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.crac</groupId>
+            <artifactId>crac</artifactId>
+        </dependency>
         <!-- Test dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
