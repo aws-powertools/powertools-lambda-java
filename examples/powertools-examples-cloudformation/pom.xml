@@ -14,7 +14,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <lambda.core.version>1.2.3</lambda.core.version>
         <lambda.events.version>3.15.0</lambda.events.version>
-        <aws.sdk.version>2.31.40</aws.sdk.version>
+        <aws.sdk.version>2.31.45</aws.sdk.version>
         <aspectj.version>1.9.20.1</aspectj.version>
 
     </properties>
