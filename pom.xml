@@ -90,7 +90,7 @@
         <aws-embedded-metrics.version>1.0.6</aws-embedded-metrics.version>
         <aspectj-maven-plugin.version>1.14</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.1.2</maven-surefire-plugin.version>
-        <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
+        <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
