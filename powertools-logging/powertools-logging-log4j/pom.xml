@@ -52,6 +52,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.junit-pioneer</groupId>
             <artifactId>junit-pioneer</artifactId>
             <scope>test</scope>
@@ -94,7 +99,7 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.6.0</version>
+                    <version>5.17.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -120,7 +125,7 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.6.0</version>
+                    <version>5.17.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -214,10 +219,6 @@
                         <version>${aspectj.version}</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
