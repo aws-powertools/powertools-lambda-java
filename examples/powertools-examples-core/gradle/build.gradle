@@ -28,8 +28,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
     implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
-    aspect 'software.amazon.lambda:powertools-tracing:1.20.1'
-    aspect 'software.amazon.lambda:powertools-logging:1.20.1'
-    aspect 'software.amazon.lambda:powertools-metrics:1.20.1'
+    aspect 'software.amazon.lambda:powertools-tracing:1.20.2'
+    aspect 'software.amazon.lambda:powertools-logging:1.20.2'
+    aspect 'software.amazon.lambda:powertools-metrics:1.20.2'
 }
 
