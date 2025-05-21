@@ -5,6 +5,7 @@ site_url: https://docs.powertools.aws.dev/lambda/java/preview/
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
+  - Upgrade Guide: upgrade.md
   - FAQs: FAQs.md
   - Roadmap: roadmap.md
   - Core utilities:
