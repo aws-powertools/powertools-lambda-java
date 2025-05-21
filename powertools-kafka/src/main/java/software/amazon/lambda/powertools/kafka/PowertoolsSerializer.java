@@ -16,7 +16,7 @@ import software.amazon.lambda.powertools.kafka.serializers.PowertoolsDeserialize
 
 /**
  * Custom Lambda serializer supporting Kafka events. It delegates to the appropriate deserializer based on the
- * deserialization type.
+ * deserialization type specified by {@link software.amazon.lambda.powertools.kafka.Deserialization} annotation.
  * 
  * Kafka serializers need to be specified explicitly, otherwise, the default Lambda serializer from
  * {@link com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory} will be used.

@@ -185,8 +185,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
                 eventRecord.getPartition(),
                 eventRecord.getOffset(),
                 eventRecord.getTimestamp(),
-                // TODO: Do not hardcode this
-                TimestampType.CREATE_TIME,
+                TimestampType.valueOf(eventRecord.getTimestampType()),
                 keySize,
                 valueSize,
                 key,
