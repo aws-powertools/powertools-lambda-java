@@ -212,7 +212,7 @@ You should now include the `powertools-idempotency-core` package as an AspectJ l
 
 ## Parameters utility split into sub-modules by provider
 
-The Parameters utility was split from a common `powertools-parameters` package into individual packages for different parameter providers. You should now include the correct parameters dependency for your provider. If you use multiple providers, you can include multiple packages. Each parameter providers needs to be included as a dependency and an AspectJ library to use annotations.
+Parameters utilities were split from the common `powertools-parameters` package into individual packages for different parameter providers. You should now include the specific parameters dependency for your provider. If you use multiple providers, you can include multiple packages. Each parameter provider needs to be included as a dependency and an AspectJ library to use annotations.
 
 This new structure reduces the bundle size of your deployment package.
 
