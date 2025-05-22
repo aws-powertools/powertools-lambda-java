@@ -169,7 +169,7 @@ The Metrics utility is currently undergoing changes to the public interface as p
 
 <!-- - Remove deprecated methods: https://github.com/aws-powertools/powertools-lambda-java/pull/1624/files#diff-9b8ed4ca67e310d3ae90e61e2ceffbfec0402082b5a1f741d467f132e3370a21 -->
 
-The deprecated `captureError` and `captureResponse` arguments to the `@Tracing` annotation were removed in v2 and replaced in favor of a new `captureMode` parameter. The new parameter can be passed an Enum value of `CaptureMode`.
+The deprecated `captureError` and `captureResponse` arguments to the `@Tracing` annotation were removed in v2 and replaced by a new `captureMode` parameter. The parameter can be passed an Enum value of `CaptureMode`.
 
 You should update your code using the new `captureMode` argument:
 
