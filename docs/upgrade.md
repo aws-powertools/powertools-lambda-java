@@ -88,7 +88,7 @@ In order to support different logging implementations, dedicated logging modules
 
 **2. Update `log4j2.xml` including new `JsonTemplateLayout`**
 
-This step is only required if your are using log4j2 as logging implementation. The deprecated `#!xml <LambdaJsonLayout/>` element was removed. Replace it with the log4j2 agnostic `#!xml <JsonTemplateLayout/>` element.
+This step is only required if you are using log4j2 as your logging implementation. The deprecated `#!xml <LambdaJsonLayout/>` element was removed. Replace it with the log4j2 agnostic `#!xml <JsonTemplateLayout/>` element.
 
 ```diff
 <?xml version="1.0" encoding="UTF-8"?>
