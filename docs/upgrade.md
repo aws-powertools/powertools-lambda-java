@@ -368,7 +368,7 @@ public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchRespons
 
 ## AspectJ runtime not included by default anymore
 
-The AspectJ runtime is no longer included as a transitive dependency of Powertools. For all utilities offering annotations using AspectJ compile-time weaving, you need to include the AspectJ runtime yourself now. This is also called out with a complete example in our [installation guide](./index.md). For Maven projects, make sure to add the following dependency in your dependencies section:
+The AspectJ runtime is no longer included as a transitive dependency of Powertools. For all utilities offering annotations using AspectJ compile-time weaving, you need to include the AspectJ runtime yourself now. This is also documented, with a complete example, in our [installation guide](./index.md). For Maven projects, make sure to add the following dependency in your dependencies section:
 
 ```diff
 + <dependency>
