@@ -406,5 +406,5 @@ itself now manages removal of messages from the queue.
 - Replace the dependency in Maven / Gradle: `powertools-sqs` ==> `powertools-large-messages`
 - Replace the annotation: `@SqsLargeMessage` ==> `@LargeMessage` (the new module handles both SQS and SNS)
 - Move the annotation away from the Lambda `handleRequest` method and put it on a method with `SQSEvent.SQSMessage` or `SNSEvent.SNSRecord` as first parameter.
-- The annotation now handles a single message, contrary to the previous version that was handling the complete batch. It gives more control, especially when dealing with partial failures with SQS (see the batch module).
+- The annotation now handles a single message, contrary to the previous version that was handling the complete batch. This gives more control, especially when dealing with partial failures with SQS (see the batch module).
 - The new module only provides an annotation, an equivalent to the `SqsUtils` class is not available anymore in this new version.
