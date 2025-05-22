@@ -185,7 +185,7 @@ Learn more about valid `CaptureMode` values in the [Tracing documentation](./cor
 
 ## Idempotency utility split into sub-modules by provider
 
-The Idempotency utility was split from a common `powertools-idempotency` package into individual packages for different persistence store providers. The main business logic now stays in the `powertools-idempotency-core` package.
+The Idempotency utility was split from the common `powertools-idempotency` package into individual packages for different persistence store providers. The main business logic is now in the `powertools-idempotency-core` package.
 
 You should now include the `powertools-idempotency-core` package as an AspectJ library and the provider package like `powertools-idempotency-dynamodb` as a regular dependency.
 
