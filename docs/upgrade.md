@@ -384,7 +384,7 @@ The archived documentation contains a migration guide for both large message han
 
 ### Migrating SQS Batch processing (`@SqsBatch`)
 
-The [batch processing library](./utilities/batch.md) provides a way to process messages and gracefully handle partial failures for SQS, Kinesis Streams, and DynamoDB Streams batch sources. In comparison to the legacy SQS Batch library, it relies on [Lambda partial batch responses](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting){target="\_blank"}, which allows the library to provide a simpler, reliable interface for processing batches.
+The [batch processing library](./utilities/batch.md) provides a way to process messages and gracefully handle partial failures for SQS, Kinesis Streams, and DynamoDB Streams batch sources. In comparison to the legacy SQS Batch library, it relies on [Lambda partial batch responses](https://docs.aws.amazon.com/lambda/latest/dg/services-sqs-errorhandling.html#services-sqs-batchfailurereporting){target="\_blank"}, which allows the library to provide a simpler, more reliable interface for processing batches.
 
 In order to get started, check out the new [processing messages from SQS](./utilities/batch.md/#processing-messages-from-sqs) documentation. In most cases, you will simply be able to retain your existing batch message handler function, and wrap it with the new batch processing interface. Unlike the `powertools-sqs` module, the new `powertools-batch` module uses _partial batch responses_ to communicate to Lambda which messages have been processed and must be removed from the queue. The return value of the handler's process function must be returned to Lambda.
 
