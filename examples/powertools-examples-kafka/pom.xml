@@ -10,7 +10,7 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <aspectj.version>1.9.24</aspectj.version>
+        <aspectj.version>1.9.20.1</aspectj.version>
         <avro.version>1.12.0</avro.version>
     </properties>
 
