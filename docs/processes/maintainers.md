@@ -28,7 +28,7 @@ Previous active maintainers who contributed to this project.
 | Jerome Van Der Linden | [jeromevdl](https://github.com/jeromevdl){target="\_blank" rel="nofollow"}             | Amazon        |
 | Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="\_blank" rel="nofollow"}                 | Amazon        |
 | Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="\_blank" rel="nofollow"}       | DataDog       |
-| Mark Sailes           | [msailes](https://github.com/msailes){target="\_blank" rel="nofollow"}                 | N/A           |
+| Mark Sailes           | [msailes](https://github.com/msailes){target="\_blank" rel="nofollow"}                 | Former Amazon |
 | Pankaj Agrawal        | [pankajagrawal16](https://github.com/pankajagrawal16){target="\_blank" rel="nofollow"} | Former Amazon |
 | Steve Houel           | [stevehouel](https://github.com/stevehouel){target="\_blank" rel="nofollow"}           | Amazon        |
 
