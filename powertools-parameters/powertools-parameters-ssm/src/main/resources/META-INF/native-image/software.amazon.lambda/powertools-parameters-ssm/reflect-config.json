@@ -237,6 +237,24 @@
   "methods":[{"name":"performBasicTransformation","parameterTypes":["java.lang.String"] }, {"name":"performComplexTransformation","parameterTypes":["java.lang.String","java.lang.Class"] }, {"name":"setTransformer","parameterTypes":["java.lang.Class"] }, {"name":"shouldTransform","parameterTypes":[] }]
 },
 {
+  "name": "software.amazon.lambda.powertools.parameters.transform.JsonTransformer",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods": [{"name": "applyTransformation","parameterTypes":["java.lang.String","java.lang.Class"]}]
+},
+{
+  "name": "software.amazon.lambda.powertools.parameters.transform.Base64Transformer",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods": [{"name": "applyTransformation","parameterTypes":["java.lang.String"]}]
+},
+{
+  "name": "software.amazon.lambda.powertools.parameters.transform.BasicTransformer",
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods": [{"name": "applyTransformation","parameterTypes":["java.lang.String","java.lang.Class"]}]
+},
+{
   "name":"sun.reflect.ReflectionFactory",
   "methods":[{"name":"getReflectionFactory","parameterTypes":[] }, {"name":"newConstructorForSerialization","parameterTypes":["java.lang.Class","java.lang.reflect.Constructor"] }]
 },

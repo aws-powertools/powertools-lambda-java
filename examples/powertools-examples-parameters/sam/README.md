@@ -10,7 +10,7 @@ Have a look at [ParametersFunction.java](src/main/java/org/demo/parameters/Param
 ## Deploy the sample application
 
 This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
-started with SAM in [the examples directory](../README.md)
+started with SAM in [the examples directory](../../README.md)
 
 ## Test the application
 
