@@ -30,12 +30,14 @@
 
     <modules>
         <module>powertools-examples-core-utilities/sam</module>
+        <module>powertools-examples-core-utilities/sam-graalvm</module>
         <module>powertools-examples-core-utilities/cdk/app</module>
         <module>powertools-examples-core-utilities/cdk/infra</module>
         <module>powertools-examples-core-utilities/serverless</module>
         <module>powertools-examples-core-utilities/terraform</module>
         <module>powertools-examples-idempotency</module>
-        <module>powertools-examples-parameters</module>
+        <module>powertools-examples-parameters/sam</module>
+        <module>powertools-examples-parameters/sam-graalvm</module>
         <module>powertools-examples-serialization</module>
         <module>powertools-examples-kafka</module>
         <module>powertools-examples-batch</module>
