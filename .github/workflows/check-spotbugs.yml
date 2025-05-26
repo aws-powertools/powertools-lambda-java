@@ -1,0 +1,50 @@
+# Check for Spotbug errors
+#
+# Description:
+#   Runs Spotbugs for a pull request.
+#   This does not error on failure yet, our rules are too strong and would fail on every run
+# 
+# Triggers:
+#   - pull_request
+on:
+  pull_request:
+    branches:
+      - v2
+    paths:
+      - 'powertools-batch/**'
+      - 'powertools-core/**'
+      - 'powertools-cloudformation/**'
+      - 'powertools-common/**'
+      - 'powertools-e2e-tests/**'
+      - 'powertools-idempotency/**'
+      - 'powertools-large-messages/**'
+      - 'powertools-logging/**'
+      - 'powertools-metrics/**'
+      - 'powertools-parameters/**'
+      - 'powertools-serialization/**'
+      - 'powertools-sqs/**'
+      - 'powertools-tracing/**'
+      - 'powertools-tracing/**'
+      - 'powertools-validation/**'
+      - 'powertools-test-suite/**'
+      - 'pom.xml'
+      - '.github/workflows/**'
+
+name: SpotBugs
+run-name: SpotBugs 
+
+permissions:
+    contents: read
+
+jobs:
+  codecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
+      - name: Setup Java
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2 # v3.11.0
+        with:
+          distribution: 'corretto'
+          java-version: 21
+      - name: Build with Maven for spotbugs check to mark build as fail if voilations found
+        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=true

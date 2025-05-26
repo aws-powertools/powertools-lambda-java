@@ -1,0 +1,293 @@
+# Release
+#
+# Description:
+#   Creates a release for the project
+#
+#   1. Runs a setup job to set needed variables (build_matrix & version)
+#   2. Versions to the project and stores as an artifact
+#   3. Run quality checks
+#   4. Build
+#   5. Publish to Maven Central
+#   6. Create PR
+#   7. Publish docs
+#
+# Inputs:
+#   - version (string): SemVer of the new release (X.Y.Z)
+#   - snapshot (bool): If it's a snapshot release, this skips versioning assets like docs
+#   - skip_checks (bool): Don't run quality checks if it's an emergency release
+#   - skip_publish (bool): Don't publish to maven central
+#   - continue_on_error (bool): Don't fail the workflow if a quality check fails
+#
+# Triggers:
+#   - workflow_dispatch
+# 
+#  Secrets:
+#   - RELEASE.GPG_SIGNING_KEY
+#   - RELEASE.OSSRH_JIRA_USERNAME
+#   - RELEASE.OSSRH_JIRA_PASSWORD
+#   - RELEASE.GPG_PASSPHRASE
+#   - DOCS.AWS_DOCS_ROLE_ARN
+#   - DOCS.AWS_DOCS_BUCKET
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Semver version to release
+      snapshot:
+        type: boolean
+        description: Create snapshot release
+        default: false
+      skip_checks: 
+        type: boolean
+        description: Skip quality checks
+        default: false
+      skip_publish:
+        type: boolean
+        description: Skip publish to Maven Central
+        default: false
+      continue_on_error: 
+        type: boolean
+        description: Continue to build if there's an error in quality checks
+        default: false
+
+name: Release
+run-name: Release – ${{ inputs.version }}
+
+permissions: 
+  contents: read
+
+env:
+  RELEASE_COMMIT: ${{ github.sha }}
+  RELEASE_TAG_VERSION: ${{ inputs.version }}
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ format('{0}{1}', steps.version_release.outputs.version, steps.version_snapshot.outputs.version) }}
+      build_matrix: ${{ format('{0}{1}', steps.build_matrix_v1.outputs.build_matrix, steps.build_matrix_v2.outputs.build_matrix) }}
+    steps:
+      - id: version_snapshot
+        if: ${{ inputs.snapshot }}
+        name: Version
+        run: |
+          echo version="$(grep -q "SNAPSHOT" <<< "${{ inputs.version }}" && echo "${{ inputs.version }}" || echo "${{ inputs.version }}-SNAPSHOT")" >> "$GITHUB_OUTPUT"
+      - id: version_release
+        if: ${{ !inputs.snapshot }}
+        name: Version
+        run: |
+          echo version="${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+      - id: base
+        name: Base
+        run: |
+          echo build_version=$(test ${{ github.ref_name }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
+      - id: build_matrix_v1
+        name: Build matrix (v1)
+        if: ${{ steps.base.outputs.build_version == 'v1' }}
+        run: |
+          echo build_matrix='["8", "11", "17", "21"]' >> "$GITHUB_OUTPUT"
+      - id: build_matrix_v2
+        name: Build matrix (v2)
+        if: ${{ steps.base.outputs.build_version == 'v2' }}
+        run: |
+          echo build_matrix='["11", "17", "21"]'>> "$GITHUB_OUTPUT"
+
+  version_seal:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+    outputs:
+      source_hash: ${{ steps.upload_source.outputs.artifact-digest }}
+    steps:
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - id: version
+        name: version
+        uses: ./.github/actions/version
+        with:
+          new_version: ${{ needs.setup.outputs.version }}
+          snapshot: ${{ inputs.snapshot}}
+      - id: upload_source
+        name: Upload artifacts
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+        with:
+          if-no-files-found: error
+          name: source
+          path: |
+            *
+            !.git/*
+          include-hidden-files: true
+          retention-days: 1
+
+  quality:
+    runs-on: ubuntu-latest
+    needs: 
+      - version_seal
+    if: ${{ inputs.skip_checks == false }}
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: corretto
+          java-version: 21
+          cache: maven
+      # non-exhuastive, but gives a fair indication if the final build will succeed, tests will run when we build later
+      - name: Run unit tests
+        run: mvn -B test --file pom.xml
+        continue-on-error: ${{ inputs.continue_on_error }}
+      - name: Run Spotbugs
+        run: mvn -Pbuild-with-spotbugs -B install --file pom.xml -DskipTests -Dmaven.javadoc.skip=true -Dspotbugs.failOnError=true
+        continue-on-error: ${{ inputs.continue_on_error }}
+      - uses: pmd/pmd-github-action@d9c1f3c5940cbf5923f1354e83fa858b4496ebaa # v2.0.0
+        with:
+          rulesets: '.github/pmd-ruleset.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+          uploadSarifReport: false
+
+  build:
+    runs-on: ubuntu-latest
+    needs:
+      - setup
+      - quality
+      - version_seal
+    if: ${{ always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    strategy:
+      matrix:
+        java: ${{ fromJson(needs.setup.outputs.build_matrix) }}
+    steps:
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: corretto
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - id: build-maven
+        name: Build (Maven)
+        run: |
+          mvn -B install --file pom.xml
+
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false }}
+    needs:
+      - build
+    environment: Release
+    steps:
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - name: Setup Java
+        uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12
+        with:
+          distribution: corretto
+          java-version: 21
+          cache: maven
+          gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Publish package
+        run: mvn -Prelease clean deploy -DskipTests
+        env:
+          MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+  
+  create_pr:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.snapshot == false && always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
+    needs:
+      - build
+      - publish
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ env.RELEASE_COMMIT }}
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - id: setup-git
+        name: Git client setup and refresh tip
+        run: |
+          git config user.name "Powertools for AWS Lambda (Java) Bot"
+          git config user.email "151832416+aws-powertools-bot@users.noreply.github.com"
+          git config pull.rebase true
+          git config remote.origin.url >&-
+      - id: branch
+        name: Create branch
+        run: |
+          git checkout -b ci-${{ github.run_id }}
+          git commit -am "chore(ci): bump version to ${{ inputs.version }}"
+          git push origin ci-${{ github.run_id }}
+      - id: create_pr
+        name: Create PR
+        run: |
+          gh pr create \
+            --title "chore(ci): bump version to ${{ inputs.version }}" \
+            --body "This is an automated PR created from the following workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: tag
+        name: Create release
+        run: |
+          gh release create v${{ inputs.version }} --target $(git rev-parse HEAD)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  docs:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.snapshot == false }}
+    needs:
+      - create_pr
+    permissions:
+      contents: read
+      id-token: write
+    environment: Docs
+    steps:
+      - id: download_source
+        name: Download artifacts
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
+        with:
+          name: source
+      - name: Build
+        run: |
+          mkdir -p dist
+          docker build -t squidfunk/mkdocs-material ./docs/
+          docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
+          cp -R site/* dist/
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
+      - name: Deploy
+        run: |
+          aws s3 sync \
+            dist \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/

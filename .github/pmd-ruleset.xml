@@ -1,0 +1,644 @@
+<?xml version="1.0"?>
+<ruleset name="dogfood7"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+    <description>Rules to check Powertools for Lambda</description>
+    <!--
+    Originally copied from: https://github.com/pmd/build-tools/blob/main/src/main/resources/net/sourceforge/pmd/pmd-dogfood-config.xml
+    -->
+    
+    <!--
+    Note: Eventually, this ruleset should include all rules and exclude those,
+    which we know are explicitly decided as not applicable to PMD itself.
+    This is the most encompassing form of RuleSet.
+
+    For starting, we add rule by rule and use an incremental approach.
+    See [#361](https://github.com/pmd/pmd/issues/361).
+
+    The original dogfood ruleset is available at:
+    https://github.com/pmd/pmd/blob/f9ef2c8c4bc23f1349597b827c8f072b7cade8a5/pmd-core/src/main/resources/rulesets/internal/dogfood.xml
+     -->
+
+    <!--     <rule ref="category/java/bestpractices.xml/AbstractClassWithoutAbstractMethod" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/AccessorClassGeneration" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/AccessorMethodGeneration" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/ArrayIsStoredDirectly" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/AvoidPrintStackTrace" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/AvoidStringBufferField" /> -->
+    <rule ref="category/java/bestpractices.xml/AvoidUsingHardCodedIP">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/CheckResultSet">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/ConstantsInInterface">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/DefaultLabelNotLastInSwitch">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/ForLoopCanBeForeach" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/GuardLogStatement" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/JUnit4SuitesShouldUseSuiteAnnotation" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/UnitTestShouldUseAfterAnnotation" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/UnitTestShouldUseBeforeAnnotation" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/UnitTestShouldUseTestAnnotation" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/UnitTestAssertionsShouldIncludeMessage" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/UnitTestContainsTooManyAsserts" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/UnitTestShouldIncludeAssert" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/JUnitUseExpected" /> -->
+    <rule ref="category/java/bestpractices.xml/LooseCoupling">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/MethodReturnsInternalArray" /> -->
+    <rule ref="category/java/bestpractices.xml/MissingOverride">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/OneDeclarationPerLine">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/LiteralsFirstInComparisons">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/PreserveStackTrace" /> -->
+    <rule ref="category/java/bestpractices.xml/PrimitiveWrapperInstantiation">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/ReplaceEnumerationWithIterator" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/ReplaceHashtableWithMap" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/ReplaceVectorWithList" /> -->
+    <!--     <rule ref="category/java/bestpractices.xml/SimplifiableTestAssertion" /> -->
+    <rule ref="category/java/bestpractices.xml/NonExhaustiveSwitch">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/SystemPrintln" /> -->
+    <rule ref="category/java/bestpractices.xml/UnusedFormalParameter">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/UnusedImports" /> -->
+    <rule ref="category/java/bestpractices.xml/UnusedLocalVariable">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateField">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/bestpractices.xml/UseCollectionIsEmpty">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/bestpractices.xml/UseVarargs" /> -->
+
+    <!--     <rule ref="category/java/codestyle.xml/AtLeastOneConstructor" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/AvoidDollarSigns" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/AvoidFinalLocalVariable" /> -->
+    <rule ref="category/java/codestyle.xml/AvoidProtectedFieldInFinalClass">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/AvoidProtectedMethodInFinalClassNotExtending">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/AvoidUsingNativeCode">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/codestyle.xml/BooleanGetMethodName" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/CallSuperInConstructor" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/ClassNamingConventions" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/CommentDefaultAccessModifier" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/ConfusingTernary" /> -->
+    <rule ref="category/java/codestyle.xml/ControlStatementBraces">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/codestyle.xml/DefaultPackage" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/DontImportJavaLang" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/DuplicateImports" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/EmptyMethodInAbstractClassShouldBeAbstract" /> -->
+    <rule ref="category/java/codestyle.xml/ExtendsObject">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/codestyle.xml/FieldDeclarationsShouldBeAtStartOfClass" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/FieldNamingConventions" /> -->
+    <rule ref="category/java/codestyle.xml/ForLoopShouldBeWhileLoop">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/FormalParameterNamingConventions">
+        <priority>1</priority>
+    </rule>
+
+    <!--     <rule ref="category/java/codestyle.xml/GenericsNaming" /> -->
+    <rule ref="category/java/codestyle.xml/IdenticalCatchBranches">
+        <priority>3</priority>
+    </rule>
+    <!--     <rule ref="category/java/codestyle.xml/LinguisticNaming" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/LocalHomeNamingConvention" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/LocalInterfaceSessionNamingConvention" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/LocalVariableNamingConventions" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/LongVariable" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/MDBAndSessionBeanNamingConvention" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/MethodArgumentCouldBeFinal" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/MethodNamingConventions" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/NoPackage" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/OnlyOneReturn" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/PackageCase" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/PrematureDeclaration" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/RemoteInterfaceNamingConvention" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/RemoteSessionInterfaceNamingConvention" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/ShortClassName" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/ShortMethodName" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/ShortVariable" /> -->
+    <!--     <rule ref="category/java/codestyle.xml/TooManyStaticImports" /> -->
+    <rule ref="category/java/codestyle.xml/UnnecessaryAnnotationValueElement">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/UnnecessaryConstructor">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/codestyle.xml/UnnecessaryFullyQualifiedName" /> -->
+    <rule ref="category/java/codestyle.xml/UnnecessaryLocalBeforeReturn">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/UnnecessaryModifier">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/UnnecessaryReturn">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/UseDiamondOperator">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/UselessParentheses">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/codestyle.xml/UselessQualifiedThis">
+        <priority>1</priority>
+    </rule>
+
+    <!--     <rule ref="category/java/design.xml/AbstractClassWithoutAnyMethod" /> -->
+    <!--     <rule ref="category/java/design.xml/AvoidCatchingGenericException" /> -->
+    <!--     <rule ref="category/java/design.xml/AvoidDeeplyNestedIfStmts" /> -->
+    <!--     <rule ref="category/java/design.xml/AvoidRethrowingException" /> -->
+    <!--     <rule ref="category/java/design.xml/AvoidThrowingNewInstanceOfSameException" /> -->
+    <!--     <rule ref="category/java/design.xml/AvoidThrowingNullPointerException" /> -->
+    <!--     <rule ref="category/java/design.xml/AvoidThrowingRawExceptionTypes" /> -->
+    <rule ref="category/java/design.xml/ClassWithOnlyPrivateConstructorsShouldBeFinal">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/design.xml/CollapsibleIfStatements" /> -->
+    <!--     <rule ref="category/java/design.xml/CouplingBetweenObjects" /> -->
+    <!--     <rule ref="category/java/design.xml/CyclomaticComplexity" /> -->
+    <!--     <rule ref="category/java/design.xml/DataClass" /> -->
+    <!--     <rule ref="category/java/design.xml/DoNotExtendJavaLangError" /> -->
+    <!--     <rule ref="category/java/design.xml/ExceptionAsFlowControl" /> -->
+    <!--     <rule ref="category/java/design.xml/ExcessiveClassLength" /> -->
+    <!--     <rule ref="category/java/design.xml/ExcessiveImports" /> -->
+    <!--     <rule ref="category/java/design.xml/ExcessiveMethodLength" /> -->
+    <!--     <rule ref="category/java/design.xml/ExcessiveParameterList" /> -->
+    <!--     <rule ref="category/java/design.xml/ExcessivePublicCount" /> -->
+    <rule ref="category/java/design.xml/FinalFieldCouldBeStatic">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/design.xml/GodClass" /> -->
+    <!--     <rule ref="category/java/design.xml/ImmutableField" /> -->
+    <!--     <rule ref="category/java/design.xml/LawOfDemeter" /> -->
+    <rule ref="category/java/design.xml/LogicInversion">
+        <priority>1</priority>
+    </rule>
+    <!-- Don't let the Language specific APIs leak out -->
+    <!--
+    <rule ref="category/java/design.xml/LoosePackageCoupling">
+        <properties>
+            <property name="packages"><value>net.sourceforge.pmd.lang,net.sourceforge.pmd.lang.java,net.sourceforge.pmd.lang.jsp,net.sourceforge.pmd.lang.ecmascript,net.sourceforge.pmd.lang.cpp</value></property>
+            <property name="classes">
+                <value>net.sourceforge.pmd.lang.Language,net.sourceforge.pmd.lang.LanguageVersion,net.sourceforge.pmd.lang.LanguageVersionDiscoverer,net.sourceforge.pmd.lang.LanguageVersionHandler,net.sourceforge.pmd.lang.Parser,net.sourceforge.pmd.lang.ast.Node</value>
+            </property>
+        </properties>
+    </rule>
+    -->
+    <!--     <rule ref="category/java/design.xml/ModifiedCyclomaticComplexity" /> -->
+    <!--     <rule ref="category/java/design.xml/NcssConstructorCount" /> -->
+    <!--     <rule ref="category/java/design.xml/NcssCount" /> -->
+    <!--     <rule ref="category/java/design.xml/NcssMethodCount" /> -->
+    <!--     <rule ref="category/java/design.xml/NcssTypeCount" /> -->
+    <!--     <rule ref="category/java/design.xml/NPathComplexity" /> -->
+    <!--     <rule ref="category/java/design.xml/SignatureDeclareThrowsException" /> -->
+    <rule ref="category/java/design.xml/SimplifiedTernary">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/design.xml/SimplifyBooleanExpressions" /> -->
+    <rule ref="category/java/design.xml/SimplifyBooleanReturns">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/design.xml/SimplifyConditional">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/design.xml/SingularField">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/design.xml/StdCyclomaticComplexity" /> -->
+    <!--     <rule ref="category/java/design.xml/SwitchDensity" /> -->
+    <!--     <rule ref="category/java/design.xml/TooManyFields" /> -->
+    <!--     <rule ref="category/java/design.xml/TooManyMethods" /> -->
+    <rule ref="category/java/design.xml/UselessOverridingMethod">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/design.xml/UseObjectForClearerAPI" /> -->
+    <rule ref="category/java/design.xml/UseUtilityClass">
+        <priority>1</priority>
+    </rule>
+
+    <!-- <rule ref="category/java/documentation.xml/CommentContent" /> -->
+    <!-- <rule ref="category/java/documentation.xml/CommentRequired" /> -->
+    <!-- <rule ref="category/java/documentation.xml/CommentSize" /> -->
+    <rule ref="category/java/documentation.xml/UncommentedEmptyConstructor">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/documentation.xml/UncommentedEmptyMethodBody">
+        <priority>1</priority>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml/AssignmentInOperand">
+        <priority>1</priority>
+        <properties>
+            <property name="allowWhile" value="true"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/AssignmentToNonFinalStatic">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/AvoidAccessibilityAlteration" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/AvoidAssertAsIdentifier" /> -->
+    <rule ref="category/java/errorprone.xml/AvoidBranchingStatementAsLastInLoop">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/AvoidCallingFinalize" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/AvoidCatchingNPE" /> -->
+    <rule ref="category/java/errorprone.xml/AvoidCatchingThrowable">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/AvoidDecimalLiteralsInBigDecimalConstructor">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/AvoidEnumAsIdentifier" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/AvoidFieldNameMatchingMethodName" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/AvoidFieldNameMatchingTypeName" /> -->
+    <rule ref="category/java/errorprone.xml/AvoidInstanceofChecksInCatchClause">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/AvoidLiteralsInIfCondition" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/AvoidLosingExceptionInformation" /> -->
+    <rule ref="category/java/errorprone.xml/AvoidMultipleUnaryOperators">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/AvoidUsingOctalValues">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/BeanMembersShouldSerialize" /> -->
+    <rule ref="category/java/errorprone.xml/BrokenNullCheck">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/CallSuperFirst" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/CallSuperLast" /> -->
+    <rule ref="category/java/errorprone.xml/CheckSkipResult">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/ClassCastExceptionWithToArray">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CloneMethodMustBePublic">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CloneMethodMustImplementCloneable">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CloneMethodReturnTypeMustMatchClassName">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CloseResource">
+        <priority>1</priority>
+        <properties>
+            <property name="closeTargets" value="close,IOUtils.closeQuietly,IOUtil.closeQuietly" />
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/CompareObjectsWithEquals">
+        <priority>1</priority>
+        <properties>
+            <property name="typesThatCompareByReference" value="java.lang.Enum,java.lang.Class,net.sourceforge.pmd.lang.ast.Node,net.sourceforge.pmd.lang.ast.GenericToken"/>
+        </properties>
+    </rule>
+    <rule ref="category/java/errorprone.xml/ComparisonWithNaN">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/ConstructorCallsOverridableMethod" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/DataflowAnomalyAnalysis" /> -->
+    <rule ref="category/java/errorprone.xml/DoNotCallGarbageCollectionExplicitly">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/DoNotCallSystemExit" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/DoNotExtendJavaLangThrowable" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/DoNotHardCodeSDCard" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/DoNotThrowExceptionInFinally" /> -->
+    <rule ref="category/java/errorprone.xml/DontImportSun">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/DontUseFloatTypeForLoopIndices">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/EmptyFinalizer" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyFinallyBlock" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyIfStmt" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyInitializer" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyStatementBlock" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyStatementNotInLoop" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptySwitchStatements" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptySynchronizedBlock" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyTryBlock" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/EmptyWhileStmt" /> -->
+    <rule ref="category/java/errorprone.xml/EqualsNull">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/FinalizeDoesNotCallSuperFinalize" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/FinalizeOnlyCallsSuperFinalize" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/FinalizeOverloaded" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/FinalizeShouldBeProtected" /> -->
+    <rule ref="category/java/errorprone.xml/IdempotentOperations">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/ImplicitSwitchFallThrough">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/ImportFromSamePackage" /> -->
+    <rule ref="category/java/errorprone.xml/InstantiationToGetClass">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/InvalidSlf4jMessageFormat" /> -->
+    <rule ref="category/java/errorprone.xml/JumbledIncrementer">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/JUnitSpelling" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/JUnitStaticSuite" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/LoggerIsNotStaticFinal" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/MethodWithSameNameAsEnclosingClass" /> -->
+    <rule ref="category/java/errorprone.xml/MisplacedNullCheck">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/MissingSerialVersionUID" /> -->
+    <rule ref="category/java/errorprone.xml/MissingStaticMethodInNonInstantiatableClass">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/MoreThanOneLogger" /> -->
+    <rule ref="category/java/errorprone.xml/NonCaseLabelInSwitch">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/NonStaticInitializer">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/NullAssignment" /> -->
+    <rule ref="category/java/errorprone.xml/OverrideBothEqualsAndHashcode">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/ProperCloneImplementation">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/ProperLogger" /> -->
+    <rule ref="category/java/errorprone.xml/ReturnEmptyCollectionRatherThanNull">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/ReturnEmptyCollectionRatherThanNull" /> -->
+    <rule ref="category/java/errorprone.xml/ReturnFromFinallyBlock">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/SimpleDateFormatNeedsLocale" /> -->
+    <rule ref="category/java/errorprone.xml/SingleMethodSingleton">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/SingletonClassReturningNewInstance">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/StaticEJBFieldShouldBeFinal" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/StringBufferInstantiationWithChar" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/SuspiciousEqualsMethodName" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/SuspiciousHashcodeMethodName" /> -->
+    <rule ref="category/java/errorprone.xml/SuspiciousOctalEscape">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/TestClassWithoutTestCases" /> -->
+    <rule ref="category/java/errorprone.xml/UnconditionalIfStatement">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/UnnecessaryBooleanAssertion" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/UnnecessaryCaseChange" /> -->
+    <rule ref="category/java/errorprone.xml/UnnecessaryConversionTemporary">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/UnusedNullCheckInEquals">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/UseCorrectExceptionLogging" /> -->
+    <!--     <rule ref="category/java/errorprone.xml/UseEqualsToCompareStrings" /> -->
+    <rule ref="category/java/errorprone.xml/UselessOperationOnImmutable">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/errorprone.xml/UseLocaleWithCaseConversions">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/errorprone.xml/UseProperClassLoader" /> -->
+
+    <!--     <rule ref="category/java/multithreading.xml/AvoidSynchronizedAtMethodLevel" /> -->
+    <rule ref="category/java/multithreading.xml/AvoidThreadGroup">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/multithreading.xml/AvoidUsingVolatile">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/multithreading.xml/DoNotUseThreads" /> -->
+    <rule ref="category/java/multithreading.xml/DontCallThreadRun">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/multithreading.xml/DoubleCheckedLocking">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/multithreading.xml/NonThreadSafeSingleton">
+        <priority>1</priority>
+    </rule>
+    <rule ref="category/java/multithreading.xml/UnsynchronizedStaticFormatter">
+        <priority>1</priority>
+    </rule>
+    <!--     <rule ref="category/java/multithreading.xml/UseConcurrentHashMap" /> -->
+    <rule ref="category/java/multithreading.xml/UseNotifyAllInsteadOfNotify">
+        <priority>1</priority>
+    </rule>
+
+    <!-- <rule ref="category/java/performance.xml/AddEmptyString" /> -->
+    <!-- <rule ref="category/java/performance.xml/AppendCharacterWithChar" /> -->
+    <!-- <rule ref="category/java/performance.xml/AvoidArrayLoops" /> -->
+    <rule ref="category/java/performance.xml/AvoidFileStream">
+        <priority>1</priority>
+    </rule>
+    <!-- <rule ref="category/java/performance.xml/AvoidInstantiatingObjectsInLoops" /> -->
+    <rule ref="category/java/performance.xml/BigIntegerInstantiation">
+        <priority>1</priority>
+    </rule>
+    <!-- <rule ref="category/java/performance.xml/ConsecutiveAppendsShouldReuse" /> -->
+    <!-- <rule ref="category/java/performance.xml/ConsecutiveLiteralAppends" /> -->
+    <!-- <rule ref="category/java/performance.xml/InefficientEmptyStringCheck" /> -->
+    <!-- <rule ref="category/java/performance.xml/InefficientStringBuffering" /> -->
+    <!-- <rule ref="category/java/performance.xml/InsufficientStringBufferDeclaration" /> -->
+    <rule ref="category/java/performance.xml/OptimizableToArrayCall">
+        <priority>1</priority>
+    </rule>
+    <!-- <rule ref="category/java/performance.xml/RedundantFieldInitializer" /> -->
+    <!-- <rule ref="category/java/performance.xml/SimplifyStartsWith" /> -->
+    <!-- <rule ref="category/java/performance.xml/StringInstantiation" /> -->
+    <!-- <rule ref="category/java/performance.xml/StringToString" /> -->
+    <rule ref="category/java/performance.xml/TooFewBranchesForSwitch">
+        <priority>1</priority>
+    </rule>
+    <!-- <rule ref="category/java/performance.xml/UnnecessaryWrapperObjectCreation" /> -->
+    <!-- <rule ref="category/java/performance.xml/UseArrayListInsteadOfVector" /> -->
+    <!-- <rule ref="category/java/performance.xml/UseArraysAsList" /> -->
+    <!-- <rule ref="category/java/performance.xml/UseIndexOfChar" /> -->
+    <!-- <rule ref="category/java/performance.xml/UselessStringValueOf" /> -->
+    <!-- <rule ref="category/java/performance.xml/UseStringBufferForStringAppends" /> -->
+    <!-- <rule ref="category/java/performance.xml/UseStringBufferLength" /> -->
+
+    <!--     <rule ref="category/java/security.xml/InsecureCryptoIv" /> -->
+
+
+    <!-- Note: These are the custom rule ported to PMD 7 -->
+
+    <!-- PMD specific custom rules -->
+    <rule name="UseInstanceofToCompareClasses"
+          language="java"
+          since="5.0"
+          message="replace o.getClass().equals(MyClass.class) with o instanceof MyClass"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>replace o.getClass().equals(MyClass.class) with o instanceof MyClass. Make sure MyClass doesn't have descendants</description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//MethodCall[pmd-java:matchesSig("_#equals(java.lang.Object)")]
+    [MethodCall[pmd-java:matchesSig("_#getClass()")]]
+    [ArgumentList/ClassLiteral]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="ReversedUseInstanceofToCompareClasses"
+          language="java"
+          since="5.0"
+          message="replace MyClass.class.equals(o.getClass()) with o instanceof MyClass"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>replace MyClass.class.equals(o.getClass()) with o instanceof MyClass. Make sure MyClass doesn't have descendants</description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//MethodCall[pmd-java:matchesSig("_#equals(java.lang.Object)")]
+    [ClassLiteral]
+    [ArgumentList/MethodCall[pmd-java:matchesSig("_#getClass()")]]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="DontCallSuperVisitWhenUsingRuleChain"
+          language="java"
+          message="Don't call super.visit() when using the rulechain"
+          typeResolution="true"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>Calling super.visit breaks the rulechain, by starting a full visitor run from the passed node downwards. Add all needed nodes to the rulechain instead.</description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+(
+(: java rule chain rule :)
+//ClassDeclaration[pmd-java:typeIs('net.sourceforge.pmd.lang.java.rule.AbstractJavaRulechainRule')]
+|
+(: generic rule that implements buildTargetSelector :)
+//ClassDeclaration[pmd-java:typeIs('net.sourceforge.pmd.lang.rule.AbstractRule')]
+    [*/MethodDeclaration[@Name = 'buildTargetSelector']]
+)
+  (: but calling super.visit! :)
+  [*/MethodDeclaration//MethodCall[SuperExpression][@MethodName = 'visit']]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="AlwaysCallSuperWhenNotUsingRuleChain"
+          language="java"
+          message="Always call super.visit() when not using rulechain"
+          typeResolution="true"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>Just returning without calling super stops visiting of nested nodes like inner classes.</description>
+        <priority>3</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//ClassDeclaration
+    [ExtendsList/ClassType[pmd-java:typeIs('net.sourceforge.pmd.lang.rule.AbstractRule')]]
+    [not(ExtendsList/ClassType[pmd-java:typeIs('net.sourceforge.pmd.lang.java.rule.AbstractJavaRulechainRule')])]
+    [not(*/MethodDeclaration[@Name = 'buildTargetSelector'])]
+    [*/MethodDeclaration[@Name = 'visit'][not(.//MethodCall[@MethodName = 'visit']/SuperExpression)]]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Idea from https://github.com/pmd/pmd/pull/3609#discussion_r748292071 -->
+    <rule name="ReuseInvocationMatcher"
+          language="java"
+          message="Reuse InvocationMatcher"
+          typeResolution="true"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>Share the invocation matcher and not create a new one every time</description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//MethodCall[pmd-java:matchesSig("net.sourceforge.pmd.lang.java.types.InvocationMatcher#matchesCall(_)")]
+    [MethodCall[pmd-java:matchesSig("net.sourceforge.pmd.lang.java.types.InvocationMatcher#parse(java.lang.String)")]]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+
+    <rule name="DoNotUseJavaUtilLogging"
+          language="java"
+          since="7.0.0"
+          message="Use slf4j: LoggerFactory.getLogger(MyClass.class)"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+        <description>Use slf4j: LoggerFactory.getLogger(MyClass.class)</description>
+        <priority>1</priority>
+        <properties>
+            <property name="xpath">
+                <value>
+                    <![CDATA[
+//ClassDeclaration[//ImportDeclaration[@ImportedName = 'java.util.logging.Logger']]
+]]>
+                </value>
+            </property>
+        </properties>
+    </rule>
+</ruleset>
