@@ -53,7 +53,7 @@ public class JsonSerializer implements AutoCloseable {
         }
         this.builder = builder;
     }
-    
+
     public void writeStartArray() {
         builder.append('[');
     }
@@ -84,7 +84,8 @@ public class JsonSerializer implements AutoCloseable {
         if (text == null) {
             writeNull();
         } else {
-            builder.append("\"").append(text).append("\"");
+            // Escape double quotes to avoid breaking JSON format
+            builder.append("\"").append(text.replace("\"", "\\\"")).append("\"");
         }
     }
 
@@ -314,7 +315,7 @@ public class JsonSerializer implements AutoCloseable {
             writeNull();
         } else {
             writeStartObject();
-            for (Iterator<? extends Map.Entry<?, ?>> entries = map.entrySet().iterator(); entries.hasNext(); ) {
+            for (Iterator<? extends Map.Entry<?, ?>> entries = map.entrySet().iterator(); entries.hasNext();) {
                 Map.Entry<?, ?> entry = entries.next();
                 writeObjectField(String.valueOf(entry.getKey()), entry.getValue());
                 if (entries.hasNext()) {
@@ -326,16 +327,16 @@ public class JsonSerializer implements AutoCloseable {
     }
 
     public void writeObject(Object value) {
-        
+
         // null
         if (value == null) {
             writeNull();
-        } 
-        
+        }
+
         else if (value instanceof String) {
             writeString((String) value);
-        } 
-        
+        }
+
         // number & boolean
         else if (value instanceof Number) {
             Number n = (Number) value;
@@ -364,8 +365,8 @@ public class JsonSerializer implements AutoCloseable {
             writeBoolean((Boolean) value);
         } else if (value instanceof AtomicBoolean) {
             writeBoolean(((AtomicBoolean) value).get());
-        } 
-        
+        }
+
         // list & collection
         else if (value instanceof List) {
             final List<?> list = (List<?>) value;
@@ -373,14 +374,13 @@ public class JsonSerializer implements AutoCloseable {
         } else if (value instanceof Collection) {
             final Collection<?> collection = (Collection<?>) value;
             writeArray(collection);
-        } 
-        
+        }
+
         // map
         else if (value instanceof Map) {
             final Map<?, ?> map = (Map<?, ?>) value;
             writeMap(map);
         }
-
 
         // arrays
         else if (value instanceof char[]) {
@@ -411,7 +411,7 @@ public class JsonSerializer implements AutoCloseable {
             final Object[] values = (Object[]) value;
             writeArray(values);
         }
-        
+
         else if (value instanceof JsonNode) {
             JsonNode node = (JsonNode) value;
 
@@ -462,7 +462,7 @@ public class JsonSerializer implements AutoCloseable {
                 case OBJECT:
                 case POJO:
                     writeStartObject();
-                    for (Iterator<Map.Entry<String, JsonNode>> entries = node.fields(); entries.hasNext(); ) {
+                    for (Iterator<Map.Entry<String, JsonNode>> entries = node.fields(); entries.hasNext();) {
                         Map.Entry<String, JsonNode> entry = entries.next();
                         writeObjectField(entry.getKey(), entry.getValue());
                         if (entries.hasNext()) {
@@ -475,7 +475,7 @@ public class JsonSerializer implements AutoCloseable {
                 case ARRAY:
                     ArrayNode arrayNode = (ArrayNode) node;
                     writeStartArray();
-                    for (Iterator<JsonNode> elements = arrayNode.elements(); elements.hasNext(); ) {
+                    for (Iterator<JsonNode> elements = arrayNode.elements(); elements.hasNext();) {
                         writeObject(elements.next());
                         if (elements.hasNext()) {
                             builder.append(',');
@@ -558,7 +558,7 @@ public class JsonSerializer implements AutoCloseable {
             writeNull();
         } else if (rootNode instanceof TextNode) {
             writeString(((TextNode) rootNode).asText());
-        } else if  (rootNode instanceof BooleanNode) {
+        } else if (rootNode instanceof BooleanNode) {
             writeBoolean(((BooleanNode) rootNode).asBoolean());
         } else if (rootNode instanceof NumericNode) {
             NumericNode numericNode = (NumericNode) rootNode;
@@ -595,5 +595,3 @@ public class JsonSerializer implements AutoCloseable {
         // nothing to do
     }
 }
-
-
