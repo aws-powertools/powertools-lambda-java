@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.demo.kafka.avro.AvroProduct;
+import org.demo.kafka.protobuf.ProtobufProduct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,35 +23,35 @@ import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 
-public class KafkaAvroConsumerDeserializationFunction
-        implements RequestHandler<ConsumerRecords<String, AvroProduct>, String> {
+public class KafkaProtobufConsumerDeserializationFunction
+        implements RequestHandler<ConsumerRecords<String, ProtobufProduct>, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaAvroConsumerDeserializationFunction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProtobufConsumerDeserializationFunction.class);
     private static final MetricsLogger metrics = MetricsUtils.metricsLogger();
 
     @Override
     @Logging
     @Metrics
-    @Deserialization(type = DeserializationType.KAFKA_AVRO)
-    public String handleRequest(ConsumerRecords<String, AvroProduct> records, Context context) {
-        for (ConsumerRecord<String, AvroProduct> consumerRecord : records) {
-            LOGGER.info("{}", consumerRecord, entry("value", avroToMap(consumerRecord.value())));
-            metrics.putMetric("ProcessedAvroRecord", 1, Unit.COUNT);
+    @Deserialization(type = DeserializationType.KAFKA_PROTOBUF)
+    public String handleRequest(ConsumerRecords<String, ProtobufProduct> records, Context context) {
+        for (ConsumerRecord<String, ProtobufProduct> consumerRecord : records) {
+            LOGGER.info("{}", consumerRecord, entry("value", protobufToMap(consumerRecord.value())));
+            metrics.putMetric("ProcessedProtobufRecord", 1, Unit.COUNT);
         }
 
         return "OK";
     }
 
-    // Avro objects cannot be serialized to JSON by Jackson Object Mapper used by powertools-logging.
+    // Protobuf Message objects cannot be serialized to JSON by Jackson Object Mapper used by powertools-logging.
     // We convert to a map first to retrieve a meaningful representation.
-    private Map<String, Object> avroToMap(AvroProduct avroProduct) {
-        if (avroProduct == null) {
+    private Map<String, Object> protobufToMap(ProtobufProduct protobufProduct) {
+        if (protobufProduct == null) {
             return Collections.emptyMap();
         }
         Map<String, Object> map = new HashMap<>();
-        map.put("id", avroProduct.getId());
-        map.put("name", avroProduct.getName());
-        map.put("price", avroProduct.getPrice());
+        map.put("id", protobufProduct.getId());
+        map.put("name", protobufProduct.getName());
+        map.put("price", protobufProduct.getPrice());
         return map;
     }
 }

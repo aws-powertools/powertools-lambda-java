@@ -13,5 +13,5 @@
 package software.amazon.lambda.powertools.kafka;
 
 public enum DeserializationType {
-    LAMBDA_DEFAULT, KAFKA_JSON, KAFKA_AVRO
+    LAMBDA_DEFAULT, KAFKA_JSON, KAFKA_AVRO, KAFKA_PROTOBUF
 }

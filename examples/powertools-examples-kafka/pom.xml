@@ -12,6 +12,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <aspectj.version>1.9.20.1</aspectj.version>
         <avro.version>1.12.0</avro.version>
+        <protobuf.version>4.31.0</protobuf.version>
     </properties>
 
     <dependencies>
@@ -49,6 +50,11 @@
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
             <version>${avro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
         </dependency>
     </dependencies>
 
@@ -111,6 +117,27 @@
                             <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
                             <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
                             <stringType>String</stringType>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <protocVersion>${protobuf.version}</protocVersion>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.basedir}/src/main/proto</sourceDirectory>
+                            </sourceDirectories>
+                            <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+                            <clearOutputDirectory>false</clearOutputDirectory>
                         </configuration>
                     </execution>
                 </executions>

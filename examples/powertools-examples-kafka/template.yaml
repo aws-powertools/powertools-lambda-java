@@ -35,6 +35,18 @@ Resources:
           POWERTOOLS_SERVICE_NAME: KafkaAvroConsumerDeserialization
           POWERTOOLS_METRICS_NAMESPACE: KafkaAvroConsumerDeserializationFunction
 
+  KafkaProtobufConsumerDeserializationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: org.demo.kafka.KafkaProtobufConsumerDeserializationFunction::handleRequest
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+          POWERTOOLS_LOG_LEVEL: DEBUG
+          POWERTOOLS_SERVICE_NAME: KafkaProtobufConsumerDeserialization
+          POWERTOOLS_METRICS_NAMESPACE: KafkaProtobufConsumerDeserializationFunction
+
 Outputs:
   JsonFunction:
     Description: "Kafka JSON Lambda Function ARN"
@@ -42,3 +54,6 @@ Outputs:
   AvroFunction:
     Description: "Kafka Avro Lambda Function ARN"
     Value: !GetAtt KafkaAvroConsumerDeserializationFunction.Arn
+  ProtobufFunction:
+    Description: "Kafka Protobuf Lambda Function ARN"
+    Value: !GetAtt KafkaProtobufConsumerDeserializationFunction.Arn

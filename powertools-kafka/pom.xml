@@ -30,15 +30,17 @@
     <name>Powertools for AWS Lambda (Java) - Kafka Consumer</name>
     <description></description>
 
+    <properties>
+        <kafka-clients.version>4.0.0</kafka-clients.version>
+        <avro.version>1.12.0</avro.version>
+        <protobuf.version>4.31.0</protobuf.version>
+        <lambda-serialization.version>1.1.5</lambda-serialization.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjrt</artifactId>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -51,12 +53,17 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>4.0.0</version>
+            <version>${kafka-clients.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>
             <artifactId>avro</artifactId>
-            <version>1.12.0</version>
+            <version>${avro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -65,7 +72,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-serialization</artifactId>
-            <version>1.1.5</version>
+            <version>${lambda-serialization.version}</version>
         </dependency>
 
         <!-- Test dependencies -->

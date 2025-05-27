@@ -11,6 +11,7 @@ import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFact
 import software.amazon.lambda.powertools.kafka.internal.DeserializationUtils;
 import software.amazon.lambda.powertools.kafka.serializers.KafkaAvroDeserializer;
 import software.amazon.lambda.powertools.kafka.serializers.KafkaJsonDeserializer;
+import software.amazon.lambda.powertools.kafka.serializers.KafkaProtobufDeserializer;
 import software.amazon.lambda.powertools.kafka.serializers.LambdaDefaultDeserializer;
 import software.amazon.lambda.powertools.kafka.serializers.PowertoolsDeserializer;
 
@@ -25,6 +26,7 @@ public class PowertoolsSerializer implements CustomPojoSerializer {
     private static final Map<DeserializationType, PowertoolsDeserializer> DESERIALIZERS = Map.of(
             DeserializationType.KAFKA_JSON, new KafkaJsonDeserializer(),
             DeserializationType.KAFKA_AVRO, new KafkaAvroDeserializer(),
+            DeserializationType.KAFKA_PROTOBUF, new KafkaProtobufDeserializer(),
             DeserializationType.LAMBDA_DEFAULT, new LambdaDefaultDeserializer());
 
     private final PowertoolsDeserializer deserializer;
