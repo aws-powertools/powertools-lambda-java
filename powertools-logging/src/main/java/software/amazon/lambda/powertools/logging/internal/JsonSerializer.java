@@ -84,8 +84,15 @@ public class JsonSerializer implements AutoCloseable {
         if (text == null) {
             writeNull();
         } else {
-            // Escape double quotes to avoid breaking JSON format
-            builder.append("\"").append(text.replace("\"", "\\\"")).append("\"");
+            // Escape special characters to avoid breaking JSON format
+            String escaped = text.replace("\\", "\\\\")
+                    .replace("\"", "\\\"")
+                    .replace("\n", "\\n")
+                    .replace("\r", "\\r")
+                    .replace("\t", "\\t")
+                    .replace("\b", "\\b")
+                    .replace("\f", "\\f");
+            builder.append("\"").append(escaped).append("\"");
         }
     }
 

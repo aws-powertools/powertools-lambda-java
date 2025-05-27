@@ -419,7 +419,7 @@ class LambdaJsonEncoderTest {
         // THEN (stack is logged with root cause first)
         assertThat(result).contains("\"message\":\"Unexpected value\"")
                 .contains("\"name\":\"java.lang.IllegalStateException\"")
-                .contains("\"stack\":\"java.lang.IllegalStateException: Unexpected value\n");
+                .contains("\"stack\":\"java.lang.IllegalStateException: Unexpected value\\n");
     }
 
     private void setupContext() {
