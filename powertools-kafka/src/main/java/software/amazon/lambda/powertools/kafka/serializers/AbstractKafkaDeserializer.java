@@ -68,7 +68,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             // Convert KafkaEvent to ConsumerRecords
             return (T) convertToConsumerRecords(kafkaEvent, keyType, valueType);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to deserialize JSON to ConsumerRecords", e);
+            throw new RuntimeException("Failed to deserialize Lambda handler input to ConsumerRecords", e);
         }
     }
 
@@ -101,7 +101,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             // Convert KafkaEvent to ConsumerRecords
             return (T) convertToConsumerRecords(kafkaEvent, keyType, valueType);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to deserialize JSON to ConsumerRecords", e);
+            throw new RuntimeException("Failed to deserialize Lambda handler input to ConsumerRecords", e);
         }
     }
 
