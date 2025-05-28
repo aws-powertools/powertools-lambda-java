@@ -14,8 +14,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <artifactId>powertools-parent</artifactId>
@@ -176,10 +176,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-            </plugin>
             <!-- Don't deploy the e2e tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -210,7 +206,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-failsafe-plugin</artifactId>
-                        <version>3.1.2</version>
+                        <version>3.5.3</version>
                         <executions>
                             <execution>
                                 <goals>
@@ -220,10 +216,14 @@
                             </execution>
                         </executions>
                         <configuration>
-                            <skipAfterFailureCount>1</skipAfterFailureCount> <!-- no need to continue / deploy more resources and lose time -->
+                            <skipAfterFailureCount>1</skipAfterFailureCount> <!-- no need to continue / deploy more
+                            resources and lose time -->
                             <includes>
                                 <include>**/*E2ET.java</include>
                             </includes>
+                            <excludes>
+                                <exclude>**/TracingE2ET.java</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>
