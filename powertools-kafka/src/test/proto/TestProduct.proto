@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package software.amazon.lambda.powertools.kafka.serializers.test.protobuf;
+
+option java_package = "software.amazon.lambda.powertools.kafka.serializers.test.protobuf";
+option java_outer_classname = "TestProductOuterClass";
+option java_multiple_files = true;
+
+message TestProduct {
+  int32 id = 1;
+  string name = 2;
+  double price = 3;
+}

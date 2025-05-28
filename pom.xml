@@ -102,7 +102,9 @@
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
         <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
         <elastic.version>1.6.0</elastic.version>
-        <mockito.version>5.12.0</mockito.version>
+        <mockito.version>5.18.0</mockito.version>
+        <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
+        <junit-pioneer.version>2.3.0</junit-pioneer.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
@@ -292,7 +294,7 @@
             <dependency>
                 <groupId>org.junit-pioneer</groupId>
                 <artifactId>junit-pioneer</artifactId>
-                <version>1.9.1</version>
+                <version>${junit-pioneer.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -340,6 +342,12 @@
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito-junit-jupiter.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
