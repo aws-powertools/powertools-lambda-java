@@ -54,6 +54,7 @@ jobs:
           - 11
           - 17
           - 21
+          
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9  # v3.5.3
       - name: Setup java
@@ -68,4 +69,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
           aws-region: us-east-1
       - name: Run e2e test with Maven
+        env:
+            JAVA_VERSION: ${{ matrix.java }}
         run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
