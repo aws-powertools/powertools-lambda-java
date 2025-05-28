@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>software.amazon.lambda.examples</groupId>
+    <version>2.0.0-SNAPSHOT</version>
+    <artifactId>powertools-examples-kafka-minimal</artifactId>
+    <packaging>jar</packaging>
+    <name>Powertools for AWS Lambda (Java) - Examples - Kafka Minimal</name>
+
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <avro.version>1.12.0</avro.version>
+        <protobuf.version>4.31.0</protobuf.version>
+        <slf4j.version>2.0.9</slf4j.version>
+    </properties>
+
+    <dependencies>
+        <!-- Only include powertools-kafka, no other powertools modules -->
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-kafka</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-core</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-lambda-java-events</artifactId>
+            <version>3.15.0</version>
+        </dependency>
+        <!-- SLF4J for logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <!-- Serialization libraries -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>${avro.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Don't deploy the example -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.2</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <!-- Shade plugin to create a fat JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Avro plugin for generating classes from schemas -->
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <version>${avro.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${project.basedir}/src/main/avro/</sourceDirectory>
+                            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                            <stringType>String</stringType>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Protobuf plugin for generating classes from proto files -->
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <protocVersion>${protobuf.version}</protocVersion>
+                            <sourceDirectories>
+                                <sourceDirectory>${project.basedir}/src/main/proto</sourceDirectory>
+                            </sourceDirectories>
+                            <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
+                            <clearOutputDirectory>false</clearOutputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <profiles>
+        <!-- Base profile without Avro or Protobuf -->
+        <profile>
+            <id>base</id>
+            <properties>
+                <active.profile>base</active.profile>
+            </properties>
+            <dependencies>
+                <!-- Exclude both Avro and Protobuf -->
+                <dependency>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                    <version>${avro.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+                <dependency>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                    <version>${protobuf.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Profile with only Avro -->
+        <profile>
+            <id>avro-only</id>
+            <properties>
+                <active.profile>avro-only</active.profile>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>com.google.protobuf</groupId>
+                    <artifactId>protobuf-java</artifactId>
+                    <version>${protobuf.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Profile with only Protobuf -->
+        <profile>
+            <id>protobuf-only</id>
+            <properties>
+                <active.profile>protobuf-only</active.profile>
+            </properties>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.avro</groupId>
+                    <artifactId>avro</artifactId>
+                    <version>${avro.version}</version>
+                    <scope>provided</scope>
+                </dependency>
+            </dependencies>
+        </profile>
+
+        <!-- Profile with both Avro and Protobuf (default) -->
+        <profile>
+            <id>full</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <active.profile>full</active.profile>
+            </properties>
+        </profile>
+    </profiles>
+</project>

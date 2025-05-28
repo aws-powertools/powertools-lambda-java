@@ -1,0 +1,50 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Minimal Kafka Deserialization example with Kafka Lambda ESM
+
+Globals:
+  Function:
+    Timeout: 20
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+
+Resources:
+  KafkaJsonConsumerMinimalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: org.demo.kafka.minimal.KafkaJsonConsumerMinimalFunction::handleRequest
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+  KafkaAvroConsumerMinimalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: org.demo.kafka.minimal.KafkaAvroConsumerMinimalFunction::handleRequest
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+  KafkaProtobufConsumerMinimalFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: org.demo.kafka.minimal.KafkaProtobufConsumerMinimalFunction::handleRequest
+      Environment:
+        Variables:
+          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+
+Outputs:
+  JsonFunction:
+    Description: "Kafka JSON Lambda Function ARN"
+    Value: !GetAtt KafkaJsonConsumerMinimalFunction.Arn
+  AvroFunction:
+    Description: "Kafka Avro Lambda Function ARN"
+    Value: !GetAtt KafkaAvroConsumerMinimalFunction.Arn
+  ProtobufFunction:
+    Description: "Kafka Protobuf Lambda Function ARN"
+    Value: !GetAtt KafkaProtobufConsumerMinimalFunction.Arn
