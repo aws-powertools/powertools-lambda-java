@@ -40,6 +40,7 @@
         <module>powertools-examples-parameters/sam-graalvm</module>
         <module>powertools-examples-serialization</module>
         <module>powertools-examples-kafka</module>
+        <module>powertools-examples-kafka-minimal</module>
         <module>powertools-examples-batch</module>
         <module>powertools-examples-validation</module>
         <module>powertools-examples-cloudformation</module>
