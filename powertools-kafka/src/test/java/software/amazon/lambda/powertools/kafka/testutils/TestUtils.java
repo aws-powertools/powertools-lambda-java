@@ -59,16 +59,16 @@ public class TestUtils {
      * Helper method to serialize an Avro object
      * 
      * @param <T> The type of the Avro record
-     * @param record The Avro record to serialize
+     * @param consumerRecord The Avro record to serialize
      * @return The serialized bytes
      * @throws IOException If serialization fails
      */
-    public static <T extends SpecificRecord> byte[] serializeAvro(T record) throws IOException {
+    public static <T extends SpecificRecord> byte[] serializeAvro(T consumerRecord) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(baos, null);
         @SuppressWarnings("unchecked")
-        DatumWriter<T> writer = new SpecificDatumWriter<>((Class<T>) record.getClass());
-        writer.write(record, encoder);
+        DatumWriter<T> writer = new SpecificDatumWriter<>((Class<T>) consumerRecord.getClass());
+        writer.write(consumerRecord, encoder);
         encoder.flush();
         return baos.toByteArray();
     }

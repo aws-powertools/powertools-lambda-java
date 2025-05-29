@@ -51,7 +51,7 @@ class PowertoolsSerializerTest {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    // Helper for parameterized tests
+    // CustomPojoSerializer has fromJson(String input, ...) and fromJson(InputStream input, ...). We want to test both.
     static Stream<InputType> inputTypes() {
         return Stream.of(InputType.INPUT_STREAM, InputType.STRING);
     }

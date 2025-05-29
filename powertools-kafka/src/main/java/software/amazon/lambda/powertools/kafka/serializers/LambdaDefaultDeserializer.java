@@ -17,6 +17,12 @@ import java.lang.reflect.Type;
 
 import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory;
 
+/**
+ * Default deserializer for Kafka events proxying to Lambda default behavior.
+ * 
+ * This deserializer uses the default Jackson ObjectMapper to deserialize the event from 
+ * {@link com.amazonaws.services.lambda.runtime.serialization}.
+ */
 public class LambdaDefaultDeserializer implements PowertoolsDeserializer {
 
     @SuppressWarnings("unchecked")

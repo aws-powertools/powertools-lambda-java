@@ -45,6 +45,7 @@ class AbstractKafkaDeserializerTest {
         deserializer = new TestDeserializer();
     }
 
+    // CustomPojoSerializer has fromJson(String input, ...) and fromJson(InputStream input, ...). We want to test both.
     static Stream<InputType> inputTypes() {
         return Stream.of(InputType.INPUT_STREAM, InputType.STRING);
     }
