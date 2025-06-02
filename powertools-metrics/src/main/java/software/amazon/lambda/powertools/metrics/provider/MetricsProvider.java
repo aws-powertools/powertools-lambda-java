@@ -12,11 +12,19 @@
  *
  */
 
-package software.amazon.lambda.powertools.metrics;
+package software.amazon.lambda.powertools.metrics.provider;
 
-public class ValidationException extends RuntimeException {
+import software.amazon.lambda.powertools.metrics.MetricsLogger;
 
-    public ValidationException(String message) {
-        super(message);
-    }
+/**
+ * Interface for metrics provider implementations
+ */
+public interface MetricsProvider {
+    
+    /**
+     * Get a new instance of a metrics logger
+     *
+     * @return a new metrics logger instance
+     */
+    MetricsLogger getMetricsLogger();
 }

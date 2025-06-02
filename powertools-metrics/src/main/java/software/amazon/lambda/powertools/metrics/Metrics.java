@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  * </p>
  *
  * <p>To raise exception if no metrics are emitted, use {@code @Metrics(raiseOnEmptyMetrics = true)}.
- * </br>This will create a create a exception of type {@link ValidationException}. By default its value is set to false.
+ * </br>This will create an exception if no metrics are emitted. By default its value is set to false.
  * </p>
  *
  * <p>By default the service name associated with metrics created will be
@@ -53,6 +53,10 @@ import java.lang.annotation.Target;
  * This can be overridden with the environment variable {@code POWERTOOLS_METRICS_NAMESPACE}
  * or the annotation variable {@code @Metrics(namespace = "Namespace")}.
  * If both are specified then the value of the annotation variable will be used.</p>
+ * 
+ * <p>You can specify a custom function name with {@code @Metrics(functionName = "MyFunction")}.
+ * If specified, this will be used instead of the function name from the Lambda context.
+ * </p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
@@ -60,6 +64,8 @@ public @interface Metrics {
     String namespace() default "";
 
     String service() default "";
+    
+    String functionName() default "";
 
     boolean captureColdStart() default false;
 

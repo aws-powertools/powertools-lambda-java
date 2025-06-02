@@ -15,8 +15,6 @@
 package helloworld;
 
 import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.putMetadata;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -33,10 +31,12 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.slf4j.MDC;
-import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
-import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsLogger;
+import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
+import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.tracing.CaptureMode;
 import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
@@ -46,6 +46,7 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
  */
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private static final Logger log = LogManager.getLogger(App.class);
+    private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
@@ -56,13 +57,13 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
 
-        metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
+        metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
 
-        withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) ->
-        {
-            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"));
-        });
+        DimensionSet dimensionSet = DimensionSet.of(
+            "AnotherService", "CustomService",
+            "AnotherService1", "CustomService1"
+        );
+        metricsLogger.pushSingleMetric("CustomMetric2", 1, MetricUnit.COUNT, "Another", dimensionSet);
 
         MDC.put("test", "willBeLogged");
 
