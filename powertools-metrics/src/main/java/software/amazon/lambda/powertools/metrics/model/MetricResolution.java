@@ -18,8 +18,7 @@ package software.amazon.lambda.powertools.metrics.model;
  * Resolution for metrics
  */
 public enum MetricResolution {
-    STANDARD(60),
-    HIGH(1);
+    STANDARD(60), HIGH(1);
 
     private final int seconds;
 

@@ -23,7 +23,7 @@ import java.util.Set;
  */
 public class DimensionSet {
     private static final int MAX_DIMENSION_SET_SIZE = 9;
-    
+
     private final Map<String, String> dimensions = new LinkedHashMap<>();
 
     /**
@@ -54,7 +54,7 @@ public class DimensionSet {
         dimensionSet.addDimension(key2, value2);
         return dimensionSet;
     }
-    
+
     /**
      * Create a dimension set with three key-value pairs
      *
@@ -73,7 +73,7 @@ public class DimensionSet {
         dimensionSet.addDimension(key3, value3);
         return dimensionSet;
     }
-    
+
     /**
      * Create a dimension set with four key-value pairs
      *
@@ -87,8 +87,8 @@ public class DimensionSet {
      * @param value4 fourth dimension value
      * @return a new DimensionSet
      */
-    public static DimensionSet of(String key1, String value1, String key2, String value2, 
-                                 String key3, String value3, String key4, String value4) {
+    public static DimensionSet of(String key1, String value1, String key2, String value2,
+            String key3, String value3, String key4, String value4) {
         DimensionSet dimensionSet = new DimensionSet();
         dimensionSet.addDimension(key1, value1);
         dimensionSet.addDimension(key2, value2);
@@ -96,7 +96,7 @@ public class DimensionSet {
         dimensionSet.addDimension(key4, value4);
         return dimensionSet;
     }
-    
+
     /**
      * Create a dimension set with five key-value pairs
      *
@@ -112,9 +112,9 @@ public class DimensionSet {
      * @param value5 fifth dimension value
      * @return a new DimensionSet
      */
-    public static DimensionSet of(String key1, String value1, String key2, String value2, 
-                                 String key3, String value3, String key4, String value4,
-                                 String key5, String value5) {
+    public static DimensionSet of(String key1, String value1, String key2, String value2,
+            String key3, String value3, String key4, String value4,
+            String key5, String value5) {
         DimensionSet dimensionSet = new DimensionSet();
         dimensionSet.addDimension(key1, value1);
         dimensionSet.addDimension(key2, value2);
@@ -135,7 +135,7 @@ public class DimensionSet {
         dimensions.forEach(dimensionSet::addDimension);
         return dimensionSet;
     }
-    
+
     /**
      * Add a dimension to this dimension set
      *
@@ -147,15 +147,16 @@ public class DimensionSet {
      */
     public DimensionSet addDimension(String key, String value) {
         validateDimension(key, value);
-        
+
         if (dimensions.size() >= MAX_DIMENSION_SET_SIZE) {
-            throw new IllegalStateException("Cannot exceed " + MAX_DIMENSION_SET_SIZE + " dimensions per dimension set");
+            throw new IllegalStateException(
+                    "Cannot exceed " + MAX_DIMENSION_SET_SIZE + " dimensions per dimension set");
         }
-        
+
         dimensions.put(key, value);
         return this;
     }
-    
+
     /**
      * Get the dimension keys in this dimension set
      *
@@ -164,7 +165,7 @@ public class DimensionSet {
     public Set<String> getDimensionKeys() {
         return dimensions.keySet();
     }
-    
+
     /**
      * Get the value for a dimension key
      *
@@ -176,19 +177,19 @@ public class DimensionSet {
     }
 
     /**
-     * Get the dimensions as a map
+     * Get the dimensions as a map. Creates a shallow copy
      *
      * @return map of dimensions
      */
     public Map<String, String> getDimensions() {
         return new LinkedHashMap<>(dimensions);
     }
-    
+
     private void validateDimension(String key, String value) {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Dimension key cannot be null or empty");
         }
-        
+
         if (value == null) {
             throw new IllegalArgumentException("Dimension value cannot be null");
         }

@@ -14,7 +14,16 @@
 
 package software.amazon.lambda.powertools.metrics.internal;
 
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
+
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.amazonaws.services.lambda.runtime.Context;
+
 import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
@@ -24,18 +33,11 @@ import software.amazon.lambda.powertools.metrics.MetricsLogger;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
-
 /**
- * Implementation of MetricsLogger that uses the EMF library
+ * Implementation of MetricsLogger that uses the EMF library. Proxies MetricsLogger interface calls to underlying
+ * library {@link software.amazon.cloudwatchlogs.emf.logger.MetricsLogger}.
  */
 public class EmfMetricsLogger implements MetricsLogger {
-
     private static final String TRACE_ID_PROPERTY = "xray_trace_id";
     private static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String COLD_START_METRIC = "ColdStart";
@@ -91,7 +93,7 @@ public class EmfMetricsLogger implements MetricsLogger {
         });
         emfLogger.setDimensions(dimensionSet);
         // Store a copy of the default dimensions
-        this.defaultDimensions = new HashMap<>(defaultDimensions);
+        this.defaultDimensions = new LinkedHashMap<>(defaultDimensions);
     }
 
     @Override
