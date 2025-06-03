@@ -93,7 +93,7 @@ public class EmfMetricsLogger implements MetricsLogger {
         // Store a copy of the default dimensions
         this.defaultDimensions = new HashMap<>(defaultDimensions);
     }
-    
+
     @Override
     public software.amazon.lambda.powertools.metrics.model.DimensionSet getDefaultDimensions() {
         return software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions);

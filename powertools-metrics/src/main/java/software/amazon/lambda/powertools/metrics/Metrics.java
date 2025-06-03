@@ -20,13 +20,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * {@code Metrics} is used to signal that the annotated method should be
- * extended with Metrics functionality.
+ * {@code Metrics} is used to signal that the annotated Lambda handler method should be
+ * extended with Metrics functionality. Will have no effect when used on a method that is not a Lambda handler.
  *
  * <p>{@code Metrics} allows users to asynchronously create Amazon
  * CloudWatch metrics by using the CloudWatch <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html">Embedded Metrics Format</a>.
- * {@code Metrics} manages the life-cycle of the MetricsLogger class,
- * to simplify the user experience when used with AWS Lambda.
+ * {@code Metrics} manages the life-cycle and configuration of the MetricsLogger to simplify the user experience when used with AWS Lambda.
  *
  * <p>{@code Metrics} should be used with the handleRequest method of a class
  * which implements either
@@ -64,7 +63,7 @@ public @interface Metrics {
     String namespace() default "";
 
     String service() default "";
-    
+
     String functionName() default "";
 
     boolean captureColdStart() default false;

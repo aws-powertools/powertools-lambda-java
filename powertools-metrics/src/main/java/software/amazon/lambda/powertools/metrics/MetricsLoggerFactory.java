@@ -14,11 +14,11 @@
 
 package software.amazon.lambda.powertools.metrics;
 
+import java.util.Map;
+
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Factory for accessing the singleton MetricsLogger instance
@@ -38,28 +38,19 @@ public final class MetricsLoggerFactory {
     public static synchronized MetricsLogger getMetricsLogger() {
         if (metricsLogger == null) {
             metricsLogger = provider.getMetricsLogger();
-            
+
             // Apply default configuration from environment variables
             String envNamespace = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
             if (envNamespace != null) {
                 metricsLogger.setNamespace(envNamespace);
             }
-            
-            String envService = System.getenv("POWERTOOLS_SERVICE_NAME");
-            if (envService != null) {
-                Map<String, String> dimensions = new HashMap<>();
-                dimensions.put("Service", envService);
-                metricsLogger.setDefaultDimensions(dimensions);
-            } else {
-                Map<String, String> dimensions = new HashMap<>();
-                dimensions.put("Service", "service_undefined");
-                metricsLogger.setDefaultDimensions(dimensions);
-            }
+
+            metricsLogger.setDefaultDimensions(Map.of("Service", LambdaHandlerProcessor.serviceName()));
         }
-        
+
         return metricsLogger;
     }
-    
+
     /**
      * Set the metrics provider
      *

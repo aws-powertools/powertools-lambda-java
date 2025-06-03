@@ -17,13 +17,16 @@ package software.amazon.lambda.powertools.metrics.internal;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
 
-import com.amazonaws.services.lambda.runtime.Context;
+import java.util.Map;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+
+import com.amazonaws.services.lambda.runtime.Context;
+
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsLogger;
@@ -34,16 +37,7 @@ import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 public class LambdaMetricsAspect {
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
-    private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
 
-    private static String service(Metrics metrics) {
-        return !"".equals(metrics.service()) ? metrics.service() : serviceName();
-    }
-    
-    private String namespace(Metrics metrics) {
-        return !"".equals(metrics.namespace()) ? metrics.namespace() : NAMESPACE;
-    }
-    
     private String functionName(Metrics metrics, Context context) {
         if (!"".equals(metrics.functionName())) {
             return metrics.functionName();
@@ -51,29 +45,41 @@ public class LambdaMetricsAspect {
         return context != null ? context.getFunctionName() : null;
     }
 
-    @SuppressWarnings({"EmptyMethod"})
+    private String serviceNameWithFallback(Metrics metrics) {
+        if (!"".equals(metrics.service())) {
+            return metrics.service();
+        }
+        return LambdaHandlerProcessor.serviceName();
+    }
+
+    @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(metrics)")
     public void callAt(Metrics metrics) {
     }
 
     @Around(value = "callAt(metrics) && execution(@Metrics * *.*(..))", argNames = "pjp,metrics")
     public Object around(ProceedingJoinPoint pjp,
-                         Metrics metrics) throws Throwable {
+            Metrics metrics) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)) {
             MetricsLogger logger = MetricsLoggerFactory.getMetricsLogger();
 
-            // Add service dimension separately
-            logger.addDimension("Service", service(metrics));
-
-            // Set namespace
-            String metricsNamespace = namespace(metrics);
-            if (metricsNamespace != null) {
-                logger.setNamespace(metricsNamespace);
+            // The MetricsLoggerFactory applies default settings from the environment or can be configured by the
+            // MetricsLoggerBuilder. We only overwrite settings if they are explicitly set in the @Metrics annotation.
+            if (!"".equals(metrics.namespace())) {
+                logger.setNamespace(metrics.namespace());
             }
 
-            // Configure other settings
+            // If the default dimensions are larger than 1 or do not contain the "Service" dimension, it means that the
+            // user overwrote them manually e.g. using MetricsLoggerBuilder. In this case, we don't set the service
+            // default dimension.
+            if (!"".equals(metrics.service())
+                    && logger.getDefaultDimensions().getDimensionKeys().size() <= 1
+                    && logger.getDefaultDimensions().getDimensionKeys().contains("Service")) {
+                logger.setDefaultDimensions(Map.of("Service", metrics.service()));
+            }
+
             logger.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
 
             // Add trace ID metadata if available
@@ -84,18 +90,19 @@ public class LambdaMetricsAspect {
 
             if (null != extractedContext) {
                 logger.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
-                
+
                 // Only capture cold start metrics if configured
                 if (metrics.captureColdStart()) {
                     // Get function name from annotation or context
                     String funcName = functionName(metrics, extractedContext);
-                    
+
                     // Create dimensions with service and function name
                     DimensionSet coldStartDimensions = DimensionSet.of(
-                        "Service", service(metrics),
-                        "FunctionName", funcName != null ? funcName : extractedContext.getFunctionName()
-                    );
-                    
+                            "Service",
+                            logger.getDefaultDimensions().getDimensions().getOrDefault("Service",
+                                    serviceNameWithFallback(metrics)),
+                            "FunctionName", funcName != null ? funcName : extractedContext.getFunctionName());
+
                     logger.captureColdStartMetric(extractedContext, coldStartDimensions);
                 }
             }

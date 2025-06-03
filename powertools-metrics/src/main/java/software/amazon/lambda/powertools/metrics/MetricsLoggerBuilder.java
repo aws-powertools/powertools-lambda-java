@@ -64,7 +64,8 @@ public class MetricsLoggerBuilder {
     }
 
     /**
-     * Set the service name
+     * Set the service name. Does not apply if used in combination with default dimensions. If you would like to use a
+     * service name with default dimensions, use {@link #withDefaultDimension(String, String)} instead.
      *
      * @param service the service name
      * @return this builder
@@ -86,7 +87,7 @@ public class MetricsLoggerBuilder {
     }
 
     /**
-     * Add a default dimension
+     * Add a default dimension.
      *
      * @param key   the dimension key
      * @param value the dimension value
@@ -126,13 +127,13 @@ public class MetricsLoggerBuilder {
 
         metricsLogger.setRaiseOnEmptyMetrics(raiseOnEmptyMetrics);
 
-        if (!defaultDimensions.isEmpty()) {
-            metricsLogger.setDefaultDimensions(defaultDimensions);
+        if (service != null) {
+            metricsLogger.setDefaultDimensions(Map.of("Service", service));
         }
 
-        // Add Service dimension separately to ensure it's not mixed with other default dimensions
-        if (service != null) {
-            metricsLogger.addDimension("Service", service);
+        // If the user provided default dimension, we overwrite the default Service dimension again
+        if (!defaultDimensions.isEmpty()) {
+            metricsLogger.setDefaultDimensions(defaultDimensions);
         }
 
         return metricsLogger;

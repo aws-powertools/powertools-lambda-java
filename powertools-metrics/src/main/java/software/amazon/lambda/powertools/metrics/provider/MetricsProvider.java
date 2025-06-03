@@ -20,7 +20,7 @@ import software.amazon.lambda.powertools.metrics.MetricsLogger;
  * Interface for metrics provider implementations
  */
 public interface MetricsProvider {
-    
+
     /**
      * Get a new instance of a metrics logger
      *
