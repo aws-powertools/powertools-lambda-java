@@ -14,6 +14,7 @@ a provides functionality to reduce the overhead of performing common tracing tas
  * Helper methods to improve the developer experience of creating new X-Ray subsegments.
  * Better developer experience when developing with multiple threads.
  * Auto patch supported modules by AWS X-Ray
+ * GraalVM support
 
 ## Install
 

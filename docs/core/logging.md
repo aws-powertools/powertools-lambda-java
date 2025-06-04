@@ -13,6 +13,7 @@ Logging provides an opinionated logger with output structured as JSON.
 * Optionally logs Lambda response
 * Optionally supports log sampling by including a configurable percentage of DEBUG logs in logging output
 * Allows additional keys to be appended to the structured log at any point in time
+* GraalVM support
 
 
 ## Getting started
