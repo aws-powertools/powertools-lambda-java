@@ -3,23 +3,29 @@ title: Metrics
 description: Core utility
 ---
 
-Metrics creates custom metrics asynchronously by logging metrics to standard output following Amazon CloudWatch Embedded Metric Format (EMF).
+Metrics creates custom metrics asynchronously by logging metrics to standard output following [Amazon CloudWatch Embedded Metric Format (EMF)](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format.html).
 
-These metrics can be visualized through [Amazon CloudWatch Console](https://console.aws.amazon.com/cloudwatch/).
+These metrics can be visualized through [Amazon CloudWatch Console](https://aws.amazon.com/cloudwatch/).
 
-**Key features**
+## Key features
 
-* Aggregate up to 100 metrics using a single CloudWatch EMF object (large JSON blob).
-* Validate against common metric definitions mistakes (metric unit, values, max dimensions, max metrics, etc).
-* Metrics are created asynchronously by the CloudWatch service, no custom stacks needed.
-* Context manager to create a one off metric with a different dimension.
+- Aggregate up to 100 metrics using a single [CloudWatch EMF](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html){target="\_blank"} object (large JSON blob)
+- Validating your metrics against common metric definitions mistakes (for example, metric unit, values, max dimensions, max metrics)
+- Metrics are created asynchronously by the CloudWatch service. You do not need any custom stacks, and there is no impact to Lambda function latency
+- Support for creating one off metrics with different dimensions
+- GraalVM support
 
 ## Terminologies
 
-If you're new to Amazon CloudWatch, there are two terminologies you must be aware of before using this utility:
+If you're new to Amazon CloudWatch, there are some terminologies you must be aware of before using this utility:
 
-* **Namespace**. It's the highest level container that will group multiple metrics from multiple services for a given application, for example `ServerlessEcommerce`.
-* **Dimensions**. Metrics metadata in key-value format. They help you slice and dice metrics visualization, for example `ColdStart` metric by Payment `service`.
+- **Namespace**. It's the highest level container that will group multiple metrics from multiple services for a given application, for example `e-commerce-app`.
+- **Dimensions**. Metrics metadata in key-value format. They help you slice and dice metrics visualization, for example `ColdStart` metric by `service`.
+- **Metric**. It's the name of the metric, for example: `CartUpdated` or `ProductAdded`.
+- **Unit**. It's a value representing the unit of measure for the corresponding metric, for example: `Count` or `Seconds`.
+- **Resolution**. It's a value representing the storage resolution for the corresponding metric. Metrics can be either `Standard` or `High` resolution. Read more about CloudWatch Periods [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition).
+
+Visit the AWS documentation for a complete explanation for [Amazon CloudWatch concepts](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html).
 
 <figure>
   <img src="../../media/metrics_terminology.png" />
@@ -88,29 +94,40 @@ If you're new to Amazon CloudWatch, there are two terminologies you must be awar
             id 'java'
             id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
         }
-        
+
         repositories {
             mavenCentral()
         }
-        
+
         dependencies {
             aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
         }
-        
+
         sourceCompatibility = 11
         targetCompatibility = 11
     ```
 
 ## Getting started
 
-Metric has two global settings that will be used across all metrics emitted:
+Metrics has two global settings that will be used across all metrics emitted. Use your application or main service as the metric namespace to easily group all metrics:
 
-| Setting              | Description                                                                     | Environment variable           | Constructor parameter |
-|----------------------|---------------------------------------------------------------------------------|--------------------------------|-----------------------|
-| **Metric namespace** | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`           |
-| **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `service`             |
+| Setting              | Description                                                                             | Environment variable           | Decorator parameter |
+| -------------------- | --------------------------------------------------------------------------------------- | ------------------------------ | ------------------- |
+| **Metric namespace** | Logical container where all metrics will be placed e.g. `e-commerce-app`                | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`         |
+| **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `product-service` | `POWERTOOLS_SERVICE_NAME`      | `service`           |
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
+
+<!-- prettier-ignore-start -->
+!!!info "Order of Precedence of `MetricsLogger` configuration"
+    The `MetricsLogger` Singleton can be configured by three different interfaces. The following order of precedence applies:
+
+    1. `@Metrics` annotation (recommended)
+    2. `MetricsLoggerBuilder` using Builder pattern (see [Advanced section](#usage-without-metrics-annotation))
+    3. Environment variables (recommended)
+
+    For most use-cases, we recommend using Environment variables and only overwrite settings in code where needed using either the `@Metrics` annotation or `MetricsLoggerBuilder` if the annotation cannot be used.
+<!-- prettier-ignore-end -->
 
 === "template.yaml"
 
@@ -123,95 +140,107 @@ Metric has two global settings that will be used across all metrics emitted:
             Runtime: java8
             Environment:
                 Variables:
-                    POWERTOOLS_SERVICE_NAME: payment
-                    POWERTOOLS_METRICS_NAMESPACE: ServerlessAirline
+                    POWERTOOLS_SERVICE_NAME: product-service
+                    POWERTOOLS_METRICS_NAMESPACE: e-commerce-app
     ```
 
 === "MetricsEnabledHandler.java"
 
-    ```java hl_lines="8"
+    ```java hl_lines="9"
     import software.amazon.lambda.powertools.metrics.Metrics;
-    
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+
     public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
-    
-        MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
-    
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
         @Override
-        @Metrics(namespace = "ExampleApplication", service = "booking")
+        @Metrics(namespace = "e-commerce-app", service = "product-service")
         public Object handleRequest(Object input, Context context) {
             // ...
         }
     }
     ```
 
-You can initialize Metrics anywhere in your code as many times as you need - It'll keep track of your aggregate metrics in memory.
+`MetricsLogger` is implemented as a Singleton to keep track of your aggregate metrics in memory and make them accessible anywhere in your code. To guarantee that metrics are flushed properly the `@Metrics` annotation must be added on the lambda handler.
+
+!!!info "You can use the Metrics utility without the `@Metrics` annotation and flush manually. Read more in the [advanced section below](#usage-without-metrics-annotation)."
 
 ## Creating metrics
 
-You can create metrics using `putMetric`, and manually create dimensions for all your aggregate metrics using `putDimensions`.
+You can create metrics using `addMetric`, and manually create dimensions for all your aggregate metrics using `addDimension`. Anywhere in your code, you can access the current `MetricsLogger` Singleton using the `MetricsLoggerFactory`.
 
 === "MetricsEnabledHandler.java"
 
-    ```java hl_lines="11 12"
+    ```java hl_lines="13"
     import software.amazon.lambda.powertools.metrics.Metrics;
-    import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+    import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
     public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
-    
-        MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
-    
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
         @Override
-        @Metrics(namespace = "ExampleApplication", service = "booking")
+        @Metrics(namespace = "e-commerce-app", service = "product-service")
         public Object handleRequest(Object input, Context context) {
-            metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
-            metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
+            metricsLogger.addDimension("environment", "prod");
+            metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
             // ...
         }
     }
     ```
 
-!!! tip "The `Unit` enum facilitate finding a supported metric unit by CloudWatch."
+!!! tip "The `MetricUnit` enum facilitates finding a supported metric unit by CloudWatch."
 
-!!! note "Metrics overflow"
-    CloudWatch EMF supports a max of 100 metrics. Metrics utility will flush all metrics when adding the 100th metric while subsequent metrics will be aggregated into a new EMF object, for your convenience.
-
+<!-- prettier-ignore-start -->
+!!! note "Metrics dimensions"
+    CloudWatch EMF supports a max of 9 dimensions per metric. The Metrics utility will validate this limit when adding dimensions.
+<!-- prettier-ignore-end -->
 
 ### Adding high-resolution metrics
 
 You can create [high-resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics)
-passing a `storageResolution` to the `putMetric` method:
+passing a `MetricResolution.HIGH` to the `addMetric` method:
 
 === "HigResMetricsHandler.java"
 
     ```java hl_lines="3 13"
     import software.amazon.lambda.powertools.metrics.Metrics;
-    import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
-    import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 
     public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
-    
-        MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
-    
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
         @Override
-        @Metrics(namespace = "ExampleApplication", service = "booking")
+        @Metrics(namespace = "e-commerce-app", service = "product-service")
         public Object handleRequest(Object input, Context context) {
             // ...
-            metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT, StorageResolution.HIGH);
+            metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT, MetricResolution.HIGH);
         }
     }
     ```
 
+<!-- prettier-ignore-start -->
 !!! info "When is it useful?"
     High-resolution metrics are data with a granularity of one second and are very useful in several situations such as telemetry, time series, real-time incident management, and others.
+<!-- prettier-ignore-end -->
 
 ### Flushing metrics
 
-The `@Metrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation, 
-if no metrics are provided no exception will be raised. If metrics are provided, and any of the following criteria are 
-not met, `ValidationException` exception will be raised.
+The `@Metrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation,
+if no metrics are provided no exception will be raised. If metrics are provided, and any of the following criteria are
+not met, `IllegalStateException` or `IllegalArgumentException` exceptions will be raised.
 
+<!-- prettier-ignore-start -->
 !!! tip "Metric validation"
-    * Maximum of 9 dimensions
+    - Maximum of 9 dimensions
+    - Dimension keys and values cannot be null or empty
+    - Metric values must be valid numbers
+<!-- prettier-ignore-end -->
 
 If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@Metrics** annotation:
 
@@ -251,33 +280,58 @@ You can capture cold start metrics automatically with `@Metrics` via the `captur
 
 If it's a cold start invocation, this feature will:
 
-* Create a separate EMF blob solely containing a metric named `ColdStart`
-* Add `FunctionName` and `Service` dimensions
+- Create a separate EMF blob solely containing a metric named `ColdStart`
+- Add `FunctionName` and `Service` dimensions
 
 This has the advantage of keeping cold start metric separate from your application metrics.
 
+You can also specify a custom function name to be used in the cold start metric:
+
+=== "MetricsColdStartCustomFunction.java"
+
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+
+    public class MetricsColdStartCustomFunction implements RequestHandler<Object, Object> {
+
+        @Override
+        @Metrics(captureColdStart = true, functionName = "CustomFunction")
+        public Object handleRequest(Object input, Context context) {
+        ...
+        }
+    }
+    ```
+
 ## Advanced
 
-## Adding metadata
+### Adding metadata
 
-You can use `putMetadata` for advanced use cases, where you want to metadata as part of the serialized metrics object.
+You can use `addMetadata` for advanced use cases, where you want to add metadata as part of the serialized metrics object.
+
+<!-- prettier-ignore-start -->
+!!! info
+    This will not be available during metrics visualization, use Dimensions for this purpose.
 
 !!! info
-    **This will not be available during metrics visualization, use `dimensions` for this purpose.**
+    Adding metadata with a key that is the same as an existing metric will be ignored
+<!-- prettier-ignore-end -->
 
 === "App.java"
 
-    ```java hl_lines="8 9" 
+    ```java hl_lines="13"
     import software.amazon.lambda.powertools.metrics.Metrics;
-    import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 
     public class App implements RequestHandler<Object, Object> {
 
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @Metrics(namespace = "e-commerce-app", service = "booking-service")
         public Object handleRequest(Object input, Context context) {
-            metricsLogger().putMetric("CustomMetric1", 1, Unit.COUNT);
-            metricsLogger().putMetadata("booking_id", "1234567890");
+            metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
+            metricsLogger.addMetadata("booking_id", "1234567890");
             ...
         }
     }
@@ -285,79 +339,131 @@ You can use `putMetadata` for advanced use cases, where you want to metadata as 
 
 This will be available in CloudWatch Logs to ease operations on high cardinal data.
 
-## Overriding default dimension set
+### Setting default dimensions
 
-By default, all metrics emitted via module captures `Service` as one of the default dimension. This is either specified via
-`POWERTOOLS_SERVICE_NAME` environment variable or via `service` attribute on `Metrics` annotation. If you wish to override the default 
-Dimension, it can be done via `#!java MetricsUtils.defaultDimensions()`.
+By default, all metrics emitted via module captures `Service` as one of the default dimensions. This is either specified via `POWERTOOLS_SERVICE_NAME` environment variable or via `service` attribute on `Metrics` annotation.
+
+If you wish to set custom default dimensions, it can be done via `#!java metricsLogger.setDefaultDimensions()`. You can also use the `MetricsLoggerBuilder` instead of the `MetricsLoggerFactory` to configure **and** retrieve the `MetricsLogger` Singleton at the same time (see `MetricsLoggerBuilder.java` tab).
 
 === "App.java"
 
-    ```java hl_lines="8 9 10"
+    ```java hl_lines="13"
     import software.amazon.lambda.powertools.metrics.Metrics;
-    import static software.amazon.lambda.powertools.metrics.MetricsUtils;
-    
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+    import software.amazon.lambda.powertools.metrics.model.DimensionSet;
+
     public class App implements RequestHandler<Object, Object> {
-    
-        MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
-        
-        static {
-            MetricsUtils.defaultDimensions(DimensionSet.of("CustomDimension", "booking"));
-        }
-    
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
         @Override
-        @Metrics(namespace = "ExampleApplication", service = "booking")
+        @Metrics(namespace = "e-commerce-app", service = "product-service")
         public Object handleRequest(Object input, Context context) {
+            metricsLogger.setDefaultDimensions(Map.of("CustomDimension", "booking", "Environment", "prod"));
             ...
-            MetricsUtils.withSingleMetric("Metric2", 1, Unit.COUNT, log -> {});
         }
     }
     ```
 
-## Creating a metric with a different dimension
+=== "MetricsLoggerBuilder.java"
 
-CloudWatch EMF uses the same dimensions across all your metrics. Use `withSingleMetric` if you have a metric that should have different dimensions.
+    ```java hl_lines="8-10"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+    import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
+    public class App implements RequestHandler<Object, Object> {
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+            .withDefaultDimensions(Map.of("CustomDimension", "booking", "Environment", "prod"))
+            .build();
+
+        @Override
+        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        public Object handleRequest(Object input, Context context) {
+            metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
+            ...
+        }
+    }
+    ```
+
+<!-- prettier-ignore-start -->
+!!!note
+    Overwriting the default dimensions will also overwrite the default `Service` dimension. If you wish to keep `Service` in your default dimensions, you need to add it manually.
+<!-- prettier-ignore-end -->
+
+### Creating a single metric with different configuration
+
+You can create a single metric with its own namespace and dimensions using `pushSingleMetric`:
+
+=== "App.java"
+
+    ```java hl_lines="12-18"
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+    import software.amazon.lambda.powertools.metrics.model.DimensionSet;
+    import software.amazon.lambda.powertools.metrics.model.MetricUnit;
+
+    public class App implements RequestHandler<Object, Object> {
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
+        @Override
+        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        public Object handleRequest(Object input, Context context) {
+            metricsLogger.pushSingleMetric(
+                "CustomMetric",
+                1,
+                MetricUnit.COUNT,
+                "CustomNamespace",
+                DimensionSet.of("CustomDimension", "value")  // Dimensions are optional
+            );
+        }
+    }
+    ```
+
+<!-- prettier-ignore-start -->
 !!! info
-    Generally, this would be an edge case since you [pay for unique metric](https://aws.amazon.com/cloudwatch/pricing/). Keep the following formula in mind:
+    Generally, this would be an edge case since you [pay for unique metric](https://aws.amazon.com/cloudwatch/pricing). Keep the following formula in mind:
+
     **unique metric = (metric_name + dimension_name + dimension_value)**
+<!-- prettier-ignore-end -->
+
+### Usage without `@Metrics` annotation
+
+The `MetricsLogger` provides all configuration options via `MetricsLoggerBuilder` in addition to the `@Metrics` annotation. This can be useful if work in an environment or framework that does not leverage the vanilla Lambda `handleRequest` method.
+
+!!!info "The environment variables for Service and Namespace configuration still apply but can be overwritten with `MetricsLoggerBuilder` if needed."
+
+The following example shows how to configure a custom `MetricsLogger` using the Builder pattern. Note that it is necessary to manually flush metrics now.
 
 === "App.java"
 
-    ```java hl_lines="7 8 9" 
-    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withSingleMetric;
+    ```java hl_lines="7-12 19 23"
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.MetricsLoggerBuilder;
+    import software.amazon.lambda.powertools.metrics.model.DimensionSet;
+    import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
     public class App implements RequestHandler<Object, Object> {
+        // Create and configure a MetricsLogger singleton without annotation
+        private static final MetricsLogger customLogger = MetricsLoggerBuilder.builder()
+            .withNamespace("e-commerce-app")
+            .withRaiseOnEmptyMetrics(true)
+            .withService("product-service")
+            .build();
 
         @Override
         public Object handleRequest(Object input, Context context) {
-             withSingleMetric("CustomMetrics2", 1, Unit.COUNT, "Another", (metric) -> {
-                metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-            });
-        }
-    }
-    ```
+            // You can manually capture the cold start metric
+            // Lambda context is an optional argument if not available in your environment
+            // Dimensions are also optional.
+            customLogger.captureColdStartMetric(context, DimensionSet.of("FunctionName", "MyFunction", "Service", "product-service"));
 
-## Creating metrics with different configurations
-
-Use `withMetricsLogger` if you have one or more metrics that should have different configurations e.g. dimensions or namespace.
-
-=== "App.java"
-
-    ```java hl_lines="7 8 9 10 11 12 13" 
-    import static software.amazon.lambda.powertools.metrics.MetricsUtils.withMetricsLogger;
-
-    public class App implements RequestHandler<Object, Object> {
-
-        @Override
-        public Object handleRequest(Object input, Context context) {
-             withMetricsLogger(logger -> {
-                // override default dimensions
-                logger.setDimensions(DimensionSet.of("AnotherService", "CustomService"));
-                // add metrics
-                logger.putMetric("CustomMetrics1", 1, Unit.COUNT);
-                logger.putMetric("CustomMetrics2", 5, Unit.COUNT);
-            });
+            // Add metrics to the custom logger
+            customLogger.addMetric("CustomMetric", 1, MetricUnit.COUNT);
+            customLogger.flush();
         }
     }
     ```
