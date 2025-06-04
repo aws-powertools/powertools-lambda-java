@@ -19,9 +19,9 @@ These metrics can be visualized through [Amazon CloudWatch Console](https://aws.
 
 If you're new to Amazon CloudWatch, there are some terminologies you must be aware of before using this utility:
 
-- **Namespace**. It's the highest level container that will group multiple metrics from multiple services for a given application, for example `e-commerce-app`.
+- **Namespace**. It's the highest level container that will group multiple metrics from multiple services for a given application, for example `ServerlessAirline`.
 - **Dimensions**. Metrics metadata in key-value format. They help you slice and dice metrics visualization, for example `ColdStart` metric by `service`.
-- **Metric**. It's the name of the metric, for example: `CartUpdated` or `ProductAdded`.
+- **Metric**. It's the name of the metric, for example: `SuccessfulBooking` or `UpdatedBooking`.
 - **Unit**. It's a value representing the unit of measure for the corresponding metric, for example: `Count` or `Seconds`.
 - **Resolution**. It's a value representing the storage resolution for the corresponding metric. Metrics can be either `Standard` or `High` resolution. Read more about CloudWatch Periods [here](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#Resolution_definition).
 
@@ -155,7 +155,7 @@ Metrics has two global settings that will be used across all metrics emitted. Us
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             // ...
         }
@@ -183,7 +183,7 @@ You can create metrics using `addMetric`, and manually create dimensions for all
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addDimension("environment", "prod");
             metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
@@ -216,7 +216,7 @@ passing a `MetricResolution.HIGH` to the `addMetric` method:
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             // ...
             metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT, MetricResolution.HIGH);
@@ -328,7 +328,7 @@ You can use `addMetadata` for advanced use cases, where you want to add metadata
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "booking-service")
+        @Metrics(namespace = "ServerlessAirline", service = "booking-service")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
             metricsLogger.addMetadata("booking_id", "1234567890");
@@ -358,7 +358,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.setDefaultDimensions(Map.of("CustomDimension", "booking", "Environment", "prod"));
             ...
@@ -381,7 +381,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
             .build();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
             ...
@@ -410,7 +410,7 @@ You can create a single metric with its own namespace and dimensions using `push
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "e-commerce-app", service = "product-service")
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.pushSingleMetric(
                 "CustomMetric",
@@ -449,9 +449,9 @@ The following example shows how to configure a custom `MetricsLogger` using the 
     public class App implements RequestHandler<Object, Object> {
         // Create and configure a MetricsLogger singleton without annotation
         private static final MetricsLogger customLogger = MetricsLoggerBuilder.builder()
-            .withNamespace("e-commerce-app")
+            .withNamespace("ServerlessAirline")
             .withRaiseOnEmptyMetrics(true)
-            .withService("product-service")
+            .withService("payment")
             .build();
 
         @Override
