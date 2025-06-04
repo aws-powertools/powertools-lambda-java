@@ -45,7 +45,7 @@ class MetricsLoggerFactoryTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         System.setOut(new PrintStream(outputStreamCaptor));
 
         // Reset LambdaHandlerProcessor's SERVICE_NAME
@@ -60,7 +60,7 @@ class MetricsLoggerFactoryTest {
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
+    void tearDown() throws Exception {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
@@ -74,7 +74,7 @@ class MetricsLoggerFactoryTest {
     }
 
     @Test
-    public void shouldGetMetricsLoggerInstance() {
+    void shouldGetMetricsLoggerInstance() {
         // When
         MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
@@ -83,7 +83,7 @@ class MetricsLoggerFactoryTest {
     }
 
     @Test
-    public void shouldReturnSameInstanceOnMultipleCalls() {
+    void shouldReturnSameInstanceOnMultipleCalls() {
         // When
         MetricsLogger firstInstance = MetricsLoggerFactory.getMetricsLogger();
         MetricsLogger secondInstance = MetricsLoggerFactory.getMetricsLogger();
@@ -94,7 +94,7 @@ class MetricsLoggerFactoryTest {
 
     @Test
     @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = TEST_NAMESPACE)
-    public void shouldUseNamespaceFromEnvironmentVariable() throws Exception {
+    void shouldUseNamespaceFromEnvironmentVariable() throws Exception {
         // When
         MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -110,7 +110,7 @@ class MetricsLoggerFactoryTest {
 
     @Test
     @SetEnvironmentVariable(key = "POWERTOOLS_SERVICE_NAME", value = TEST_SERVICE)
-    public void shouldUseServiceNameFromEnvironmentVariable() throws Exception {
+    void shouldUseServiceNameFromEnvironmentVariable() throws Exception {
         // When
         MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -125,7 +125,7 @@ class MetricsLoggerFactoryTest {
     }
 
     @Test
-    public void shouldSetCustomMetricsProvider() {
+    void shouldSetCustomMetricsProvider() {
         // Given
         MetricsProvider testProvider = new TestMetricsProvider();
 
@@ -138,7 +138,7 @@ class MetricsLoggerFactoryTest {
     }
 
     @Test
-    public void shouldThrowExceptionWhenSettingNullProvider() {
+    void shouldThrowExceptionWhenSettingNullProvider() {
         // When/Then
         assertThatThrownBy(() -> MetricsLoggerFactory.setMetricsProvider(null))
                 .isInstanceOf(IllegalArgumentException.class)

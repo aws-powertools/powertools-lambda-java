@@ -37,6 +37,7 @@ import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 public class LambdaMetricsAspect {
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
+    private static final String SERVICE_DIMENSION = "Service";
 
     private String functionName(Metrics metrics, Context context) {
         if (!"".equals(metrics.functionName())) {
@@ -76,8 +77,8 @@ public class LambdaMetricsAspect {
             // default dimension.
             if (!"".equals(metrics.service())
                     && logger.getDefaultDimensions().getDimensionKeys().size() <= 1
-                    && logger.getDefaultDimensions().getDimensionKeys().contains("Service")) {
-                logger.setDefaultDimensions(Map.of("Service", metrics.service()));
+                    && logger.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION)) {
+                logger.setDefaultDimensions(Map.of(SERVICE_DIMENSION, metrics.service()));
             }
 
             logger.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
@@ -98,8 +99,8 @@ public class LambdaMetricsAspect {
 
                     // Create dimensions with service and function name
                     DimensionSet coldStartDimensions = DimensionSet.of(
-                            "Service",
-                            logger.getDefaultDimensions().getDimensions().getOrDefault("Service",
+                            SERVICE_DIMENSION,
+                            logger.getDefaultDimensions().getDimensions().getOrDefault(SERVICE_DIMENSION,
                                     serviceNameWithFallback(metrics)),
                             "FunctionName", funcName != null ? funcName : extractedContext.getFunctionName());
 
