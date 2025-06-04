@@ -58,12 +58,22 @@ public interface MetricsLogger {
     }
 
     /**
-     * Add a dimension to the metrics logger
+     * Add a dimension to the metrics logger.
+     * This is equivalent to calling {@code addDimension(DimensionSet.of(key, value))}
      *
      * @param key   the name of the dimension
      * @param value the value of the dimension
      */
-    void addDimension(String key, String value);
+    default void addDimension(String key, String value) {
+        addDimension(DimensionSet.of(key, value));
+    }
+    
+    /**
+     * Add a dimension set to the metrics logger
+     *
+     * @param dimensionSet the dimension set to add
+     */
+    void addDimension(DimensionSet dimensionSet);
 
     /**
      * Add metadata to the metrics logger
@@ -79,7 +89,7 @@ public interface MetricsLogger {
      * @param defaultDimensions map of default dimensions
      */
     void setDefaultDimensions(Map<String, String> defaultDimensions);
-    
+
     /**
      * Get the default dimensions for the metrics logger
      *
@@ -118,7 +128,7 @@ public interface MetricsLogger {
      * @param dimensions custom dimensions for this metric (optional)
      */
     void captureColdStartMetric(Context context, DimensionSet dimensions);
-    
+
     /**
      * Capture cold start metric and flush immediately
      *
@@ -127,19 +137,19 @@ public interface MetricsLogger {
     default void captureColdStartMetric(Context context) {
         captureColdStartMetric(context, null);
     }
-    
+
     /**
      * Capture cold start metric without Lambda context and flush immediately
      *
      * @param dimensions custom dimensions for this metric (optional)
      */
     void captureColdStartMetric(DimensionSet dimensions);
-    
+
     /**
      * Capture cold start metric without Lambda context and flush immediately
      */
     default void captureColdStartMetric() {
-        captureColdStartMetric((DimensionSet)null);
+        captureColdStartMetric((DimensionSet) null);
     }
 
     /**
@@ -152,9 +162,9 @@ public interface MetricsLogger {
      * @param namespace  the namespace for the metric
      * @param dimensions custom dimensions for this metric (optional)
      */
-    void pushSingleMetric(String name, double value, MetricUnit unit, String namespace, 
-                          DimensionSet dimensions);
-    
+    void pushSingleMetric(String name, double value, MetricUnit unit, String namespace,
+            DimensionSet dimensions);
+
     /**
      * Push a single metric with custom dimensions. This creates a separate metrics context
      * that doesn't affect the default metrics context.

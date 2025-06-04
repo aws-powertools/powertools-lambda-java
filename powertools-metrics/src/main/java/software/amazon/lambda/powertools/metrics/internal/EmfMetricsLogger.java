@@ -64,16 +64,23 @@ public class EmfMetricsLogger implements MetricsLogger {
     }
 
     @Override
-    public void addDimension(String key, String value) {
-        DimensionSet dimensionSet = new DimensionSet();
-        try {
-            dimensionSet.addDimension(key, value);
-            emfLogger.putDimensions(dimensionSet);
-            // Update our local copy of default dimensions
-            defaultDimensions.put(key, value);
-        } catch (Exception e) {
-            // Ignore dimension errors
+    public void addDimension(software.amazon.lambda.powertools.metrics.model.DimensionSet dimensionSet) {
+        if (dimensionSet == null) {
+            throw new IllegalArgumentException("DimensionSet cannot be null");
         }
+
+        DimensionSet emfDimensionSet = new DimensionSet();
+        dimensionSet.getDimensions().forEach((key, val) -> {
+            try {
+                emfDimensionSet.addDimension(key, val);
+                // Update our local copy of default dimensions
+                defaultDimensions.put(key, val);
+            } catch (Exception e) {
+                // Ignore dimension errors
+            }
+        });
+
+        emfLogger.putDimensions(emfDimensionSet);
     }
 
     @Override

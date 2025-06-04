@@ -27,7 +27,7 @@ public class TestMetricsLogger implements MetricsLogger {
     }
 
     @Override
-    public void addDimension(String key, String value) {
+    public void addDimension(DimensionSet dimensionSet) {
         // Test placeholder
     }
 

@@ -182,6 +182,50 @@ class EmfMetricsLoggerTest {
         }
         assertThat(hasDimension).isTrue();
     }
+    
+    @Test
+    void shouldAddDimensionSet() throws Exception {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of("Dim1", "Value1", "Dim2", "Value2");
+        
+        // When
+        metricsLogger.clearDefaultDimensions(); // Clear default Service dimension first for easier assertions
+        metricsLogger.addDimension(dimensionSet);
+        metricsLogger.addMetric("test-metric", 100);
+        metricsLogger.flush();
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
+
+        assertThat(rootNode.has("Dim1")).isTrue();
+        assertThat(rootNode.get("Dim1").asText()).isEqualTo("Value1");
+        assertThat(rootNode.has("Dim2")).isTrue();
+        assertThat(rootNode.get("Dim2").asText()).isEqualTo("Value2");
+
+        // Check that the dimensions are in the CloudWatchMetrics section
+        JsonNode dimensions = rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Dimensions").get(0);
+        boolean hasDim1 = false;
+        boolean hasDim2 = false;
+        for (JsonNode dimension : dimensions) {
+            String dimName = dimension.asText();
+            if (dimName.equals("Dim1")) {
+                hasDim1 = true;
+            } else if (dimName.equals("Dim2")) {
+                hasDim2 = true;
+            }
+        }
+        assertThat(hasDim1).isTrue();
+        assertThat(hasDim2).isTrue();
+    }
+    
+    @Test
+    void shouldThrowExceptionWhenDimensionSetIsNull() {
+        // When/Then
+        assertThatThrownBy(() -> metricsLogger.addDimension((DimensionSet) null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("DimensionSet cannot be null");
+    }
 
     @Test
     void shouldAddMetadata() throws Exception {
