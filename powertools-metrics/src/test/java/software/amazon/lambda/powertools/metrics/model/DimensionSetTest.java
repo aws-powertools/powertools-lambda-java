@@ -152,16 +152,16 @@ class DimensionSetTest {
     @Test
     void shouldThrowExceptionWhenExceedingMaxDimensions() {
         // Given
-        // Create a map with 9 dimensions (9 is maximum)
-        Map<String, String> dimensions = Map.of(
-                "Key1", "Value1", "Key2", "Value2", "Key3", "Value3", "Key4", "Value4", "Key5", "Value5",
-                "Key6", "Value6", "Key7", "Value7", "Key8", "Value8", "Key9", "Value9");
-        DimensionSet dimensionSet = DimensionSet.of(dimensions);
+        // Create a dimension set with 30 dimensions (30 is maximum)
+        DimensionSet dimensionSet = new DimensionSet();
+        for (int i = 1; i <= 30; i++) {
+            dimensionSet.addDimension("Key" + i, "Value" + i);
+        }
 
         // When/Then
-        assertThatThrownBy(() -> dimensionSet.addDimension("Key10", "Value10"))
+        assertThatThrownBy(() -> dimensionSet.addDimension("Key31", "Value31"))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Cannot exceed 9 dimensions per dimension set");
+                .hasMessageContaining("Cannot exceed 30 dimensions per dimension set");
     }
 
     @Test
@@ -194,6 +194,98 @@ class DimensionSetTest {
         // When/Then
         assertThatThrownBy(() -> dimensionSet.addDimension("Key", null))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Dimension value cannot be null");
+                .hasMessage("Dimension value cannot be null or empty");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValueIsEmpty() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension("Key", ""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension value cannot be null or empty");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenKeyContainsWhitespace() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension("Key With Space", "Value"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension key cannot contain whitespaces: Key With Space");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValueContainsWhitespace() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension("Key", "Value With Space"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension value cannot contain whitespaces: Value With Space");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenKeyStartsWithColon() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension(":Key", "Value"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension key cannot start with colon: :Key");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenKeyExceedsMaxLength() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+        String longKey = "a".repeat(251); // MAX_DIMENSION_NAME_LENGTH + 1
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension(longKey, "Value"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension name exceeds maximum length of 250: " + longKey);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValueExceedsMaxLength() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+        String longValue = "a".repeat(1025); // MAX_DIMENSION_VALUE_LENGTH + 1
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension("Key", longValue))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension value exceeds maximum length of 1024: " + longValue);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenKeyContainsNonAsciiCharacters() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+        String keyWithNonAscii = "Key\u0080"; // Non-ASCII character
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension(keyWithNonAscii, "Value"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension name has invalid characters: " + keyWithNonAscii);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenValueContainsNonAsciiCharacters() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of(Collections.emptyMap());
+        String valueWithNonAscii = "Value\u0080"; // Non-ASCII character
+
+        // When/Then
+        assertThatThrownBy(() -> dimensionSet.addDimension("Key", valueWithNonAscii))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Dimension value has invalid characters: " + valueWithNonAscii);
     }
 }

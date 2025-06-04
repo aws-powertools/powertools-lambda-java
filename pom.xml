@@ -279,6 +279,11 @@
                 <artifactId>aws-embedded-metrics</artifactId>
                 <version>${aws-embedded-metrics.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>3.15.0</version>
+            </dependency>
 
             <!-- Test dependencies -->
             <dependency>
@@ -292,12 +297,6 @@
                 <groupId>org.junit-pioneer</groupId>
                 <artifactId>junit-pioneer</artifactId>
                 <version>1.9.1</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.15.0</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
