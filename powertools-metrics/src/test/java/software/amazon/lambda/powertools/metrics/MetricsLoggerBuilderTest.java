@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 import software.amazon.lambda.powertools.metrics.testutils.TestMetricsLogger;
@@ -130,7 +130,7 @@ class MetricsLoggerBuilderTest {
     void shouldBuildWithMultipleDefaultDimensions() throws Exception {
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
-                .withDefaultDimensions(Map.of("Environment", "Test", "Region", "us-west-2"))
+                .withDefaultDimensions(DimensionSet.of("Environment", "Test", "Region", "us-west-2"))
                 .build();
 
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -165,7 +165,7 @@ class MetricsLoggerBuilderTest {
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
                 .withService("OriginalService")
-                .withDefaultDimensions(Map.of("Service", "OverriddenService"))
+                .withDefaultDimensions(DimensionSet.of("Service", "OverriddenService"))
                 .build();
 
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);

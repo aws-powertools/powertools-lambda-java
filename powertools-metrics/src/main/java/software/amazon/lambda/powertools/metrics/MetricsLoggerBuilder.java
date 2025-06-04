@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.metrics;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
@@ -101,11 +102,13 @@ public class MetricsLoggerBuilder {
     /**
      * Add default dimensions
      *
-     * @param dimensions map of dimensions
+     * @param dimensionSet the dimension set to add
      * @return this builder
      */
-    public MetricsLoggerBuilder withDefaultDimensions(Map<String, String> dimensions) {
-        this.defaultDimensions.putAll(dimensions);
+    public MetricsLoggerBuilder withDefaultDimensions(DimensionSet dimensionSet) {
+        if (dimensionSet != null) {
+            this.defaultDimensions.putAll(dimensionSet.getDimensions());
+        }
         return this;
     }
 
@@ -128,12 +131,12 @@ public class MetricsLoggerBuilder {
         metricsLogger.setRaiseOnEmptyMetrics(raiseOnEmptyMetrics);
 
         if (service != null) {
-            metricsLogger.setDefaultDimensions(Map.of("Service", service));
+            metricsLogger.setDefaultDimensions(DimensionSet.of("Service", service));
         }
 
         // If the user provided default dimension, we overwrite the default Service dimension again
         if (!defaultDimensions.isEmpty()) {
-            metricsLogger.setDefaultDimensions(defaultDimensions);
+            metricsLogger.setDefaultDimensions(DimensionSet.of(defaultDimensions));
         }
 
         return metricsLogger;

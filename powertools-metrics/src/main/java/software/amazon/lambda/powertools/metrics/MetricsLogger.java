@@ -67,7 +67,7 @@ public interface MetricsLogger {
     default void addDimension(String key, String value) {
         addDimension(DimensionSet.of(key, value));
     }
-    
+
     /**
      * Add a dimension set to the metrics logger
      *
@@ -86,9 +86,9 @@ public interface MetricsLogger {
     /**
      * Set default dimensions for the metrics logger
      *
-     * @param defaultDimensions map of default dimensions
+     * @param dimensionSet the dimension set to use as default dimensions
      */
-    void setDefaultDimensions(Map<String, String> defaultDimensions);
+    void setDefaultDimensions(DimensionSet dimensionSet);
 
     /**
      * Get the default dimensions for the metrics logger

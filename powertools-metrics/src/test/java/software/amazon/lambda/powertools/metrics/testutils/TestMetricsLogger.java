@@ -37,7 +37,7 @@ public class TestMetricsLogger implements MetricsLogger {
     }
 
     @Override
-    public void setDefaultDimensions(Map<String, String> defaultDimensions) {
+    public void setDefaultDimensions(DimensionSet dimensionSet) {
         // Test placeholder
     }
 

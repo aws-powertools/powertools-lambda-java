@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -182,12 +181,12 @@ class EmfMetricsLoggerTest {
         }
         assertThat(hasDimension).isTrue();
     }
-    
+
     @Test
     void shouldAddDimensionSet() throws Exception {
         // Given
         DimensionSet dimensionSet = DimensionSet.of("Dim1", "Value1", "Dim2", "Value2");
-        
+
         // When
         metricsLogger.clearDefaultDimensions(); // Clear default Service dimension first for easier assertions
         metricsLogger.addDimension(dimensionSet);
@@ -218,7 +217,7 @@ class EmfMetricsLoggerTest {
         assertThat(hasDim1).isTrue();
         assertThat(hasDim2).isTrue();
     }
-    
+
     @Test
     void shouldThrowExceptionWhenDimensionSetIsNull() {
         // When/Then
@@ -245,8 +244,11 @@ class EmfMetricsLoggerTest {
 
     @Test
     void shouldSetDefaultDimensions() throws Exception {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of("Service", "TestService", "Environment", "Test");
+
         // When
-        metricsLogger.setDefaultDimensions(Map.of("Service", "TestService", "Environment", "Test"));
+        metricsLogger.setDefaultDimensions(dimensionSet);
         metricsLogger.addMetric("test-metric", 100);
         metricsLogger.flush();
 
@@ -262,13 +264,24 @@ class EmfMetricsLoggerTest {
 
     @Test
     void shouldGetDefaultDimensions() {
+        // Given
+        DimensionSet dimensionSet = DimensionSet.of("Service", "TestService", "Environment", "Test");
+
         // When
-        metricsLogger.setDefaultDimensions(Map.of("Service", "TestService", "Environment", "Test"));
+        metricsLogger.setDefaultDimensions(dimensionSet);
         DimensionSet dimensions = metricsLogger.getDefaultDimensions();
 
         // Then
         assertThat(dimensions.getDimensions()).containsEntry("Service", "TestService");
         assertThat(dimensions.getDimensions()).containsEntry("Environment", "Test");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenDefaultDimensionSetIsNull() {
+        // When/Then
+        assertThatThrownBy(() -> metricsLogger.setDefaultDimensions((DimensionSet) null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("DimensionSet cannot be null");
     }
 
     @Test
@@ -300,7 +313,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldClearDefaultDimensions() throws Exception {
         // Given
-        metricsLogger.setDefaultDimensions(Map.of("Service", "TestService", "Environment", "Test"));
+        metricsLogger.setDefaultDimensions(DimensionSet.of("Service", "TestService", "Environment", "Test"));
 
         // When
         metricsLogger.clearDefaultDimensions();

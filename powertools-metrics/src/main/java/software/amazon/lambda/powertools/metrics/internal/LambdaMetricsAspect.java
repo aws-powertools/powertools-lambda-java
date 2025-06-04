@@ -18,8 +18,6 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.extractContext;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isHandlerMethod;
 
-import java.util.Map;
-
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -78,7 +76,7 @@ public class LambdaMetricsAspect {
             if (!"".equals(metrics.service())
                     && logger.getDefaultDimensions().getDimensionKeys().size() <= 1
                     && logger.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION)) {
-                logger.setDefaultDimensions(Map.of(SERVICE_DIMENSION, metrics.service()));
+                logger.setDefaultDimensions(DimensionSet.of(SERVICE_DIMENSION, metrics.service()));
             }
 
             logger.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());

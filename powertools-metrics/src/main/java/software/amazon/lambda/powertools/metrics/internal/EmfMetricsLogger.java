@@ -89,18 +89,23 @@ public class EmfMetricsLogger implements MetricsLogger {
     }
 
     @Override
-    public void setDefaultDimensions(Map<String, String> defaultDimensions) {
-        DimensionSet dimensionSet = new DimensionSet();
-        defaultDimensions.forEach((key, value) -> {
+    public void setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet dimensionSet) {
+        if (dimensionSet == null) {
+            throw new IllegalArgumentException("DimensionSet cannot be null");
+        }
+
+        DimensionSet emfDimensionSet = new DimensionSet();
+        Map<String, String> dimensions = dimensionSet.getDimensions();
+        dimensions.forEach((key, value) -> {
             try {
-                dimensionSet.addDimension(key, value);
+                emfDimensionSet.addDimension(key, value);
             } catch (Exception e) {
                 // Ignore dimension errors
             }
         });
-        emfLogger.setDimensions(dimensionSet);
+        emfLogger.setDimensions(emfDimensionSet);
         // Store a copy of the default dimensions
-        this.defaultDimensions = new LinkedHashMap<>(defaultDimensions);
+        this.defaultDimensions = new LinkedHashMap<>(dimensions);
     }
 
     @Override

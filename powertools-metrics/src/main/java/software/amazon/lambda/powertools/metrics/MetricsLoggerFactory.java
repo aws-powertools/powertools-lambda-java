@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.metrics;
 
-import java.util.Map;
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
@@ -45,7 +45,7 @@ public final class MetricsLoggerFactory {
                 metricsLogger.setNamespace(envNamespace);
             }
 
-            metricsLogger.setDefaultDimensions(Map.of("Service", LambdaHandlerProcessor.serviceName()));
+            metricsLogger.setDefaultDimensions(DimensionSet.of("Service", LambdaHandlerProcessor.serviceName()));
         }
 
         return metricsLogger;
