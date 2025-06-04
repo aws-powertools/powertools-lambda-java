@@ -1,7 +1,6 @@
 package software.amazon.lambda.powertools.metrics.testutils;
 
 import java.util.Collections;
-import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.Context;
 

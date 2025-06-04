@@ -15,11 +15,10 @@
 package software.amazon.lambda.powertools.metrics;
 
 import com.amazonaws.services.lambda.runtime.Context;
+
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
-
-import java.util.Map;
 
 /**
  * Interface for metrics logging
