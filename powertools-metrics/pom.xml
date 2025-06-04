@@ -14,8 +14,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powertools-metrics</artifactId>
@@ -83,6 +83,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
@@ -116,7 +121,6 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.17.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -125,9 +129,9 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.2.3</version>
                         <configuration>
-                            <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-metrics,experimental-class-define-support
+                            <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent
+                                -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-metrics,experimental-class-define-support
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                             </argLine>
@@ -142,7 +146,6 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.17.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -151,7 +154,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.10.2</version> <!-- or newer version -->
+                        <version>0.10.6</version>
                         <extensions>true</extensions>
                         <executions>
                             <execution>
@@ -178,16 +181,26 @@
                                 <buildArg>--initialize-at-build-time=org.junit.Ignore</buildArg>
                                 <buildArg>--initialize-at-build-time=java.lang.annotation.Annotation</buildArg>
                                 <buildArg>--initialize-at-build-time=org.junit.runners.model.FrameworkField</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$1</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$2</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.utility.dispatcher.JavaDispatcher$DynamicClassLoader</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$ForLoadedType</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$ForLoadedMethod</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Super$Instantiation$2</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$1</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$2</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.utility.dispatcher.JavaDispatcher$DynamicClassLoader</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$ForLoadedType</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$ForLoadedMethod</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Super$Instantiation$2</buildArg>
                                 <buildArg>
                                     --trace-class-initialization=net.bytebuddy.description.type.TypeDescription$ForLoadedType,net.bytebuddy.description.method.MethodDescription$ForLoadedMethod,net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable
                                 </buildArg>
@@ -207,5 +220,16 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <environmentVariables>
+                        <AWS_EMF_ENVIRONMENT>Lambda</AWS_EMF_ENVIRONMENT>
+                    </environmentVariables>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>
