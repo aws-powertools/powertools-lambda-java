@@ -18,8 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -308,6 +311,21 @@ class EmfMetricsLoggerTest {
         assertThatThrownBy(() -> metricsLogger.flush())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No metrics were emitted");
+    }
+
+    @Test
+    void shouldLogWarningOnEmptyMetrics() throws Exception {
+        // Given
+        File logFile = new File("target/metrics-test.log");
+
+        // When
+        // Flushing without adding metrics
+        metricsLogger.flush();
+
+        // Then
+        // Read the log file and check for the warning
+        String logContent = new String(Files.readAllBytes(logFile.toPath()), StandardCharsets.UTF_8);
+        assertThat(logContent).contains("No metrics were emitted");
     }
 
     @Test

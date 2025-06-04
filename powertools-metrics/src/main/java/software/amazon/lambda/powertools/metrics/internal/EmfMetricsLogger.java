@@ -22,6 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.services.lambda.runtime.Context;
 
 import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
@@ -38,6 +41,7 @@ import software.amazon.lambda.powertools.metrics.model.MetricUnit;
  * library {@link software.amazon.cloudwatchlogs.emf.logger.MetricsLogger}.
  */
 public class EmfMetricsLogger implements MetricsLogger {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EmfMetricsLogger.class);
     private static final String TRACE_ID_PROPERTY = "xray_trace_id";
     private static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String COLD_START_METRIC = "ColdStart";
@@ -136,8 +140,12 @@ public class EmfMetricsLogger implements MetricsLogger {
 
     @Override
     public void flush() {
-        if (raiseOnEmptyMetrics && !hasMetrics.get()) {
-            throw new IllegalStateException("No metrics were emitted");
+        if (!hasMetrics.get()) {
+            if (raiseOnEmptyMetrics) {
+                throw new IllegalStateException("No metrics were emitted");
+            } else {
+                LOGGER.warn("No metrics were emitted");
+            }
         }
         emfLogger.flush();
     }
