@@ -43,6 +43,7 @@ import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
+import software.amazon.lambda.powertools.metrics.testutils.TestContext;
 
 class EmfMetricsLoggerTest {
 
@@ -275,12 +276,10 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldCaptureColdStartMetric() throws Exception {
         // Given
-        Context context = mock(Context.class);
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getAwsRequestId()).thenReturn("testRequestId");
+        Context testContext = new TestContext();
 
         // When
-        metricsLogger.captureColdStartMetric(context);
+        metricsLogger.captureColdStartMetric(testContext);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -289,7 +288,7 @@ class EmfMetricsLoggerTest {
         assertThat(rootNode.has("ColdStart")).isTrue();
         assertThat(rootNode.get("ColdStart").asDouble()).isEqualTo(1.0);
         assertThat(rootNode.has("function_request_id")).isTrue();
-        assertThat(rootNode.get("function_request_id").asText()).isEqualTo("testRequestId");
+        assertThat(rootNode.get("function_request_id").asText()).isEqualTo(testContext.getAwsRequestId());
     }
 
     @Test
@@ -329,14 +328,12 @@ class EmfMetricsLoggerTest {
         String customNamespace = "CustomNamespace";
         metricsLogger.setNamespace(customNamespace);
 
-        Context context = mock(Context.class);
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getAwsRequestId()).thenReturn("testRequestId");
+        Context testContext = new TestContext();
 
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
         // When
-        metricsLogger.captureColdStartMetric(context, dimensions);
+        metricsLogger.captureColdStartMetric(testContext, dimensions);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -347,7 +344,7 @@ class EmfMetricsLoggerTest {
         assertThat(rootNode.has("CustomDim")).isTrue();
         assertThat(rootNode.get("CustomDim").asText()).isEqualTo("CustomValue");
         assertThat(rootNode.has("function_request_id")).isTrue();
-        assertThat(rootNode.get("function_request_id").asText()).isEqualTo("testRequestId");
+        assertThat(rootNode.get("function_request_id").asText()).isEqualTo(testContext.getAwsRequestId());
         assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
                 .isEqualTo(customNamespace);
     }

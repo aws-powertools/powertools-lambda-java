@@ -16,8 +16,6 @@ package software.amazon.lambda.powertools.metrics;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
@@ -32,6 +30,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
+import software.amazon.lambda.powertools.metrics.testutils.TestMetricsLogger;
+import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
 
 class MetricsLoggerBuilderTest {
 
@@ -149,17 +149,15 @@ class MetricsLoggerBuilderTest {
     @Test
     void shouldBuildWithCustomMetricsProvider() {
         // Given
-        MetricsProvider mockProvider = mock(MetricsProvider.class);
-        MetricsLogger mockLogger = mock(MetricsLogger.class);
-        when(mockProvider.getMetricsLogger()).thenReturn(mockLogger);
+        MetricsProvider testProvider = new TestMetricsProvider();
 
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
-                .withMetricsProvider(mockProvider)
+                .withMetricsProvider(testProvider)
                 .build();
 
         // Then
-        assertThat(metricsLogger).isSameAs(mockLogger);
+        assertThat(metricsLogger).isInstanceOf(TestMetricsLogger.class);
     }
 
     @Test
