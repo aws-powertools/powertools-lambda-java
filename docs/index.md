@@ -239,9 +239,9 @@ Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj
 |----------------------------------------|----------------------------------------------------------------------------------------|---------------------------|
 | **POWERTOOLS_SERVICE_NAME**            | Sets service name used for tracing namespace, metrics dimension and structured logging | All                       |
 | **POWERTOOLS_METRICS_NAMESPACE**       | Sets namespace used for metrics                                                        | [Metrics](./core/metrics) |
+| **POWERTOOLS_METRICS_DISABLED**       | Disables all flushing of metrics                                                        | [Metrics](./core/metrics) |
 | **POWERTOOLS_LOGGER_SAMPLE_RATE**      | Debug log sampling                                                                     | [Logging](./core/logging) |
 | **POWERTOOLS_LOG_LEVEL**               | Sets logging level                                                                     | [Logging](./core/logging) |
 | **POWERTOOLS_LOGGER_LOG_EVENT**        | Enables/Disables whether to log the incoming event when using the aspect               | [Logging](./core/logging) |
 | **POWERTOOLS_TRACER_CAPTURE_RESPONSE** | Enables/Disables tracing mode to capture method response                               | [Tracing](./core/tracing) |
 | **POWERTOOLS_TRACER_CAPTURE_ERROR**    | Enables/Disables tracing mode to capture method error                                  | [Tracing](./core/tracing) |
-

@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -458,4 +459,43 @@ class EmfMetricsLoggerTest {
                 .isEqualTo("SingleNamespace");
     }
 
+    @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_DISABLED", value = "true")
+    void shouldNotFlushMetricsWhenDisabled() {
+        // When
+        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metricsLogger.flush();
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        assertThat(emfOutput).isEmpty();
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_DISABLED", value = "true")
+    void shouldNotCaptureColdStartMetricWhenDisabled() {
+        // Given
+        Context testContext = new TestContext();
+
+        // When
+        metricsLogger.captureColdStartMetric(testContext);
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        assertThat(emfOutput).isEmpty();
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_DISABLED", value = "true")
+    void shouldNotFlushSingleMetricWhenDisabled() {
+        // Given
+        DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
+
+        // When
+        metricsLogger.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        assertThat(emfOutput).isEmpty();
+    }
 }

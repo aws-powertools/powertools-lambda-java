@@ -109,14 +109,17 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
 
 ## Getting started
 
-Metrics has two global settings that will be used across all metrics emitted. Use your application or main service as the metric namespace to easily group all metrics:
+Metrics has three global settings that will be used across all metrics emitted. Use your application or main service as the metric namespace to easily group all metrics:
 
-| Setting              | Description                                                                     | Environment variable           | Decorator parameter |
-| -------------------- | ------------------------------------------------------------------------------- | ------------------------------ | ------------------- |
-| **Metric namespace** | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`         |
-| **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `service`           |
+| Setting                        | Description                                                                     | Environment variable           | Decorator parameter |
+| ------------------------------ | ------------------------------------------------------------------------------- | ------------------------------ | ------------------- |
+| **Metric namespace**           | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`         |
+| **Service**                    | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `service`           |
+| **Disable Powertools Metrics** | Optionally, disables all Powertools metrics                                     | `POWERTOOLS_METRICS_DISABLED`  | N/A                 |
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
+
+!!! info "`POWERTOOLS_METRICS_DISABLED` will not disable default metrics created by AWS services."
 
 ### Order of Precedence of `MetricsLogger` configuration
 

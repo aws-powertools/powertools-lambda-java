@@ -45,6 +45,7 @@ public class EmfMetricsLogger implements MetricsLogger {
     private static final String TRACE_ID_PROPERTY = "xray_trace_id";
     private static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String COLD_START_METRIC = "ColdStart";
+    private static final String METRICS_DISABLED_ENV_VAR = "POWERTOOLS_METRICS_DISABLED";
 
     private final software.amazon.cloudwatchlogs.emf.logger.MetricsLogger emfLogger;
     private final EnvironmentProvider environmentProvider;
@@ -142,6 +143,11 @@ public class EmfMetricsLogger implements MetricsLogger {
 
     @Override
     public void flush() {
+        if (isMetricsDisabled()) {
+            LOGGER.debug("Metrics are disabled, skipping flush");
+            return;
+        }
+
         Validator.validateNamespace(namespace);
 
         if (!hasMetrics.get()) {
@@ -158,6 +164,11 @@ public class EmfMetricsLogger implements MetricsLogger {
     public void captureColdStartMetric(Context context,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
         if (isColdStart()) {
+            if (isMetricsDisabled()) {
+                LOGGER.debug("Metrics are disabled, skipping cold start metric capture");
+                return;
+            }
+
             Validator.validateNamespace(namespace);
 
             software.amazon.cloudwatchlogs.emf.logger.MetricsLogger coldStartLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger();
@@ -203,6 +214,11 @@ public class EmfMetricsLogger implements MetricsLogger {
     @Override
     public void flushSingleMetric(String name, double value, MetricUnit unit, String namespace,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
+        if (isMetricsDisabled()) {
+            LOGGER.debug("Metrics are disabled, skipping single metric flush");
+            return;
+        }
+
         Validator.validateNamespace(namespace);
 
         // Create a new logger for this single metric
@@ -233,6 +249,11 @@ public class EmfMetricsLogger implements MetricsLogger {
 
         // Flush the metric
         singleMetricLogger.flush();
+    }
+
+    private boolean isMetricsDisabled() {
+        String disabledValue = System.getenv(METRICS_DISABLED_ENV_VAR);
+        return "true".equalsIgnoreCase(disabledValue);
     }
 
     private Unit convertUnit(MetricUnit unit) {
