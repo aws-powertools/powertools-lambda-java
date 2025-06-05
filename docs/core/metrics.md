@@ -349,7 +349,7 @@ You can use `addMetadata` for advanced use cases, where you want to add metadata
         @Metrics(namespace = "ServerlessAirline", service = "booking-service")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
-            metricsLogger.addMetadata("booking_id", "1234567890");
+            metricsLogger.addMetadata("booking_id", "1234567890");  // Needs to be added BEFORE flushing
             ...
         }
     }
