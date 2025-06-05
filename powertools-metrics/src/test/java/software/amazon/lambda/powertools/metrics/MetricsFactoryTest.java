@@ -32,10 +32,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
-import software.amazon.lambda.powertools.metrics.testutils.TestMetricsLogger;
+import software.amazon.lambda.powertools.metrics.testutils.TestMetrics;
 import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
 
-class MetricsLoggerFactoryTest {
+class MetricsFactoryTest {
 
     private static final String TEST_NAMESPACE = "TestNamespace";
     private static final String TEST_SERVICE = "TestService";
@@ -64,29 +64,29 @@ class MetricsLoggerFactoryTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsLoggerFactory.class.getDeclaredField("metricsLogger");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
         field.setAccessible(true);
         field.set(null, null);
 
-        field = MetricsLoggerFactory.class.getDeclaredField("provider");
+        field = MetricsFactory.class.getDeclaredField("provider");
         field.setAccessible(true);
         field.set(null, new software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider());
     }
 
     @Test
-    void shouldGetMetricsLoggerInstance() {
+    void shouldGetMetricsInstance() {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+        Metrics metrics = MetricsFactory.getMetricsInstance();
 
         // Then
-        assertThat(metricsLogger).isNotNull();
+        assertThat(metrics).isNotNull();
     }
 
     @Test
     void shouldReturnSameInstanceOnMultipleCalls() {
         // When
-        MetricsLogger firstInstance = MetricsLoggerFactory.getMetricsLogger();
-        MetricsLogger secondInstance = MetricsLoggerFactory.getMetricsLogger();
+        Metrics firstInstance = MetricsFactory.getMetricsInstance();
+        Metrics secondInstance = MetricsFactory.getMetricsInstance();
 
         // Then
         assertThat(firstInstance).isSameAs(secondInstance);
@@ -96,9 +96,9 @@ class MetricsLoggerFactoryTest {
     @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = TEST_NAMESPACE)
     void shouldUseNamespaceFromEnvironmentVariable() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        Metrics metrics = MetricsFactory.getMetricsInstance();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -112,10 +112,10 @@ class MetricsLoggerFactoryTest {
     @SetEnvironmentVariable(key = "POWERTOOLS_SERVICE_NAME", value = TEST_SERVICE)
     void shouldUseServiceNameFromEnvironmentVariable() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-        metricsLogger.setNamespace("TestNamespace");
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        Metrics metrics = MetricsFactory.getMetricsInstance();
+        metrics.setNamespace("TestNamespace");
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -131,17 +131,17 @@ class MetricsLoggerFactoryTest {
         MetricsProvider testProvider = new TestMetricsProvider();
 
         // When
-        MetricsLoggerFactory.setMetricsProvider(testProvider);
-        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+        MetricsFactory.setMetricsProvider(testProvider);
+        Metrics metrics = MetricsFactory.getMetricsInstance();
 
         // Then
-        assertThat(metricsLogger).isInstanceOf(TestMetricsLogger.class);
+        assertThat(metrics).isInstanceOf(TestMetrics.class);
     }
 
     @Test
     void shouldThrowExceptionWhenSettingNullProvider() {
         // When/Then
-        assertThatThrownBy(() -> MetricsLoggerFactory.setMetricsProvider(null))
+        assertThatThrownBy(() -> MetricsFactory.setMetricsProvider(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Metrics provider cannot be null");
     }
@@ -151,10 +151,10 @@ class MetricsLoggerFactoryTest {
         // Given - no POWERTOOLS_SERVICE_NAME set, so it will use the default undefined value
 
         // When
-        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-        metricsLogger.setNamespace("TestNamespace");
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        Metrics metrics = MetricsFactory.getMetricsInstance();
+        metrics.setNamespace("TestNamespace");
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();

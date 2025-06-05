@@ -32,15 +32,15 @@ import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
+import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
 /**
- * Implementation of MetricsLogger that uses the EMF library. Proxies MetricsLogger interface calls to underlying
+ * Implementation of Metrics that uses the EMF library. Proxies Metrics interface calls to underlying
  * library {@link software.amazon.cloudwatchlogs.emf.logger.MetricsLogger}.
  */
-public class EmfMetricsLogger implements MetricsLogger {
+public class EmfMetricsLogger implements Metrics {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmfMetricsLogger.class);
     private static final String TRACE_ID_PROPERTY = "xray_trace_id";
     private static final String REQUEST_ID_PROPERTY = "function_request_id";

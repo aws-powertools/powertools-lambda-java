@@ -16,7 +16,7 @@ package software.amazon.lambda.powertools.metrics.provider;
 
 import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
+import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.internal.EmfMetricsLogger;
 
 /**
@@ -25,7 +25,7 @@ import software.amazon.lambda.powertools.metrics.internal.EmfMetricsLogger;
 public class EmfMetricsProvider implements MetricsProvider {
 
     @Override
-    public MetricsLogger getMetricsLogger() {
+    public Metrics getMetricsInstance() {
         return new EmfMetricsLogger(new EnvironmentProvider(), new MetricsContext());
     }
 }

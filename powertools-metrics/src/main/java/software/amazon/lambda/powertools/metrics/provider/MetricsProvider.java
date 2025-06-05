@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.metrics.provider;
 
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
+import software.amazon.lambda.powertools.metrics.Metrics;
 
 /**
  * Interface for metrics provider implementations
@@ -22,9 +22,9 @@ import software.amazon.lambda.powertools.metrics.MetricsLogger;
 public interface MetricsProvider {
 
     /**
-     * Get a new instance of a metrics logger
+     * Get a new instance of a metrics implementation
      *
-     * @return a new metrics logger instance
+     * @return a new metrics instance
      */
-    MetricsLogger getMetricsLogger();
+    Metrics getMetricsInstance();
 }

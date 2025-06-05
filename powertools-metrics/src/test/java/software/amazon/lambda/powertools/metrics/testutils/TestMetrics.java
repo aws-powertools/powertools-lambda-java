@@ -4,12 +4,12 @@ import java.util.Collections;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
+import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
-public class TestMetricsLogger implements MetricsLogger {
+public class TestMetrics implements Metrics {
     @Override
     public void addMetric(String name, double value, MetricUnit unit) {
         // Test placeholder

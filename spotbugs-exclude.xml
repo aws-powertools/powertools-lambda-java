@@ -234,8 +234,8 @@
                 <Method name="s3Client"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.metrics.MetricsLoggerFactory"/>
-                <Method name="getMetricsLogger"/>
+                <Class name="software.amazon.lambda.powertools.metrics.MetricsFactory"/>
+                <Method name="getMetricsInstance"/>
             </And>
         </Or>
     </Match>

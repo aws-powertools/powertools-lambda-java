@@ -39,8 +39,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
-import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
@@ -48,7 +48,7 @@ import software.amazon.lambda.powertools.metrics.testutils.TestContext;
 
 class EmfMetricsLoggerTest {
 
-    private MetricsLogger metricsLogger;
+    private Metrics metrics;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final PrintStream standardOut = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
@@ -65,8 +65,8 @@ class EmfMetricsLoggerTest {
         coldStartField.setAccessible(true);
         coldStartField.set(null, null);
 
-        metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-        metricsLogger.setNamespace("TestNamespace");
+        metrics = MetricsFactory.getMetricsInstance();
+        metrics.setNamespace("TestNamespace");
         System.setOut(new PrintStream(outputStreamCaptor));
     }
 
@@ -75,7 +75,7 @@ class EmfMetricsLoggerTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsLoggerFactory.class.getDeclaredField("metricsLogger");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
         field.setAccessible(true);
         field.set(null, null);
     }
@@ -89,7 +89,7 @@ class EmfMetricsLoggerTest {
         convertUnitMethod.setAccessible(true);
 
         // When
-        Unit actualUnit = (Unit) convertUnitMethod.invoke(metricsLogger, inputUnit);
+        Unit actualUnit = (Unit) convertUnitMethod.invoke(metrics, inputUnit);
 
         // Then
         assertThat(actualUnit).isEqualTo(expectedUnit);
@@ -129,8 +129,8 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldCreateMetricWithDefaultResolution() throws Exception {
         // When
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -145,8 +145,8 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldCreateMetricWithHighResolution() throws Exception {
         // When
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT, MetricResolution.HIGH);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT, MetricResolution.HIGH);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -163,10 +163,10 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldAddDimension() throws Exception {
         // When
-        metricsLogger.clearDefaultDimensions(); // Clear default Service dimension first for easier assertions
-        metricsLogger.addDimension("CustomDimension", "CustomValue");
-        metricsLogger.addMetric("test-metric", 100);
-        metricsLogger.flush();
+        metrics.clearDefaultDimensions(); // Clear default Service dimension first for easier assertions
+        metrics.addDimension("CustomDimension", "CustomValue");
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -193,10 +193,10 @@ class EmfMetricsLoggerTest {
         DimensionSet dimensionSet = DimensionSet.of("Dim1", "Value1", "Dim2", "Value2");
 
         // When
-        metricsLogger.clearDefaultDimensions(); // Clear default Service dimension first for easier assertions
-        metricsLogger.addDimension(dimensionSet);
-        metricsLogger.addMetric("test-metric", 100);
-        metricsLogger.flush();
+        metrics.clearDefaultDimensions(); // Clear default Service dimension first for easier assertions
+        metrics.addDimension(dimensionSet);
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -226,7 +226,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldThrowExceptionWhenDimensionSetIsNull() {
         // When/Then
-        assertThatThrownBy(() -> metricsLogger.addDimension((DimensionSet) null))
+        assertThatThrownBy(() -> metrics.addDimension((DimensionSet) null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("DimensionSet cannot be null");
     }
@@ -234,9 +234,9 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldAddMetadata() throws Exception {
         // When
-        metricsLogger.addMetadata("CustomMetadata", "MetadataValue");
-        metricsLogger.addMetric("test-metric", 100);
-        metricsLogger.flush();
+        metrics.addMetadata("CustomMetadata", "MetadataValue");
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -253,9 +253,9 @@ class EmfMetricsLoggerTest {
         DimensionSet dimensionSet = DimensionSet.of("Service", "TestService", "Environment", "Test");
 
         // When
-        metricsLogger.setDefaultDimensions(dimensionSet);
-        metricsLogger.addMetric("test-metric", 100);
-        metricsLogger.flush();
+        metrics.setDefaultDimensions(dimensionSet);
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -273,8 +273,8 @@ class EmfMetricsLoggerTest {
         DimensionSet dimensionSet = DimensionSet.of("Service", "TestService", "Environment", "Test");
 
         // When
-        metricsLogger.setDefaultDimensions(dimensionSet);
-        DimensionSet dimensions = metricsLogger.getDefaultDimensions();
+        metrics.setDefaultDimensions(dimensionSet);
+        DimensionSet dimensions = metrics.getDefaultDimensions();
 
         // Then
         assertThat(dimensions.getDimensions()).containsEntry("Service", "TestService");
@@ -284,7 +284,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldThrowExceptionWhenDefaultDimensionSetIsNull() {
         // When/Then
-        assertThatThrownBy(() -> metricsLogger.setDefaultDimensions((DimensionSet) null))
+        assertThatThrownBy(() -> metrics.setDefaultDimensions((DimensionSet) null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("DimensionSet cannot be null");
     }
@@ -292,9 +292,9 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldSetNamespace() throws Exception {
         // When
-        metricsLogger.setNamespace("CustomNamespace");
-        metricsLogger.addMetric("test-metric", 100);
-        metricsLogger.flush();
+        metrics.setNamespace("CustomNamespace");
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -307,10 +307,10 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldRaiseExceptionOnEmptyMetrics() {
         // When
-        metricsLogger.setRaiseOnEmptyMetrics(true);
+        metrics.setRaiseOnEmptyMetrics(true);
 
         // Then
-        assertThatThrownBy(() -> metricsLogger.flush())
+        assertThatThrownBy(() -> metrics.flush())
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No metrics were emitted");
     }
@@ -322,7 +322,7 @@ class EmfMetricsLoggerTest {
 
         // When
         // Flushing without adding metrics
-        metricsLogger.flush();
+        metrics.flush();
 
         // Then
         // Read the log file and check for the warning
@@ -333,12 +333,12 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldClearDefaultDimensions() throws Exception {
         // Given
-        metricsLogger.setDefaultDimensions(DimensionSet.of("Service", "TestService", "Environment", "Test"));
+        metrics.setDefaultDimensions(DimensionSet.of("Service", "TestService", "Environment", "Test"));
 
         // When
-        metricsLogger.clearDefaultDimensions();
-        metricsLogger.addMetric("test-metric", 100);
-        metricsLogger.flush();
+        metrics.clearDefaultDimensions();
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -354,7 +354,7 @@ class EmfMetricsLoggerTest {
         Context testContext = new TestContext();
 
         // When
-        metricsLogger.captureColdStartMetric(testContext);
+        metrics.captureColdStartMetric(testContext);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -372,7 +372,7 @@ class EmfMetricsLoggerTest {
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
         // When
-        metricsLogger.captureColdStartMetric(dimensions);
+        metrics.captureColdStartMetric(dimensions);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -387,7 +387,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldCaptureColdStartMetricWithoutDimensions() throws Exception {
         // When
-        metricsLogger.captureColdStartMetric();
+        metrics.captureColdStartMetric();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -401,14 +401,14 @@ class EmfMetricsLoggerTest {
     void shouldReuseNamespaceForColdStartMetric() throws Exception {
         // Given
         String customNamespace = "CustomNamespace";
-        metricsLogger.setNamespace(customNamespace);
+        metrics.setNamespace(customNamespace);
 
         Context testContext = new TestContext();
 
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
         // When
-        metricsLogger.captureColdStartMetric(testContext, dimensions);
+        metrics.captureColdStartMetric(testContext, dimensions);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -430,7 +430,7 @@ class EmfMetricsLoggerTest {
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
         // When
-        metricsLogger.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
+        metrics.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -447,7 +447,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldFlushSingleMetricWithoutDimensions() throws Exception {
         // When
-        metricsLogger.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace");
+        metrics.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace");
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -463,8 +463,8 @@ class EmfMetricsLoggerTest {
     @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_DISABLED", value = "true")
     void shouldNotFlushMetricsWhenDisabled() {
         // When
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -478,7 +478,7 @@ class EmfMetricsLoggerTest {
         Context testContext = new TestContext();
 
         // When
-        metricsLogger.captureColdStartMetric(testContext);
+        metrics.captureColdStartMetric(testContext);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -492,7 +492,7 @@ class EmfMetricsLoggerTest {
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
         // When
-        metricsLogger.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
+        metrics.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();

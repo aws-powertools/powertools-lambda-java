@@ -21,12 +21,14 @@ import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
 /**
- * Interface for metrics logging
+ * Interface for metrics implementations.
+ * This interface is used to collect metrics in the Lambda function.
+ * It provides methods to add metrics, dimensions, and metadata.
  */
-public interface MetricsLogger {
+public interface Metrics {
 
     /**
-     * Add a metric to the metrics logger
+     * Add a metric
      *
      * @param key        the name of the metric
      * @param value      the value of the metric
@@ -36,7 +38,7 @@ public interface MetricsLogger {
     void addMetric(String key, double value, MetricUnit unit, MetricResolution resolution);
 
     /**
-     * Add a metric to the metrics logger with default resolution
+     * Add a metric with default resolution
      *
      * @param key   the name of the metric
      * @param value the value of the metric
@@ -47,7 +49,7 @@ public interface MetricsLogger {
     }
 
     /**
-     * Add a metric to the metrics logger with default unit and resolution
+     * Add a metric with default unit and resolution
      *
      * @param key   the name of the metric
      * @param value the value of the metric
@@ -57,7 +59,7 @@ public interface MetricsLogger {
     }
 
     /**
-     * Add a dimension to the metrics logger.
+     * Add a dimension
      * This is equivalent to calling {@code addDimension(DimensionSet.of(key, value))}
      *
      * @param key   the name of the dimension
@@ -68,14 +70,14 @@ public interface MetricsLogger {
     }
 
     /**
-     * Add a dimension set to the metrics logger
+     * Add a dimension set
      *
      * @param dimensionSet the dimension set to add
      */
     void addDimension(DimensionSet dimensionSet);
 
     /**
-     * Add metadata to the metrics logger
+     * Add metadata
      *
      * @param key   the name of the metadata
      * @param value the value of the metadata
@@ -83,21 +85,21 @@ public interface MetricsLogger {
     void addMetadata(String key, Object value);
 
     /**
-     * Set default dimensions for the metrics logger
+     * Set default dimensions
      *
      * @param dimensionSet the dimension set to use as default dimensions
      */
     void setDefaultDimensions(DimensionSet dimensionSet);
 
     /**
-     * Get the default dimensions for the metrics logger
+     * Get the default dimensions
      *
      * @return the default dimensions as a DimensionSet
      */
     DimensionSet getDefaultDimensions();
 
     /**
-     * Set the namespace for the metrics logger
+     * Set the namespace
      *
      * @param namespace the namespace
      */

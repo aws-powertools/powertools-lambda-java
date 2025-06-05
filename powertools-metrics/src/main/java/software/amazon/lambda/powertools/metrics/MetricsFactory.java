@@ -21,38 +21,38 @@ import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
 /**
- * Factory for accessing the singleton MetricsLogger instance
+ * Factory for accessing the singleton Metrics instance
  */
-public final class MetricsLoggerFactory {
+public final class MetricsFactory {
     private static MetricsProvider provider = new EmfMetricsProvider();
-    private static MetricsLogger metricsLogger;
+    private static Metrics metrics;
 
-    private MetricsLoggerFactory() {
+    private MetricsFactory() {
     }
 
     /**
-     * Get the singleton instance of the MetricsLogger
+     * Get the singleton instance of the Metrics
      *
-     * @return the singleton MetricsLogger instance
+     * @return the singleton Metrics instance
      */
-    public static synchronized MetricsLogger getMetricsLogger() {
-        if (metricsLogger == null) {
-            metricsLogger = provider.getMetricsLogger();
+    public static synchronized Metrics getMetricsInstance() {
+        if (metrics == null) {
+            metrics = provider.getMetricsInstance();
 
             // Apply default configuration from environment variables
             String envNamespace = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
             if (envNamespace != null) {
-                metricsLogger.setNamespace(envNamespace);
+                metrics.setNamespace(envNamespace);
             }
 
             // Only set Service dimension if it's not the default undefined value
             String serviceName = LambdaHandlerProcessor.serviceName();
             if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
-                metricsLogger.setDefaultDimensions(DimensionSet.of("Service", serviceName));
+                metrics.setDefaultDimensions(DimensionSet.of("Service", serviceName));
             }
         }
 
-        return metricsLogger;
+        return metrics;
     }
 
     /**
@@ -65,7 +65,7 @@ public final class MetricsLoggerFactory {
             throw new IllegalArgumentException("Metrics provider cannot be null");
         }
         provider = metricsProvider;
-        // Reset the logger so it will be recreated with the new provider
-        metricsLogger = null;
+        // Reset the metrics instance so it will be recreated with the new provider
+        metrics = null;
     }
 }

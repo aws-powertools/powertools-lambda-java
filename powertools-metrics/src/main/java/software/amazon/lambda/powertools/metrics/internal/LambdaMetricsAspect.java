@@ -28,8 +28,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
-import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 @Aspect
@@ -70,32 +70,32 @@ public class LambdaMetricsAspect {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)) {
-            MetricsLogger logger = MetricsLoggerFactory.getMetricsLogger();
+            Metrics metricsInstance = MetricsFactory.getMetricsInstance();
 
-            // The MetricsLoggerFactory applies default settings from the environment or can be configured by the
-            // MetricsLoggerBuilder. We only overwrite settings if they are explicitly set in the @FlushMetrics
+            // The MetricsFactory applies default settings from the environment or can be configured by the
+            // MetricsBuilder. We only overwrite settings if they are explicitly set in the @FlushMetrics
             // annotation.
             if (!"".equals(metrics.namespace())) {
-                logger.setNamespace(metrics.namespace());
+                metricsInstance.setNamespace(metrics.namespace());
             }
 
             // We only overwrite the default dimensions if the user didn't overwrite them previously. This means that
             // they are either empty or only contain the default "Service" dimension.
-            if (!"".equals(metrics.service().trim()) && (logger.getDefaultDimensions().getDimensionKeys().size() <= 1
-                    || logger.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION))) {
-                logger.setDefaultDimensions(DimensionSet.of(SERVICE_DIMENSION, metrics.service()));
+            if (!"".equals(metrics.service().trim()) && (metricsInstance.getDefaultDimensions().getDimensionKeys().size() <= 1
+                    || metricsInstance.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION))) {
+                metricsInstance.setDefaultDimensions(DimensionSet.of(SERVICE_DIMENSION, metrics.service()));
             }
 
-            logger.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
+            metricsInstance.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
 
             // Add trace ID metadata if available
             LambdaHandlerProcessor.getXrayTraceId()
-                    .ifPresent(traceId -> logger.addMetadata(TRACE_ID_PROPERTY, traceId));
+                    .ifPresent(traceId -> metricsInstance.addMetadata(TRACE_ID_PROPERTY, traceId));
 
             Context extractedContext = extractContext(pjp);
 
             if (null != extractedContext) {
-                logger.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+                metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
 
                 // Only capture cold start metrics if configured
                 if (metrics.captureColdStart()) {
@@ -104,8 +104,8 @@ public class LambdaMetricsAspect {
 
                     DimensionSet coldStartDimensions = new DimensionSet();
 
-                    // Get service name from logger default dimensions or fallback
-                    String serviceName = logger.getDefaultDimensions().getDimensions().getOrDefault(SERVICE_DIMENSION,
+                    // Get service name from metrics instance default dimensions or fallback
+                    String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(SERVICE_DIMENSION,
                             serviceNameWithFallback(metrics));
 
                     // Only add service if it is not undefined
@@ -117,7 +117,7 @@ public class LambdaMetricsAspect {
                     coldStartDimensions.addDimension("FunctionName",
                             funcName != null ? funcName : extractedContext.getFunctionName());
 
-                    logger.captureColdStartMetric(extractedContext, coldStartDimensions);
+                    metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
                 }
             }
 
@@ -125,7 +125,7 @@ public class LambdaMetricsAspect {
                 return pjp.proceed(proceedArgs);
             } finally {
                 coldStartDone();
-                logger.flush();
+                metricsInstance.flush();
             }
         }
 

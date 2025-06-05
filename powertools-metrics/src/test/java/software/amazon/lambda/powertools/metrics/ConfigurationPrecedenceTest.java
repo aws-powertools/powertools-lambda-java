@@ -38,8 +38,8 @@ import software.amazon.lambda.powertools.metrics.testutils.TestContext;
 
 /**
  * Tests to verify the hierarchy of precedence for configuration:
- * 1. Metrics annotation
- * 2. MetricsLoggerBuilder
+ * 1. @FlushMetrics annotation
+ * 2. MetricsBuilder
  * 3. Environment variables
  */
 class ConfigurationPrecedenceTest {
@@ -68,11 +68,11 @@ class ConfigurationPrecedenceTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsLoggerFactory.class.getDeclaredField("metricsLogger");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
         field.setAccessible(true);
         field.set(null, null);
 
-        field = MetricsLoggerFactory.class.getDeclaredField("provider");
+        field = MetricsFactory.class.getDeclaredField("provider");
         field.setAccessible(true);
         field.set(null, new software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider());
     }
@@ -83,7 +83,7 @@ class ConfigurationPrecedenceTest {
     void annotationShouldOverrideBuilderAndEnvironment() throws Exception {
         // Given
         // Configure with builder first
-        MetricsLoggerBuilder.builder()
+        MetricsBuilder.builder()
                 .withNamespace("BuilderNamespace")
                 .withService("BuilderService")
                 .build();
@@ -112,7 +112,7 @@ class ConfigurationPrecedenceTest {
     void builderShouldOverrideEnvironment() throws Exception {
         // Given
         // Configure with builder
-        MetricsLoggerBuilder.builder()
+        MetricsBuilder.builder()
                 .withNamespace("BuilderNamespace")
                 .withService("BuilderService")
                 .build();
@@ -161,7 +161,7 @@ class ConfigurationPrecedenceTest {
     @Test
     void shouldUseDefaultsWhenNoConfiguration() throws Exception {
         // Given
-        MetricsLoggerBuilder.builder()
+        MetricsBuilder.builder()
                 .withNamespace("TestNamespace")
                 .build();
 
@@ -187,8 +187,8 @@ class ConfigurationPrecedenceTest {
         @Override
         @FlushMetrics(namespace = "AnnotationNamespace", service = "AnnotationService")
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }
@@ -197,8 +197,8 @@ class ConfigurationPrecedenceTest {
         @Override
         @FlushMetrics
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }

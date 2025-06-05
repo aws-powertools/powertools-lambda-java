@@ -34,8 +34,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
-import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.testutils.TestContext;
 
@@ -65,7 +65,7 @@ class LambdaMetricsAspectTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsLoggerFactory.class.getDeclaredField("metricsLogger");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
         field.setAccessible(true);
         field.set(null, null);
     }
@@ -264,8 +264,8 @@ class LambdaMetricsAspectTest {
         @Override
         @FlushMetrics(namespace = "CustomNamespace", service = "CustomService")
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }
@@ -274,8 +274,8 @@ class LambdaMetricsAspectTest {
         @Override
         @FlushMetrics
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }
@@ -284,8 +284,8 @@ class LambdaMetricsAspectTest {
         @Override
         @FlushMetrics(captureColdStart = true, namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }
@@ -294,8 +294,8 @@ class LambdaMetricsAspectTest {
         @Override
         @FlushMetrics(captureColdStart = true, functionName = "CustomFunction", namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }
@@ -304,8 +304,8 @@ class LambdaMetricsAspectTest {
         @Override
         @FlushMetrics(service = "CustomService", captureColdStart = true, namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             return "OK";
         }
     }
@@ -313,16 +313,16 @@ class LambdaMetricsAspectTest {
     static class HandlerWithAnnotationOnWrongMethod implements RequestHandler<Map<String, Object>, String> {
         @Override
         public String handleRequest(Map<String, Object> input, Context context) {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
             someOtherMethod();
             return "OK";
         }
 
         @FlushMetrics
         public void someOtherMethod() {
-            MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
-            metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
         }
     }
 }

@@ -21,16 +21,16 @@ import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
 /**
- * Builder for configuring the singleton MetricsLogger instance
+ * Builder for configuring the singleton Metrics instance
  */
-public class MetricsLoggerBuilder {
+public class MetricsBuilder {
     private MetricsProvider provider;
     private String namespace;
     private String service;
     private boolean raiseOnEmptyMetrics = false;
     private final Map<String, String> defaultDimensions = new LinkedHashMap<>();
 
-    private MetricsLoggerBuilder() {
+    private MetricsBuilder() {
     }
 
     /**
@@ -38,8 +38,8 @@ public class MetricsLoggerBuilder {
      *
      * @return a new builder instance
      */
-    public static MetricsLoggerBuilder builder() {
-        return new MetricsLoggerBuilder();
+    public static MetricsBuilder builder() {
+        return new MetricsBuilder();
     }
 
     /**
@@ -48,7 +48,7 @@ public class MetricsLoggerBuilder {
      * @param provider the metrics provider
      * @return this builder
      */
-    public MetricsLoggerBuilder withMetricsProvider(MetricsProvider provider) {
+    public MetricsBuilder withMetricsProvider(MetricsProvider provider) {
         this.provider = provider;
         return this;
     }
@@ -59,7 +59,7 @@ public class MetricsLoggerBuilder {
      * @param namespace the namespace
      * @return this builder
      */
-    public MetricsLoggerBuilder withNamespace(String namespace) {
+    public MetricsBuilder withNamespace(String namespace) {
         this.namespace = namespace;
         return this;
     }
@@ -71,7 +71,7 @@ public class MetricsLoggerBuilder {
      * @param service the service name
      * @return this builder
      */
-    public MetricsLoggerBuilder withService(String service) {
+    public MetricsBuilder withService(String service) {
         this.service = service;
         return this;
     }
@@ -82,7 +82,7 @@ public class MetricsLoggerBuilder {
      * @param raiseOnEmptyMetrics true to raise an exception, false otherwise
      * @return this builder
      */
-    public MetricsLoggerBuilder withRaiseOnEmptyMetrics(boolean raiseOnEmptyMetrics) {
+    public MetricsBuilder withRaiseOnEmptyMetrics(boolean raiseOnEmptyMetrics) {
         this.raiseOnEmptyMetrics = raiseOnEmptyMetrics;
         return this;
     }
@@ -94,7 +94,7 @@ public class MetricsLoggerBuilder {
      * @param value the dimension value
      * @return this builder
      */
-    public MetricsLoggerBuilder withDefaultDimension(String key, String value) {
+    public MetricsBuilder withDefaultDimension(String key, String value) {
         this.defaultDimensions.put(key, value);
         return this;
     }
@@ -105,7 +105,7 @@ public class MetricsLoggerBuilder {
      * @param dimensionSet the dimension set to add
      * @return this builder
      */
-    public MetricsLoggerBuilder withDefaultDimensions(DimensionSet dimensionSet) {
+    public MetricsBuilder withDefaultDimensions(DimensionSet dimensionSet) {
         if (dimensionSet != null) {
             this.defaultDimensions.putAll(dimensionSet.getDimensions());
         }
@@ -113,32 +113,32 @@ public class MetricsLoggerBuilder {
     }
 
     /**
-     * Configure and return the singleton MetricsLogger instance
+     * Configure and return the singleton Metrics instance
      *
-     * @return the configured singleton MetricsLogger instance
+     * @return the configured singleton Metrics instance
      */
-    public MetricsLogger build() {
+    public Metrics build() {
         if (provider != null) {
-            MetricsLoggerFactory.setMetricsProvider(provider);
+            MetricsFactory.setMetricsProvider(provider);
         }
 
-        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+        Metrics metrics = MetricsFactory.getMetricsInstance();
 
         if (namespace != null) {
-            metricsLogger.setNamespace(namespace);
+            metrics.setNamespace(namespace);
         }
 
-        metricsLogger.setRaiseOnEmptyMetrics(raiseOnEmptyMetrics);
+        metrics.setRaiseOnEmptyMetrics(raiseOnEmptyMetrics);
 
         if (service != null) {
-            metricsLogger.setDefaultDimensions(DimensionSet.of("Service", service));
+            metrics.setDefaultDimensions(DimensionSet.of("Service", service));
         }
 
         // If the user provided default dimension, we overwrite the default Service dimension again
         if (!defaultDimensions.isEmpty()) {
-            metricsLogger.setDefaultDimensions(DimensionSet.of(defaultDimensions));
+            metrics.setDefaultDimensions(DimensionSet.of(defaultDimensions));
         }
 
-        return metricsLogger;
+        return metrics;
     }
 }

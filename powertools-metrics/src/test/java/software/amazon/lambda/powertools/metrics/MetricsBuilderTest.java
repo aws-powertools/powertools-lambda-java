@@ -30,10 +30,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
-import software.amazon.lambda.powertools.metrics.testutils.TestMetricsLogger;
+import software.amazon.lambda.powertools.metrics.testutils.TestMetrics;
 import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
 
-class MetricsLoggerBuilderTest {
+class MetricsBuilderTest {
 
     private final PrintStream standardOut = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
@@ -49,11 +49,11 @@ class MetricsLoggerBuilderTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsLoggerFactory.class.getDeclaredField("metricsLogger");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
         field.setAccessible(true);
         field.set(null, null);
 
-        field = MetricsLoggerFactory.class.getDeclaredField("provider");
+        field = MetricsFactory.class.getDeclaredField("provider");
         field.setAccessible(true);
         field.set(null, new software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider());
     }
@@ -61,12 +61,12 @@ class MetricsLoggerBuilderTest {
     @Test
     void shouldBuildWithCustomNamespace() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withNamespace("CustomNamespace")
                 .build();
 
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -79,13 +79,13 @@ class MetricsLoggerBuilderTest {
     @Test
     void shouldBuildWithCustomService() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withService("CustomService")
                 .withNamespace("TestNamespace")
                 .build();
 
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -98,14 +98,14 @@ class MetricsLoggerBuilderTest {
     @Test
     void shouldBuildWithRaiseOnEmptyMetrics() {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withRaiseOnEmptyMetrics(true)
                 .withNamespace("TestNamespace")
                 .build();
 
         // Then
-        assertThat(metricsLogger).isNotNull();
-        assertThatThrownBy(metricsLogger::flush)
+        assertThat(metrics).isNotNull();
+        assertThatThrownBy(metrics::flush)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No metrics were emitted");
     }
@@ -113,13 +113,13 @@ class MetricsLoggerBuilderTest {
     @Test
     void shouldBuildWithDefaultDimension() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withDefaultDimension("Environment", "Test")
                 .withNamespace("TestNamespace")
                 .build();
 
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -132,13 +132,13 @@ class MetricsLoggerBuilderTest {
     @Test
     void shouldBuildWithMultipleDefaultDimensions() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withDefaultDimensions(DimensionSet.of("Environment", "Test", "Region", "us-west-2"))
                 .withNamespace("TestNamespace")
                 .build();
 
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -156,25 +156,25 @@ class MetricsLoggerBuilderTest {
         MetricsProvider testProvider = new TestMetricsProvider();
 
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withMetricsProvider(testProvider)
                 .build();
 
         // Then
-        assertThat(metricsLogger).isInstanceOf(TestMetricsLogger.class);
+        assertThat(metrics).isInstanceOf(TestMetrics.class);
     }
 
     @Test
     void shouldOverrideServiceWithDefaultDimensions() throws Exception {
         // When
-        MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
+        Metrics metrics = MetricsBuilder.builder()
                 .withService("OriginalService")
                 .withDefaultDimensions(DimensionSet.of("Service", "OverriddenService"))
                 .withNamespace("TestNamespace")
                 .build();
 
-        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
-        metricsLogger.flush();
+        metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metrics.flush();
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();

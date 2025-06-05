@@ -23,8 +23,8 @@ import org.slf4j.MDC
 import software.amazon.lambda.powertools.logging.Logging
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry
 import software.amazon.lambda.powertools.metrics.Metrics
-import software.amazon.lambda.powertools.metrics.MetricsLogger
-import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory
+import software.amazon.lambda.powertools.metrics.Metrics
+import software.amazon.lambda.powertools.metrics.MetricsFactory
 import software.amazon.lambda.powertools.metrics.model.DimensionSet
 import software.amazon.lambda.powertools.metrics.model.MetricUnit
 import software.amazon.lambda.powertools.tracing.CaptureMode
@@ -40,7 +40,7 @@ import java.net.URL
 
 class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponseEvent> {
     private val log = LoggerFactory.getLogger(this::class.java)
-    private val metricsLogger: MetricsLogger = MetricsLoggerFactory.getMetricsLogger()
+    private val metrics: Metrics = MetricsFactory.getMetricsInstance()
     
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
@@ -48,13 +48,13 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
     override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent {
         val headers = mapOf("Content-Type" to "application/json", "X-Custom-Header" to "application/json")
         
-        metricsLogger.addMetric("CustomMetric1", 1.0, MetricUnit.COUNT)
+        metrics.addMetric("CustomMetric1", 1.0, MetricUnit.COUNT)
         
         val dimensionSet = DimensionSet.of(
             "AnotherService", "CustomService",
             "AnotherService1", "CustomService1"
         )
-        metricsLogger.flushSingleMetric("CustomMetric2", 1.0, MetricUnit.COUNT, "Another", dimensionSet)
+        metrics.flushSingleMetric("CustomMetric2", 1.0, MetricUnit.COUNT, "Another", dimensionSet)
         
         MDC.put("test", "willBeLogged")
         val response = APIGatewayProxyResponseEvent().withHeaders(headers)

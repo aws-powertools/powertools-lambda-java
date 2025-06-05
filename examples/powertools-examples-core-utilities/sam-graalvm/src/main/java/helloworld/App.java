@@ -33,8 +33,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
-import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
@@ -47,7 +47,7 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
  */
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private static final Logger log = LoggerFactory.getLogger(App.class);
-    private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+    private static final Metrics metrics = MetricsFactory.getMetricsInstance();
 
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
@@ -58,15 +58,14 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
 
-        metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
+        metrics.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
 
         DimensionSet dimensionSet = DimensionSet.of(
-            "AnotherService", "CustomService",
-            "AnotherService1", "CustomService1"
-        );
-        metricsLogger.flushSingleMetric("CustomMetric2", 1, MetricUnit.COUNT, "Another", dimensionSet);
+                "AnotherService", "CustomService",
+                "AnotherService1", "CustomService1");
+        metrics.flushSingleMetric("CustomMetric2", 1, MetricUnit.COUNT, "Another", dimensionSet);
 
-        metricsLogger.addMetric("CustomMetric3", 1, MetricUnit.COUNT, MetricResolution.HIGH);
+        metrics.addMetric("CustomMetric3", 1, MetricUnit.COUNT, MetricResolution.HIGH);
 
         MDC.put("test", "willBeLogged");
 
@@ -78,8 +77,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             TracingUtils.putAnnotation("Test", "New");
             String output = String.format("{ \"message\": \"hello world\", \"location\": \"%s\" }", pageContents);
 
-            TracingUtils.withSubsegment("loggingResponse", subsegment ->
-            {
+            TracingUtils.withSubsegment("loggingResponse", subsegment -> {
                 String sampled = "log something out";
                 log.info(sampled);
                 log.info(output);

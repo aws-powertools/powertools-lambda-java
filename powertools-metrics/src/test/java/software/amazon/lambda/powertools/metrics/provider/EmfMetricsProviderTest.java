@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-import software.amazon.lambda.powertools.metrics.MetricsLogger;
+import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.internal.EmfMetricsLogger;
 
 class EmfMetricsProviderTest {
@@ -29,10 +29,10 @@ class EmfMetricsProviderTest {
         EmfMetricsProvider provider = new EmfMetricsProvider();
 
         // When
-        MetricsLogger logger = provider.getMetricsLogger();
+        Metrics metrics = provider.getMetricsInstance();
 
         // Then
-        assertThat(logger)
+        assertThat(metrics)
                 .isNotNull()
                 .isInstanceOf(EmfMetricsLogger.class);
     }
