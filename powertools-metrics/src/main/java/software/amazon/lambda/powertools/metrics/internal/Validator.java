@@ -26,7 +26,7 @@ public class Validator {
     private static final int MAX_DIMENSION_NAME_LENGTH = 250;
     private static final int MAX_DIMENSION_VALUE_LENGTH = 1024;
     private static final int MAX_NAMESPACE_LENGTH = 255;
-    private static final String NAMESPACE_REGEX = "^[a-zA-Z0-9._#/]+$";
+    private static final String NAMESPACE_REGEX = "^[a-zA-Z0-9.-_#/:]+$";
     public static final long MAX_TIMESTAMP_PAST_AGE_SECONDS = TimeUnit.DAYS.toSeconds(14);
     public static final long MAX_TIMESTAMP_FUTURE_AGE_SECONDS = TimeUnit.HOURS.toSeconds(2);
 
