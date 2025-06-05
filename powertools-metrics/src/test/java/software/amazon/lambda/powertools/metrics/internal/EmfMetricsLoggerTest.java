@@ -65,6 +65,7 @@ class EmfMetricsLoggerTest {
         coldStartField.set(null, null);
 
         metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+        metricsLogger.setNamespace("TestNamespace");
         System.setOut(new PrintStream(outputStreamCaptor));
     }
 

@@ -18,15 +18,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
+import software.amazon.lambda.powertools.metrics.internal.Validator;
 
 /**
  * Represents a set of dimensions for CloudWatch metrics
  */
 public class DimensionSet {
     private static final int MAX_DIMENSION_SET_SIZE = 30;
-    private static final int MAX_DIMENSION_NAME_LENGTH = 250;
-    private static final int MAX_DIMENSION_VALUE_LENGTH = 1024;
 
     private final Map<String, String> dimensions = new LinkedHashMap<>();
 
@@ -190,42 +188,6 @@ public class DimensionSet {
     }
 
     private void validateDimension(String key, String value) {
-        if (key == null || key.trim().isEmpty()) {
-            throw new IllegalArgumentException("Dimension key cannot be null or empty");
-        }
-
-        if (value == null || value.trim().isEmpty()) {
-            throw new IllegalArgumentException("Dimension value cannot be null or empty");
-        }
-
-        if (StringUtils.containsWhitespace(key)) {
-            throw new IllegalArgumentException("Dimension key cannot contain whitespaces: " + key);
-        }
-
-        if (StringUtils.containsWhitespace(value)) {
-            throw new IllegalArgumentException("Dimension value cannot contain whitespaces: " + value);
-        }
-
-        if (key.startsWith(":")) {
-            throw new IllegalArgumentException("Dimension key cannot start with colon: " + key);
-        }
-
-        if (key.length() > MAX_DIMENSION_NAME_LENGTH) {
-            throw new IllegalArgumentException(
-                    "Dimension name exceeds maximum length of " + MAX_DIMENSION_NAME_LENGTH + ": " + key);
-        }
-
-        if (value.length() > MAX_DIMENSION_VALUE_LENGTH) {
-            throw new IllegalArgumentException(
-                    "Dimension value exceeds maximum length of " + MAX_DIMENSION_VALUE_LENGTH + ": " + value);
-        }
-
-        if (!StringUtils.isAsciiPrintable(key)) {
-            throw new IllegalArgumentException("Dimension name has invalid characters: " + key);
-        }
-
-        if (!StringUtils.isAsciiPrintable(value)) {
-            throw new IllegalArgumentException("Dimension value has invalid characters: " + value);
-        }
+        Validator.validateDimension(key, value);
     }
 }

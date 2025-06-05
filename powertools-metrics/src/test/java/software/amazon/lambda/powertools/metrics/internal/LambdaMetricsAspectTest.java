@@ -252,7 +252,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithColdStartMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(captureColdStart = true)
+        @Metrics(captureColdStart = true, namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -262,7 +262,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithCustomFunctionName implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(captureColdStart = true, functionName = "CustomFunction")
+        @Metrics(captureColdStart = true, functionName = "CustomFunction", namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -272,7 +272,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithServiceNameAndColdStart implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(service = "CustomService", captureColdStart = true)
+        @Metrics(service = "CustomService", captureColdStart = true, namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);

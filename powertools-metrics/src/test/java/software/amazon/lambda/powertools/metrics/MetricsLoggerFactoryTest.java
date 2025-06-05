@@ -113,6 +113,7 @@ class MetricsLoggerFactoryTest {
     void shouldUseServiceNameFromEnvironmentVariable() throws Exception {
         // When
         MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+        metricsLogger.setNamespace("TestNamespace");
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
         metricsLogger.flush();
 

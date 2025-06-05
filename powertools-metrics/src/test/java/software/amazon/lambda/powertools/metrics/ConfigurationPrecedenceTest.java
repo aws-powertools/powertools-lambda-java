@@ -161,6 +161,10 @@ class ConfigurationPrecedenceTest {
     @Test
     void shouldUseDefaultsWhenNoConfiguration() throws Exception {
         // Given
+        MetricsLoggerBuilder.builder()
+                .withNamespace("TestNamespace")
+                .build();
+
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithDefaultMetricsAnnotation();
         Context context = new TestContext();
         Map<String, Object> input = new HashMap<>();
@@ -174,7 +178,7 @@ class ConfigurationPrecedenceTest {
 
         // Default values should be used
         assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
-                .isEqualTo("aws-embedded-metrics");
+                .isEqualTo("TestNamespace");
         assertThat(rootNode.has("Service")).isTrue();
         assertThat(rootNode.get("Service").asText()).isEqualTo("service_undefined");
     }

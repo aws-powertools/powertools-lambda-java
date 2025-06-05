@@ -119,11 +119,13 @@ public class EmfMetricsLogger implements MetricsLogger {
 
     @Override
     public void setNamespace(String namespace) {
+        Validator.validateNamespace(namespace);
+
         this.namespace = namespace;
         try {
             emfLogger.setNamespace(namespace);
         } catch (Exception e) {
-            // Ignore namespace errors
+            LOGGER.error("Namespace cannot be set due to an error in EMF", e);
         }
     }
 
@@ -140,6 +142,8 @@ public class EmfMetricsLogger implements MetricsLogger {
 
     @Override
     public void flush() {
+        Validator.validateNamespace(namespace);
+
         if (!hasMetrics.get()) {
             if (raiseOnEmptyMetrics) {
                 throw new IllegalStateException("No metrics were emitted");
@@ -154,15 +158,14 @@ public class EmfMetricsLogger implements MetricsLogger {
     public void captureColdStartMetric(Context context,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
         if (isColdStart()) {
+            Validator.validateNamespace(namespace);
+
             software.amazon.cloudwatchlogs.emf.logger.MetricsLogger coldStartLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger();
 
-            // Set namespace if available
-            if (namespace != null) {
-                try {
-                    coldStartLogger.setNamespace(namespace);
-                } catch (Exception e) {
-                    // Ignore namespace errors
-                }
+            try {
+                coldStartLogger.setNamespace(namespace);
+            } catch (Exception e) {
+                LOGGER.error("Namespace cannot be set for cold start metrics due to an error in EMF", e);
             }
 
             coldStartLogger.putMetric(COLD_START_METRIC, 1, Unit.COUNT);
@@ -200,15 +203,16 @@ public class EmfMetricsLogger implements MetricsLogger {
     @Override
     public void pushSingleMetric(String name, double value, MetricUnit unit, String namespace,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
+        Validator.validateNamespace(namespace);
+
         // Create a new logger for this single metric
         software.amazon.cloudwatchlogs.emf.logger.MetricsLogger singleMetricLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger(
                 environmentProvider);
 
-        // Set namespace (now mandatory)
         try {
             singleMetricLogger.setNamespace(namespace);
         } catch (Exception e) {
-            // Ignore namespace errors
+            LOGGER.error("Namespace cannot be set for single metric due to an error in EMF", e);
         }
 
         // Add the metric

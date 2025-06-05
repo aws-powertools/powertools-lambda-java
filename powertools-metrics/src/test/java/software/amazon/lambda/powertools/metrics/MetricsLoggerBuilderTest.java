@@ -81,6 +81,7 @@ class MetricsLoggerBuilderTest {
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
                 .withService("CustomService")
+                .withNamespace("TestNamespace")
                 .build();
 
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -99,6 +100,7 @@ class MetricsLoggerBuilderTest {
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
                 .withRaiseOnEmptyMetrics(true)
+                .withNamespace("TestNamespace")
                 .build();
 
         // Then
@@ -113,6 +115,7 @@ class MetricsLoggerBuilderTest {
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
                 .withDefaultDimension("Environment", "Test")
+                .withNamespace("TestNamespace")
                 .build();
 
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -131,6 +134,7 @@ class MetricsLoggerBuilderTest {
         // When
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
                 .withDefaultDimensions(DimensionSet.of("Environment", "Test", "Region", "us-west-2"))
+                .withNamespace("TestNamespace")
                 .build();
 
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -166,6 +170,7 @@ class MetricsLoggerBuilderTest {
         MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
                 .withService("OriginalService")
                 .withDefaultDimensions(DimensionSet.of("Service", "OverriddenService"))
+                .withNamespace("TestNamespace")
                 .build();
 
         metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
