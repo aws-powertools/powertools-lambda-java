@@ -20,7 +20,7 @@ import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
 import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.MetricsUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -32,7 +32,7 @@ public class Function implements RequestHandler<Input, String> {
 
     MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
 
-    @Metrics(captureColdStart = true)
+    @FlushMetrics(captureColdStart = true)
     public String handleRequest(Input input, Context context) {
 
         Instant currentTimeTruncatedPlusThirty =

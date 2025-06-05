@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.MetricsLogger;
 import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -49,7 +49,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
 
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 

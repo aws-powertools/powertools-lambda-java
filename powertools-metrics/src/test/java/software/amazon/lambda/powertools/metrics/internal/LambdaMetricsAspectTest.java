@@ -33,7 +33,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.MetricsLogger;
 import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
@@ -262,7 +262,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(namespace = "CustomNamespace", service = "CustomService")
+        @FlushMetrics(namespace = "CustomNamespace", service = "CustomService")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -272,7 +272,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithDefaultMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics
+        @FlushMetrics
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -282,7 +282,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithColdStartMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(captureColdStart = true, namespace = "TestNamespace")
+        @FlushMetrics(captureColdStart = true, namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -292,7 +292,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithCustomFunctionName implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(captureColdStart = true, functionName = "CustomFunction", namespace = "TestNamespace")
+        @FlushMetrics(captureColdStart = true, functionName = "CustomFunction", namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -302,7 +302,7 @@ class LambdaMetricsAspectTest {
 
     static class HandlerWithServiceNameAndColdStart implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(service = "CustomService", captureColdStart = true, namespace = "TestNamespace")
+        @FlushMetrics(service = "CustomService", captureColdStart = true, namespace = "TestNamespace")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -319,7 +319,7 @@ class LambdaMetricsAspectTest {
             return "OK";
         }
 
-        @Metrics
+        @FlushMetrics
         public void someOtherMethod() {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);

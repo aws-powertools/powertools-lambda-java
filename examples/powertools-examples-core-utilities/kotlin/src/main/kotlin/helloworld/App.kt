@@ -44,7 +44,7 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
     
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent {
         val headers = mapOf("Content-Type" to "application/json", "X-Custom-Header" to "application/json")
         

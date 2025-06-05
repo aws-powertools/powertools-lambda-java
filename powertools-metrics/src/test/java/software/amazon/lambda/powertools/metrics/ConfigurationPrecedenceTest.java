@@ -185,7 +185,7 @@ class ConfigurationPrecedenceTest {
 
     private static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(namespace = "AnnotationNamespace", service = "AnnotationService")
+        @FlushMetrics(namespace = "AnnotationNamespace", service = "AnnotationService")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
@@ -195,7 +195,7 @@ class ConfigurationPrecedenceTest {
 
     private static class HandlerWithDefaultMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics
+        @FlushMetrics
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);

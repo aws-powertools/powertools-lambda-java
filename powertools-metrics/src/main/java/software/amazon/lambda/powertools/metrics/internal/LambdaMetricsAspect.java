@@ -27,7 +27,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.MetricsLogger;
 import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -39,7 +39,7 @@ public class LambdaMetricsAspect {
     private static final String SERVICE_DIMENSION = "Service";
     private static final String FUNCTION_NAME_ENV_VAR = "POWERTOOLS_METRICS_FUNCTION_NAME";
 
-    private String functionName(Metrics metrics, Context context) {
+    private String functionName(FlushMetrics metrics, Context context) {
         if (!"".equals(metrics.functionName())) {
             return metrics.functionName();
         }
@@ -52,7 +52,7 @@ public class LambdaMetricsAspect {
         return context != null ? context.getFunctionName() : null;
     }
 
-    private String serviceNameWithFallback(Metrics metrics) {
+    private String serviceNameWithFallback(FlushMetrics metrics) {
         if (!"".equals(metrics.service())) {
             return metrics.service();
         }
@@ -61,19 +61,20 @@ public class LambdaMetricsAspect {
 
     @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(metrics)")
-    public void callAt(Metrics metrics) {
+    public void callAt(FlushMetrics metrics) {
     }
 
-    @Around(value = "callAt(metrics) && execution(@Metrics * *.*(..))", argNames = "pjp,metrics")
+    @Around(value = "callAt(metrics) && execution(@FlushMetrics * *.*(..))", argNames = "pjp,metrics")
     public Object around(ProceedingJoinPoint pjp,
-            Metrics metrics) throws Throwable {
+            FlushMetrics metrics) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)) {
             MetricsLogger logger = MetricsLoggerFactory.getMetricsLogger();
 
             // The MetricsLoggerFactory applies default settings from the environment or can be configured by the
-            // MetricsLoggerBuilder. We only overwrite settings if they are explicitly set in the @Metrics annotation.
+            // MetricsLoggerBuilder. We only overwrite settings if they are explicitly set in the @FlushMetrics
+            // annotation.
             if (!"".equals(metrics.namespace())) {
                 logger.setNamespace(metrics.namespace());
             }

@@ -126,11 +126,11 @@ Metrics has three global settings that will be used across all metrics emitted. 
 
 The `MetricsLogger` Singleton can be configured by three different interfaces. The following order of precedence applies:
 
-1. `@Metrics` annotation
+1. `@FlushMetrics` annotation
 2. `MetricsLoggerBuilder` using Builder pattern (see [Advanced section](#usage-without-metrics-annotation))
 3. Environment variables (recommended)
 
-For most use-cases, we recommend using Environment variables and only overwrite settings in code where needed using either the `@Metrics` annotation or `MetricsLoggerBuilder` if the annotation cannot be used.
+For most use-cases, we recommend using Environment variables and only overwrite settings in code where needed using either the `@FlushMetrics` annotation or `MetricsLoggerBuilder` if the annotation cannot be used.
 
 === "template.yaml"
 
@@ -150,7 +150,7 @@ For most use-cases, we recommend using Environment variables and only overwrite 
 === "MetricsEnabledHandler.java"
 
     ```java hl_lines="9"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 
     public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
@@ -158,16 +158,16 @@ For most use-cases, we recommend using Environment variables and only overwrite 
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             // ...
         }
     }
     ```
 
-`MetricsLogger` is implemented as a Singleton to keep track of your aggregate metrics in memory and make them accessible anywhere in your code. To guarantee that metrics are flushed properly the `@Metrics` annotation must be added on the lambda handler.
+`MetricsLogger` is implemented as a Singleton to keep track of your aggregate metrics in memory and make them accessible anywhere in your code. To guarantee that metrics are flushed properly the `@FlushMetrics` annotation must be added on the lambda handler.
 
-!!!info "You can use the Metrics utility without the `@Metrics` annotation and flush manually. Read more in the [advanced section below](#usage-without-metrics-annotation)."
+!!!info "You can use the Metrics utility without the `@FlushMetrics` annotation and flush manually. Read more in the [advanced section below](#usage-without-metrics-annotation)."
 
 ## Creating metrics
 
@@ -176,7 +176,7 @@ You can create metrics using `addMetric`, and manually create dimensions for all
 === "MetricsEnabledHandler.java"
 
     ```java hl_lines="13"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
     import software.amazon.lambda.powertools.metrics.model.MetricUnit;
@@ -186,7 +186,7 @@ You can create metrics using `addMetric`, and manually create dimensions for all
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addDimension("environment", "prod");
             metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
@@ -210,7 +210,7 @@ passing a `#!java MetricResolution.HIGH` to the `addMetric` method. If nothing i
 === "HigResMetricsHandler.java"
 
     ```java hl_lines="3 13"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 
@@ -219,7 +219,7 @@ passing a `#!java MetricResolution.HIGH` to the `addMetric` method. If nothing i
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             // ...
             metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT, MetricResolution.HIGH);
@@ -239,7 +239,7 @@ You can add dimensions to your metrics using the `addDimension` method. You can 
 === "KeyValueDimensionHandler.java"
 
     ```java hl_lines="3 13"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 
@@ -248,7 +248,7 @@ You can add dimensions to your metrics using the `addDimension` method. You can 
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addDimension("Dimension", "Value");
             metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
@@ -259,7 +259,7 @@ You can add dimensions to your metrics using the `addDimension` method. You can 
 === "HighCardinalityDimensionHandler.java"
 
     ```java hl_lines="4 13-14"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.model.MetricResolution;
     import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -269,7 +269,7 @@ You can add dimensions to your metrics using the `addDimension` method. You can 
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             // You can add up to 30 dimensions in a single DimensionSet
             metricsLogger.addDimension(DimensionSet.of("Dimension1", "Value1", "Dimension2", "Value2"));
@@ -280,7 +280,7 @@ You can add dimensions to your metrics using the `addDimension` method. You can 
 
 ### Flushing metrics
 
-The `@Metrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation,
+The `@FlushMetrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation,
 if no metrics are provided no exception will be raised. If metrics are provided, and any of the following criteria are
 not met, `IllegalStateException` or `IllegalArgumentException` exceptions will be raised.
 
@@ -291,17 +291,17 @@ not met, `IllegalStateException` or `IllegalArgumentException` exceptions will b
     - Metric values must be valid numbers
 <!-- prettier-ignore-end -->
 
-If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the `@Metrics` annotation:
+If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the `@FlushMetrics` annotation:
 
 === "MetricsRaiseOnEmpty.java"
 
     ```java hl_lines="6"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
 
     public class MetricsRaiseOnEmpty implements RequestHandler<Object, Object> {
 
         @Override
-        @Metrics(raiseOnEmptyMetrics = true)
+        @FlushMetrics(raiseOnEmptyMetrics = true)
         public Object handleRequest(Object input, Context context) {
         ...
         }
@@ -310,17 +310,17 @@ If you want to ensure that at least one metric is emitted, you can pass `raiseOn
 
 ## Capturing cold start metric
 
-You can capture cold start metrics automatically with `@Metrics` via the `captureColdStart` variable.
+You can capture cold start metrics automatically with `@FlushMetrics` via the `captureColdStart` variable.
 
 === "MetricsColdStart.java"
 
     ```java hl_lines="6"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
 
     public class MetricsColdStart implements RequestHandler<Object, Object> {
 
         @Override
-        @Metrics(captureColdStart = true)
+        @FlushMetrics(captureColdStart = true)
         public Object handleRequest(Object input, Context context) {
         ...
         }
@@ -339,12 +339,12 @@ You can also specify a custom function name to be used in the cold start metric:
 === "MetricsColdStartCustomFunction.java"
 
     ```java hl_lines="6"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
 
     public class MetricsColdStartCustomFunction implements RequestHandler<Object, Object> {
 
         @Override
-        @Metrics(captureColdStart = true, functionName = "CustomFunction")
+        @FlushMetrics(captureColdStart = true, functionName = "CustomFunction")
         public Object handleRequest(Object input, Context context) {
         ...
         }
@@ -353,7 +353,7 @@ You can also specify a custom function name to be used in the cold start metric:
 
 <!-- prettier-ignore-start -->
 !!!tip "You can overwrite the default `Service` and `FunctionName` dimensions of the cold start metric"
-    Set `#!java @Metrics(captureColdStart = false)` and use the `captureColdStartMetric` method manually:
+    Set `#!java @FlushMetrics(captureColdStart = false)` and use the `captureColdStartMetric` method manually:
 
     ```java hl_lines="6 8"
     public class MetricsColdStartCustomFunction implements RequestHandler<Object, Object> {
@@ -361,7 +361,7 @@ You can also specify a custom function name to be used in the cold start metric:
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(captureColdStart = false)
+        @FlushMetrics(captureColdStart = false)
         public Object handleRequest(Object input, Context context) {
             metricsLogger.captureColdStartMetric(context, DimensionSet.of("CustomDimension", "CustomValue"));
             ...
@@ -387,7 +387,7 @@ You can use `addMetadata` for advanced use cases, where you want to add metadata
 === "App.java"
 
     ```java hl_lines="13"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
 
@@ -396,7 +396,7 @@ You can use `addMetadata` for advanced use cases, where you want to add metadata
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "booking-service")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "booking-service")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
             metricsLogger.addMetadata("booking_id", "1234567890");  // Needs to be added BEFORE flushing
@@ -416,7 +416,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
 === "App.java"
 
     ```java hl_lines="13"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
     import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -426,7 +426,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.setDefaultDimensions(DimensionSet.of("CustomDimension", "booking", "Environment", "prod"));
             ...
@@ -437,7 +437,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
 === "MetricsLoggerBuilder.java"
 
     ```java hl_lines="8-10"
-    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.FlushMetrics;
     import software.amazon.lambda.powertools.metrics.MetricsLogger;
     import software.amazon.lambda.powertools.metrics.MetricsLoggerFactory;
     import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -449,7 +449,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
             .build();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.addMetric("CustomMetric1", 1, MetricUnit.COUNT);
             ...
@@ -478,7 +478,7 @@ You can create a single metric with its own namespace and dimensions using `flus
         private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
 
         @Override
-        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
             metricsLogger.flushSingleMetric(
                 "CustomMetric",
@@ -498,9 +498,9 @@ You can create a single metric with its own namespace and dimensions using `flus
     **unique metric = (metric_name + dimension_name + dimension_value)**
 <!-- prettier-ignore-end -->
 
-### Usage without `@Metrics` annotation
+### Usage without `@FlushMetrics` annotation
 
-The `MetricsLogger` provides all configuration options via `MetricsLoggerBuilder` in addition to the `@Metrics` annotation. This can be useful if work in an environment or framework that does not leverage the vanilla Lambda `handleRequest` method.
+The `MetricsLogger` provides all configuration options via `MetricsLoggerBuilder` in addition to the `@FlushMetrics` annotation. This can be useful if work in an environment or framework that does not leverage the vanilla Lambda `handleRequest` method.
 
 !!!info "The environment variables for Service and Namespace configuration still apply but can be overwritten with `MetricsLoggerBuilder` if needed."
 
@@ -620,7 +620,7 @@ class MetricsTestExample {
 
     static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @Metrics(namespace = "CustomNamespace", service = "CustomService")
+        @FlushMetrics(namespace = "CustomNamespace", service = "CustomService")
         public String handleRequest(Map<String, Object> input, Context context) {
             MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
             metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
