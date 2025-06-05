@@ -17,6 +17,8 @@ package software.amazon.lambda.powertools.metrics.internal;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.time.Instant;
+
 import org.junit.jupiter.api.Test;
 
 class ValidatorTest {
@@ -175,6 +177,48 @@ class ValidatorTest {
     void shouldAcceptValidDimension() {
         // When/Then
         assertThatCode(() -> Validator.validateDimension("ValidKey", "ValidValue"))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTimestampIsNull() {
+        // When/Then
+        assertThatThrownBy(() -> Validator.validateTimestamp(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Timestamp cannot be null");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTimestampIsTooFarInFuture() {
+        // Given
+        Instant futureTooFar = Instant.now().plusSeconds(Validator.MAX_TIMESTAMP_FUTURE_AGE_SECONDS + 1);
+
+        // When/Then
+        assertThatThrownBy(() -> Validator.validateTimestamp(futureTooFar))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Timestamp cannot be more than " + Validator.MAX_TIMESTAMP_FUTURE_AGE_SECONDS
+                        + " seconds in the future");
+    }
+
+    @Test
+    void shouldThrowExceptionWhenTimestampIsTooFarInPast() {
+        // Given
+        Instant pastTooFar = Instant.now().minusSeconds(Validator.MAX_TIMESTAMP_PAST_AGE_SECONDS + 1);
+
+        // When/Then
+        assertThatThrownBy(() -> Validator.validateTimestamp(pastTooFar))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Timestamp cannot be more than " + Validator.MAX_TIMESTAMP_PAST_AGE_SECONDS
+                        + " seconds in the past");
+    }
+
+    @Test
+    void shouldAcceptValidTimestamp() {
+        // Given
+        Instant validTimestamp = Instant.now();
+
+        // When/Then
+        assertThatCode(() -> Validator.validateTimestamp(validTimestamp))
                 .doesNotThrowAnyException();
     }
 }

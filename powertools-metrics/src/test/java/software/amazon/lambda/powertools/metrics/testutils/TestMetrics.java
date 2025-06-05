@@ -1,5 +1,6 @@
 package software.amazon.lambda.powertools.metrics.testutils;
 
+import java.time.Instant;
 import java.util.Collections;
 
 import com.amazonaws.services.lambda.runtime.Context;
@@ -58,6 +59,11 @@ public class TestMetrics implements Metrics {
 
     @Override
     public void clearDefaultDimensions() {
+        // Test placeholder
+    }
+
+    @Override
+    public void setTimestamp(Instant timestamp) {
         // Test placeholder
     }
 

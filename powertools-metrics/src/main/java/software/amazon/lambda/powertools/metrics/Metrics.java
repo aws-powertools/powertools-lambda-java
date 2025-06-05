@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools.metrics;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import java.time.Instant;
 
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
@@ -75,6 +76,13 @@ public interface Metrics {
      * @param dimensionSet the dimension set to add
      */
     void addDimension(DimensionSet dimensionSet);
+
+    /**
+     * Set a custom timestamp for the metrics
+     *
+     * @param timestamp the timestamp to use for the metrics
+     */
+    void setTimestamp(Instant timestamp);
 
     /**
      * Add metadata

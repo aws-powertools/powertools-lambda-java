@@ -14,6 +14,9 @@
 
 package software.amazon.lambda.powertools.metrics.internal;
 
+import java.time.Instant;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -24,6 +27,8 @@ public class Validator {
     private static final int MAX_DIMENSION_VALUE_LENGTH = 1024;
     private static final int MAX_NAMESPACE_LENGTH = 255;
     private static final String NAMESPACE_REGEX = "^[a-zA-Z0-9._#/]+$";
+    public static final long MAX_TIMESTAMP_PAST_AGE_SECONDS = TimeUnit.DAYS.toSeconds(14);
+    public static final long MAX_TIMESTAMP_FUTURE_AGE_SECONDS = TimeUnit.HOURS.toSeconds(2);
 
     private Validator() {
         // Private constructor to prevent instantiation
@@ -47,6 +52,37 @@ public class Validator {
 
         if (!namespace.matches(NAMESPACE_REGEX)) {
             throw new IllegalArgumentException("Namespace contains invalid characters: " + namespace);
+        }
+    }
+
+    /**
+     * Validates Timestamp.
+     *
+     * @see <a
+     *     href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch_concepts.html#about_timestamp">CloudWatch
+     *     Timestamp</a>
+     * @param timestamp Timestamp
+     * @throws IllegalArgumentException if timestamp is invalid
+     */
+    public static void validateTimestamp(Instant timestamp) {
+        if (timestamp == null) {
+            throw new IllegalArgumentException("Timestamp cannot be null");
+        }
+
+        if (timestamp.isAfter(
+                Instant.now().plusSeconds(MAX_TIMESTAMP_FUTURE_AGE_SECONDS))) {
+            throw new IllegalArgumentException(
+                    "Timestamp cannot be more than "
+                            + MAX_TIMESTAMP_FUTURE_AGE_SECONDS
+                            + " seconds in the future");
+        }
+
+        if (timestamp.isBefore(
+                Instant.now().minusSeconds(MAX_TIMESTAMP_PAST_AGE_SECONDS))) {
+            throw new IllegalArgumentException(
+                    "Timestamp cannot be more than "
+                            + MAX_TIMESTAMP_PAST_AGE_SECONDS
+                            + " seconds in the past");
         }
     }
 

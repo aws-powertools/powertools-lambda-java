@@ -23,6 +23,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -185,6 +186,25 @@ class EmfMetricsLoggerTest {
             }
         }
         assertThat(hasDimension).isTrue();
+    }
+
+    @Test
+    void shouldSetCustomTimestamp() throws Exception {
+        // Given
+        Instant customTimestamp = Instant.now();
+
+        // When
+        metrics.setTimestamp(customTimestamp);
+        metrics.addMetric("test-metric", 100);
+        metrics.flush();
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
+
+        assertThat(rootNode.has("_aws")).isTrue();
+        assertThat(rootNode.get("_aws").has("Timestamp")).isTrue();
+        assertThat(rootNode.get("_aws").get("Timestamp").asLong()).isEqualTo(customTimestamp.toEpochMilli());
     }
 
     @Test

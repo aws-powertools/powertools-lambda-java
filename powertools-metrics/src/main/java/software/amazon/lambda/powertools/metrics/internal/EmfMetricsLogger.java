@@ -17,6 +17,7 @@ package software.amazon.lambda.powertools.metrics.internal;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -133,6 +134,13 @@ public class EmfMetricsLogger implements Metrics {
     @Override
     public void setRaiseOnEmptyMetrics(boolean raiseOnEmptyMetrics) {
         this.raiseOnEmptyMetrics = raiseOnEmptyMetrics;
+    }
+
+    @Override
+    public void setTimestamp(Instant timestamp) {
+        Validator.validateTimestamp(timestamp);
+
+        emfLogger.setTimestamp(timestamp);
     }
 
     @Override
