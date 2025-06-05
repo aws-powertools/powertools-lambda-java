@@ -111,10 +111,10 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
 
 Metrics has two global settings that will be used across all metrics emitted. Use your application or main service as the metric namespace to easily group all metrics:
 
-| Setting              | Description                                                                             | Environment variable           | Decorator parameter |
-| -------------------- | --------------------------------------------------------------------------------------- | ------------------------------ | ------------------- |
-| **Metric namespace** | Logical container where all metrics will be placed e.g. `e-commerce-app`                | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`         |
-| **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `product-service` | `POWERTOOLS_SERVICE_NAME`      | `service`           |
+| Setting              | Description                                                                     | Environment variable           | Decorator parameter |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------------------ | ------------------- |
+| **Metric namespace** | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`         |
+| **Service**          | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `service`           |
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
 
@@ -140,8 +140,8 @@ Metrics has two global settings that will be used across all metrics emitted. Us
             Runtime: java8
             Environment:
                 Variables:
-                    POWERTOOLS_SERVICE_NAME: product-service
-                    POWERTOOLS_METRICS_NAMESPACE: e-commerce-app
+                    POWERTOOLS_SERVICE_NAME: payment
+                    POWERTOOLS_METRICS_NAMESPACE: ServerlessAirline
     ```
 
 === "MetricsEnabledHandler.java"
@@ -360,7 +360,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
         @Override
         @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
-            metricsLogger.setDefaultDimensions(Map.of("CustomDimension", "booking", "Environment", "prod"));
+            metricsLogger.setDefaultDimensions(DimensionSet.of("CustomDimension", "booking", "Environment", "prod"));
             ...
         }
     }
@@ -377,7 +377,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
     public class App implements RequestHandler<Object, Object> {
 
         private static final MetricsLogger metricsLogger = MetricsLoggerBuilder.builder()
-            .withDefaultDimensions(Map.of("CustomDimension", "booking", "Environment", "prod"))
+            .withDefaultDimensions(DimensionSet.of("CustomDimension", "booking", "Environment", "prod"))
             .build();
 
         @Override
@@ -459,7 +459,7 @@ The following example shows how to configure a custom `MetricsLogger` using the 
             // You can manually capture the cold start metric
             // Lambda context is an optional argument if not available in your environment
             // Dimensions are also optional.
-            customLogger.captureColdStartMetric(context, DimensionSet.of("FunctionName", "MyFunction", "Service", "product-service"));
+            customLogger.captureColdStartMetric(context, DimensionSet.of("FunctionName", "MyFunction", "Service", "payment"));
 
             // Add metrics to the custom logger
             customLogger.addMetric("CustomMetric", 1, MetricUnit.COUNT);
