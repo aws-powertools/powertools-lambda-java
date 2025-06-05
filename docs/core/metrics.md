@@ -201,7 +201,7 @@ You can create metrics using `addMetric`, and manually create dimensions for all
 ### Adding high-resolution metrics
 
 You can create [high-resolution metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics)
-passing a `MetricResolution.HIGH` to the `addMetric` method:
+passing a `#!java MetricResolution.HIGH` to the `addMetric` method. If nothing is passed `#!java MetricResolution.STANDARD` will be used.
 
 === "HigResMetricsHandler.java"
 
@@ -228,6 +228,52 @@ passing a `MetricResolution.HIGH` to the `addMetric` method:
     High-resolution metrics are data with a granularity of one second and are very useful in several situations such as telemetry, time series, real-time incident management, and others.
 <!-- prettier-ignore-end -->
 
+### Adding dimensions
+
+You can add dimensions to your metrics using the `addDimension` method. You can either pass key-value pairs or you can create higher cardinality dimensions using `DimensionSet`.
+
+=== "KeyValueDimensionHandler.java"
+
+    ```java hl_lines="3 13"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.model.MetricResolution;
+
+    public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
+        @Override
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        public Object handleRequest(Object input, Context context) {
+            metricsLogger.addDimension("Dimension", "Value");
+            metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
+        }
+    }
+    ```
+
+=== "HighCardinalityDimensionHandler.java"
+
+    ```java hl_lines="4 13-14"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.MetricsLogger;
+    import software.amazon.lambda.powertools.metrics.model.MetricResolution;
+    import software.amazon.lambda.powertools.metrics.model.DimensionSet;
+
+    public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
+        @Override
+        @Metrics(namespace = "ServerlessAirline", service = "payment")
+        public Object handleRequest(Object input, Context context) {
+            // You can add up to 30 dimensions in a single DimensionSet
+            metricsLogger.addDimension(DimensionSet.of("Dimension1", "Value1", "Dimension2", "Value2"));
+            metricsLogger.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
+        }
+    }
+    ```
+
 ### Flushing metrics
 
 The `@Metrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation,
@@ -236,12 +282,12 @@ not met, `IllegalStateException` or `IllegalArgumentException` exceptions will b
 
 <!-- prettier-ignore-start -->
 !!! tip "Metric validation"
-    - Maximum of 9 dimensions
+    - Maximum of 30 dimensions (`Service` default dimension counts as a regular dimension)
     - Dimension keys and values cannot be null or empty
     - Metric values must be valid numbers
 <!-- prettier-ignore-end -->
 
-If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the **@Metrics** annotation:
+If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the `@Metrics` annotation:
 
 === "MetricsRaiseOnEmpty.java"
 
