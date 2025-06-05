@@ -118,16 +118,15 @@ Metrics has two global settings that will be used across all metrics emitted. Us
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
 
-<!-- prettier-ignore-start -->
-!!!info "Order of Precedence of `MetricsLogger` configuration"
-    The `MetricsLogger` Singleton can be configured by three different interfaces. The following order of precedence applies:
+### Order of Precedence of `MetricsLogger` configuration
 
-    1. `@Metrics` annotation (recommended)
-    2. `MetricsLoggerBuilder` using Builder pattern (see [Advanced section](#usage-without-metrics-annotation))
-    3. Environment variables (recommended)
+The `MetricsLogger` Singleton can be configured by three different interfaces. The following order of precedence applies:
 
-    For most use-cases, we recommend using Environment variables and only overwrite settings in code where needed using either the `@Metrics` annotation or `MetricsLoggerBuilder` if the annotation cannot be used.
-<!-- prettier-ignore-end -->
+1. `@Metrics` annotation
+2. `MetricsLoggerBuilder` using Builder pattern (see [Advanced section](#usage-without-metrics-annotation))
+3. Environment variables (recommended)
+
+For most use-cases, we recommend using Environment variables and only overwrite settings in code where needed using either the `@Metrics` annotation or `MetricsLoggerBuilder` if the annotation cannot be used.
 
 === "template.yaml"
 
@@ -301,6 +300,25 @@ You can also specify a custom function name to be used in the cold start metric:
         }
     }
     ```
+
+<!-- prettier-ignore-start -->
+!!!tip "You can overwrite the default `Service` and `FunctionName` dimensions of the cold start metric"
+    Set `#!java @Metrics(captureColdStart = false)` and use the `captureColdStartMetric` method manually:
+
+    ```java hl_lines="6 8"
+    public class MetricsColdStartCustomFunction implements RequestHandler<Object, Object> {
+
+        private static final MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+
+        @Override
+        @Metrics(captureColdStart = false)
+        public Object handleRequest(Object input, Context context) {
+            metricsLogger.captureColdStartMetric(context, DimensionSet.of("CustomDimension", "CustomValue"));
+            ...
+        }
+    }
+    ```
+<!-- prettier-ignore-end -->
 
 ## Advanced
 
