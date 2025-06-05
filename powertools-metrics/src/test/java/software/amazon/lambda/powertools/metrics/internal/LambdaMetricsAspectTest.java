@@ -162,6 +162,7 @@ class LambdaMetricsAspectTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_FUNCTION_NAME", value = "EnvFunctionName")
     void shouldNotIncludeServiceDimensionInColdStartMetricWhenServiceUndefined() throws Exception {
         // Given - no service name set, so it will use the default undefined value
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithColdStartMetricsAnnotation();
@@ -187,6 +188,7 @@ class LambdaMetricsAspectTest {
 
         // FunctionName dimension should be present
         assertThat(coldStartNode.has("FunctionName")).isTrue();
+        assertThat(coldStartNode.get("FunctionName").asText()).isEqualTo("EnvFunctionName");
     }
 
     @Test

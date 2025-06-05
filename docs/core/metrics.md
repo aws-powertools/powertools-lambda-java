@@ -111,11 +111,12 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
 
 Metrics has three global settings that will be used across all metrics emitted. Use your application or main service as the metric namespace to easily group all metrics:
 
-| Setting                        | Description                                                                     | Environment variable           | Decorator parameter |
-| ------------------------------ | ------------------------------------------------------------------------------- | ------------------------------ | ------------------- |
-| **Metric namespace**           | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE` | `namespace`         |
-| **Service**                    | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`      | `service`           |
-| **Disable Powertools Metrics** | Optionally, disables all Powertools metrics                                     | `POWERTOOLS_METRICS_DISABLED`  | N/A                 |
+| Setting                        | Description                                                                     | Environment variable               | Decorator parameter |
+| ------------------------------ | ------------------------------------------------------------------------------- | ---------------------------------- | ------------------- |
+| **Metric namespace**           | Logical container where all metrics will be placed e.g. `ServerlessAirline`     | `POWERTOOLS_METRICS_NAMESPACE`     | `namespace`         |
+| **Service**                    | Optionally, sets **service** metric dimension across all metrics e.g. `payment` | `POWERTOOLS_SERVICE_NAME`          | `service`           |
+| **Function name**              | Function name used as dimension for the cold start metric                       | `POWERTOOLS_METRICS_FUNCTION_NAME` | `functionName`      |
+| **Disable Powertools Metrics** | Optionally, disables all Powertools metrics                                     | `POWERTOOLS_METRICS_DISABLED`      | N/A                 |
 
 !!! tip "Use your application or main service as the metric namespace to easily group all metrics"
 

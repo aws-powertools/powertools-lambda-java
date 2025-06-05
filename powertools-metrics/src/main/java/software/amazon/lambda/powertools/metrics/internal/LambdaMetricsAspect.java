@@ -37,11 +37,18 @@ public class LambdaMetricsAspect {
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String SERVICE_DIMENSION = "Service";
+    private static final String FUNCTION_NAME_ENV_VAR = "POWERTOOLS_METRICS_FUNCTION_NAME";
 
     private String functionName(Metrics metrics, Context context) {
         if (!"".equals(metrics.functionName())) {
             return metrics.functionName();
         }
+
+        String envFunctionName = System.getenv(FUNCTION_NAME_ENV_VAR);
+        if (envFunctionName != null && !envFunctionName.isEmpty()) {
+            return envFunctionName;
+        }
+
         return context != null ? context.getFunctionName() : null;
     }
 
