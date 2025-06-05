@@ -14,9 +14,9 @@
 
 package software.amazon.lambda.powertools.metrics;
 
-import software.amazon.lambda.powertools.metrics.model.DimensionSet;
-
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
@@ -45,7 +45,11 @@ public final class MetricsLoggerFactory {
                 metricsLogger.setNamespace(envNamespace);
             }
 
-            metricsLogger.setDefaultDimensions(DimensionSet.of("Service", LambdaHandlerProcessor.serviceName()));
+            // Only set Service dimension if it's not the default undefined value
+            String serviceName = LambdaHandlerProcessor.serviceName();
+            if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
+                metricsLogger.setDefaultDimensions(DimensionSet.of("Service", serviceName));
+            }
         }
 
         return metricsLogger;

@@ -146,4 +146,21 @@ class MetricsLoggerFactoryTest {
                 .hasMessage("Metrics provider cannot be null");
     }
 
+    @Test
+    void shouldNotSetServiceDimensionWhenServiceUndefined() throws Exception {
+        // Given - no POWERTOOLS_SERVICE_NAME set, so it will use the default undefined value
+
+        // When
+        MetricsLogger metricsLogger = MetricsLoggerFactory.getMetricsLogger();
+        metricsLogger.setNamespace("TestNamespace");
+        metricsLogger.addMetric("test-metric", 100, MetricUnit.COUNT);
+        metricsLogger.flush();
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
+
+        // Service dimension should not be present
+        assertThat(rootNode.has("Service")).isFalse();
+    }
 }

@@ -25,6 +25,7 @@ import org.aspectj.lang.annotation.Pointcut;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsLogger;
@@ -70,12 +71,10 @@ public class LambdaMetricsAspect {
                 logger.setNamespace(metrics.namespace());
             }
 
-            // If the default dimensions are larger than 1 or do not contain the "Service" dimension, it means that the
-            // user overwrote them manually e.g. using MetricsLoggerBuilder. In this case, we don't set the service
-            // default dimension.
-            if (!"".equals(metrics.service())
-                    && logger.getDefaultDimensions().getDimensionKeys().size() <= 1
-                    && logger.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION)) {
+            // We only overwrite the default dimensions if the user didn't overwrite them previously. This means that
+            // they are either empty or only contain the default "Service" dimension.
+            if (!"".equals(metrics.service().trim()) && (logger.getDefaultDimensions().getDimensionKeys().size() <= 1
+                    || logger.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION))) {
                 logger.setDefaultDimensions(DimensionSet.of(SERVICE_DIMENSION, metrics.service()));
             }
 
@@ -95,12 +94,20 @@ public class LambdaMetricsAspect {
                     // Get function name from annotation or context
                     String funcName = functionName(metrics, extractedContext);
 
-                    // Create dimensions with service and function name
-                    DimensionSet coldStartDimensions = DimensionSet.of(
-                            SERVICE_DIMENSION,
-                            logger.getDefaultDimensions().getDimensions().getOrDefault(SERVICE_DIMENSION,
-                                    serviceNameWithFallback(metrics)),
-                            "FunctionName", funcName != null ? funcName : extractedContext.getFunctionName());
+                    DimensionSet coldStartDimensions = new DimensionSet();
+
+                    // Get service name from logger default dimensions or fallback
+                    String serviceName = logger.getDefaultDimensions().getDimensions().getOrDefault(SERVICE_DIMENSION,
+                            serviceNameWithFallback(metrics));
+
+                    // Only add service if it is not undefined
+                    if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
+                        coldStartDimensions.addDimension(SERVICE_DIMENSION, serviceName);
+                    }
+
+                    // Add function name
+                    coldStartDimensions.addDimension("FunctionName",
+                            funcName != null ? funcName : extractedContext.getFunctionName());
 
                     logger.captureColdStartMetric(extractedContext, coldStartDimensions);
                 }

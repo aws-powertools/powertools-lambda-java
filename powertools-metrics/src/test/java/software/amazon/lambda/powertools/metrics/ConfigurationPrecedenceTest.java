@@ -179,8 +179,8 @@ class ConfigurationPrecedenceTest {
         // Default values should be used
         assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
                 .isEqualTo("TestNamespace");
-        assertThat(rootNode.has("Service")).isTrue();
-        assertThat(rootNode.get("Service").asText()).isEqualTo("service_undefined");
+        // Service dimension should not be present when service is undefined
+        assertThat(rootNode.has("Service")).isFalse();
     }
 
     private static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {

@@ -162,6 +162,34 @@ class LambdaMetricsAspectTest {
     }
 
     @Test
+    void shouldNotIncludeServiceDimensionInColdStartMetricWhenServiceUndefined() throws Exception {
+        // Given - no service name set, so it will use the default undefined value
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithColdStartMetricsAnnotation();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
+
+        // When
+        handler.handleRequest(input, context);
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        String[] emfOutputs = emfOutput.split("\\n");
+
+        // There should be two EMF outputs - one for cold start and one for the handler metrics
+        assertThat(emfOutputs).hasSize(2);
+
+        JsonNode coldStartNode = objectMapper.readTree(emfOutputs[0]);
+        assertThat(coldStartNode.has("ColdStart")).isTrue();
+        assertThat(coldStartNode.get("ColdStart").asDouble()).isEqualTo(1.0);
+
+        // Service dimension should not be present in cold start metrics
+        assertThat(coldStartNode.has("Service")).isFalse();
+
+        // FunctionName dimension should be present
+        assertThat(coldStartNode.has("FunctionName")).isTrue();
+    }
+
+    @Test
     void shouldUseCustomFunctionNameWhenProvidedForColdStartMetric() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithCustomFunctionName();
