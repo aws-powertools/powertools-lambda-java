@@ -64,7 +64,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
             "AnotherService", "CustomService",
             "AnotherService1", "CustomService1"
         );
-        metricsLogger.pushSingleMetric("CustomMetric2", 1, MetricUnit.COUNT, "Another", dimensionSet);
+        metricsLogger.flushSingleMetric("CustomMetric2", 1, MetricUnit.COUNT, "Another", dimensionSet);
 
         metricsLogger.addMetric("CustomMetric3", 1, MetricUnit.COUNT, MetricResolution.HIGH);
 

@@ -72,7 +72,7 @@ public class TestMetricsLogger implements MetricsLogger {
     }
 
     @Override
-    public void pushSingleMetric(String name, double value, MetricUnit unit, String namespace,
+    public void flushSingleMetric(String name, double value, MetricUnit unit, String namespace,
             DimensionSet dimensions) {
         // Test placeholder
     }

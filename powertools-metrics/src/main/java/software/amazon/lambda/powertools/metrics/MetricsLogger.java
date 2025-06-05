@@ -152,7 +152,7 @@ public interface MetricsLogger {
     }
 
     /**
-     * Push a single metric with custom dimensions. This creates a separate metrics context
+     * Flush a single metric with custom dimensions. This creates a separate metrics context
      * that doesn't affect the default metrics context.
      *
      * @param name       the name of the metric
@@ -161,11 +161,10 @@ public interface MetricsLogger {
      * @param namespace  the namespace for the metric
      * @param dimensions custom dimensions for this metric (optional)
      */
-    void pushSingleMetric(String name, double value, MetricUnit unit, String namespace,
-            DimensionSet dimensions);
+    void flushSingleMetric(String name, double value, MetricUnit unit, String namespace, DimensionSet dimensions);
 
     /**
-     * Push a single metric with custom dimensions. This creates a separate metrics context
+     * Flush a single metric with custom dimensions. This creates a separate metrics context
      * that doesn't affect the default metrics context.
      *
      * @param name       the name of the metric
@@ -173,7 +172,7 @@ public interface MetricsLogger {
      * @param unit       the unit of the metric
      * @param namespace  the namespace for the metric
      */
-    default void pushSingleMetric(String name, double value, MetricUnit unit, String namespace) {
-        pushSingleMetric(name, value, unit, namespace, null);
+    default void flushSingleMetric(String name, double value, MetricUnit unit, String namespace) {
+        flushSingleMetric(name, value, unit, namespace, null);
     }
 }

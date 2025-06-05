@@ -54,7 +54,7 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
             "AnotherService", "CustomService",
             "AnotherService1", "CustomService1"
         )
-        metricsLogger.pushSingleMetric("CustomMetric2", 1.0, MetricUnit.COUNT, "Another", dimensionSet)
+        metricsLogger.flushSingleMetric("CustomMetric2", 1.0, MetricUnit.COUNT, "Another", dimensionSet)
         
         MDC.put("test", "willBeLogged")
         val response = APIGatewayProxyResponseEvent().withHeaders(headers)

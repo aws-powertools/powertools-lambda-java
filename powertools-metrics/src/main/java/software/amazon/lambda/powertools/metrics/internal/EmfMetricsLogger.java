@@ -201,7 +201,7 @@ public class EmfMetricsLogger implements MetricsLogger {
     }
 
     @Override
-    public void pushSingleMetric(String name, double value, MetricUnit unit, String namespace,
+    public void flushSingleMetric(String name, double value, MetricUnit unit, String namespace,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
         Validator.validateNamespace(namespace);
 

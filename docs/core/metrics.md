@@ -414,7 +414,7 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
 
 ### Creating a single metric with different configuration
 
-You can create a single metric with its own namespace and dimensions using `pushSingleMetric`:
+You can create a single metric with its own namespace and dimensions using `flushSingleMetric`:
 
 === "App.java"
 
@@ -430,7 +430,7 @@ You can create a single metric with its own namespace and dimensions using `push
         @Override
         @Metrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
-            metricsLogger.pushSingleMetric(
+            metricsLogger.flushSingleMetric(
                 "CustomMetric",
                 1,
                 MetricUnit.COUNT,

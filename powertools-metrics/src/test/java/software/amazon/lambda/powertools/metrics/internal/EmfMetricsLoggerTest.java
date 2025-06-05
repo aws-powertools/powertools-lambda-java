@@ -424,12 +424,12 @@ class EmfMetricsLoggerTest {
     }
 
     @Test
-    void shouldPushSingleMetric() throws Exception {
+    void shouldFlushSingleMetric() throws Exception {
         // Given
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
         // When
-        metricsLogger.pushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
+        metricsLogger.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace", dimensions);
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
@@ -444,9 +444,9 @@ class EmfMetricsLoggerTest {
     }
 
     @Test
-    void shouldPushSingleMetricWithoutDimensions() throws Exception {
+    void shouldFlushSingleMetricWithoutDimensions() throws Exception {
         // When
-        metricsLogger.pushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace");
+        metricsLogger.flushSingleMetric("single-metric", 200, MetricUnit.COUNT, "SingleNamespace");
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
