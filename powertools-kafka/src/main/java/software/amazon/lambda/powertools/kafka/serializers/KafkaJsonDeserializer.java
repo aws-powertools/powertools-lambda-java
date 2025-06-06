@@ -20,7 +20,7 @@ import java.io.IOException;
 public class KafkaJsonDeserializer extends AbstractKafkaDeserializer {
 
     @Override
-    protected <T> T deserializeComplex(byte[] data, Class<T> type) throws IOException {
+    protected <T> T deserializeObject(byte[] data, Class<T> type) throws IOException {
         String decodedStr = new String(data);
 
         return objectMapper.readValue(decodedStr, type);

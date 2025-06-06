@@ -426,7 +426,7 @@ class AbstractKafkaDeserializerTest {
     // Test implementation of AbstractKafkaDeserializer
     private static class TestDeserializer extends AbstractKafkaDeserializer {
         @Override
-        protected <T> T deserializeComplex(byte[] data, Class<T> type) throws IOException {
+        protected <T> T deserializeObject(byte[] data, Class<T> type) throws IOException {
             return objectMapper.readValue(data, type);
         }
     }

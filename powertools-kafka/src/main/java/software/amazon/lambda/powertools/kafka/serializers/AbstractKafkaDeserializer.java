@@ -134,7 +134,6 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             }
         }
 
-        // TODO: Understand what nextOffsets is and if we need to use it.
         return new ConsumerRecords<>(recordsMap, Map.of());
     }
 
@@ -146,13 +145,14 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
 
         K key = null;
         V value = null;
+
+        // We set these to NULL_SIZE since they are not relevant in the Lambda environment due to ESM pre-processing.
         int keySize = ConsumerRecord.NULL_SIZE;
         int valueSize = ConsumerRecord.NULL_SIZE;
 
         if (eventRecord.getKey() != null) {
             try {
                 byte[] decodedKeyBytes = Base64.getDecoder().decode(eventRecord.getKey());
-                keySize = decodedKeyBytes.length;
                 key = deserialize(decodedKeyBytes, keyType);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to deserialize Kafka record key.", e);
@@ -162,7 +162,6 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
         if (eventRecord.getValue() != null) {
             try {
                 byte[] decodedValueBytes = Base64.getDecoder().decode(eventRecord.getValue());
-                valueSize = decodedValueBytes.length;
                 value = deserialize(decodedValueBytes, valueType);
             } catch (Exception e) {
                 throw new RuntimeException("Failed to deserialize Kafka record value.", e);
@@ -204,7 +203,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
      * @return The deserialized object
      * @throws IOException If deserialization fails
      */
-    protected abstract <T> T deserializeComplex(byte[] data, Class<T> type) throws IOException;
+    protected abstract <T> T deserializeObject(byte[] data, Class<T> type) throws IOException;
 
     /**
      * Main deserialize method that handles primitive types and delegates to subclasses for complex types.
@@ -223,7 +222,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
         }
 
         // Delegate to subclass for complex type deserialization
-        return deserializeComplex(data, type);
+        return deserializeObject(data, type);
     }
 
     /**

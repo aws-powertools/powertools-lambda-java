@@ -66,7 +66,7 @@ public final class DeserializationUtils {
                         handler);
             }
         } catch (Exception e) {
-            LOGGER.error(
+            LOGGER.warn(
                     "Cannot determine deserialization type for custom deserialization. Defaulting to standard.",
                     e);
         }

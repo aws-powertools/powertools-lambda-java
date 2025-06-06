@@ -38,7 +38,7 @@ class KafkaAvroDeserializerTest {
         byte[] data = new byte[] { 1, 2, 3 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeComplex(data, String.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(data, String.class))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Unsupported type for Avro deserialization");
     }
@@ -50,7 +50,7 @@ class KafkaAvroDeserializerTest {
         byte[] avroData = serializeAvro(product);
 
         // When
-        TestProduct result = deserializer.deserializeComplex(avroData, TestProduct.class);
+        TestProduct result = deserializer.deserializeObject(avroData, TestProduct.class);
 
         // Then
         assertThat(result).isNotNull();
@@ -65,7 +65,7 @@ class KafkaAvroDeserializerTest {
         byte[] invalidAvroData = new byte[] { 1, 2, 3, 4, 5 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeComplex(invalidAvroData, TestProduct.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(invalidAvroData, TestProduct.class))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Failed to deserialize Avro data");
     }

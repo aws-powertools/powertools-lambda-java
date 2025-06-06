@@ -26,7 +26,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 public class KafkaAvroDeserializer extends AbstractKafkaDeserializer {
 
     @Override
-    protected <T> T deserializeComplex(byte[] data, Class<T> type) throws IOException {
+    protected <T> T deserializeObject(byte[] data, Class<T> type) throws IOException {
         // If no Avro generated class is passed we cannot deserialize using Avro
         if (SpecificRecordBase.class.isAssignableFrom(type)) {
             try {

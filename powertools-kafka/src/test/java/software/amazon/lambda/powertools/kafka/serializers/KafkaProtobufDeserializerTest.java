@@ -37,7 +37,7 @@ class KafkaProtobufDeserializerTest {
         byte[] data = new byte[] { 1, 2, 3 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeComplex(data, String.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(data, String.class))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Unsupported type for Protobuf deserialization");
     }
@@ -53,7 +53,7 @@ class KafkaProtobufDeserializerTest {
         byte[] protobufData = product.toByteArray();
 
         // When
-        TestProduct result = deserializer.deserializeComplex(protobufData, TestProduct.class);
+        TestProduct result = deserializer.deserializeObject(protobufData, TestProduct.class);
 
         // Then
         assertThat(result).isNotNull();
@@ -68,7 +68,7 @@ class KafkaProtobufDeserializerTest {
         byte[] invalidProtobufData = new byte[] { 1, 2, 3, 4, 5 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeComplex(invalidProtobufData, TestProduct.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(invalidProtobufData, TestProduct.class))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Failed to deserialize Protobuf data");
     }
