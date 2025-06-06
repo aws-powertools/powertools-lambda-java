@@ -94,35 +94,7 @@ public class LambdaMetricsAspect {
             LambdaHandlerProcessor.getXrayTraceId()
                     .ifPresent(traceId -> metricsInstance.addMetadata(TRACE_ID_PROPERTY, traceId));
 
-            Context extractedContext = extractContext(pjp);
-
-            if (null != extractedContext) {
-                metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
-
-                // Only capture cold start metrics if configured
-                if (metrics.captureColdStart()) {
-                    // Get function name from annotation or context
-                    String funcName = functionName(metrics, extractedContext);
-
-                    DimensionSet coldStartDimensions = new DimensionSet();
-
-                    // Get service name from metrics instance default dimensions or fallback
-                    String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(
-                            SERVICE_DIMENSION,
-                            serviceNameWithFallback(metrics));
-
-                    // Only add service if it is not undefined
-                    if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
-                        coldStartDimensions.addDimension(SERVICE_DIMENSION, serviceName);
-                    }
-
-                    // Add function name
-                    coldStartDimensions.addDimension("FunctionName",
-                            funcName != null ? funcName : extractedContext.getFunctionName());
-
-                    metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
-                }
-            }
+            captureColdStartMetricIfEnabled(extractContext(pjp), metrics);
 
             try {
                 return pjp.proceed(proceedArgs);
@@ -133,5 +105,38 @@ public class LambdaMetricsAspect {
         }
 
         return pjp.proceed(proceedArgs);
+    }
+
+    private void captureColdStartMetricIfEnabled(Context extractedContext, FlushMetrics metrics) {
+        if (extractedContext == null) {
+            return;
+        }
+
+        Metrics metricsInstance = MetricsFactory.getMetricsInstance();
+        metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+
+        // Only capture cold start metrics if enabled on annotation
+        if (metrics.captureColdStart()) {
+            // Get function name from annotation or context
+            String funcName = functionName(metrics, extractedContext);
+
+            DimensionSet coldStartDimensions = new DimensionSet();
+
+            // Get service name from metrics instance default dimensions or fallback
+            String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(
+                    SERVICE_DIMENSION,
+                    serviceNameWithFallback(metrics));
+
+            // Only add service if it is not undefined
+            if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
+                coldStartDimensions.addDimension(SERVICE_DIMENSION, serviceName);
+            }
+
+            // Add function name
+            coldStartDimensions.addDimension("FunctionName",
+                    funcName != null ? funcName : extractedContext.getFunctionName());
+
+            metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
+        }
     }
 }
