@@ -130,13 +130,13 @@
     "methods": [{ "name": "resetServiceName", "parameterTypes": [] }]
   },
   {
-    "name": "software.amazon.lambda.powertools.metrics.MetricsLogger",
+    "name": "software.amazon.lambda.powertools.metrics.Metrics",
     "allDeclaredClasses": true,
     "queryAllPublicMethods": true
   },
   {
-    "name": "software.amazon.lambda.powertools.metrics.MetricsLoggerFactory",
-    "fields": [{ "name": "metricsLogger" }, { "name": "provider" }]
+    "name": "software.amazon.lambda.powertools.metrics.MetricsFactory",
+    "fields": [{ "name": "metrics" }, { "name": "provider" }]
   },
   {
     "name": "software.amazon.lambda.powertools.metrics.internal.EmfMetricsLogger",
