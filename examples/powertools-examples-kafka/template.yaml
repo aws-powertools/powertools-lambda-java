@@ -50,10 +50,10 @@ Resources:
 Outputs:
   JsonFunction:
     Description: "Kafka JSON Lambda Function ARN"
-    Value: !GetAtt KafkaJsonConsumerDeserializationFunction.Arn
+    Value: !GetAtt JsonDeserializationFunction.Arn
   AvroFunction:
     Description: "Kafka Avro Lambda Function ARN"
-    Value: !GetAtt KafkaAvroConsumerDeserializationFunction.Arn
+    Value: !GetAtt AvroDeserializationFunction.Arn
   ProtobufFunction:
     Description: "Kafka Protobuf Lambda Function ARN"
-    Value: !GetAtt KafkaProtobufConsumerDeserializationFunction.Arn
+    Value: !GetAtt ProtobufDeserializationFunction.Arn
