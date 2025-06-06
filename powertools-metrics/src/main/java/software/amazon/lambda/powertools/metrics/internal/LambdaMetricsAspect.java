@@ -62,6 +62,7 @@ public class LambdaMetricsAspect {
     @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(metrics)")
     public void callAt(FlushMetrics metrics) {
+        // AspectJ point cut referenced in around() method
     }
 
     @Around(value = "callAt(metrics) && execution(@FlushMetrics * *.*(..))", argNames = "pjp,metrics")
@@ -81,8 +82,9 @@ public class LambdaMetricsAspect {
 
             // We only overwrite the default dimensions if the user didn't overwrite them previously. This means that
             // they are either empty or only contain the default "Service" dimension.
-            if (!"".equals(metrics.service().trim()) && (metricsInstance.getDefaultDimensions().getDimensionKeys().size() <= 1
-                    || metricsInstance.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION))) {
+            if (!"".equals(metrics.service().trim())
+                    && (metricsInstance.getDefaultDimensions().getDimensionKeys().size() <= 1
+                            || metricsInstance.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION))) {
                 metricsInstance.setDefaultDimensions(DimensionSet.of(SERVICE_DIMENSION, metrics.service()));
             }
 
@@ -105,7 +107,8 @@ public class LambdaMetricsAspect {
                     DimensionSet coldStartDimensions = new DimensionSet();
 
                     // Get service name from metrics instance default dimensions or fallback
-                    String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(SERVICE_DIMENSION,
+                    String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(
+                            SERVICE_DIMENSION,
                             serviceNameWithFallback(metrics));
 
                     // Only add service if it is not undefined
