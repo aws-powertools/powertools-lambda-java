@@ -4,6 +4,7 @@ This tool generates base64-encoded serialized products for testing the Kafka con
 
 ## Supported Formats
 
+- **JSON**: Generates base64-encoded JSON serialized products
 - **Avro**: Generates base64-encoded Avro serialized products
 - **Protobuf**: Generates base64-encoded Protobuf serialized products
 
@@ -18,6 +19,15 @@ mvn generate-sources
 # Compile the code
 mvn compile
 ```
+
+### Generate JSON Samples
+
+```bash
+# Run the JSON sample generator
+mvn exec:java -Dexec.mainClass="org.demo.kafka.tools.GenerateJsonSamples"
+```
+
+The tool will output base64-encoded values for JSON products that can be used in `../events/kafka-json-event.json`.
 
 ### Generate Avro Samples
 
@@ -49,6 +59,7 @@ Each generator produces:
 
 After generating the samples, you can copy the output into the respective event files:
 
+- `../events/kafka-json-event.json` for JSON samples
 - `../events/kafka-avro-event.json` for Avro samples
 - `../events/kafka-protobuf-event.json` for Protobuf samples
 

@@ -1,4 +1,4 @@
-package org.demo.kafka.minimal;
+package org.demo.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -11,19 +11,28 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.lambda.powertools.kafka.Deserialization;
 import software.amazon.lambda.powertools.kafka.DeserializationType;
+import software.amazon.lambda.powertools.logging.Logging;
 
-public class KafkaProtobufConsumerMinimalFunction
+public class ProtobufDeserializationFunction
         implements RequestHandler<ConsumerRecords<String, ProtobufProduct>, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProtobufConsumerMinimalFunction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProtobufDeserializationFunction.class);
 
     @Override
+    @Logging
     @Deserialization(type = DeserializationType.KAFKA_PROTOBUF)
     public String handleRequest(ConsumerRecords<String, ProtobufProduct> records, Context context) {
         for (ConsumerRecord<String, ProtobufProduct> consumerRecord : records) {
-            LOGGER.info("Received record: {}", consumerRecord);
+            LOGGER.info("ConsumerRecord: {}", consumerRecord);
+
+            ProtobufProduct product = consumerRecord.value();
+            LOGGER.info("ProtobufProduct: {}", product);
+
+            String key = consumerRecord.key();
+            LOGGER.info("Key: {}", key);
         }
 
         return "OK";
     }
+
 }

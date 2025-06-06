@@ -26,6 +26,11 @@
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.19.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -74,6 +79,12 @@
                 <artifactId>exec-maven-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
+                    <execution>
+                        <id>generate-json-samples</id>
+                        <configuration>
+                            <mainClass>org.demo.kafka.tools.GenerateJsonSamples</mainClass>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>generate-avro-samples</id>
                         <configuration>

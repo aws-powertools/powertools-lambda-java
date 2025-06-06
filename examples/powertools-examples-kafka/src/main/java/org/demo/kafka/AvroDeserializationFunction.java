@@ -1,4 +1,4 @@
-package org.demo.kafka.minimal;
+package org.demo.kafka;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -11,19 +11,27 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.lambda.powertools.kafka.Deserialization;
 import software.amazon.lambda.powertools.kafka.DeserializationType;
+import software.amazon.lambda.powertools.logging.Logging;
 
-public class KafkaAvroConsumerMinimalFunction
-        implements RequestHandler<ConsumerRecords<String, AvroProduct>, String> {
+public class AvroDeserializationFunction implements RequestHandler<ConsumerRecords<String, AvroProduct>, String> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaAvroConsumerMinimalFunction.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AvroDeserializationFunction.class);
 
     @Override
+    @Logging
     @Deserialization(type = DeserializationType.KAFKA_AVRO)
     public String handleRequest(ConsumerRecords<String, AvroProduct> records, Context context) {
         for (ConsumerRecord<String, AvroProduct> consumerRecord : records) {
-            LOGGER.info("Received record: {}", consumerRecord);
+            LOGGER.info("ConsumerRecord: {}", consumerRecord);
+
+            AvroProduct product = consumerRecord.value();
+            LOGGER.info("AvroProduct: {}", product);
+
+            String key = consumerRecord.key();
+            LOGGER.info("Key: {}", key);
         }
 
         return "OK";
     }
+
 }

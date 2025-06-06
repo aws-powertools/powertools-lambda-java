@@ -11,41 +11,41 @@ Globals:
     Tracing: Active
 
 Resources:
-  KafkaJsonConsumerDeserializationFunction:
+  JsonDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: org.demo.kafka.KafkaJsonConsumerDeserializationFunction::handleRequest
+      Handler: org.demo.kafka.JsonDeserializationFunction::handleRequest
       Environment:
         Variables:
           JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
           POWERTOOLS_LOG_LEVEL: DEBUG
-          POWERTOOLS_SERVICE_NAME: KafkaJsonConsumerDeserialization
-          POWERTOOLS_METRICS_NAMESPACE: KafkaJsonConsumerDeserializationFunction
+          POWERTOOLS_SERVICE_NAME: JsonDeserialization
+          POWERTOOLS_METRICS_NAMESPACE: JsonDeserializationFunction
 
-  KafkaAvroConsumerDeserializationFunction:
+  AvroDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: org.demo.kafka.KafkaAvroConsumerDeserializationFunction::handleRequest
+      Handler: org.demo.kafka.AvroDeserializationFunction::handleRequest
       Environment:
         Variables:
           JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
           POWERTOOLS_LOG_LEVEL: DEBUG
-          POWERTOOLS_SERVICE_NAME: KafkaAvroConsumerDeserialization
-          POWERTOOLS_METRICS_NAMESPACE: KafkaAvroConsumerDeserializationFunction
+          POWERTOOLS_SERVICE_NAME: AvroDeserialization
+          POWERTOOLS_METRICS_NAMESPACE: AvroDeserializationFunction
 
-  KafkaProtobufConsumerDeserializationFunction:
+  ProtobufDeserializationFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: org.demo.kafka.KafkaProtobufConsumerDeserializationFunction::handleRequest
+      Handler: org.demo.kafka.ProtobufDeserializationFunction::handleRequest
       Environment:
         Variables:
           JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
           POWERTOOLS_LOG_LEVEL: DEBUG
-          POWERTOOLS_SERVICE_NAME: KafkaProtobufConsumerDeserialization
-          POWERTOOLS_METRICS_NAMESPACE: KafkaProtobufConsumerDeserializationFunction
+          POWERTOOLS_SERVICE_NAME: ProtobufDeserialization
+          POWERTOOLS_METRICS_NAMESPACE: ProtobufDeserializationFunction
 
 Outputs:
   JsonFunction:
