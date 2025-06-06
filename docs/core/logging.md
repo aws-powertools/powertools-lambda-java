@@ -220,7 +220,7 @@ You can leverage the standard configuration files (_log4j2.xml_ or _logback.xml_
 === "log4j2.xml"
 
     With log4j2, we leverage the [`JsonTemplateLayout`](https://logging.apache.org/log4j/2.x/manual/json-template-layout.html){target="_blank"}
-    to provide structured logging. A default template is provided in powertools ([_LambdaJsonLayout.json_](https://github.com/aws-powertools/powertools-lambda-java/tree/v2/powertools-logging/powertools-logging-log4j/src/main/resources/LambdaJsonLayout.json){target="_blank"}):
+    to provide structured logging. A default template is provided in powertools ([_LambdaJsonLayout.json_](https://github.com/aws-powertools/powertools-lambda-java/blob/4444b4bce8eb1cc19880d1c1ef07188d97de9126/powertools-logging/powertools-logging-log4j/src/main/resources/LambdaJsonLayout.json){target="_blank"}):
 
     ```xml hl_lines="5"
     <?xml version="1.0" encoding="UTF-8"?>
@@ -278,7 +278,7 @@ If the level is set to any other value, we set it to the default value (`INFO`).
 <!-- markdownlint-disable MD013 -->
 With [AWS Lambda Advanced Logging Controls (ALC)](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-advanced){target="_blank"}, you can enforce a minimum log level that Lambda will accept from your application code.
 
-When enabled, you should keep Powertools and ALC log level in sync to avoid data loss.
+When enabled, you should keep your own log level and ALC log level in sync to avoid data loss.
 
 Here's a sequence diagram to demonstrate how ALC will drop both `INFO` and `DEBUG` logs emitted from `Logger`, when ALC log level is stricter than `Logger`.
 <!-- markdownlint-enable MD013 -->
@@ -309,7 +309,7 @@ We prioritise log level settings in this order:
 2. `POWERTOOLS_LOG_LEVEL` environment variable
 3. level defined in the `log4j2.xml` or `logback.xml` files
 
-If you set Powertools level lower than ALC, we will emit a warning informing you that your messages will be discarded by Lambda.
+If you set `POWERTOOLS_LOG_LEVEL` lower than ALC, we will emit a warning informing you that your messages will be discarded by Lambda.
 
 > **NOTE**
 >
@@ -739,7 +739,7 @@ When debugging in non-production environments, you can instruct the `@Logging` a
     ```
 
 ???+ note
-    If you use this on a RequestStreamHandler, Powertools must duplicate input streams in order to log them.
+    If you use this on a RequestStreamHandler, the SDK must duplicate input streams in order to log them.
 
 ## Logging handler response
 
@@ -974,7 +974,7 @@ You can also customize how [exceptions are logged](https://logging.apache.org/lo
 See the [JSON Layout template documentation](https://logging.apache.org/log4j/2.x/manual/json-template-layout.html){target="_blank"} for more details.
 
 ### Logback configuration
-Logback configuration is done in _logback.xml_ and the Powertools [`LambdaJsonEncoder`]():
+Logback configuration is done in _logback.xml_ and the `LambdaJsonEncoder`:
 
 ```xml
     <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
