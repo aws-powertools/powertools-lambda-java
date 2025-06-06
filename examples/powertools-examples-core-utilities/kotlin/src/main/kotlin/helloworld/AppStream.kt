@@ -24,7 +24,7 @@ import java.io.OutputStream
 
 class AppStream : RequestStreamHandler {
     @Logging(logEvent = true)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     @Throws(IOException::class)
     override fun handleRequest(input: InputStream, output: OutputStream, context: Context) {
         val map: Map<*, *> = mapper.readValue(input, MutableMap::class.java)

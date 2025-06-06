@@ -112,7 +112,7 @@ This step is only required if you are using log4j2 as your logging implementatio
 
 **3. Migrate all logging specific calls to SLF4J native primitives (recommended)**
 
-The new logging utility is designed to integrate seamlessly with Java SLF4J to allow customers adopt Powertools Logging without large code refactorings. This improvement requires the migration of non-native SLF4J primitives from the v1 Logging utility.
+The new logging utility is designed to integrate seamlessly with Java SLF4J to allow customers adopt the Logging utility without large code refactorings. This improvement requires the migration of non-native SLF4J primitives from the v1 Logging utility.
 
 !!! info "While we recommend using SLF4J as a logging implementation independent facade, you can still use the log4j2 and logback interfaces directly."
 

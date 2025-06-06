@@ -12,11 +12,20 @@
  *
  */
 
-package software.amazon.lambda.powertools.metrics;
+package software.amazon.lambda.powertools.metrics.provider;
 
-public class ValidationException extends RuntimeException {
+import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
+import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.internal.EmfMetricsLogger;
 
-    public ValidationException(String message) {
-        super(message);
+/**
+ * Provider implementation for EMF metrics
+ */
+public class EmfMetricsProvider implements MetricsProvider {
+
+    @Override
+    public Metrics getMetricsInstance() {
+        return new EmfMetricsLogger(new EnvironmentProvider(), new MetricsContext());
     }
 }
