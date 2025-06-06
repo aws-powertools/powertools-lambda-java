@@ -31,13 +31,15 @@ import org.apache.kafka.common.header.internals.RecordHeaders;
 import org.apache.kafka.common.record.TimestampType;
 
 import com.amazonaws.services.lambda.runtime.events.KafkaEvent;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Abstract base class for Kafka deserializers that implements common functionality.
  */
 abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
-    protected static final ObjectMapper objectMapper = new ObjectMapper();
+    protected static final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     /**
      * Deserialize JSON from InputStream into ConsumerRecords
