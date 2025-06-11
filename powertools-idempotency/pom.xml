@@ -28,9 +28,7 @@
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) library Idempotency</name>
-    <description>
-
-    </description>
+    <description>Utility to implement idempotency of Lambda functions</description>
 
 
     <modules>

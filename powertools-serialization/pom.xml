@@ -28,9 +28,7 @@
     <packaging>jar</packaging>
 
     <name>Powertools for AWS Lambda (Java) - Serialization Utilities</name>
-    <description>
-
-    </description>
+    <description>Utilities for JSON serialization used across the project.</description>
 
     <dependencies>
         <dependency>
