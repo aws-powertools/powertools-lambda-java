@@ -270,11 +270,9 @@ jobs:
       id-token: write
     environment: Docs
     steps:
-      - id: download_source
-        name: Download artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
-        with:
-          name: source
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Build
         run: |
           mkdir -p dist
@@ -290,4 +288,4 @@ jobs:
         run: |
           aws s3 sync \
             dist \
-            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ inputs.version }}/
