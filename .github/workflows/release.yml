@@ -184,7 +184,7 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false }}
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false && always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     needs:
       - build
     environment: Release
