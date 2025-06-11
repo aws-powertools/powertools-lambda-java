@@ -10,6 +10,7 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <name>Powertools for AWS Lambda (Java) library Parameters - Tests</name>
     <artifactId>powertools-parameters-tests</artifactId>
     <description>Powertools parameters tests that cut across all the parameters providers</description>
 
@@ -72,6 +73,24 @@
     </dependencies>
 
     <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.1.2</version>
+                        <configuration>
+                            <skip>true</skip>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
         <profile>
             <id>generate-graalvm-files</id>
             <dependencies>
