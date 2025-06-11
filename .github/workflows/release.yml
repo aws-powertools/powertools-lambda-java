@@ -123,7 +123,7 @@ jobs:
           retention-days: 1
 
   quality:
-    runs-on: ubuntu-latest
+    runs-on: aws-powertools_ubuntu-latest_8-core
     needs: 
       - version_seal
     if: ${{ inputs.skip_checks == false }}
@@ -156,7 +156,7 @@ jobs:
           uploadSarifReport: false
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: aws-powertools_ubuntu-latest_8-core
     needs:
       - setup
       - quality
@@ -183,7 +183,7 @@ jobs:
           mvn -B install --file pom.xml
 
   publish:
-    runs-on: ubuntu-latest
+    runs-on: aws-powertools_ubuntu-latest_8-core
     if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false && always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     needs:
       - build
