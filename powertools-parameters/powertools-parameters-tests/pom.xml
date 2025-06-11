@@ -13,10 +13,6 @@
     <name>Powertools for AWS Lambda (Java) library Parameters - Tests</name>
     <artifactId>powertools-parameters-tests</artifactId>
     <description>Powertools parameters tests that cut across all the parameters providers</description>
-    <properties>
-        <!-- Don't deploy the tests -->
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -181,6 +177,14 @@
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
                                 <buildArg>-H:Log=registerResource:5</buildArg>
                             </buildArgs>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
+                        <version>3.1.2</version>
+                        <configuration>
+                            <skip>true</skip>
                         </configuration>
                     </plugin>
                 </plugins>
