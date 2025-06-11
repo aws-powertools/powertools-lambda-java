@@ -30,7 +30,7 @@ As part of a new major version `v2` release, we prioritize the Java project's co
 - [x] [Review public interfaces and reduce public API surface area](https://github.com/aws-powertools/powertools-lambda-java/issues/1283){target="\_blank"}
 - [x] [Release Logging `v2` module](https://github.com/aws-powertools/powertools-lambda-java/issues/965){target="\_blank"} allowing customers to choose the logging framework and adding support for logging deeply nested objects as JSON
 - [x] [Support high resolution metrics](https://github.com/aws-powertools/powertools-lambda-java/issues/1041){target="\_blank"}
-- [x] [Improve modularity of metrics module](https://github.com/aws-powertools/powertools-lambda-java/issues/1848){target="\_blank"} to remove coupling with EMF library and to be able to support additional metrics providers / backends in the future
+- [x] [Improve modularity of metrics module](https://github.com/aws-powertools/powertools-lambda-java/issues/1848){target="\_blank"} to remove coupling with EMF library and enable future support for additional metrics providers / backends
 
 ##### Ecosystem
 

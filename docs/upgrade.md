@@ -164,7 +164,7 @@ public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEve
 <!-- - Remove deprecated methods: https://github.com/aws-powertools/powertools-lambda-java/pull/1624/files#diff-0afede8005aa2baeba2770f66d611bf0e8ee3969205be27e803682a7f2d6520a -->
 <!-- - Re-designed metrics module: https://github.com/aws-powertools/powertools-lambda-java/issues/1848 -->
 
-The Metrics utility was re-designed to be more modular and allow the addition of new metrics providers in the future. The same EMF-based metrics logging still applies but will be called via an updated public interface. Consider the following list to understand some of changes:
+The Metrics utility was redesigned to be more modular and allow for the addition of new metrics providers in the future. The same EMF-based metrics logging still applies but will be called via an updated public interface. Consider the following list to understand some of changes:
 
 - `#!java @Metrics` was renamed to `#!java @FlushMetrics`
 - `#!java MetricsLogger.metricsLogger()` was renamed to `#!java MetricsFactory.getMetricsInstance()`
@@ -208,7 +208,7 @@ public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
 }
 ```
 
-Learn more about the re-designed Metrics utility in the [Metrics documentation](./core/metrics.md).
+Learn more about the redesigned Metrics utility in the [Metrics documentation](./core/metrics.md).
 
 ## Deprecated capture mode related `@Tracing` annotation parameters
 
