@@ -162,8 +162,53 @@ public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEve
 ## Updated Metrics utility interface
 
 <!-- - Remove deprecated methods: https://github.com/aws-powertools/powertools-lambda-java/pull/1624/files#diff-0afede8005aa2baeba2770f66d611bf0e8ee3969205be27e803682a7f2d6520a -->
+<!-- - Re-designed metrics module: https://github.com/aws-powertools/powertools-lambda-java/issues/1848 -->
 
-The Metrics utility is currently undergoing changes to the public interface as part of GitHub issue [#1848](https://github.com/aws-powertools/powertools-lambda-java/issues/1848). We will keep this upgrade guide updated with the most recent changes as soon as they are released. Stay tuned for updates!
+The Metrics utility was redesigned to be more modular and allow for the addition of new metrics providers in the future. The same EMF-based metrics logging still applies but will be called via an updated public interface. Consider the following list to understand some of changes:
+
+- `#!java @Metrics` was renamed to `#!java @FlushMetrics`
+- `#!java MetricsLogger.metricsLogger()` was renamed to `#!java MetricsFactory.getMetricsInstance()`
+- `put*` calls such as `#!java putMetric()` where replaced with `add*` nomenclature such as `#!java addMetric()`
+- All direct imports from `software.amazon.cloudwatchlogs.emf` need to be replaced with Powertools counterparts from `software.amazon.lambda.powertools.metrics` (see example below)
+- The `withSingleMetric` and `withMetricsLogger` methods were removed in favor of `#!java metrics.flushSingleMetric()`
+- It is no longer valid to skip declaration of a namespace. If no namespace is provided, an exception will be raised instead of using the default `aws-embedded-metrics` namespace.
+
+The following example shows a common Lambda handler using the Metrics utility and required refactorings.
+
+```diff
+// Metrics is not a decorator anymore but the replacement for the `MetricsLogger` Singleton
+import software.amazon.lambda.powertools.metrics.Metrics;
++ import software.amazon.lambda.powertools.metrics.FlushMetrics;
+- import software.amazon.lambda.powertools.metrics.MetricsUtils;
++ import software.amazon.lambda.powertools.metrics.MetricsFactory;
+- import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
+- import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
+- import software.amazon.cloudwatchlogs.emf.model.Unit;
++ import software.amazon.lambda.powertools.metrics.model.DimensionSet;
++ import software.amazon.lambda.powertools.metrics.model.MetricUnit;
+
+public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
+
+    // This is still a Singleton
+-   MetricsLogger metricsLogger = MetricsUtils.metricsLogger();
++   Metrics metrics = MetricsFactory.getMetricsInstance();
+
+    @Override
+-   @Metrics(namespace = "ExampleApplication", service = "booking")
++   @FlushMetrics(namespace = "ExampleApplication", service = "booking")
+    public Object handleRequest(Object input, Context context) {
+-       metricsLogger.putDimensions(DimensionSet.of("environment", "prod"));
++       metrics.addDimension(DimensionSet.of("environment", "prod"));
+        // New method overload for adding 2D dimensions more conveniently
++       metrics.addDimension("environment", "prod");
+-       metricsLogger.putMetric("SuccessfulBooking", 1, Unit.COUNT);
++       metrics.addMetric("SuccessfulBooking", 1, MetricUnit.COUNT);
+        ...
+    }
+}
+```
+
+Learn more about the redesigned Metrics utility in the [Metrics documentation](./core/metrics.md).
 
 ## Deprecated capture mode related `@Tracing` annotation parameters
 
