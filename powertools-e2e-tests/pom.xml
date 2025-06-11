@@ -180,7 +180,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
-                <version>${maven.deploy.plugin.version}</version>
+                <version>3.1.2</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

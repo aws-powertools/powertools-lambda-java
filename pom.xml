@@ -27,6 +27,19 @@
     <description>
         A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
     </description>
+    <scm>
+        <url>https://github.com/aws-powertools/powertools-lambda-java</url>
+        <connection>scm:git:git://github.com/aws-powertools/powertools-lambda-java.git</connection>
+        <developerConnection>scm:git:ssh://github.com:aws-powertools/powertools-lambda-java.git</developerConnection>
+    </scm>
+    <developers>
+        <developer>
+            <name>Powertools for AWS team</name>
+            <email>aws-powertools-maintainers@amazon.com</email>
+            <organization>Amazon Web Services Inc.</organization>
+            <organizationUrl>https://aws.amazon.com</organizationUrl>
+        </developer>
+    </developers>
     <url>https://aws.amazon.com/lambda/</url>
     <issueManagement>
         <system>GitHub Issues</system>
