@@ -20,7 +20,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-examples</artifactId>
-    <version>2.0.0-RC1</version>
+    <version>2.0.0</version>
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) - Examples</name>
