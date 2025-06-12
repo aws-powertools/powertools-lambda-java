@@ -6,7 +6,7 @@
     <groupId>software.amazon.lambda.examples</groupId>
     <!-- TODO TODO TODO this should build from SNAPSHOT, but it doesn't, because the snapshots
     don't appear in the docker environment CDK builds it in in our CDK tests. How to procede? V2 blocker -->
-    <version>2.0.0-RC1</version>
+    <version>2.0.0</version>
     <artifactId>powertools-examples-core-utilities-cdk</artifactId>
     <packaging>jar</packaging>
 
