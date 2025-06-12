@@ -16,7 +16,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
         <aws.sdk.version>2.31.17</aws.sdk.version>
-        <netty.version>4.2.0.RC3</netty.version>
+        <netty.version>5.0.0.Alpha2</netty.version>
     </properties>
 
     <dependencies>

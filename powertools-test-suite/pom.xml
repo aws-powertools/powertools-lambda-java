@@ -28,7 +28,7 @@
     </parent>
 
     <properties>
-        <netty.version>4.2.0.RC3</netty.version>
+        <netty.version>5.0.0.Alpha2</netty.version>
     </properties>
 
     <name>Powertools for AWS Lambda (Java) library Test Suite</name>
