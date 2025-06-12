@@ -14,54 +14,175 @@
 
 package software.amazon.lambda.powertools.metrics;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import com.amazonaws.services.lambda.runtime.Context;
+import java.time.Instant;
+
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
+import software.amazon.lambda.powertools.metrics.model.MetricResolution;
+import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
 /**
- * {@code Metrics} is used to signal that the annotated method should be
- * extended with Metrics functionality.
- *
- * <p>{@code Metrics} allows users to asynchronously create Amazon
- * CloudWatch metrics by using the CloudWatch <a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/CloudWatch_Embedded_Metric_Format_Specification.html">Embedded Metrics Format</a>.
- * {@code Metrics} manages the life-cycle of the MetricsLogger class,
- * to simplify the user experience when used with AWS Lambda.
- *
- * <p>{@code Metrics} should be used with the handleRequest method of a class
- * which implements either
- * {@code com.amazonaws.services.lambda.runtime.RequestHandler} or
- * {@code com.amazonaws.services.lambda.runtime.RequestStreamHandler}.</p>
- *
- * <p>{@code Metrics} creates Amazon CloudWatch custom metrics. You can find
- * pricing information on the <a href="https://aws.amazon.com/cloudwatch/pricing/">CloudWatch pricing documentation</a> page.</p>
- *
- * <p>To enable creation of custom metrics for cold starts you can add {@code @Metrics(captureColdStart = true)}.
- * </br>This will create a metric with the key {@code "ColdStart"} and the unit type {@code COUNT}.
- * </p>
- *
- * <p>To raise exception if no metrics are emitted, use {@code @Metrics(raiseOnEmptyMetrics = true)}.
- * </br>This will create a create a exception of type {@link ValidationException}. By default its value is set to false.
- * </p>
- *
- * <p>By default the service name associated with metrics created will be
- * "service_undefined". This can be overridden with the environment variable {@code POWERTOOLS_SERVICE_NAME}
- * or the annotation variable {@code @Metrics(service = "Service Name")}.
- * If both are specified then the value of the annotation variable will be used.</p>
- *
- * <p>By default the namespace associated with metrics created will be "aws-embedded-metrics".
- * This can be overridden with the environment variable {@code POWERTOOLS_METRICS_NAMESPACE}
- * or the annotation variable {@code @Metrics(namespace = "Namespace")}.
- * If both are specified then the value of the annotation variable will be used.</p>
+ * Interface for metrics implementations.
+ * This interface is used to collect metrics in the Lambda function.
+ * It provides methods to add metrics, dimensions, and metadata.
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface Metrics {
-    String namespace() default "";
+public interface Metrics {
 
-    String service() default "";
+    /**
+     * Add a metric
+     *
+     * @param key        the name of the metric
+     * @param value      the value of the metric
+     * @param unit       the unit of the metric
+     * @param resolution the resolution of the metric
+     */
+    void addMetric(String key, double value, MetricUnit unit, MetricResolution resolution);
 
-    boolean captureColdStart() default false;
+    /**
+     * Add a metric with default resolution
+     *
+     * @param key   the name of the metric
+     * @param value the value of the metric
+     * @param unit  the unit of the metric
+     */
+    default void addMetric(String key, double value, MetricUnit unit) {
+        addMetric(key, value, unit, MetricResolution.STANDARD);
+    }
 
-    boolean raiseOnEmptyMetrics() default false;
+    /**
+     * Add a metric with default unit and resolution
+     *
+     * @param key   the name of the metric
+     * @param value the value of the metric
+     */
+    default void addMetric(String key, double value) {
+        addMetric(key, value, MetricUnit.NONE, MetricResolution.STANDARD);
+    }
+
+    /**
+     * Add a dimension
+     * This is equivalent to calling {@code addDimension(DimensionSet.of(key, value))}
+     *
+     * @param key   the name of the dimension
+     * @param value the value of the dimension
+     */
+    default void addDimension(String key, String value) {
+        addDimension(DimensionSet.of(key, value));
+    }
+
+    /**
+     * Add a dimension set
+     *
+     * @param dimensionSet the dimension set to add
+     */
+    void addDimension(DimensionSet dimensionSet);
+
+    /**
+     * Set a custom timestamp for the metrics
+     *
+     * @param timestamp the timestamp to use for the metrics
+     */
+    void setTimestamp(Instant timestamp);
+
+    /**
+     * Add metadata
+     *
+     * @param key   the name of the metadata
+     * @param value the value of the metadata
+     */
+    void addMetadata(String key, Object value);
+
+    /**
+     * Set default dimensions
+     *
+     * @param dimensionSet the dimension set to use as default dimensions
+     */
+    void setDefaultDimensions(DimensionSet dimensionSet);
+
+    /**
+     * Get the default dimensions
+     *
+     * @return the default dimensions as a DimensionSet
+     */
+    DimensionSet getDefaultDimensions();
+
+    /**
+     * Set the namespace
+     *
+     * @param namespace the namespace
+     */
+    void setNamespace(String namespace);
+
+    /**
+     * Set whether to raise an exception if no metrics are emitted
+     *
+     * @param raiseOnEmptyMetrics true to raise an exception, false otherwise
+     */
+    void setRaiseOnEmptyMetrics(boolean raiseOnEmptyMetrics);
+
+    /**
+     * Clear default dimensions
+     */
+    void clearDefaultDimensions();
+
+    /**
+     * Flush metrics to the configured sink
+     */
+    void flush();
+
+    /**
+     * Capture cold start metric and flush immediately
+     *
+     * @param context Lambda context
+     * @param dimensions custom dimensions for this metric (optional)
+     */
+    void captureColdStartMetric(Context context, DimensionSet dimensions);
+
+    /**
+     * Capture cold start metric and flush immediately
+     *
+     * @param context Lambda context
+     */
+    default void captureColdStartMetric(Context context) {
+        captureColdStartMetric(context, null);
+    }
+
+    /**
+     * Capture cold start metric without Lambda context and flush immediately
+     *
+     * @param dimensions custom dimensions for this metric (optional)
+     */
+    void captureColdStartMetric(DimensionSet dimensions);
+
+    /**
+     * Capture cold start metric without Lambda context and flush immediately
+     */
+    default void captureColdStartMetric() {
+        captureColdStartMetric((DimensionSet) null);
+    }
+
+    /**
+     * Flush a single metric with custom dimensions. This creates a separate metrics context
+     * that doesn't affect the default metrics context.
+     *
+     * @param name       the name of the metric
+     * @param value      the value of the metric
+     * @param unit       the unit of the metric
+     * @param namespace  the namespace for the metric
+     * @param dimensions custom dimensions for this metric (optional)
+     */
+    void flushSingleMetric(String name, double value, MetricUnit unit, String namespace, DimensionSet dimensions);
+
+    /**
+     * Flush a single metric with custom dimensions. This creates a separate metrics context
+     * that doesn't affect the default metrics context.
+     *
+     * @param name       the name of the metric
+     * @param value      the value of the metric
+     * @param unit       the unit of the metric
+     * @param namespace  the namespace for the metric
+     */
+    default void flushSingleMetric(String name, double value, MetricUnit unit, String namespace) {
+        flushSingleMetric(name, value, unit, namespace, null);
+    }
 }

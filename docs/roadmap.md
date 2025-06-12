@@ -17,7 +17,7 @@ Security and operational excellence take precedence above all else. This means b
 
 Our top priority is to establish the processes and infrastructure needed for a fully automated and secure end-to-end release process of new versions to Maven Central.
 
-- [ ] Implement GitHub workflows and create infrastructure to release to Maven Central
+- [x] [Implement GitHub workflows](https://github.com/aws-powertools/powertools-lambda-java/issues/1231){target="\_blank"} and create infrastructure to release to Maven Central
 - [x] [Implement end-to-end tests](https://github.com/aws-powertools/powertools-lambda-java/issues/1815){target="\_blank"}
 - [x] Implement [OpenSSF Scorecard](https://openssf.org/projects/scorecard/){target="\_blank"}
 
@@ -27,9 +27,10 @@ As part of a new major version `v2` release, we prioritize the Java project's co
 
 ##### Core Utilities
 
-- [ ] [Review public interfaces and reduce public API surface area](https://github.com/aws-powertools/powertools-lambda-java/issues/1283){target="\_blank"}
+- [x] [Review public interfaces and reduce public API surface area](https://github.com/aws-powertools/powertools-lambda-java/issues/1283){target="\_blank"}
 - [x] [Release Logging `v2` module](https://github.com/aws-powertools/powertools-lambda-java/issues/965){target="\_blank"} allowing customers to choose the logging framework and adding support for logging deeply nested objects as JSON
 - [x] [Support high resolution metrics](https://github.com/aws-powertools/powertools-lambda-java/issues/1041){target="\_blank"}
+- [x] [Improve modularity of metrics module](https://github.com/aws-powertools/powertools-lambda-java/issues/1848){target="\_blank"} to remove coupling with EMF library and enable future support for additional metrics providers / backends
 
 ##### Ecosystem
 

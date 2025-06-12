@@ -1,7 +1,7 @@
-# Build Docs
+# Build Latest Docs
 #
 # Description:
-#   Builds the docs and stores them in S3 to be served by our docs platform
+#   Builds the latest docs and stores them in S3 to be served by our docs platform
 #
 #   The workflow allows us to build to the main location (/lambda/java/) and to an alias
 #   (i.e. /lambda/java/preview/) if needed
@@ -15,17 +15,13 @@
 on:
   workflow_dispatch:
     inputs:
-      alias:
+      version:
+        description: "Version to build and publish docs (1.28.0, develop)"
+        required: true
         type: string
-        required: false
-        description: |
-          Alias to deploy the documentation into, this is mostly for testing pre-release
-          versions of the documentation, such as beta versions or snapshots.
 
-          https://docs.powertools.aws.dev/lambda/java/<alias>
-
-name: Build Docs
-run-name: Build Docs - ${{ contains(github.head_ref, 'main') && 'main' || inputs.alias }}
+name: Build Latest Docs
+run-name: Build Latest Docs - ${{ inputs.version }}
 
 jobs:
   docs:
@@ -35,28 +31,58 @@ jobs:
       id-token: write
     environment: Docs
     steps:
-      - name: Sanity Check
-        if: ${{ github.head_ref != 'main' || inputs.alias == '' }}
-        run:
-          echo "::error::No buildable docs"
-
       - name: Checkout Repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-        with: 
+        with:
           fetch-depth: 0
       - name: Build
         run: |
           mkdir -p dist
           docker build -t squidfunk/mkdocs-material ./docs/
           docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
-          cp -R site/* dist/
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@ececac1a45f3b08a01d2dd070d28d111c5fe6722
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
-      - name: Deploy
+      - name: Deploy Docs (Version)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: "latest"
         run: |
           aws s3 sync \
-            dist \
-            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ github.head_ref == 'main' && '' || format('{0}/', inputs.alias )}}
+            site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ env.VERSION }}/
+      - name: Deploy Docs (Alias)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: "latest"
+        run: |
+          aws s3 sync \
+            site/ \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ env.ALIAS }}/
+      - name: Deploy Docs (Version JSON)
+        env:
+          VERSION: ${{ inputs.version }}
+          ALIAS: "latest"
+        # We originally used "mike" from PyPi to manage versions for us, but since we moved to S3, we can't use it to manage versions any more.
+        # Instead, we're using some shell script that manages the versions.
+        #
+        # Operations:
+        #   1. Download the versions.json file from S3
+        #   2. Find any reference to the alias and delete it from the versions file
+        #   3. This is voodoo (don't use JQ):
+        #      - we assign the input as $o and the new version/alias as $n,
+        #      - we check if the version number exists in the file already (for republishing docs)
+        #      - if it's an alias (stage/latest/*) or old version, we do nothing and output $o (original input)
+        #      - if it's a new version number, we add it at position 0 in the array.
+        #   4. Once done, we'll upload it back to S3.
+        run: |
+          aws s3 cp \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/versions.json \
+            versions_old.json
+          jq 'del(.[].aliases[] | select(. == "${{ env.ALIAS }}"))' < versions_old.json > versions_proc.json
+          jq '. as $o | [{"title": "${{ env.VERSION }}", "version": "${{ env.VERSION }}", "aliases": ["${{ env.ALIAS }}"] }] as $n | $n | if .[0].title | test("[a-z]+") or any($o[].title == $n[0].title;.) then [($o | .[] | select(.title == $n[0].title).aliases += $n[0].aliases | . )] else $n + $o end' < versions_proc.json > versions.json
+          aws s3 cp \
+            versions.json \
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/versions.json

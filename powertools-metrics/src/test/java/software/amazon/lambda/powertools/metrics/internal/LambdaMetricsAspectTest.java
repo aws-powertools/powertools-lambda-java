@@ -14,371 +14,315 @@
 
 package software.amazon.lambda.powertools.metrics.internal;
 
-import static java.util.Collections.emptyMap;
-import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
-import org.mockito.Mock;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import software.amazon.cloudwatchlogs.emf.exception.DimensionSetExceededException;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.MetricsUtils;
-import software.amazon.lambda.powertools.metrics.ValidationException;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsColdStartEnabledHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledDefaultDimensionHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledDefaultNoDimensionHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsEnabledStreamHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsExceptionWhenNoMetricsHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoDimensionsHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsNoExceptionWhenNoMetricsHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsTooManyDimensionsHandler;
-import software.amazon.lambda.powertools.metrics.handlers.PowertoolsMetricsWithExceptionInHandler;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
+import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.MetricsFactory;
+import software.amazon.lambda.powertools.metrics.model.MetricUnit;
+import software.amazon.lambda.powertools.metrics.testutils.TestContext;
 
-@SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-public class LambdaMetricsAspectTest {
-    private final ByteArrayOutputStream out = new ByteArrayOutputStream();
-    private final PrintStream originalOut = System.out;
-    private final ObjectMapper mapper = new ObjectMapper();
-    @Mock
-    private Context context;
-    private RequestHandler<Object, Object> requestHandler;
+class LambdaMetricsAspectTest {
+
+    private final PrintStream standardOut = System.out;
+    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    void setUp() throws IllegalAccessException {
-        openMocks(this);
-        setupContext();
-        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
-        System.setOut(new PrintStream(out));
+    void setUp() throws Exception {
+        System.setOut(new PrintStream(outputStreamCaptor));
+
+        // Reset LambdaHandlerProcessor's SERVICE_NAME
+        Method resetServiceName = LambdaHandlerProcessor.class.getDeclaredMethod("resetServiceName");
+        resetServiceName.setAccessible(true);
+        resetServiceName.invoke(null);
+
+        // Reset IS_COLD_START
+        java.lang.reflect.Field coldStartField = LambdaHandlerProcessor.class.getDeclaredField("IS_COLD_START");
+        coldStartField.setAccessible(true);
+        coldStartField.set(null, null);
     }
 
     @AfterEach
-    void tearDown() {
-        System.setOut(originalOut);
+    void tearDown() throws Exception {
+        System.setOut(standardOut);
+
+        // Reset the singleton state between tests
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
+        field.setAccessible(true);
+        field.set(null, null);
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
-    public void metricsWithoutColdStart() {
+    void shouldCaptureMetricsFromAnnotatedHandler() throws Exception {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithMetricsAnnotation();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
 
-        MetricsUtils.defaultDimensions(null);
-        requestHandler = new PowertoolsMetricsEnabledHandler();
-        requestHandler.handleRequest("input", context);
+        // When
+        handler.handleRequest(input, context);
 
-        assertThat(out.toString().split("\n"))
-                .hasSize(2)
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s[0]);
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
 
-                    assertThat(logAsJson)
-                            .containsEntry("Metric2", 1.0)
-                            .containsEntry("Dimension1", "Value1")
-                            .containsKey("_aws")
-                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                            .containsEntry("function_request_id", "123ABC");
-
-                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
-
-                    assertThat(aws.get("CloudWatchMetrics"))
-                            .asString()
-                            .contains("Namespace=ExampleApplication");
-
-                    logAsJson = readAsJson(s[1]);
-
-                    assertThat(logAsJson)
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
+        assertThat(rootNode.has("test-metric")).isTrue();
+        assertThat(rootNode.get("test-metric").asDouble()).isEqualTo(100.0);
+        assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
+                .isEqualTo("CustomNamespace");
+        assertThat(rootNode.has("Service")).isTrue();
+        assertThat(rootNode.get("Service").asText()).isEqualTo("CustomService");
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
-    public void metricsWithDefaultDimensionSpecified() {
-        requestHandler = new PowertoolsMetricsEnabledDefaultDimensionHandler();
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = "EnvNamespace")
+    @SetEnvironmentVariable(key = "POWERTOOLS_SERVICE_NAME", value = "EnvService")
+    void shouldOverrideEnvironmentVariablesWithAnnotation() throws Exception {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithMetricsAnnotation();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
 
-        requestHandler.handleRequest("input", context);
+        // When
+        handler.handleRequest(input, context);
 
-        assertThat(out.toString().split("\n"))
-                .hasSize(2)
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s[0]);
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
 
-                    assertThat(logAsJson)
-                            .containsEntry("Metric2", 1.0)
-                            .containsEntry("CustomDimension", "booking")
-                            .containsKey("_aws")
-                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                            .containsEntry("function_request_id", "123ABC");
-
-                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
-
-                    assertThat(aws.get("CloudWatchMetrics"))
-                            .asString()
-                            .contains("Namespace=ExampleApplication");
-
-                    logAsJson = readAsJson(s[1]);
-
-                    assertThat(logAsJson)
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("CustomDimension", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
+        assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
+                .isEqualTo("CustomNamespace");
+        assertThat(rootNode.has("Service")).isTrue();
+        assertThat(rootNode.get("Service").asText()).isEqualTo("CustomService");
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    @SetEnvironmentVariable(key = "_X_AMZN_TRACE_ID", value = "Root=1-5759e988-bd862e3fe1be46a994272793;Parent=53995c3f42cd8ad8;Sampled=1")
-    public void metricsWithDefaultNoDimensionSpecified() {
-        requestHandler = new PowertoolsMetricsEnabledDefaultNoDimensionHandler();
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = "EnvNamespace")
+    @SetEnvironmentVariable(key = "POWERTOOLS_SERVICE_NAME", value = "EnvService")
+    void shouldUseEnvironmentVariablesWhenNoAnnotationOverrides() throws Exception {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithDefaultMetricsAnnotation();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
 
-        requestHandler.handleRequest("input", context);
+        // When
+        handler.handleRequest(input, context);
 
-        assertThat(out.toString().split("\n"))
-                .hasSize(2)
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s[0]);
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
 
-                    assertThat(logAsJson)
-                            .containsEntry("Metric2", 1.0)
-                            .containsKey("_aws")
-                            .containsEntry("xray_trace_id", "1-5759e988-bd862e3fe1be46a994272793")
-                            .containsEntry("function_request_id", "123ABC");
-
-                    Map<String, Object> aws = (Map<String, Object>) logAsJson.get("_aws");
-
-                    assertThat(aws.get("CloudWatchMetrics"))
-                            .asString()
-                            .contains("Namespace=ExampleApplication");
-
-                    logAsJson = readAsJson(s[1]);
-
-                    assertThat(logAsJson)
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
+        assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
+                .isEqualTo("EnvNamespace");
+        assertThat(rootNode.has("Service")).isTrue();
+        assertThat(rootNode.get("Service").asText()).isEqualTo("EnvService");
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void metricsWithColdStart() {
-        MetricsUtils.defaultDimensions(null);
-        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+    void shouldCaptureColdStartMetricWhenConfigured() throws Exception {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithColdStartMetricsAnnotation();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
 
-        requestHandler.handleRequest("input", context);
+        // When
+        handler.handleRequest(input, context);
 
-        assertThat(out.toString().split("\n"))
-                .hasSize(2)
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s[0]);
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        String[] emfOutputs = emfOutput.split("\\n");
 
-                    assertThat(logAsJson)
-                            .doesNotContainKey("Metric1")
-                            .containsEntry("ColdStart", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
+        // There should be two EMF outputs - one for cold start and one for the handler metrics
+        assertThat(emfOutputs).hasSize(2);
 
-                    logAsJson = readAsJson(s[1]);
+        JsonNode coldStartNode = objectMapper.readTree(emfOutputs[0]);
+        assertThat(coldStartNode.has("ColdStart")).isTrue();
+        assertThat(coldStartNode.get("ColdStart").asDouble()).isEqualTo(1.0);
 
-                    assertThat(logAsJson)
-                            .doesNotContainKey("ColdStart")
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
+        JsonNode metricsNode = objectMapper.readTree(emfOutputs[1]);
+        assertThat(metricsNode.has("test-metric")).isTrue();
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void noColdStartMetricsWhenColdStartDone() {
-        MetricsUtils.defaultDimensions(null);
-        requestHandler = new PowertoolsMetricsColdStartEnabledHandler();
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_FUNCTION_NAME", value = "EnvFunctionName")
+    void shouldNotIncludeServiceDimensionInColdStartMetricWhenServiceUndefined() throws Exception {
+        // Given - no service name set, so it will use the default undefined value
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithColdStartMetricsAnnotation();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
 
-        requestHandler.handleRequest("input", context);
-        requestHandler.handleRequest("input", context);
+        // When
+        handler.handleRequest(input, context);
 
-        assertThat(out.toString().split("\n"))
-                .hasSize(3)
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s[0]);
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        String[] emfOutputs = emfOutput.split("\\n");
 
-                    assertThat(logAsJson)
-                            .doesNotContainKey("Metric1")
-                            .containsEntry("ColdStart", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
+        // There should be two EMF outputs - one for cold start and one for the handler metrics
+        assertThat(emfOutputs).hasSize(2);
 
-                    logAsJson = readAsJson(s[1]);
+        JsonNode coldStartNode = objectMapper.readTree(emfOutputs[0]);
+        assertThat(coldStartNode.has("ColdStart")).isTrue();
+        assertThat(coldStartNode.get("ColdStart").asDouble()).isEqualTo(1.0);
 
-                    assertThat(logAsJson)
-                            .doesNotContainKey("ColdStart")
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
+        // Service dimension should not be present in cold start metrics
+        assertThat(coldStartNode.has("Service")).isFalse();
 
-                    logAsJson = readAsJson(s[2]);
-
-                    assertThat(logAsJson)
-                            .doesNotContainKey("ColdStart")
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
+        // FunctionName dimension should be present
+        assertThat(coldStartNode.has("FunctionName")).isTrue();
+        assertThat(coldStartNode.get("FunctionName").asText()).isEqualTo("EnvFunctionName");
     }
 
     @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void metricsWithStreamHandler() throws IOException {
-        MetricsUtils.defaultDimensions(null);
-        RequestStreamHandler streamHandler = new PowertoolsMetricsEnabledStreamHandler();
+    void shouldUseCustomFunctionNameWhenProvidedForColdStartMetric() throws Exception {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithCustomFunctionName();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
 
-        streamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(), context);
+        // When
+        handler.handleRequest(input, context);
 
-        assertThat(out.toString())
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s);
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        String[] emfOutputs = emfOutput.split("\\n");
 
-                    assertThat(logAsJson)
-                            .containsEntry("Metric1", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
-    }
+        // There should be two EMF outputs - one for cold start and one for the handler metrics
+        assertThat(emfOutputs).hasSize(2);
 
-    @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void exceptionWhenNoMetricsEmitted() {
-        MetricsUtils.defaultDimensions(null);
-        requestHandler = new PowertoolsMetricsExceptionWhenNoMetricsHandler();
+        JsonNode coldStartNode = objectMapper.readTree(emfOutputs[0]);
+        assertThat(coldStartNode.has("FunctionName")).isTrue();
+        assertThat(coldStartNode.get("FunctionName").asText()).isEqualTo("CustomFunction");
 
-        assertThatExceptionOfType(ValidationException.class)
-                .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                .withMessage("No metrics captured, at least one metrics must be emitted");
-    }
-
-    @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void noExceptionWhenNoMetricsEmitted() {
-        MetricsUtils.defaultDimensions(null);
-        requestHandler = new PowertoolsMetricsNoExceptionWhenNoMetricsHandler();
-
-        requestHandler.handleRequest("input", context);
-
-        assertThat(out.toString())
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s);
-
-                    assertThat(logAsJson)
-                            .containsEntry("Service", "booking")
-                            .doesNotContainKey("_aws");
-                });
-    }
-
-    @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void allowWhenNoDimensionsSet() {
-        MetricsUtils.defaultDimensions(null);
-
-        requestHandler = new PowertoolsMetricsNoDimensionsHandler();
-        requestHandler.handleRequest("input", context);
-
-        assertThat(out.toString())
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s);
-                    assertThat(logAsJson)
-                            .containsEntry("CoolMetric", 1.0)
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
-    }
-
-    @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void exceptionWhenTooManyDimensionsSet() {
-        MetricsUtils.defaultDimensions(null);
-
-        requestHandler = new PowertoolsMetricsTooManyDimensionsHandler();
-
-        assertThatExceptionOfType(DimensionSetExceededException.class)
-                .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                .withMessage(
-                        "Maximum number of dimensions allowed are 30. Account for default dimensions if not using setDimensions.");
-    }
-
-    @Test
-    @SetEnvironmentVariable(key = "AWS_EMF_ENVIRONMENT", value = "Lambda")
-    public void metricsPublishedEvenHandlerThrowsException() {
-        MetricsUtils.defaultDimensions(null);
-        requestHandler = new PowertoolsMetricsWithExceptionInHandler();
-
-        assertThatExceptionOfType(IllegalStateException.class)
-                .isThrownBy(() -> requestHandler.handleRequest("input", context))
-                .withMessage("Whoops, unexpected exception");
-
-        assertThat(out.toString())
-                .satisfies(s ->
-                {
-                    Map<String, Object> logAsJson = readAsJson(s);
-                    assertThat(logAsJson)
-                            .containsEntry("CoolMetric", 1.0)
-                            .containsEntry("Service", "booking")
-                            .containsEntry("function_request_id", "123ABC")
-                            .containsKey("_aws");
-                });
-    }
-
-    private void setupContext() {
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getInvokedFunctionArn()).thenReturn("testArn");
-        when(context.getFunctionVersion()).thenReturn("1");
-        when(context.getMemoryLimitInMB()).thenReturn(10);
-        when(context.getAwsRequestId()).thenReturn("123ABC");
-    }
-
-    private Map<String, Object> readAsJson(String s) {
-        try {
-            return mapper.readValue(s, Map.class);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
+        // Check that FunctionName is in the dimensions
+        JsonNode dimensions = coldStartNode.get("_aws").get("CloudWatchMetrics").get(0).get("Dimensions").get(0);
+        boolean hasFunctionName = false;
+        for (JsonNode dimension : dimensions) {
+            if (dimension.asText().equals("FunctionName")) {
+                hasFunctionName = true;
+                break;
+            }
         }
-        return emptyMap();
+        assertThat(hasFunctionName).isTrue();
+    }
+
+    @Test
+    void shouldUseServiceNameWhenProvidedForColdStartMetric() throws Exception {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithServiceNameAndColdStart();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
+
+        // When
+        handler.handleRequest(input, context);
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
+
+        // Should use the service name from annotation
+        assertThat(rootNode.has("Service")).isTrue();
+        assertThat(rootNode.get("Service").asText()).isEqualTo("CustomService");
+    }
+
+    @Test
+    void shouldHaveNoEffectOnNonHandlerMethod() {
+        // Given
+        RequestHandler<Map<String, Object>, String> handler = new HandlerWithAnnotationOnWrongMethod();
+        Context context = new TestContext();
+        Map<String, Object> input = new HashMap<>();
+
+        // When
+        handler.handleRequest(input, context);
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+
+        // Should be empty because we do not flush any metrics manually
+        assertThat(emfOutput).isEmpty();
+    }
+
+    static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
+        @Override
+        @FlushMetrics(namespace = "CustomNamespace", service = "CustomService")
+        public String handleRequest(Map<String, Object> input, Context context) {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+            return "OK";
+        }
+    }
+
+    static class HandlerWithDefaultMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
+        @Override
+        @FlushMetrics
+        public String handleRequest(Map<String, Object> input, Context context) {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+            return "OK";
+        }
+    }
+
+    static class HandlerWithColdStartMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
+        @Override
+        @FlushMetrics(captureColdStart = true, namespace = "TestNamespace")
+        public String handleRequest(Map<String, Object> input, Context context) {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+            return "OK";
+        }
+    }
+
+    static class HandlerWithCustomFunctionName implements RequestHandler<Map<String, Object>, String> {
+        @Override
+        @FlushMetrics(captureColdStart = true, functionName = "CustomFunction", namespace = "TestNamespace")
+        public String handleRequest(Map<String, Object> input, Context context) {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+            return "OK";
+        }
+    }
+
+    static class HandlerWithServiceNameAndColdStart implements RequestHandler<Map<String, Object>, String> {
+        @Override
+        @FlushMetrics(service = "CustomService", captureColdStart = true, namespace = "TestNamespace")
+        public String handleRequest(Map<String, Object> input, Context context) {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+            return "OK";
+        }
+    }
+
+    static class HandlerWithAnnotationOnWrongMethod implements RequestHandler<Map<String, Object>, String> {
+        @Override
+        public String handleRequest(Map<String, Object> input, Context context) {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+            someOtherMethod();
+            return "OK";
+        }
+
+        @FlushMetrics
+        public void someOtherMethod() {
+            Metrics metrics = MetricsFactory.getMetricsInstance();
+            metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
+        }
     }
 }
