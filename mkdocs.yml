@@ -123,6 +123,9 @@ extra_javascript:
 extra:
   powertools:
     version: 1.20.2 # to update after each release (we do not want snapshot version here)
+  version:
+    provider: mike
+    default: latest
 
 repo_url: https://github.com/aws-powertools/powertools-lambda-java
 edit_uri: edit/main/docs
