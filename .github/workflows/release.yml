@@ -202,14 +202,14 @@ jobs:
           cache: maven
           gpg-private-key: ${{ secrets.GPG_SIGNING_KEY }}
           gpg-passphrase: GPG_PASSPHRASE
-          server-id: ossrh
+          server-id: central
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
       - name: Publish package
         run: mvn -Prelease clean deploy -DskipTests
         env:
-          MAVEN_USERNAME: ${{ secrets.OSSRH_JIRA_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.OSSRH_JIRA_PASSWORD }}
+          MAVEN_USERNAME: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
+          MAVEN_PASSWORD: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
   
   create_pr:
@@ -270,11 +270,9 @@ jobs:
       id-token: write
     environment: Docs
     steps:
-      - id: download_source
-        name: Download artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.6.1
-        with:
-          name: source
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Build
         run: |
           mkdir -p dist
@@ -290,4 +288,4 @@ jobs:
         run: |
           aws s3 sync \
             dist \
-            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/
+            s3://${{ secrets.AWS_DOCS_BUCKET }}/lambda-java/${{ inputs.version }}/

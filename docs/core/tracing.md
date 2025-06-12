@@ -3,7 +3,7 @@ title: Tracing
 description: Core utility
 ---
 
-Powertools tracing is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/)
+The Tracing utility is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/)
 a provides functionality to reduce the overhead of performing common tracing tasks.
 
 ![Tracing showcase](../media/tracing_utility_showcase.png)
@@ -14,6 +14,7 @@ a provides functionality to reduce the overhead of performing common tracing tas
  * Helper methods to improve the developer experience of creating new X-Ray subsegments.
  * Better developer experience when developing with multiple threads.
  * Auto patch supported modules by AWS X-Ray
+ * GraalVM support
 
 ## Install
 

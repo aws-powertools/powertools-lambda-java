@@ -14,138 +14,129 @@
 
 package software.amazon.lambda.powertools.metrics.internal;
 
-import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.dimensionsCount;
-import static software.amazon.cloudwatchlogs.emf.model.MetricsLoggerHelper.hasNoMetrics;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.extractContext;
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.hasDefaultDimension;
-import static software.amazon.lambda.powertools.metrics.MetricsUtils.metricsLogger;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import java.lang.reflect.Field;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
-import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger;
-import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
-import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
-import software.amazon.cloudwatchlogs.emf.model.Unit;
+
+import com.amazonaws.services.lambda.runtime.Context;
+
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.Metrics;
-import software.amazon.lambda.powertools.metrics.MetricsUtils;
-import software.amazon.lambda.powertools.metrics.ValidationException;
+import software.amazon.lambda.powertools.metrics.MetricsFactory;
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 @Aspect
 public class LambdaMetricsAspect {
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
-    private static final String NAMESPACE = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
+    private static final String SERVICE_DIMENSION = "Service";
+    private static final String FUNCTION_NAME_ENV_VAR = "POWERTOOLS_METRICS_FUNCTION_NAME";
 
-    private static String service(Metrics metrics) {
-        return !"".equals(metrics.service()) ? metrics.service() : serviceName();
-    }
-
-    // This can be simplified after this issues https://github.com/awslabs/aws-embedded-metrics-java/issues/35 is fixed
-    public static void refreshMetricsContext(Metrics metrics) {
-        try {
-            Field f = metricsLogger().getClass().getDeclaredField("context");
-            f.setAccessible(true);
-            MetricsContext context = new MetricsContext();
-
-            DimensionSet[] defaultDimensions = hasDefaultDimension() ? MetricsUtils.getDefaultDimensions()
-                    : new DimensionSet[] {DimensionSet.of("Service", service(metrics))};
-
-            context.setDimensions(defaultDimensions);
-
-            f.set(metricsLogger(), context);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
+    private String functionName(FlushMetrics metrics, Context context) {
+        if (!"".equals(metrics.functionName())) {
+            return metrics.functionName();
         }
+
+        String envFunctionName = System.getenv(FUNCTION_NAME_ENV_VAR);
+        if (envFunctionName != null && !envFunctionName.isEmpty()) {
+            return envFunctionName;
+        }
+
+        return context != null ? context.getFunctionName() : null;
     }
 
-    @SuppressWarnings({"EmptyMethod"})
+    private String serviceNameWithFallback(FlushMetrics metrics) {
+        if (!"".equals(metrics.service())) {
+            return metrics.service();
+        }
+        return LambdaHandlerProcessor.serviceName();
+    }
+
+    @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(metrics)")
-    public void callAt(Metrics metrics) {
+    public void callAt(FlushMetrics metrics) {
+        // AspectJ point cut referenced in around() method
     }
 
-    @Around(value = "callAt(metrics) && execution(@Metrics * *.*(..))", argNames = "pjp,metrics")
+    @Around(value = "callAt(metrics) && execution(@FlushMetrics * *.*(..))", argNames = "pjp,metrics")
     public Object around(ProceedingJoinPoint pjp,
-                         Metrics metrics) throws Throwable {
+            FlushMetrics metrics) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp)) {
+            Metrics metricsInstance = MetricsFactory.getMetricsInstance();
 
-            MetricsLogger logger = metricsLogger();
-
-            refreshMetricsContext(metrics);
-
-            logger.setNamespace(namespace(metrics));
-
-            Context extractedContext = extractContext(pjp);
-
-            if (null != extractedContext) {
-                coldStartSingleMetricIfApplicable(extractedContext.getAwsRequestId(),
-                        extractedContext.getFunctionName(), metrics);
-                logger.putProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+            // The MetricsFactory applies default settings from the environment or can be configured by the
+            // MetricsBuilder. We only overwrite settings if they are explicitly set in the @FlushMetrics
+            // annotation.
+            if (!"".equals(metrics.namespace())) {
+                metricsInstance.setNamespace(metrics.namespace());
             }
 
+            // We only overwrite the default dimensions if the user didn't overwrite them previously. This means that
+            // they are either empty or only contain the default "Service" dimension.
+            if (!"".equals(metrics.service().trim())
+                    && (metricsInstance.getDefaultDimensions().getDimensionKeys().size() <= 1
+                            || metricsInstance.getDefaultDimensions().getDimensionKeys().contains(SERVICE_DIMENSION))) {
+                metricsInstance.setDefaultDimensions(DimensionSet.of(SERVICE_DIMENSION, metrics.service()));
+            }
+
+            metricsInstance.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
+
+            // Add trace ID metadata if available
             LambdaHandlerProcessor.getXrayTraceId()
-                    .ifPresent(traceId -> logger.putProperty(TRACE_ID_PROPERTY, traceId));
+                    .ifPresent(traceId -> metricsInstance.addMetadata(TRACE_ID_PROPERTY, traceId));
+
+            captureColdStartMetricIfEnabled(extractContext(pjp), metrics);
 
             try {
                 return pjp.proceed(proceedArgs);
-
             } finally {
                 coldStartDone();
-                validateMetricsAndRefreshOnFailure(metrics);
-                logger.flush();
-                refreshMetricsContext(metrics);
+                metricsInstance.flush();
             }
         }
 
         return pjp.proceed(proceedArgs);
     }
 
-    private void coldStartSingleMetricIfApplicable(final String awsRequestId,
-                                                   final String functionName,
-                                                   final Metrics metrics) {
-        if (metrics.captureColdStart()
-                && isColdStart()) {
-            MetricsLogger metricsLogger = new MetricsLogger();
-            metricsLogger.setNamespace(namespace(metrics));
-            metricsLogger.putMetric("ColdStart", 1, Unit.COUNT);
-            metricsLogger.setDimensions(DimensionSet.of("Service", service(metrics), "FunctionName", functionName));
-            metricsLogger.putProperty(REQUEST_ID_PROPERTY, awsRequestId);
-            metricsLogger.flush();
+    private void captureColdStartMetricIfEnabled(Context extractedContext, FlushMetrics metrics) {
+        if (extractedContext == null) {
+            return;
         }
 
-    }
+        Metrics metricsInstance = MetricsFactory.getMetricsInstance();
+        metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
 
-    private void validateBeforeFlushingMetrics(Metrics metrics) {
-        if (metrics.raiseOnEmptyMetrics() && hasNoMetrics()) {
-            throw new ValidationException("No metrics captured, at least one metrics must be emitted");
-        }
+        // Only capture cold start metrics if enabled on annotation
+        if (metrics.captureColdStart()) {
+            // Get function name from annotation or context
+            String funcName = functionName(metrics, extractedContext);
 
-        if (dimensionsCount() > 9) {
-            throw new ValidationException(String.format("Number of Dimensions must be in range of 0-9." +
-                    " Actual size: %d.", dimensionsCount()));
-        }
-    }
+            DimensionSet coldStartDimensions = new DimensionSet();
 
-    private String namespace(Metrics metrics) {
-        return !"".equals(metrics.namespace()) ? metrics.namespace() : NAMESPACE;
-    }
+            // Get service name from metrics instance default dimensions or fallback
+            String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(
+                    SERVICE_DIMENSION,
+                    serviceNameWithFallback(metrics));
 
-    private void validateMetricsAndRefreshOnFailure(Metrics metrics) {
-        try {
-            validateBeforeFlushingMetrics(metrics);
-        } catch (ValidationException e) {
-            refreshMetricsContext(metrics);
-            throw e;
+            // Only add service if it is not undefined
+            if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
+                coldStartDimensions.addDimension(SERVICE_DIMENSION, serviceName);
+            }
+
+            // Add function name
+            coldStartDimensions.addDimension("FunctionName",
+                    funcName != null ? funcName : extractedContext.getFunctionName());
+
+            metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
         }
     }
 }
