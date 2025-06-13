@@ -82,7 +82,7 @@ jobs:
       - id: base
         name: Base
         run: |
-          echo build_version=$(test ${{ github.ref_name }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
+          echo build_version=$(test ${{ github.ref_name }} == "main" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
       - id: build_matrix_v1
         name: Build matrix (v1)
         if: ${{ steps.base.outputs.build_version == 'v1' }}
@@ -123,7 +123,7 @@ jobs:
           retention-days: 1
 
   quality:
-    runs-on: ubuntu-latest
+    runs-on: aws-powertools_ubuntu-latest_8-core
     needs:
       - version_seal
     if: ${{ inputs.skip_checks == false }}
@@ -156,7 +156,7 @@ jobs:
           uploadSarifReport: false
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: aws-powertools_ubuntu-latest_8-core
     needs:
       - setup
       - quality
@@ -183,8 +183,8 @@ jobs:
           mvn -B install --file pom.xml
 
   publish:
-    runs-on: ubuntu-latest
-    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false }}
+    runs-on: aws-powertools_ubuntu-latest_8-core
+    if: ${{ github.repository == 'aws-powertools/powertools-lambda-java' && inputs.skip_publish == false && always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') }}
     needs:
       - build
     environment: Release
@@ -254,11 +254,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: tag
-        name: Create release
+        name: Create tag
         run: |
-          gh release create v${{ inputs.version }} --target $(git rev-parse HEAD)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
+          git push origin v${{ inputs.version }}
 
   docs:
     runs-on: ubuntu-latest
