@@ -254,11 +254,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - id: tag
-        name: Create release
+        name: Create tag
         run: |
-          gh release create v${{ inputs.version }} --target $(git rev-parse HEAD)
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
+          git push origin v${{ inputs.version }}
 
   docs:
     runs-on: ubuntu-latest
