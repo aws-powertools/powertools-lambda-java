@@ -82,7 +82,7 @@ jobs:
       - id: base
         name: Base
         run: |
-          echo build_version=$(test ${{ github.ref_name }} == "v2" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
+          echo build_version=$(test ${{ github.ref_name }} == "main" && echo "v2" || echo "v1") >> $GITHUB_OUTPUT
       - id: build_matrix_v1
         name: Build matrix (v1)
         if: ${{ steps.base.outputs.build_version == 'v1' }}
