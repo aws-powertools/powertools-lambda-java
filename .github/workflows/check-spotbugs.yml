@@ -9,7 +9,7 @@
 on:
   pull_request:
     branches:
-      - v2
+      - main
     paths:
       - 'powertools-batch/**'
       - 'powertools-core/**'
