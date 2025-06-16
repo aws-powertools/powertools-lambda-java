@@ -20,13 +20,13 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent
 import com.amazonaws.xray.entities.Subsegment
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import software.amazon.cloudwatchlogs.emf.logger.MetricsLogger
-import software.amazon.cloudwatchlogs.emf.model.DimensionSet
-import software.amazon.cloudwatchlogs.emf.model.Unit
 import software.amazon.lambda.powertools.logging.Logging
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry
 import software.amazon.lambda.powertools.metrics.Metrics
-import software.amazon.lambda.powertools.metrics.MetricsUtils
+import software.amazon.lambda.powertools.metrics.Metrics
+import software.amazon.lambda.powertools.metrics.MetricsFactory
+import software.amazon.lambda.powertools.metrics.model.DimensionSet
+import software.amazon.lambda.powertools.metrics.model.MetricUnit
 import software.amazon.lambda.powertools.tracing.CaptureMode
 import software.amazon.lambda.powertools.tracing.Tracing
 import software.amazon.lambda.powertools.tracing.TracingUtils
@@ -39,16 +39,23 @@ import java.net.URL
  */
 
 class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponseEvent> {
+    private val log = LoggerFactory.getLogger(this::class.java)
+    private val metrics: Metrics = MetricsFactory.getMetricsInstance()
+    
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     override fun handleRequest(input: APIGatewayProxyRequestEvent?, context: Context?): APIGatewayProxyResponseEvent {
         val headers = mapOf("Content-Type" to "application/json", "X-Custom-Header" to "application/json")
-        MetricsUtils.metricsLogger().putMetric("CustomMetric1", 1.0, Unit.COUNT)
-        MetricsUtils.withSingleMetric("CustomMetrics2", 1.0, Unit.COUNT, "Another") { metric: MetricsLogger ->
-            metric.setDimensions(DimensionSet.of("AnotherService", "CustomService"))
-            metric.setDimensions(DimensionSet.of("AnotherService1", "CustomService1"))
-        }
+        
+        metrics.addMetric("CustomMetric1", 1.0, MetricUnit.COUNT)
+        
+        val dimensionSet = DimensionSet.of(
+            "AnotherService", "CustomService",
+            "AnotherService1", "CustomService1"
+        )
+        metrics.flushSingleMetric("CustomMetric2", 1.0, MetricUnit.COUNT, "Another", dimensionSet)
+        
         MDC.put("test", "willBeLogged")
         val response = APIGatewayProxyResponseEvent().withHeaders(headers)
         return try {
@@ -89,6 +96,4 @@ class App : RequestHandler<APIGatewayProxyRequestEvent?, APIGatewayProxyResponse
             reader.readText().trim()
         }
     }
-
-    private val log = LoggerFactory.getLogger(this::class.java)
 }

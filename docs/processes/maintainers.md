@@ -14,21 +14,23 @@ This is document explains who the maintainers are, their responsibilities, and h
 
 ## Current Maintainers
 
-| Maintainer            | GitHub ID                                                                       | Affiliation |
-|-----------------------|---------------------------------------------------------------------------------| ----------- |
-| Jerome Van Der Linden | [jeromevdl](https://github.com/jeromevdl){target="_blank"}          | Amazon      |
-| Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="_blank"}           | Amazon      |
-| Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="_blank"} | Amazon      |
+| Maintainer      | GitHub ID                                                            | Affiliation |
+| --------------- | -------------------------------------------------------------------- | ----------- |
+| Philipp Page    | [phipag](https://github.com/phipag){target="\_blank" rel="nofollow"} | Amazon      |
+| Simon Thulbourn | [sthulb](https://github.com/sthulb){target="\_blank" rel="nofollow"} | Amazon      |
 
 ## Emeritus
 
 Previous active maintainers who contributed to this project.
 
-| Maintainer     | GitHub ID                                                                               | Affiliation   |
-|----------------|-----------------------------------------------------------------------------------------|---------------|
-| Mark Sailes    | [msailes](https://github.com/msailes){target="_blank"}                   | Amazon        |
-| Pankaj Agrawal | [pankajagrawal16](https://github.com/pankajagrawal16){target="_blank"} | Former Amazon |
-| Steve Houel    | [stevehouel](https://github.com/stevehouel)                                             | Amazon        |
+| Maintainer            | GitHub ID                                                                              | Affiliation   |
+| --------------------- | -------------------------------------------------------------------------------------- | ------------- |
+| Jerome Van Der Linden | [jeromevdl](https://github.com/jeromevdl){target="\_blank" rel="nofollow"}             | Amazon        |
+| Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="\_blank" rel="nofollow"}                 | Amazon        |
+| Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="\_blank" rel="nofollow"}       | DataDog       |
+| Mark Sailes           | [msailes](https://github.com/msailes){target="\_blank" rel="nofollow"}                 | Former Amazon |
+| Pankaj Agrawal        | [pankajagrawal16](https://github.com/pankajagrawal16){target="\_blank" rel="nofollow"} | Former Amazon |
+| Steve Houel           | [stevehouel](https://github.com/stevehouel){target="\_blank" rel="nofollow"}           | Amazon        |
 
 ## Labels
 

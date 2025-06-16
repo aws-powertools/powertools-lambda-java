@@ -223,7 +223,7 @@ public class CustomSerializationHandler extends AbstractResourceHandler {
 While the library provides an easy-to-use interface, we recommend that you understand the lifecycle of CloudFormation custom resources before using them in production.
 
 #### Creating a custom resource
-When CloudFormation issues a CREATE on a custom resource, there are 2 possible states: `CREATE_COMPLETE` and `CREATE_FAILED`
+When CloudFormation issues a `CREATE` on a custom resource, there are 2 possible states: `CREATE_COMPLETE` and `CREATE_FAILED`
 ```mermaid
 stateDiagram
     direction LR
@@ -237,7 +237,7 @@ If the resource is created successfully, the `physicalResourceId` is stored by C
 If the resource failed to create, CloudFormation triggers a rollback operation by default (rollback can be disabled, see [stack failure options](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/stack-failure-options.html))
 
 #### Updating a custom resource
-CloudFormation issues an UPDATE operation on a custom resource only when one or more custom resource properties change.
+CloudFormation issues an `UPDATE` operation on a custom resource only when one or more custom resource properties change.
 During the update, the custom resource may update successfully, or may fail the update.
 ```mermaid
 stateDiagram
@@ -278,7 +278,8 @@ stateDiagram
 
 #### Deleting a custom resource
 
-CloudFormation issues a DELETE on a custom resource when:  
+CloudFormation issues a `DELETE` on a custom resource when:
+
 - the CloudFormation stack is being deleted  
 - a new `physicalResourceId` was received during an update, and CloudFormation proceeds to rollback(DELETE) the custom resource with the previous `physicalResourceId`.
 

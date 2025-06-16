@@ -13,14 +13,12 @@ on:
   pull_request:
     branches: 
       - main
-      - v2
   workflow_dispatch: {}
   schedule:
     - cron: "30 12 * * 1"
   push:
     branches:
       - main
-      - v2
 
 name: OpenSource Vulnerability Scanner
 run-name: OpenSource Vulnerability Scanner

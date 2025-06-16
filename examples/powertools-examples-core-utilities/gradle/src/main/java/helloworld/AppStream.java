@@ -26,7 +26,7 @@ import java.nio.charset.StandardCharsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
-import software.amazon.lambda.powertools.metrics.Metrics;
+import software.amazon.lambda.powertools.metrics.FlushMetrics;
 
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
@@ -40,7 +40,7 @@ public class AppStream implements RequestStreamHandler {
 
     @Override
     @Logging(logEvent = true)
-    @Metrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
+    @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     // RequestStreamHandler can be used instead of RequestHandler for cases when you'd like to deserialize request body or serialize response body yourself, instead of allowing that to happen automatically
     // Note that you still need to return a proper JSON for API Gateway to handle 
     // See Lambda Response format for examples: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
