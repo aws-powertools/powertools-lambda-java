@@ -6,7 +6,7 @@
 
     <groupId>software.amazon.lambda.examples</groupId>
     <artifactId>powertools-examples-kafka-tools</artifactId>
-    <version>2.0.0-SNAPSHOT</version>
+    <version>2.0.0</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
