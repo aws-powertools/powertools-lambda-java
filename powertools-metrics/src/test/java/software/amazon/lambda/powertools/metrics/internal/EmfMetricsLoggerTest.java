@@ -348,6 +348,8 @@ class EmfMetricsLoggerTest {
         // Read the log file and check for the warning
         String logContent = new String(Files.readAllBytes(logFile.toPath()), StandardCharsets.UTF_8);
         assertThat(logContent).contains("No metrics were emitted");
+        // No EMF output should be generated
+        assertThat(outputStreamCaptor.toString().trim()).isEmpty();
     }
 
     @Test
