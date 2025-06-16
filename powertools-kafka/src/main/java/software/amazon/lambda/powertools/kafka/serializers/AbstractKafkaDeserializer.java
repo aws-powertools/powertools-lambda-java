@@ -136,7 +136,25 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             }
         }
 
-        return new ConsumerRecords<>(recordsMap, Map.of());
+        return createConsumerRecords(recordsMap);
+    }
+    
+    /**
+     * Creates ConsumerRecords with compatibility for both Kafka 3.x.x and 4.x.x.
+     * 
+     * @param <K> Key type
+     * @param <V> Value type
+     * @param records Map of records by topic partition
+     * @return ConsumerRecords instance
+     */
+    protected <K, V> ConsumerRecords<K, V> createConsumerRecords(Map<TopicPartition, List<ConsumerRecord<K, V>>> records) {
+        try {
+            // Try to use the Kafka 4.x.x constructor with nextOffsets parameter
+            return new ConsumerRecords<>(records, Map.of());
+        } catch (NoSuchMethodError e) {
+            // Fall back to Kafka 3.x.x constructor if 4.x.x is not available
+            return new ConsumerRecords<>(records);
+        }
     }
 
     private <K, V> ConsumerRecord<K, V> convertToConsumerRecord(
