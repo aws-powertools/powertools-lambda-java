@@ -51,7 +51,7 @@ class EmfMetricsLoggerTest {
 
     private Metrics metrics;
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final PrintStream standardOut = System.out;
+    private static final PrintStream standardOut = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
 
     @BeforeEach
@@ -180,7 +180,7 @@ class EmfMetricsLoggerTest {
         JsonNode dimensions = rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Dimensions").get(0);
         boolean hasDimension = false;
         for (JsonNode dimension : dimensions) {
-            if (dimension.asText().equals("CustomDimension")) {
+            if ("CustomDimension".equals(dimension.asText())) {
                 hasDimension = true;
                 break;
             }
@@ -233,9 +233,9 @@ class EmfMetricsLoggerTest {
         boolean hasDim2 = false;
         for (JsonNode dimension : dimensions) {
             String dimName = dimension.asText();
-            if (dimName.equals("Dim1")) {
+            if ("Dim1".equals(dimName)) {
                 hasDim1 = true;
-            } else if (dimName.equals("Dim2")) {
+            } else if ("Dim2".equals(dimName)) {
                 hasDim2 = true;
             }
         }
