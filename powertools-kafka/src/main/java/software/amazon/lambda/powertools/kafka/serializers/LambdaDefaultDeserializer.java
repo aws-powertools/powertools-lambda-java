@@ -12,6 +12,7 @@
  */
 package software.amazon.lambda.powertools.kafka.serializers;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Type;
 
@@ -33,6 +34,15 @@ public class LambdaDefaultDeserializer implements PowertoolsDeserializer {
             return (T) input;
         }
 
+        // If the target type is String, read the input stream as a String
+        if (type.equals(String.class)) {
+            try {
+                return (T) new String(input.readAllBytes());
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to read input stream as String", e);
+            }
+        }
+
         return (T) JacksonFactory.getInstance().getSerializer(type).fromJson(input);
     }
 
@@ -42,6 +52,11 @@ public class LambdaDefaultDeserializer implements PowertoolsDeserializer {
         // If the target type does not require conversion, simply return the value itself
         if (type.equals(String.class)) {
             return (T) input;
+        }
+
+        // If the target type is InputStream, read the input stream as a String
+        if (type.equals(InputStream.class)) {
+            return (T) new String(input).getBytes();
         }
 
         return (T) JacksonFactory.getInstance().getSerializer(type).fromJson(input);

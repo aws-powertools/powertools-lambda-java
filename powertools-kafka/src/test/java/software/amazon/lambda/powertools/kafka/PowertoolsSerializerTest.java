@@ -13,6 +13,7 @@
 package software.amazon.lambda.powertools.kafka;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static software.amazon.lambda.powertools.kafka.testutils.TestUtils.createConsumerRecordsType;
 import static software.amazon.lambda.powertools.kafka.testutils.TestUtils.serializeAvro;
 
@@ -40,6 +41,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import software.amazon.lambda.powertools.kafka.serializers.LambdaDefaultDeserializer;
 import software.amazon.lambda.powertools.kafka.serializers.PowertoolsDeserializer;
 import software.amazon.lambda.powertools.kafka.testutils.TestProductPojo;
 
@@ -140,6 +142,62 @@ class PowertoolsSerializerTest {
         // Read the content to verify it's the same
         String resultString = new String(result.readAllBytes());
         assertThat(resultString).isEqualTo(testInput);
+    }
+
+    @Test
+    void shouldConvertInputStreamToString() {
+        // When
+        LambdaDefaultDeserializer deserializer = new LambdaDefaultDeserializer();
+
+        // Then
+        String expected = "This is a test string";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(expected.getBytes());
+
+        // Convert InputStream to String
+        String result = deserializer.fromJson(inputStream, String.class);
+
+        // Verify the result
+        assertThat(result).isEqualTo(expected);
+    }
+
+    @Test
+    void shouldThrowRuntimeExceptionWhenInputStreamIsInvalid() {
+        // When
+        LambdaDefaultDeserializer deserializer = new LambdaDefaultDeserializer();
+
+        // Create a problematic InputStream that throws IOException when read
+        InputStream problematicStream = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                throw new IOException("Simulated IO error");
+            }
+
+            @Override
+            public byte[] readAllBytes() throws IOException {
+                throw new IOException("Simulated IO error");
+            }
+        };
+
+        // Then
+        assertThatThrownBy(() -> deserializer.fromJson(problematicStream, String.class))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Failed to read input stream as String");
+    }
+
+    @Test
+    void shouldConvertStringToByteArray() {
+        // When
+        LambdaDefaultDeserializer deserializer = new LambdaDefaultDeserializer();
+
+        // Then
+        String input = "This is a test string";
+
+        // Convert String to InputStream
+        byte[] result = deserializer.fromJson(input, InputStream.class);
+
+        // Verify the result
+        String resultString = new String(result);
+        assertThat(resultString).isEqualTo(input);
     }
 
     @ParameterizedTest
