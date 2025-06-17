@@ -28,12 +28,22 @@ public class LambdaDefaultDeserializer implements PowertoolsDeserializer {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T fromJson(InputStream input, Type type) {
-        return JacksonFactory.getInstance().getSerializer((Class<T>) type).fromJson(input);
+        // If the target type does not require conversion, simply return the value itself
+        if (type.equals(InputStream.class)) {
+            return (T) input;
+        }
+
+        return (T) JacksonFactory.getInstance().getSerializer(type).fromJson(input);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public <T> T fromJson(String input, Type type) {
-        return JacksonFactory.getInstance().getSerializer((Class<T>) type).fromJson(input);
+        // If the target type does not require conversion, simply return the value itself
+        if (type.equals(String.class)) {
+            return (T) input;
+        }
+
+        return (T) JacksonFactory.getInstance().getSerializer(type).fromJson(input);
     }
 }

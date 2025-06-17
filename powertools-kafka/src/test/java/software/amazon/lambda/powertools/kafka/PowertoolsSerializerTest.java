@@ -19,6 +19,7 @@ import static software.amazon.lambda.powertools.kafka.testutils.TestUtils.serial
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Base64;
@@ -106,6 +107,39 @@ class PowertoolsSerializerTest {
         assertThat(result.getName()).isEqualTo("Test Product");
         assertThat(result.getPrice()).isEqualTo(99.99);
         assertThat(result.getTags()).containsExactly("tag1", "tag2");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.StringHandler::handleRequest")
+    void shouldHandleStringInputType() {
+        // When
+        PowertoolsSerializer serializer = new PowertoolsSerializer();
+
+        // Then
+        String testInput = "This is a test string";
+
+        // This should directly return the input string
+        String result = serializer.fromJson(testInput, String.class);
+
+        assertThat(result).isEqualTo(testInput);
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.InputStreamHandler::handleRequest")
+    void shouldHandleInputStreamType() throws IOException {
+        // When
+        PowertoolsSerializer serializer = new PowertoolsSerializer();
+
+        // Then
+        String testInput = "This is a test string";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(testInput.getBytes());
+
+        // This should return the input stream directly
+        InputStream result = serializer.fromJson(inputStream, InputStream.class);
+
+        // Read the content to verify it's the same
+        String resultString = new String(result.readAllBytes());
+        assertThat(resultString).isEqualTo(testInput);
     }
 
     @ParameterizedTest
