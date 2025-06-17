@@ -118,8 +118,13 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
 
     private <K, V> ConsumerRecords<K, V> convertToConsumerRecords(KafkaEvent kafkaEvent, Class<K> keyType,
             Class<V> valueType) {
+        // Validate that this is actually a Kafka event by checking for required properties
+        if (kafkaEvent == null || kafkaEvent.getEventSource() == null) {
+            throw new RuntimeException(
+                    "Failed to deserialize Lambda handler input to ConsumerRecords: Input is not a valid Kafka event.");
+        }
 
-        if (kafkaEvent == null || kafkaEvent.getRecords() == null) {
+        if (kafkaEvent.getRecords() == null) {
             return ConsumerRecords.empty();
         }
 
@@ -138,7 +143,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
 
         return createConsumerRecords(recordsMap);
     }
-    
+
     /**
      * Creates ConsumerRecords with compatibility for both Kafka 3.x.x and 4.x.x.
      * 
@@ -147,7 +152,8 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
      * @param records Map of records by topic partition
      * @return ConsumerRecords instance
      */
-    protected <K, V> ConsumerRecords<K, V> createConsumerRecords(Map<TopicPartition, List<ConsumerRecord<K, V>>> records) {
+    protected <K, V> ConsumerRecords<K, V> createConsumerRecords(
+            Map<TopicPartition, List<ConsumerRecord<K, V>>> records) {
         try {
             // Try to use the Kafka 4.x.x constructor with nextOffsets parameter
             return new ConsumerRecords<>(records, Map.of());

@@ -307,6 +307,42 @@ class AbstractKafkaDeserializerTest {
         assertThat(records.count()).isZero();
     }
 
+    @ParameterizedTest
+    @MethodSource("inputTypes")
+    void shouldThrowExceptionWhenEventSourceIsNull(InputType inputType) {
+        // Given
+        // Create a JSON without eventSource property
+        String kafkaJson = "{\n" +
+                "  \"records\": {\n" +
+                "    \"test-topic-1\": [\n" +
+                "      {\n" +
+                "        \"topic\": \"test-topic-1\",\n" +
+                "        \"partition\": 0,\n" +
+                "        \"offset\": 15,\n" +
+                "        \"timestamp\": 1545084650987,\n" +
+                "        \"timestampType\": \"CREATE_TIME\",\n" +
+                "        \"key\": null,\n" +
+                "        \"value\": null,\n" +
+                "        \"headers\": []\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        Type type = TestUtils.createConsumerRecordsType(String.class, TestProductPojo.class);
+
+        // When/Then
+        if (inputType == InputType.INPUT_STREAM) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(kafkaJson.getBytes());
+            assertThatThrownBy(() -> deserializer.fromJson(inputStream, type))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Input is not a valid Kafka event");
+        } else {
+            assertThatThrownBy(() -> deserializer.fromJson(kafkaJson, type))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Input is not a valid Kafka event");
+        }
+    }
+
     static Stream<Arguments> primitiveTypesProvider() {
         return Stream.of(
                 // For each primitive type, test with both INPUT_STREAM and STRING
