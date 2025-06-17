@@ -37,10 +37,19 @@ public final class DeserializationUtils {
     public static DeserializationType determineDeserializationType() {
         try {
             // Get the handler from the environment. It has a format like org.example.MyRequestHandler::handleRequest
+            // or can be abbreviated as just org.example.MyRequestHandler (defaulting to handleRequest)
             String handler = System.getenv("_HANDLER");
-            if (handler != null && handler.contains("::")) {
-                String className = handler.substring(0, handler.indexOf("::"));
-                String methodName = handler.substring(handler.indexOf("::") + 2);
+            String className;
+            String methodName = "handleRequest"; // Default method name
+
+            if (handler != null && !handler.trim().isEmpty()) {
+                if (handler.contains("::")) {
+                    className = handler.substring(0, handler.indexOf("::"));
+                    methodName = handler.substring(handler.indexOf("::") + 2);
+                } else {
+                    // Handle the case where method name is omitted
+                    className = handler;
+                }
 
                 Class<?> handlerClazz = Class.forName(className);
 

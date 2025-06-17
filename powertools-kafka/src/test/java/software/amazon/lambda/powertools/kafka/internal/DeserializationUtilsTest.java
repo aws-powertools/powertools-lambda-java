@@ -34,6 +34,16 @@ class DeserializationUtilsTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = "_HANDLER", value = "   ")
+    void shouldReturnDefaultDeserializationTypeWhenHandlerIsWhitespaceOnly() {
+        // When
+        DeserializationType type = DeserializationUtils.determineDeserializationType();
+
+        // Then
+        assertThat(type).isEqualTo(DeserializationType.LAMBDA_DEFAULT);
+    }
+
+    @Test
     @SetEnvironmentVariable(key = "_HANDLER", value = "InvalidHandlerFormat")
     void shouldReturnDefaultDeserializationTypeWhenHandlerFormatIsInvalid() {
         // When
@@ -96,6 +106,36 @@ class DeserializationUtilsTest {
     @Test
     @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.ProtobufHandler::handleRequest")
     void shouldReturnProtobufDeserializationTypeFromAnnotation() {
+        // When
+        DeserializationType type = DeserializationUtils.determineDeserializationType();
+
+        // Then
+        assertThat(type).isEqualTo(DeserializationType.KAFKA_PROTOBUF);
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.JsonHandler")
+    void shouldReturnJsonDeserializationTypeFromAnnotationWithAbbreviatedHandler() {
+        // When
+        DeserializationType type = DeserializationUtils.determineDeserializationType();
+
+        // Then
+        assertThat(type).isEqualTo(DeserializationType.KAFKA_JSON);
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.AvroHandler")
+    void shouldReturnAvroDeserializationTypeFromAnnotationWithAbbreviatedHandler() {
+        // When
+        DeserializationType type = DeserializationUtils.determineDeserializationType();
+
+        // Then
+        assertThat(type).isEqualTo(DeserializationType.KAFKA_AVRO);
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.ProtobufHandler")
+    void shouldReturnProtobufDeserializationTypeFromAnnotationWithAbbreviatedHandler() {
         // When
         DeserializationType type = DeserializationUtils.determineDeserializationType();
 
