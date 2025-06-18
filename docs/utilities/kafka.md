@@ -132,24 +132,29 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
 
 === "Avro Messages"
 
-    ```java hl_lines="13 16"
+    ```java hl_lines="18 21"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class AvroKafkaHandler implements RequestHandler<ConsumerRecords<String, User>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(AvroKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_AVRO)
         public String handleRequest(ConsumerRecords<String, User> records, Context context) {
             for (ConsumerRecord<String, User> record : records) {
                 User user = record.value(); // User class is auto-generated from Avro schema
-                System.out.printf("Processing user: %s, age %d%n", user.getName(), user.getAge());
+                LOGGER.info("Processing user: {}, age {}", user.getName(), user.getAge());
             }
             return "OK";
         }
@@ -158,24 +163,29 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
 
 === "Protocol Buffers"
 
-    ```java hl_lines="13 16"
+    ```java hl_lines="18 21"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class ProtobufKafkaHandler implements RequestHandler<ConsumerRecords<String, UserProto.User>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(ProtobufKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_PROTOBUF)
         public String handleRequest(ConsumerRecords<String, UserProto.User> records, Context context) {
             for (ConsumerRecord<String, UserProto.User> record : records) {
                 UserProto.User user = record.value(); // UserProto.User class is auto-generated from Protocol Buffer schema
-                System.out.printf("Processing user: %s, age %d%n", user.getName(), user.getAge());
+                LOGGER.info("Processing user: {}, age {}", user.getName(), user.getAge());
             }
             return "OK";
         }
@@ -184,24 +194,29 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
 
 === "JSON Messages"
 
-    ```java hl_lines="13 16"
+    ```java hl_lines="18 21"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class JsonKafkaHandler implements RequestHandler<ConsumerRecords<String, User>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(JsonKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<String, User> records, Context context) {
             for (ConsumerRecord<String, User> record : records) {
                 User user = record.value(); // Deserialized JSON object into User POJO
-                System.out.printf("Processing user: %s, age %d%n", user.getName(), user.getAge());
+                LOGGER.info("Processing user: {}, age {}", user.getName(), user.getAge());
             }
             return "OK";
         }
@@ -218,19 +233,24 @@ The `@Deserialization` annotation deserializes both keys and values based on you
 
 === "Key and Value Deserialization"
 
-    ```java hl_lines="17"
+    ```java hl_lines="22"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class KeyValueKafkaHandler implements RequestHandler<ConsumerRecords<ProductKey, ProductInfo>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(KeyValueKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_AVRO)
         public String handleRequest(ConsumerRecords<ProductKey, ProductInfo> records, Context context) {
             for (ConsumerRecord<ProductKey, ProductInfo> record : records) {
@@ -238,8 +258,8 @@ The `@Deserialization` annotation deserializes both keys and values based on you
                 ProductKey key = record.key(); // ProductKey class is auto-generated from Avro schema
                 ProductInfo product = record.value(); // ProductInfo class is auto-generated from Avro schema
 
-                System.out.printf("Processing product ID: %s%n", key.getProductId());
-                System.out.printf("Product: %s - $%.2f%n", product.getName(), product.getPrice());
+                LOGGER.info("Processing product ID: {}", key.getProductId());
+                LOGGER.info("Product: {} - ${}", product.getName(), product.getPrice());
             }
             return "OK";
         }
@@ -248,31 +268,36 @@ The `@Deserialization` annotation deserializes both keys and values based on you
 
 === "Value-Only Deserialization"
 
-    ```java hl_lines="17"
+    ```java hl_lines="22"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class ValueOnlyKafkaHandler implements RequestHandler<ConsumerRecords<String, Order>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(ValueOnlyKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<String, Order> records, Context context) {
             for (ConsumerRecord<String, Order> record : records) {
                 // Key remains as string (if present)
                 String key = record.key();
                 if (key != null) {
-                    System.out.printf("Message key: %s%n", key);
+                    LOGGER.info("Message key: {}", key);
                 }
 
                 // Value is deserialized as JSON
                 Order order = record.value();
-                System.out.printf("Order #%s - Total: $%.2f%n", order.getOrderId(), order.getTotal());
+                LOGGER.info("Order #{} - Total: ${}", order.getOrderId(), order.getTotal());
             }
             return "OK";
         }
@@ -289,19 +314,24 @@ When working with primitive data types (strings, integers, etc.) rather than str
 
 === "Primitive key"
 
-    ```java hl_lines="17 19"
+    ```java hl_lines="18 22"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class PrimitiveKeyHandler implements RequestHandler<ConsumerRecords<Integer, Customer>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(PrimitiveKeyHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<Integer, Customer> records, Context context) {
             for (ConsumerRecord<Integer, Customer> record : records) {
@@ -311,9 +341,9 @@ When working with primitive data types (strings, integers, etc.) rather than str
                 // Value is deserialized as JSON
                 Customer customer = record.value();
 
-                System.out.printf("Key: %d%n", key);
-                System.out.printf("Name: %s%n", customer.getName());
-                System.out.printf("Email: %s%n", customer.getEmail());
+                LOGGER.info("Key: {}", key);
+                LOGGER.info("Name: {}", customer.getName());
+                LOGGER.info("Email: {}", customer.getEmail());
             }
             return "OK";
         }
@@ -322,19 +352,24 @@ When working with primitive data types (strings, integers, etc.) rather than str
 
 === "Primitive key and value"
 
-    ```java hl_lines="17 20"
+    ```java hl_lines="18 22"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class PrimitiveHandler implements RequestHandler<ConsumerRecords<String, String>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(PrimitiveHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<String, String> records, Context context) {
             for (ConsumerRecord<String, String> record : records) {
@@ -344,8 +379,8 @@ When working with primitive data types (strings, integers, etc.) rather than str
                 // Value is automatically deserialized as String
                 String value = record.value();
 
-                System.out.printf("Key: %s%n", key);
-                System.out.printf("Value: %s%n", value);
+                LOGGER.info("Key: {}", key);
+                LOGGER.info("Value: {}", value);
             }
             return "OK";
         }
@@ -404,32 +439,37 @@ Each Kafka record contains important metadata that you can access alongside the 
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
     import org.apache.kafka.common.header.Header;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class MetadataKafkaHandler implements RequestHandler<ConsumerRecords<String, Customer>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(MetadataKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_AVRO)
         public String handleRequest(ConsumerRecords<String, Customer> records, Context context) {
             for (ConsumerRecord<String, Customer> record : records) {
                 // Log record coordinates for tracing
-                System.out.printf("Processing message from topic '%s'%n", record.topic());
-                System.out.printf("  Partition: %d, Offset: %d%n", record.partition(), record.offset());
-                System.out.printf("  Produced at: %d%n", record.timestamp());
+                LOGGER.info("Processing message from topic '{}'", record.topic());
+                LOGGER.info("  Partition: {}, Offset: {}", record.partition(), record.offset());
+                LOGGER.info("  Produced at: {}", record.timestamp());
 
                 // Process message headers
                 if (record.headers() != null) {
                     for (Header header : record.headers()) {
-                        System.out.printf("  Header: %s = %s%n",
+                        LOGGER.info("  Header: {} = {}",
                             header.key(), new String(header.value()));
                     }
                 }
 
                 // Access the Avro deserialized message content
                 Customer customer = record.value(); // Customer class is auto-generated from Avro schema
-                System.out.printf("Processing order for: %s%n", customer.getName());
-                System.out.printf("Order total: $%.2f%n", customer.getOrderTotal());
+                LOGGER.info("Processing order for: {}", customer.getName());
+                LOGGER.info("Order total: ${}", customer.getOrderTotal());
             }
             return "OK";
         }
@@ -477,10 +517,11 @@ Handle errors gracefully when processing Kafka messages to ensure your applicati
 
     public class ErrorHandlingKafkaHandler implements RequestHandler<ConsumerRecords<String, Order>, String> {
 
-        private static final Logger logger = LoggerFactory.getLogger(ErrorHandlingKafkaHandler.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(ErrorHandlingKafkaHandler.class);
         private static final Metrics metrics = MetricsFactory.getMetricsInstance();
 
         @Override
+        @Logging
         @FlushMetrics(namespace = "KafkaProcessing", service = "order-processing")
         @Deserialization(type = DeserializationType.KAFKA_AVRO)
         public String handleRequest(ConsumerRecords<String, Order> records, Context context) {
@@ -494,10 +535,9 @@ Handle errors gracefully when processing Kafka messages to ensure your applicati
                     processOrder(order);
                     successfulRecords++;
                     metrics.addMetric("ProcessedRecords", 1, MetricUnit.COUNT);
-
                 } catch (Exception e) {
                     failedRecords++;
-                    logger.error("Error processing Kafka message from topic: {}, partition: {}, offset: {}",
+                    LOGGER.error("Error processing Kafka message from topic: {}, partition: {}, offset: {}",
                         record.topic(), record.partition(), record.offset(), e);
                     metrics.addMetric("ProcessingErrors", 1, MetricUnit.COUNT);
                     // Optionally send to DLQ or error topic
@@ -511,7 +551,7 @@ Handle errors gracefully when processing Kafka messages to ensure your applicati
 
         private void processOrder(Order order) {
             // Your business logic here
-            System.out.printf("Processing order: %s%n", order.getOrderId());
+            LOGGER.info("Processing order: {}", order.getOrderId());
         }
 
         private void sendToDlq(ConsumerRecord<String, Order> record) {
@@ -535,14 +575,18 @@ The Idempotency utility automatically stores the result of each successful opera
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
     import software.amazon.lambda.powertools.idempotency.Idempotency;
     import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
     import software.amazon.lambda.powertools.idempotency.Idempotent;
     import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
+    import software.amazon.lambda.powertools.logging.Logging;
 
     public class IdempotentKafkaHandler implements RequestHandler<ConsumerRecords<String, Payment>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(IdempotentKafkaHandler.class);
 
         public IdempotentKafkaHandler() {
             // Configure idempotency with DynamoDB persistence store
@@ -555,6 +599,7 @@ The Idempotency utility automatically stores the result of each successful opera
         }
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<String, Payment> records, Context context) {
             for (ConsumerRecord<String, Payment> record : records) {
@@ -569,7 +614,7 @@ The Idempotency utility automatically stores the result of each successful opera
 
         @Idempotent
         private void processPayment(Payment payment) {
-            System.out.printf("Processing payment %s%n", payment.getPaymentId());
+            LOGGER.info("Processing payment {}", payment.getPaymentId());
 
             // Your business logic here
             PaymentService.process(payment.getPaymentId(), payment.getCustomerId(), payment.getAmount());
@@ -625,26 +670,31 @@ When using binary serialization formats across multiple programming languages, e
 
 === "Using Python naming convention"
 
-    ```java hl_lines="28 31 34 35 37 38 51"
+    ```java hl_lines="33 36 39 42 56"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
     import com.amazonaws.services.lambda.runtime.RequestHandler;
     import org.apache.kafka.clients.consumer.ConsumerRecord;
     import org.apache.kafka.clients.consumer.ConsumerRecords;
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
     import software.amazon.lambda.powertools.kafka.Deserialization;
     import software.amazon.lambda.powertools.kafka.DeserializationType;
+    import software.amazon.lambda.powertools.logging.Logging;
     import com.fasterxml.jackson.annotation.JsonProperty;
     import java.time.Instant;
 
     public class CrossLanguageKafkaHandler implements RequestHandler<ConsumerRecords<String, OrderEvent>, String> {
+        private static final Logger LOGGER = LoggerFactory.getLogger(CrossLanguageKafkaHandler.class);
 
         @Override
+        @Logging
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<String, OrderEvent> records, Context context) {
             for (ConsumerRecord<String, OrderEvent> record : records) {
                 OrderEvent order = record.value(); // OrderEvent class handles JSON with Python field names
-                System.out.printf("Processing order %s from %s%n",
+                LOGGER.info("Processing order {} from {}",
                     order.getOrderId(), order.getOrderDate());
             }
             return "OK";
