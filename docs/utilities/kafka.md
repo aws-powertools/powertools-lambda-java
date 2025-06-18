@@ -59,7 +59,7 @@ Lambda processes Kafka messages as discrete events rather than continuous stream
 
 ### Installation
 
-Add the Powertools for AWS Lambda Kafka dependency to your project:
+Add the Powertools for AWS Lambda Kafka dependency to your project. Make sure to also add the `kafka-clients` library as a dependency. The utility supports `kafka-clients >= 3.0.0`.
 
 === "Maven"
 
