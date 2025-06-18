@@ -170,31 +170,40 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             Class<K> keyType,
             Class<V> valueType) {
 
-        K key = null;
-        V value = null;
+        K key = deserializeField(eventRecord.getKey(), keyType, "key");
+        V value = deserializeField(eventRecord.getValue(), valueType, "value");
+        Headers headers = extractHeaders(eventRecord);
 
-        // We set these to NULL_SIZE since they are not relevant in the Lambda environment due to ESM pre-processing.
-        int keySize = ConsumerRecord.NULL_SIZE;
-        int valueSize = ConsumerRecord.NULL_SIZE;
+        return new ConsumerRecord<>(
+                topic,
+                eventRecord.getPartition(),
+                eventRecord.getOffset(),
+                eventRecord.getTimestamp(),
+                TimestampType.valueOf(eventRecord.getTimestampType()),
+                // We set these to NULL_SIZE since they are not relevant in the Lambda environment due to ESM
+                // pre-processing.
+                ConsumerRecord.NULL_SIZE,
+                ConsumerRecord.NULL_SIZE,
+                key,
+                value,
+                headers,
+                Optional.empty());
+    }
 
-        if (eventRecord.getKey() != null) {
-            try {
-                byte[] decodedKeyBytes = Base64.getDecoder().decode(eventRecord.getKey());
-                key = deserialize(decodedKeyBytes, keyType);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to deserialize Kafka record key.", e);
-            }
+    private <T> T deserializeField(String encodedData, Class<T> type, String fieldName) {
+        if (encodedData == null) {
+            return null;
         }
 
-        if (eventRecord.getValue() != null) {
-            try {
-                byte[] decodedValueBytes = Base64.getDecoder().decode(eventRecord.getValue());
-                value = deserialize(decodedValueBytes, valueType);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to deserialize Kafka record value.", e);
-            }
+        try {
+            byte[] decodedBytes = Base64.getDecoder().decode(encodedData);
+            return deserialize(decodedBytes, type);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to deserialize Kafka record " + fieldName + ".", e);
         }
+    }
 
+    private Headers extractHeaders(KafkaEvent.KafkaEventRecord eventRecord) {
         Headers headers = new RecordHeaders();
         if (eventRecord.getHeaders() != null) {
             for (Map<String, byte[]> headerMap : eventRecord.getHeaders()) {
@@ -206,18 +215,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             }
         }
 
-        return new ConsumerRecord<>(
-                topic,
-                eventRecord.getPartition(),
-                eventRecord.getOffset(),
-                eventRecord.getTimestamp(),
-                TimestampType.valueOf(eventRecord.getTimestampType()),
-                keySize,
-                valueSize,
-                key,
-                value,
-                headers,
-                Optional.empty());
+        return headers;
     }
 
     /**
