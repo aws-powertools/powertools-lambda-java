@@ -1,5 +1,5 @@
 ---
-title: Kafka
+title: Kafka Consumer
 description: Utility
 status: new
 ---
@@ -132,7 +132,7 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
 
 === "Avro Messages"
 
-    ```java
+    ```java hl_lines="13 16"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -158,7 +158,7 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
 
 === "Protocol Buffers"
 
-    ```java
+    ```java hl_lines="13 16"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -184,7 +184,7 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
 
 === "JSON Messages"
 
-    ```java
+    ```java hl_lines="13 16"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -200,7 +200,7 @@ The Kafka utility transforms raw Lambda Kafka events into an intuitive format fo
         @Deserialization(type = DeserializationType.KAFKA_JSON)
         public String handleRequest(ConsumerRecords<String, User> records, Context context) {
             for (ConsumerRecord<String, User> record : records) {
-                User user = record.value(); // Deserialized JSON object
+                User user = record.value(); // Deserialized JSON object into User POJO
                 System.out.printf("Processing user: %s, age %d%n", user.getName(), user.getAge());
             }
             return "OK";
@@ -218,7 +218,7 @@ The `@Deserialization` annotation deserializes both keys and values based on you
 
 === "Key and Value Deserialization"
 
-    ```java
+    ```java hl_lines="17"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -248,7 +248,7 @@ The `@Deserialization` annotation deserializes both keys and values based on you
 
 === "Value-Only Deserialization"
 
-    ```java
+    ```java hl_lines="17"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -289,7 +289,7 @@ When working with primitive data types (strings, integers, etc.) rather than str
 
 === "Primitive key"
 
-    ```java
+    ```java hl_lines="17 19"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -322,7 +322,7 @@ When working with primitive data types (strings, integers, etc.) rather than str
 
 === "Primitive key and value"
 
-    ```java
+    ```java hl_lines="17 20"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -367,7 +367,7 @@ The Kafka utility supports multiple serialization formats to match your existing
     | **JSON** | `KAFKA_JSON` | Human-readable text format | Jackson |
     | **Avro** | `KAFKA_AVRO` | Compact binary format with schema | Apache Avro |
     | **Protocol Buffers** | `KAFKA_PROTOBUF` | Efficient binary format | Protocol Buffers |
-    | **Lambda Default** | `LAMBDA_DEFAULT` | Uses Lambda's built-in deserialization (equivalent to removing the @Deserialization annotation) | None |
+    | **Lambda Default** | `LAMBDA_DEFAULT` | Uses Lambda's built-in deserialization (equivalent to removing the `@Deserialization` annotation) | None |
 
 === "Format Comparison"
 
@@ -579,7 +579,7 @@ The Idempotency utility automatically stores the result of each successful opera
 
 <!-- prettier-ignore -->
 ???+ tip "Ensuring exactly-once processing"
-    The @Idempotent annotation will use the JSON representation of the Payment object to make sure that the same object is only processed exactly once. Even if a batch fails and Lambda retries the messages, each unique payment will be processed exactly once.
+    The `@Idempotent` annotation will use the JSON representation of the Payment object to make sure that the same object is only processed exactly once. Even if a batch fails and Lambda retries the messages, each unique payment will be processed exactly once.
 
 ### Best practices
 
@@ -625,7 +625,7 @@ When using binary serialization formats across multiple programming languages, e
 
 === "Using Python naming convention"
 
-    ```java
+    ```java hl_lines="28 31 34 35 37 38 51"
     package org.example;
 
     import com.amazonaws.services.lambda.runtime.Context;
@@ -821,7 +821,9 @@ sequenceDiagram
     Lambda->>+KafkaUtility: Pass Kafka event
     KafkaUtility->>KafkaUtility: Parse event structure
     loop For each record
+        KafkaUtility->>KafkaUtility: Decode base64 data
         KafkaUtility->>KafkaUtility: Record is already deserialized
+        KafkaUtility->>KafkaUtility: Map to POJO (if specified)
     end
     KafkaUtility->>+YourCode: Provide ConsumerRecords
     YourCode->>YourCode: Process records
