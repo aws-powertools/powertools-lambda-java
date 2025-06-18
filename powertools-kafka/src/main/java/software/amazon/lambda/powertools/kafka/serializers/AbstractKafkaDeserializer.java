@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
@@ -263,11 +264,11 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
     private <T> T deserializePrimitive(byte[] data, Class<T> type) {
         // Handle String type
         if (type == String.class) {
-            return (T) new String(data);
+            return (T) new String(data, StandardCharsets.UTF_8);
         }
 
         // Handle primitive types and their wrappers
-        String str = new String(data);
+        String str = new String(data, StandardCharsets.UTF_8);
 
         if (type == Integer.class || type == int.class) {
             return (T) Integer.valueOf(str);

@@ -13,6 +13,7 @@
 package software.amazon.lambda.powertools.kafka.serializers;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Deserializer for Kafka records using JSON format.
@@ -21,7 +22,7 @@ public class KafkaJsonDeserializer extends AbstractKafkaDeserializer {
 
     @Override
     protected <T> T deserializeObject(byte[] data, Class<T> type) throws IOException {
-        String decodedStr = new String(data);
+        String decodedStr = new String(data, StandardCharsets.UTF_8);
 
         return objectMapper.readValue(decodedStr, type);
     }
