@@ -35,51 +35,62 @@ public final class DeserializationUtils {
     }
 
     public static DeserializationType determineDeserializationType() {
+        String handler = System.getenv("_HANDLER");
+        if (handler == null || handler.trim().isEmpty()) {
+            LOGGER.error("Cannot determine deserialization type. No valid handler found in _HANDLER: {}", handler);
+            return DeserializationType.LAMBDA_DEFAULT;
+        }
+
         try {
-            // Get the handler from the environment. It has a format like org.example.MyRequestHandler::handleRequest
-            // or can be abbreviated as just org.example.MyRequestHandler (defaulting to handleRequest)
-            String handler = System.getenv("_HANDLER");
-            String className;
-            String methodName = "handleRequest"; // Default method name
+            HandlerInfo handlerInfo = parseHandler(handler);
+            Class<?> handlerClazz = Class.forName(handlerInfo.className);
 
-            if (handler != null && !handler.trim().isEmpty()) {
-                if (handler.contains("::")) {
-                    className = handler.substring(0, handler.indexOf("::"));
-                    methodName = handler.substring(handler.indexOf("::") + 2);
-                } else {
-                    // Handle the case where method name is omitted
-                    className = handler;
-                }
-
-                Class<?> handlerClazz = Class.forName(className);
-
-                // Only consider if it implements RequestHandler
-                if (RequestHandler.class.isAssignableFrom(handlerClazz)) {
-                    // Look for deserialization type on annotation on handler method
-                    for (Method method : handlerClazz.getDeclaredMethods()) {
-                        if (method.getName().equals(methodName) && method.isAnnotationPresent(Deserialization.class)) {
-                            Deserialization annotation = method.getAnnotation(Deserialization.class);
-                            LOGGER.debug("Found deserialization type: {}", annotation.type());
-                            return annotation.type();
-                        }
-                    }
-                } else {
-                    LOGGER.warn("Candidate class for custom deserialization '{}' does not implement RequestHandler. "
-                            + "Ignoring.", className);
-                }
-            } else {
-                LOGGER.error(
-                        "Cannot determine deserialization type for custom deserialization. "
-                                + "Defaulting to standard. "
-                                + "No valid handler found in environment variable _HANDLER: {}.",
-                        handler);
+            if (!RequestHandler.class.isAssignableFrom(handlerClazz)) {
+                LOGGER.warn("Class '{}' does not implement RequestHandler. Ignoring.", handlerInfo.className);
+                return DeserializationType.LAMBDA_DEFAULT;
             }
+
+            return findDeserializationType(handlerClazz, handlerInfo.methodName);
         } catch (Exception e) {
-            LOGGER.warn(
-                    "Cannot determine deserialization type for custom deserialization. Defaulting to standard.",
-                    e);
+            LOGGER.warn("Cannot determine deserialization type. Defaulting to standard.", e);
+            return DeserializationType.LAMBDA_DEFAULT;
+        }
+    }
+
+    private static HandlerInfo parseHandler(String handler) {
+        if (handler.contains("::")) {
+            int separatorIndex = handler.indexOf("::");
+            String className = handler.substring(0, separatorIndex);
+            String methodName = handler.substring(separatorIndex + 2);
+            return new HandlerInfo(className, methodName);
+        }
+
+        return new HandlerInfo(handler);
+    }
+
+    private static DeserializationType findDeserializationType(Class<?> handlerClass, String methodName) {
+        for (Method method : handlerClass.getDeclaredMethods()) {
+            if (method.getName().equals(methodName) && method.isAnnotationPresent(Deserialization.class)) {
+                Deserialization annotation = method.getAnnotation(Deserialization.class);
+                LOGGER.debug("Found deserialization type: {}", annotation.type());
+                return annotation.type();
+            }
         }
 
         return DeserializationType.LAMBDA_DEFAULT;
+    }
+
+    private static class HandlerInfo {
+        final String className;
+        final String methodName;
+
+        HandlerInfo(String className) {
+            this(className, "handleRequest");
+        }
+
+        HandlerInfo(String className, String methodName) {
+            this.className = className;
+            this.methodName = methodName;
+        }
     }
 }
