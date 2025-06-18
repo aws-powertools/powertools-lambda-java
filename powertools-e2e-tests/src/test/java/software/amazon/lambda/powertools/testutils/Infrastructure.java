@@ -290,6 +290,7 @@ public class Infrastructure {
                     .queueName(queue)
                     .visibilityTimeout(Duration.seconds(timeout * 6))
                     .retentionPeriod(Duration.seconds(timeout * 6))
+                    .removalPolicy(RemovalPolicy.DESTROY)
                     .build();
             DeadLetterQueue.builder()
                     .queue(sqsQueue)
@@ -314,6 +315,7 @@ public class Infrastructure {
                     .create(e2eStack, "KinesisStream")
                     .streamMode(StreamMode.ON_DEMAND)
                     .streamName(kinesisStream)
+                    .removalPolicy(RemovalPolicy.DESTROY)
                     .build();
 
             stream.grantRead(function);
