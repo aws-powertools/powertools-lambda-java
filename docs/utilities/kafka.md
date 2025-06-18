@@ -124,7 +124,7 @@ Powertools for AWS supports both Schema Registry integration modes in your Event
 
 ### Processing Kafka events
 
-The Kafka utility transforms raw Lambda Kafka events into an intuitive format for processing. To handle messages effectively, you'll need to configure the `@Deserialization` annotation that matches your data format.
+The Kafka utility transforms raw Lambda Kafka events into an intuitive format for processing. To handle messages effectively, you'll need to configure the `@Deserialization` annotation that matches your data format. Based on the deserializer you choose, incoming records are directly transformed into your business objects which can be auto-generated classes from Avro / Protobuf or simple POJOs.
 
 <!-- prettier-ignore -->
 ???+ tip "Using Avro is recommended"
