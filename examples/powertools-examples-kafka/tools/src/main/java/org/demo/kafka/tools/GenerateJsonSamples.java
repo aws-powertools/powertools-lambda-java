@@ -13,6 +13,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class GenerateJsonSamples {
 
+    private GenerateJsonSamples() {
+        // Utility class
+    }
+
     public static void main(String[] args) throws IOException {
         // Create three different products
         Map<String, Object> product1 = new HashMap<>();

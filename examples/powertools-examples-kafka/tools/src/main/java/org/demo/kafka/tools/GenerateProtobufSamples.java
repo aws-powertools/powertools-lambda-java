@@ -14,6 +14,10 @@ import com.google.protobuf.CodedOutputStream;
  */
 public class GenerateProtobufSamples {
 
+    private GenerateProtobufSamples() {
+        // Utility class
+    }
+
     public static void main(String[] args) throws IOException {
         // Create a single product that will be used for all three scenarios
         ProtobufProduct product = ProtobufProduct.newBuilder()
