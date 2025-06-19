@@ -45,7 +45,7 @@ The tool will output base64-encoded values for Avro products that can be used in
 mvn exec:java -Dexec.mainClass="org.demo.kafka.tools.GenerateProtobufSamples"
 ```
 
-The tool will output base64-encoded values for Protobuf products that can be used in `../events/kafka-protobuf-event.json`.
+The tool will output base64-encoded values for Protobuf products that can be used in `../events/kafka-protobuf-event.json`. This generator creates samples with and without Confluent message-indexes to test different serialization scenarios.
 
 ## Output
 
@@ -54,6 +54,13 @@ Each generator produces:
 1. Three different products (Laptop, Smartphone, Headphones)
 2. An integer key (42) and one entry with a nullish key to test for edge-cases
 3. A complete sample event structure that can be used directly for testing
+
+The Protobuf generators additionally create samples with different Confluent message-index formats:
+- Standard protobuf (no message indexes)
+- Simple message index (single 0 byte)
+- Complex message index (length-prefixed array)
+
+For more information about Confluent Schema Registry serialization formats and wire format specifications, see the [Confluent documentation](https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format).
 
 ## Example
 
