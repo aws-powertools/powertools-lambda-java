@@ -25,7 +25,7 @@
         "timestamp": 1545084650988,
         "timestampType": "CREATE_TIME",
         "key": "NDI=",
-        "value": "COoHEgpTbWFydHBob25lGVK4HoXrv4JA",
+        "value": "AAjpBxIGTGFwdG9wGVK4HoXrP49A",
         "headers": [
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
@@ -39,7 +39,7 @@
         "timestamp": 1545084650989,
         "timestampType": "CREATE_TIME",
         "key": null,
-        "value": "COsHEgpIZWFkcGhvbmVzGUjhehSuv2JA",
+        "value": "AgEACOkHEgZMYXB0b3AZUrgehes/j0A=",
         "headers": [
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]

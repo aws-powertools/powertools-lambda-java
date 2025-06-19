@@ -15,10 +15,13 @@ package software.amazon.lambda.powertools.kafka.serializers;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.google.protobuf.CodedOutputStream;
 
 import software.amazon.lambda.powertools.kafka.serializers.test.protobuf.TestProduct;
 
@@ -71,5 +74,79 @@ class KafkaProtobufDeserializerTest {
         assertThatThrownBy(() -> deserializer.deserializeObject(invalidProtobufData, TestProduct.class))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Failed to deserialize Protobuf data");
+    }
+
+    @Test
+    void shouldDeserializeProtobufDataWithSimpleMessageIndex() throws IOException {
+        // Given
+        TestProduct product = TestProduct.newBuilder()
+                .setId(456)
+                .setName("Simple Index Product")
+                .setPrice(199.99)
+                .build();
+
+        // Create protobuf data with simple message index (single 0)
+        byte[] protobufDataWithSimpleIndex = createProtobufDataWithSimpleMessageIndex(product);
+
+        // When
+        TestProduct result = deserializer.deserializeObject(protobufDataWithSimpleIndex, TestProduct.class);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(456);
+        assertThat(result.getName()).isEqualTo("Simple Index Product");
+        assertThat(result.getPrice()).isEqualTo(199.99);
+    }
+
+    @Test
+    void shouldDeserializeProtobufDataWithComplexMessageIndex() throws IOException {
+        // Given
+        TestProduct product = TestProduct.newBuilder()
+                .setId(789)
+                .setName("Complex Index Product")
+                .setPrice(299.99)
+                .build();
+
+        // Create protobuf data with complex message index (array [1,0])
+        byte[] protobufDataWithComplexIndex = createProtobufDataWithComplexMessageIndex(product);
+
+        // When
+        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(789);
+        assertThat(result.getName()).isEqualTo("Complex Index Product");
+        assertThat(result.getPrice()).isEqualTo(299.99);
+    }
+
+    private byte[] createProtobufDataWithSimpleMessageIndex(TestProduct product) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
+
+        // Write simple message index (single 0)
+        codedOutput.writeUInt32NoTag(0);
+
+        // Write the protobuf data
+        product.writeTo(codedOutput);
+
+        codedOutput.flush();
+        return baos.toByteArray();
+    }
+
+    private byte[] createProtobufDataWithComplexMessageIndex(TestProduct product) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
+
+        // Write complex message index array [1,0]
+        codedOutput.writeUInt32NoTag(2); // Array length
+        codedOutput.writeUInt32NoTag(1); // First index value
+        codedOutput.writeUInt32NoTag(0); // Second index value
+
+        // Write the protobuf data
+        product.writeTo(codedOutput);
+
+        codedOutput.flush();
+        return baos.toByteArray();
     }
 }

@@ -1,65 +1,101 @@
 package org.demo.kafka.tools;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 
 import org.demo.kafka.protobuf.ProtobufProduct;
 
+import com.google.protobuf.CodedOutputStream;
+
 /**
  * Utility class to generate base64-encoded Protobuf serialized products
  * for use in test events.
  */
-public class GenerateProtobufSamples {
+public final class GenerateProtobufSamples {
+
+    private GenerateProtobufSamples() {
+        // Utility class
+    }
 
     public static void main(String[] args) throws IOException {
-        // Create three different products
-        ProtobufProduct product1 = ProtobufProduct.newBuilder()
+        // Create a single product that will be used for all three scenarios
+        ProtobufProduct product = ProtobufProduct.newBuilder()
                 .setId(1001)
                 .setName("Laptop")
                 .setPrice(999.99)
                 .build();
 
-        ProtobufProduct product2 = ProtobufProduct.newBuilder()
-                .setId(1002)
-                .setName("Smartphone")
-                .setPrice(599.99)
-                .build();
+        // Create three different serializations of the same product
+        String standardProduct = serializeAndEncode(product);
+        String productWithSimpleIndex = serializeWithSimpleMessageIndex(product);
+        String productWithComplexIndex = serializeWithComplexMessageIndex(product);
 
-        ProtobufProduct product3 = ProtobufProduct.newBuilder()
-                .setId(1003)
-                .setName("Headphones")
-                .setPrice(149.99)
-                .build();
-
-        // Serialize and encode each product
-        String encodedProduct1 = serializeAndEncode(product1);
-        String encodedProduct2 = serializeAndEncode(product2);
-        String encodedProduct3 = serializeAndEncode(product3);
-
-        // Serialize and encode an integer key
+        // Serialize and encode an integer key (same for all records)
         String encodedKey = serializeAndEncodeInteger(42);
 
         // Print the results
-        System.out.println("Base64 encoded Protobuf products for use in kafka-protobuf-event.json:");
-        System.out.println("\nProduct 1 (with key):");
-        System.out.println("key: \"" + encodedKey + "\",");
-        System.out.println("value: \"" + encodedProduct1 + "\",");
+        System.out.println("Base64 encoded Protobuf products with different message index scenarios:");
+        System.out.println("\n1. Standard Protobuf (no message index):");
+        System.out.println("value: \"" + standardProduct + "\"");
 
-        System.out.println("\nProduct 2 (with key):");
-        System.out.println("key: \"" + encodedKey + "\",");
-        System.out.println("value: \"" + encodedProduct2 + "\",");
+        System.out.println("\n2. Simple Message Index (single 0):");
+        System.out.println("value: \"" + productWithSimpleIndex + "\"");
 
-        System.out.println("\nProduct 3 (without key):");
-        System.out.println("key: null,");
-        System.out.println("value: \"" + encodedProduct3 + "\",");
+        System.out.println("\n3. Complex Message Index (array [1,0]):");
+        System.out.println("value: \"" + productWithComplexIndex + "\"");
 
-        // Print a sample event structure
-        System.out.println("\nSample event structure:");
-        printSampleEvent(encodedKey, encodedProduct1, encodedProduct2, encodedProduct3);
+        // Print the merged event structure
+        System.out.println("\n" + "=".repeat(80));
+        System.out.println("MERGED EVENT WITH ALL THREE SCENARIOS");
+        System.out.println("=".repeat(80));
+        printSampleEvent(encodedKey, standardProduct, productWithSimpleIndex, productWithComplexIndex);
     }
 
     private static String serializeAndEncode(ProtobufProduct product) {
         return Base64.getEncoder().encodeToString(product.toByteArray());
+    }
+
+    /**
+     * Serializes a protobuf product with a simple Confluent message index (single 0).
+     * Format: [0][protobuf_data]
+     * 
+     * @see {@link https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format}
+     */
+    private static String serializeWithSimpleMessageIndex(ProtobufProduct product) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
+
+        // Write simple message index (single 0)
+        codedOutput.writeUInt32NoTag(0);
+
+        // Write the protobuf data
+        product.writeTo(codedOutput);
+
+        codedOutput.flush();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+
+    /**
+     * Serializes a protobuf product with a complex Confluent message index (array [1,0]).
+     * Format: [2][1][0][protobuf_data] where 2 is the array length
+     * 
+     * @see {@link https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format}
+     */
+    private static String serializeWithComplexMessageIndex(ProtobufProduct product) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
+
+        // Write complex message index array [1,0]
+        codedOutput.writeUInt32NoTag(2); // Array length
+        codedOutput.writeUInt32NoTag(1); // First index value
+        codedOutput.writeUInt32NoTag(0); // Second index value
+
+        // Write the protobuf data
+        product.writeTo(codedOutput);
+
+        codedOutput.flush();
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 
     private static String serializeAndEncodeInteger(Integer value) {
@@ -67,7 +103,8 @@ public class GenerateProtobufSamples {
         return Base64.getEncoder().encodeToString(value.toString().getBytes());
     }
 
-    private static void printSampleEvent(String key, String product1, String product2, String product3) {
+    private static void printSampleEvent(String key, String standardProduct, String simpleIndexProduct,
+            String complexIndexProduct) {
         System.out.println("{\n" +
                 "  \"eventSource\": \"aws:kafka\",\n" +
                 "  \"eventSourceArn\": \"arn:aws:kafka:us-east-1:0123456789019:cluster/SalesCluster/abcd1234-abcd-cafe-abab-9876543210ab-4\",\n"
@@ -83,7 +120,7 @@ public class GenerateProtobufSamples {
                 "        \"timestamp\": 1545084650987,\n" +
                 "        \"timestampType\": \"CREATE_TIME\",\n" +
                 "        \"key\": \"" + key + "\",\n" +
-                "        \"value\": \"" + product1 + "\",\n" +
+                "        \"value\": \"" + standardProduct + "\",\n" +
                 "        \"headers\": [\n" +
                 "          {\n" +
                 "            \"headerKey\": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]\n" +
@@ -97,7 +134,7 @@ public class GenerateProtobufSamples {
                 "        \"timestamp\": 1545084650988,\n" +
                 "        \"timestampType\": \"CREATE_TIME\",\n" +
                 "        \"key\": \"" + key + "\",\n" +
-                "        \"value\": \"" + product2 + "\",\n" +
+                "        \"value\": \"" + simpleIndexProduct + "\",\n" +
                 "        \"headers\": [\n" +
                 "          {\n" +
                 "            \"headerKey\": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]\n" +
@@ -111,7 +148,7 @@ public class GenerateProtobufSamples {
                 "        \"timestamp\": 1545084650989,\n" +
                 "        \"timestampType\": \"CREATE_TIME\",\n" +
                 "        \"key\": null,\n" +
-                "        \"value\": \"" + product3 + "\",\n" +
+                "        \"value\": \"" + complexIndexProduct + "\",\n" +
                 "        \"headers\": [\n" +
                 "          {\n" +
                 "            \"headerKey\": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]\n" +

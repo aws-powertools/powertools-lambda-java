@@ -11,7 +11,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * Utility class to generate base64-encoded JSON serialized products
  * for use in test events.
  */
-public class GenerateJsonSamples {
+public final class GenerateJsonSamples {
+
+    private GenerateJsonSamples() {
+        // Utility class
+    }
 
     public static void main(String[] args) throws IOException {
         // Create three different products
