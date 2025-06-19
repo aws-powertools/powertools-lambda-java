@@ -41,6 +41,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
     protected static final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final Integer GLUE_SCHEMA_ID_LENGTH = 16;
+
+    public enum SchemaRegistryType {
+        CONFLUENT,
+        GLUE,
+        NONE
+    }
 
     /**
      * Deserialize JSON from InputStream into ConsumerRecords
@@ -170,8 +177,8 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
             Class<K> keyType,
             Class<V> valueType) {
 
-        K key = deserializeField(eventRecord.getKey(), keyType, "key");
-        V value = deserializeField(eventRecord.getValue(), valueType, "value");
+        K key = deserializeField(eventRecord.getKey(), keyType, "key", extractSchemaRegistryType(eventRecord));
+        V value = deserializeField(eventRecord.getValue(), valueType, "value", extractSchemaRegistryType(eventRecord));
         Headers headers = extractHeaders(eventRecord);
 
         return new ConsumerRecord<>(
@@ -190,14 +197,14 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
                 Optional.empty());
     }
 
-    private <T> T deserializeField(String encodedData, Class<T> type, String fieldName) {
+    private <T> T deserializeField(String encodedData, Class<T> type, String fieldName, SchemaRegistryType schemaRegistryType) {
         if (encodedData == null) {
             return null;
         }
 
         try {
             byte[] decodedBytes = Base64.getDecoder().decode(encodedData);
-            return deserialize(decodedBytes, type);
+            return deserialize(decodedBytes, type, schemaRegistryType);
         } catch (Exception e) {
             throw new RuntimeException("Failed to deserialize Kafka record " + fieldName + ".", e);
         }
@@ -218,28 +225,61 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
         return headers;
     }
 
+    private String extractKeySchemaId(KafkaEvent.KafkaEventRecord eventRecord) {
+        if (eventRecord.getKeySchemaMetadata() != null) {
+            return eventRecord.getKeySchemaMetadata().getSchemaId();
+        }
+        return null;
+    }
+
+    private String extractValueSchemaId(KafkaEvent.KafkaEventRecord eventRecord) {
+        if (eventRecord.getValueSchemaMetadata() != null) {
+            return eventRecord.getValueSchemaMetadata().getSchemaId();
+        }
+        return null;
+    }
+
+    // The Assumption is that there will always be only one schema registry used, either Glue or Confluent, for both key
+    // and value.
+    protected SchemaRegistryType extractSchemaRegistryType(KafkaEvent.KafkaEventRecord eventRecord) {
+
+        String schemaId = extractValueSchemaId(eventRecord);
+        if (schemaId == null) {
+            schemaId = extractKeySchemaId(eventRecord);
+        }
+
+        if (schemaId == null) {
+            return SchemaRegistryType.NONE;
+        }
+
+        return schemaId.length() == GLUE_SCHEMA_ID_LENGTH ? SchemaRegistryType.GLUE : SchemaRegistryType.CONFLUENT;
+    }
+
     /**
      * Template method to be implemented by subclasses for specific deserialization logic
-     * for complex types (non-primitives).
-     * 
+     * for complex types (non-primitives) and for specific Schema Registry type.
+     *
      * @param <T> The type to deserialize to
      * @param data The byte array to deserialize coming from the base64 decoded Kafka field
      * @param type The class type to deserialize to
+     * @param schemaRegistryType Schema Registry type
      * @return The deserialized object
      * @throws IOException If deserialization fails
      */
-    protected abstract <T> T deserializeObject(byte[] data, Class<T> type) throws IOException;
+    protected abstract <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType) throws IOException;
 
     /**
-     * Main deserialize method that handles primitive types and delegates to subclasses for complex types.
-     * 
+     * Main deserialize method that handles primitive types and delegates to subclasses for complex types and
+     * for specific Schema Registry type.
+     *
      * @param <T> The type to deserialize to
      * @param data The byte array to deserialize
      * @param type The class type to deserialize to
+     * @param schemaRegistryType Schema Registry type
      * @return The deserialized object
      * @throws IOException If deserialization fails
      */
-    private <T> T deserialize(byte[] data, Class<T> type) throws IOException {
+    private <T> T deserialize(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType) throws IOException {
         // First try to deserialize as a primitive type
         T result = deserializePrimitive(data, type);
         if (result != null) {
@@ -247,7 +287,7 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
         }
 
         // Delegate to subclass for complex type deserialization
-        return deserializeObject(data, type);
+        return deserializeObject(data, type, schemaRegistryType);
     }
 
     /**

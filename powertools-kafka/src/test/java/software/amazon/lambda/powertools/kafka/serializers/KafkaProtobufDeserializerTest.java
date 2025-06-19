@@ -40,7 +40,7 @@ class KafkaProtobufDeserializerTest {
         byte[] data = new byte[] { 1, 2, 3 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeObject(data, String.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(data, String.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Unsupported type for Protobuf deserialization");
     }
@@ -56,7 +56,7 @@ class KafkaProtobufDeserializerTest {
         byte[] protobufData = product.toByteArray();
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufData, TestProduct.class);
+        TestProduct result = deserializer.deserializeObject(protobufData, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE);
 
         // Then
         assertThat(result).isNotNull();
@@ -71,13 +71,13 @@ class KafkaProtobufDeserializerTest {
         byte[] invalidProtobufData = new byte[] { 1, 2, 3, 4, 5 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeObject(invalidProtobufData, TestProduct.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(invalidProtobufData, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("Failed to deserialize Protobuf data");
     }
 
     @Test
-    void shouldDeserializeProtobufDataWithSimpleMessageIndex() throws IOException {
+    void shouldDeserializeProtobufDataWithSimpleMessageIndexGlue() throws IOException {
         // Given
         TestProduct product = TestProduct.newBuilder()
                 .setId(456)
@@ -89,7 +89,7 @@ class KafkaProtobufDeserializerTest {
         byte[] protobufDataWithSimpleIndex = createProtobufDataWithSimpleMessageIndex(product);
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufDataWithSimpleIndex, TestProduct.class);
+        TestProduct result = deserializer.deserializeObject(protobufDataWithSimpleIndex, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.GLUE);
 
         // Then
         assertThat(result).isNotNull();
@@ -107,11 +107,33 @@ class KafkaProtobufDeserializerTest {
                 .setPrice(299.99)
                 .build();
 
-        // Create protobuf data with complex message index (array [1,0])
+        // Create protobuf data with complex message index (array [2,2])
         byte[] protobufDataWithComplexIndex = createProtobufDataWithComplexMessageIndex(product);
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class);
+        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.CONFLUENT);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(789);
+        assertThat(result.getName()).isEqualTo("Complex Index Product");
+        assertThat(result.getPrice()).isEqualTo(299.99);
+    }
+
+    @Test
+    void shouldDeserializeProtobufDataWithSimpleMessageIndexConfluent() throws IOException {
+        // Given
+        TestProduct product = TestProduct.newBuilder()
+                .setId(789)
+                .setName("Complex Index Product")
+                .setPrice(299.99)
+                .build();
+
+        // Create protobuf data with complex message index (array [2,2])
+        byte[] protobufDataWithComplexIndex = createProtobufDataWithSimpleMessageIndex(product);
+
+        // When
+        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.CONFLUENT);
 
         // Then
         assertThat(result).isNotNull();
@@ -125,7 +147,7 @@ class KafkaProtobufDeserializerTest {
         CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
 
         // Write simple message index (single 0)
-        codedOutput.writeUInt32NoTag(0);
+        codedOutput.writeUInt32NoTag(1);
 
         // Write the protobuf data
         product.writeTo(codedOutput);
@@ -140,8 +162,7 @@ class KafkaProtobufDeserializerTest {
 
         // Write complex message index array [1,0]
         codedOutput.writeUInt32NoTag(2); // Array length
-        codedOutput.writeUInt32NoTag(1); // First index value
-        codedOutput.writeUInt32NoTag(0); // Second index value
+        codedOutput.writeUInt32NoTag(2); // First index value
 
         // Write the protobuf data
         product.writeTo(codedOutput);

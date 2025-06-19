@@ -42,7 +42,7 @@ class KafkaJsonDeserializerTest {
         byte[] data = new byte[] { 1, 2, 3 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeObject(data, Object.class))
+        assertThatThrownBy(() -> deserializer.deserializeObject(data, Object.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE))
                 .isInstanceOf(JsonParseException.class);
     }
 
@@ -53,7 +53,7 @@ class KafkaJsonDeserializerTest {
         byte[] jsonData = objectMapper.writeValueAsBytes(product);
 
         // When
-        TestProductPojo result = deserializer.deserializeObject(jsonData, TestProductPojo.class);
+        TestProductPojo result = deserializer.deserializeObject(jsonData, TestProductPojo.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE);
 
         // Then
         assertThat(result).isNotNull();
