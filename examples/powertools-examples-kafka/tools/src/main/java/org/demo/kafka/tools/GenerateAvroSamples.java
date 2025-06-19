@@ -14,7 +14,7 @@ import org.demo.kafka.avro.AvroProduct;
  * Utility class to generate base64-encoded Avro serialized products
  * for use in test events.
  */
-public class GenerateAvroSamples {
+public final class GenerateAvroSamples {
 
     private GenerateAvroSamples() {
         // Utility class

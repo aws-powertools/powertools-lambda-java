@@ -12,7 +12,7 @@ import com.google.protobuf.CodedOutputStream;
  * Utility class to generate base64-encoded Protobuf serialized products
  * for use in test events.
  */
-public class GenerateProtobufSamples {
+public final class GenerateProtobufSamples {
 
     private GenerateProtobufSamples() {
         // Utility class
