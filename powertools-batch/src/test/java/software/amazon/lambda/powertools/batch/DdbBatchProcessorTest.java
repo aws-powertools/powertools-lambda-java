@@ -23,7 +23,12 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
@@ -78,6 +83,25 @@ class DdbBatchProcessorTest {
         }
     }
 
+    private StreamsEventResponse testParallelBatchExecution(DynamodbEvent event,
+                                                            BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> messageHandler,
+                                                            Executor executor) {
+        // Arrange
+        BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+                .withDynamoDbBatchHandler()
+                .buildWithRawMessageHandler(messageHandler);
+
+        // Act
+        StreamsEventResponse dynamodbBatchResponse;
+        if (executor == null) {
+            dynamodbBatchResponse = handler.processBatchInParallel(event, context);
+        } else {
+            dynamodbBatchResponse = handler.processBatchInParallel(event, context, executor);
+        }
+
+        return dynamodbBatchResponse;
+    }
+
     @ParameterizedTest
     @Event(value = "dynamo_event.json", type = DynamodbEvent.class)
     void batchProcessingSucceedsAndReturns(DynamodbEvent event) {
@@ -96,13 +120,7 @@ class DdbBatchProcessorTest {
     @ParameterizedTest
     @Event(value = "dynamo_event_big.json", type = DynamodbEvent.class)
     void parallelBatchProcessingSucceedsAndReturns(DynamodbEvent event) {
-        // Arrange
-        BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
-                .withDynamoDbBatchHandler()
-                .buildWithRawMessageHandler(this::processMessageInParallelSucceeds);
-
-        // Act
-        StreamsEventResponse dynamodbBatchResponse = handler.processBatchInParallel(event, context);
+        StreamsEventResponse dynamodbBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelSucceeds, null);
 
         // Assert
         assertThat(dynamodbBatchResponse.getBatchItemFailures()).isEmpty();
@@ -129,13 +147,7 @@ class DdbBatchProcessorTest {
     @ParameterizedTest
     @Event(value = "dynamo_event_big.json", type = DynamodbEvent.class)
     void parallelBatchProcessing_shouldAddMessageToBatchFailure_whenException_withMessage(DynamodbEvent event) {
-        // Arrange
-        BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
-                .withDynamoDbBatchHandler()
-                .buildWithRawMessageHandler(this::processMessageInParallelFailsForFixedMessage);
-
-        // Act
-        StreamsEventResponse dynamodbBatchResponse = handler.processBatchInParallel(event, context);
+        StreamsEventResponse dynamodbBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelFailsForFixedMessage, null);
 
         // Assert
         assertThat(dynamodbBatchResponse.getBatchItemFailures()).hasSize(1);
@@ -194,6 +206,34 @@ class DdbBatchProcessorTest {
         assertThat(wasCalledAndFailed.get()).isTrue();
         StreamsEventResponse.BatchItemFailure batchItemFailure = dynamodbBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("4421584500000000017450439091");
+    }
+
+    @ParameterizedTest
+    @Event(value = "dynamo_event_big.json", type = DynamodbEvent.class)
+    void parallelBatchProcessingWithExecutorSucceedsAndReturns(DynamodbEvent event) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        StreamsEventResponse dynamodbBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelSucceeds, executor);
+        executor.shutdown();
+
+        // Assert
+        assertThat(dynamodbBatchResponse.getBatchItemFailures()).isEmpty();
+        assertThat(threadList).hasSizeGreaterThan(1);
+    }
+
+    @ParameterizedTest
+    @Event(value = "dynamo_event_big.json", type = DynamodbEvent.class)
+    void parallelBatchProcessingWithExecutor_shouldAddMessageToBatchFailure_whenException_withMessage(DynamodbEvent event) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        StreamsEventResponse dynamodbBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelFailsForFixedMessage, executor);
+        executor.shutdown();
+
+        // Assert
+        assertThat(dynamodbBatchResponse.getBatchItemFailures()).hasSize(1);
+        StreamsEventResponse.BatchItemFailure batchItemFailure = dynamodbBatchResponse.getBatchItemFailures().get(0);
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("4421584500000000017450439091");
+        assertThat(threadList).hasSizeGreaterThan(1);
     }
 
 }

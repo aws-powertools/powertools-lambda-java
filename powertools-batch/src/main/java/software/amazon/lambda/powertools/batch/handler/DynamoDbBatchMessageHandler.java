@@ -17,8 +17,13 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -66,12 +71,31 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
                 .parallelStream() // Parallel processing
                 .map(eventRecord -> {
                     multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    return processBatchItem(eventRecord, context);
+                    Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
+                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                    return failureOpt;
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
+    }
+
+    @Override
+    public StreamsEventResponse processBatchInParallel(DynamodbEvent event, Context context, Executor executor) {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = event.getRecords().stream()
+                .map(eventRecord -> CompletableFuture.runAsync(() -> {
+                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                    Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
+                    failureOpt.ifPresent(batchItemFailures::add);
+                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                }, executor))
+                .collect(Collectors.toList());
+        futures.forEach(CompletableFuture::join);
         return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
 
