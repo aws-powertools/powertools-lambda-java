@@ -41,12 +41,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
     protected static final ObjectMapper objectMapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    private static final Integer GLUE_SCHEMA_ID_LENGTH = 16;
+    private static final Integer GLUE_SCHEMA_ID_LENGTH = 36;
 
     public enum SchemaRegistryType {
-        CONFLUENT,
-        GLUE,
-        NONE
+        CONFLUENT, GLUE, NONE
     }
 
     /**
@@ -197,7 +195,8 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
                 Optional.empty());
     }
 
-    private <T> T deserializeField(String encodedData, Class<T> type, String fieldName, SchemaRegistryType schemaRegistryType) {
+    private <T> T deserializeField(String encodedData, Class<T> type, String fieldName,
+            SchemaRegistryType schemaRegistryType) {
         if (encodedData == null) {
             return null;
         }
@@ -239,10 +238,8 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
         return null;
     }
 
-    // The Assumption is that there will always be only one schema registry used, either Glue or Confluent, for both key
-    // and value.
-    protected SchemaRegistryType extractSchemaRegistryType(KafkaEvent.KafkaEventRecord eventRecord) {
-
+    private SchemaRegistryType extractSchemaRegistryType(KafkaEvent.KafkaEventRecord eventRecord) {
+        // This method is used for both key and value, so we try to extract the schema id from both fields
         String schemaId = extractValueSchemaId(eventRecord);
         if (schemaId == null) {
             schemaId = extractKeySchemaId(eventRecord);
@@ -266,7 +263,8 @@ abstract class AbstractKafkaDeserializer implements PowertoolsDeserializer {
      * @return The deserialized object
      * @throws IOException If deserialization fails
      */
-    protected abstract <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType) throws IOException;
+    protected abstract <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType)
+            throws IOException;
 
     /**
      * Main deserialize method that handles primitive types and delegates to subclasses for complex types and

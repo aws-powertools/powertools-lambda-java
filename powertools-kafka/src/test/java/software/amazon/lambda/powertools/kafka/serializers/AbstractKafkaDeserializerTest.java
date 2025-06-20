@@ -459,10 +459,117 @@ class AbstractKafkaDeserializerTest {
         }
     }
 
+    @ParameterizedTest
+    @MethodSource("inputTypes")
+    void shouldHandleGlueSchemaMetadata(InputType inputType) throws IOException {
+        // Given
+        TestProductPojo product = new TestProductPojo(123, "Test Product", 99.99, null);
+        String productJson = objectMapper.writeValueAsString(product);
+        String base64Value = Base64.getEncoder().encodeToString(productJson.getBytes());
+        
+        String kafkaJson = "{\n" +
+                "  \"eventSource\": \"aws:kafka\",\n" +
+                "  \"records\": {\n" +
+                "    \"test-topic-1\": [\n" +
+                "      {\n" +
+                "        \"topic\": \"test-topic-1\",\n" +
+                "        \"partition\": 0,\n" +
+                "        \"offset\": 15,\n" +
+                "        \"timestamp\": 1545084650987,\n" +
+                "        \"timestampType\": \"CREATE_TIME\",\n" +
+                "        \"key\": null,\n" +
+                "        \"value\": \"" + base64Value + "\",\n" +
+                "        \"headers\": [],\n" +
+                "        \"keySchemaMetadata\": {\n" +
+                "          \"schemaId\": \"12345678-1234-1234-1234-123456789012\",\n" +
+                "          \"dataFormat\": \"PROTOBUF\"\n" +
+                "        },\n" +
+                "        \"valueSchemaMetadata\": {\n" +
+                "          \"schemaId\": \"87654321-4321-4321-4321-210987654321\",\n" +
+                "          \"dataFormat\": \"PROTOBUF\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        Type type = TestUtils.createConsumerRecordsType(String.class, TestProductPojo.class);
+
+        // When
+        ConsumerRecords<String, TestProductPojo> records;
+        if (inputType == InputType.INPUT_STREAM) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(kafkaJson.getBytes());
+            records = deserializer.fromJson(inputStream, type);
+        } else {
+            records = deserializer.fromJson(kafkaJson, type);
+        }
+
+        // Then
+        assertThat(records).isNotNull();
+        TopicPartition tp = new TopicPartition("test-topic-1", 0);
+        List<ConsumerRecord<String, TestProductPojo>> topicRecords = records.records(tp);
+        assertThat(topicRecords).hasSize(1);
+
+        ConsumerRecord<String, TestProductPojo> consumerRecord = topicRecords.get(0);
+        assertThat(consumerRecord.value()).isNotNull();
+        assertThat(consumerRecord.value().getId()).isEqualTo(123);
+    }
+
+    @ParameterizedTest
+    @MethodSource("inputTypes")
+    void shouldHandleConfluentSchemaMetadata(InputType inputType) throws IOException {
+        // Given
+        TestProductPojo product = new TestProductPojo(456, "Confluent Product", 199.99, null);
+        String productJson = objectMapper.writeValueAsString(product);
+        String base64Value = Base64.getEncoder().encodeToString(productJson.getBytes());
+        
+        String kafkaJson = "{\n" +
+                "  \"eventSource\": \"aws:kafka\",\n" +
+                "  \"records\": {\n" +
+                "    \"test-topic-1\": [\n" +
+                "      {\n" +
+                "        \"topic\": \"test-topic-1\",\n" +
+                "        \"partition\": 0,\n" +
+                "        \"offset\": 15,\n" +
+                "        \"timestamp\": 1545084650987,\n" +
+                "        \"timestampType\": \"CREATE_TIME\",\n" +
+                "        \"key\": null,\n" +
+                "        \"value\": \"" + base64Value + "\",\n" +
+                "        \"headers\": [],\n" +
+                "        \"keySchemaMetadata\": {\n" +
+                "          \"schemaId\": \"123\",\n" +
+                "          \"dataFormat\": \"PROTOBUF\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        Type type = TestUtils.createConsumerRecordsType(String.class, TestProductPojo.class);
+
+        // When
+        ConsumerRecords<String, TestProductPojo> records;
+        if (inputType == InputType.INPUT_STREAM) {
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(kafkaJson.getBytes());
+            records = deserializer.fromJson(inputStream, type);
+        } else {
+            records = deserializer.fromJson(kafkaJson, type);
+        }
+
+        // Then
+        assertThat(records).isNotNull();
+        TopicPartition tp = new TopicPartition("test-topic-1", 0);
+        List<ConsumerRecord<String, TestProductPojo>> topicRecords = records.records(tp);
+        assertThat(topicRecords).hasSize(1);
+
+        ConsumerRecord<String, TestProductPojo> consumerRecord = topicRecords.get(0);
+        assertThat(consumerRecord.value()).isNotNull();
+        assertThat(consumerRecord.value().getId()).isEqualTo(456);
+    }
+
     // Test implementation of AbstractKafkaDeserializer
-    private static class TestDeserializer extends AbstractKafkaDeserializer {
+    private static final class TestDeserializer extends AbstractKafkaDeserializer {
         @Override
-        protected <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType) throws IOException {
+        protected <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType)
+                throws IOException {
             return objectMapper.readValue(data, type);
         }
     }

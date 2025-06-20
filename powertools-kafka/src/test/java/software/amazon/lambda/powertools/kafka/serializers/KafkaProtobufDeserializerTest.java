@@ -17,7 +17,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 
+import org.apache.kafka.common.utils.ByteUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -40,9 +42,10 @@ class KafkaProtobufDeserializerTest {
         byte[] data = new byte[] { 1, 2, 3 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeObject(data, String.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE))
-                .isInstanceOf(IOException.class)
-                .hasMessageContaining("Unsupported type for Protobuf deserialization");
+        assertThatThrownBy(() -> deserializer.deserializeObject(data, String.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.NONE))
+                        .isInstanceOf(IOException.class)
+                        .hasMessageContaining("Unsupported type for Protobuf deserialization");
     }
 
     @Test
@@ -56,7 +59,8 @@ class KafkaProtobufDeserializerTest {
         byte[] protobufData = product.toByteArray();
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufData, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE);
+        TestProduct result = deserializer.deserializeObject(protobufData, TestProduct.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.NONE);
 
         // Then
         assertThat(result).isNotNull();
@@ -71,9 +75,10 @@ class KafkaProtobufDeserializerTest {
         byte[] invalidProtobufData = new byte[] { 1, 2, 3, 4, 5 };
 
         // When/Then
-        assertThatThrownBy(() -> deserializer.deserializeObject(invalidProtobufData, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE))
-                .isInstanceOf(IOException.class)
-                .hasMessageContaining("Failed to deserialize Protobuf data");
+        assertThatThrownBy(() -> deserializer.deserializeObject(invalidProtobufData, TestProduct.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.NONE))
+                        .isInstanceOf(IOException.class)
+                        .hasMessageContaining("Failed to deserialize Protobuf data");
     }
 
     @Test
@@ -86,10 +91,11 @@ class KafkaProtobufDeserializerTest {
                 .build();
 
         // Create protobuf data with simple message index (single 0)
-        byte[] protobufDataWithSimpleIndex = createProtobufDataWithSimpleMessageIndex(product);
+        byte[] protobufDataWithSimpleIndex = createProtobufDataWithGlueMagicByte(product);
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufDataWithSimpleIndex, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.GLUE);
+        TestProduct result = deserializer.deserializeObject(protobufDataWithSimpleIndex, TestProduct.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.GLUE);
 
         // Then
         assertThat(result).isNotNull();
@@ -108,10 +114,11 @@ class KafkaProtobufDeserializerTest {
                 .build();
 
         // Create protobuf data with complex message index (array [2,2])
-        byte[] protobufDataWithComplexIndex = createProtobufDataWithComplexMessageIndex(product);
+        byte[] protobufDataWithComplexIndex = createProtobufDataWithComplexMessageIndexConfluent(product);
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.CONFLUENT);
+        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.CONFLUENT);
 
         // Then
         assertThat(result).isNotNull();
@@ -129,11 +136,12 @@ class KafkaProtobufDeserializerTest {
                 .setPrice(299.99)
                 .build();
 
-        // Create protobuf data with complex message index (array [2,2])
-        byte[] protobufDataWithComplexIndex = createProtobufDataWithSimpleMessageIndex(product);
+        // Create protobuf data with simple message index for Confluent
+        byte[] protobufDataWithComplexIndex = createProtobufDataWithSimpleMessageIndexConfluent(product);
 
         // When
-        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.CONFLUENT);
+        TestProduct result = deserializer.deserializeObject(protobufDataWithComplexIndex, TestProduct.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.CONFLUENT);
 
         // Then
         assertThat(result).isNotNull();
@@ -142,11 +150,11 @@ class KafkaProtobufDeserializerTest {
         assertThat(result.getPrice()).isEqualTo(299.99);
     }
 
-    private byte[] createProtobufDataWithSimpleMessageIndex(TestProduct product) throws IOException {
+    private byte[] createProtobufDataWithGlueMagicByte(TestProduct product) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
 
-        // Write simple message index (single 0)
+        // Write simple message index for Glue (single UInt32)
         codedOutput.writeUInt32NoTag(1);
 
         // Write the protobuf data
@@ -156,18 +164,37 @@ class KafkaProtobufDeserializerTest {
         return baos.toByteArray();
     }
 
-    private byte[] createProtobufDataWithComplexMessageIndex(TestProduct product) throws IOException {
+    private byte[] createProtobufDataWithSimpleMessageIndexConfluent(TestProduct product) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
 
-        // Write complex message index array [1,0]
-        codedOutput.writeUInt32NoTag(2); // Array length
-        codedOutput.writeUInt32NoTag(2); // First index value
+        // Write optimized simple message index for Confluent (single 0 byte for [0])
+        // https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format
+        baos.write(0);
 
         // Write the protobuf data
-        product.writeTo(codedOutput);
+        baos.write(product.toByteArray());
 
-        codedOutput.flush();
+        return baos.toByteArray();
+    }
+
+    private byte[] createProtobufDataWithComplexMessageIndexConfluent(TestProduct product) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        // Write complex message index array [1,0] using ByteUtils
+        // https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format
+        ByteBuffer buffer = ByteBuffer.allocate(1024);
+        ByteUtils.writeVarint(2, buffer); // Array length
+        ByteUtils.writeVarint(1, buffer); // First index value
+        ByteUtils.writeVarint(0, buffer); // Second index value
+
+        buffer.flip();
+        byte[] indexData = new byte[buffer.remaining()];
+        buffer.get(indexData);
+        baos.write(indexData);
+
+        // Write the protobuf data
+        baos.write(product.toByteArray());
+
         return baos.toByteArray();
     }
 }
