@@ -21,7 +21,8 @@ import java.nio.charset.StandardCharsets;
 public class KafkaJsonDeserializer extends AbstractKafkaDeserializer {
 
     @Override
-    protected <T> T deserializeObject(byte[] data, Class<T> type) throws IOException {
+    protected <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType)
+            throws IOException {
         String decodedStr = new String(data, StandardCharsets.UTF_8);
 
         return objectMapper.readValue(decodedStr, type);

@@ -30,7 +30,11 @@
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
-        ]
+        ],
+        "valueSchemaMetadata": {
+          "schemaId": "123",
+          "dataFormat": "PROTOBUF"
+        }
       },
       {
         "topic": "mytopic",
@@ -39,12 +43,34 @@
         "timestamp": 1545084650989,
         "timestampType": "CREATE_TIME",
         "key": null,
-        "value": "AgEACOkHEgZMYXB0b3AZUrgehes/j0A=",
+        "value": "BAIACOkHEgZMYXB0b3AZUrgehes/j0A=",
         "headers": [
           {
             "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
           }
-        ]
+        ],
+        "valueSchemaMetadata": {
+          "schemaId": "456",
+          "dataFormat": "PROTOBUF"
+        }
+      },
+      {
+        "topic": "mytopic",
+        "partition": 0,
+        "offset": 18,
+        "timestamp": 1545084650990,
+        "timestampType": "CREATE_TIME",
+        "key": "NDI=",
+        "value": "AQjpBxIGTGFwdG9wGVK4HoXrP49A",
+        "headers": [
+          {
+            "headerKey": [104, 101, 97, 100, 101, 114, 86, 97, 108, 117, 101]
+          }
+        ],
+        "valueSchemaMetadata": {
+          "schemaId": "12345678-1234-1234-1234-123456789012",
+          "dataFormat": "PROTOBUF"
+        }
       }
     ]
   }

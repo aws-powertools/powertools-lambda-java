@@ -12,7 +12,7 @@ dependencies {
     implementation("com.amazonaws:aws-lambda-java-core:1.2.3")
     implementation("com.fasterxml.jackson.core:jackson-annotations:2.15.1")
     implementation("com.fasterxml.jackson.core:jackson-databind:2.15.3")
-    implementation("com.amazonaws:aws-lambda-java-events:3.11.3")
+    implementation("com.amazonaws:aws-lambda-java-events:3.16.0")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
     implementation("org.aspectj:aspectjrt:1.9.20.1")
     aspect("software.amazon.lambda:powertools-tracing:2.1.0")

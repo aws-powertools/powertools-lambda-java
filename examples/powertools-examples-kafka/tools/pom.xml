@@ -13,6 +13,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <avro.version>1.12.0</avro.version>
         <protobuf.version>4.31.0</protobuf.version>
+        <kafka-clients.version>4.0.0</kafka-clients.version>
     </properties>
 
     <dependencies>
@@ -25,6 +26,11 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java</artifactId>
             <version>${protobuf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka-clients.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

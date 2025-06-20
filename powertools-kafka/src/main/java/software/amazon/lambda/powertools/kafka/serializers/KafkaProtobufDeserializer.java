@@ -13,7 +13,10 @@
 package software.amazon.lambda.powertools.kafka.serializers;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.ByteBuffer;
 
+import org.apache.kafka.common.utils.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +26,8 @@ import com.google.protobuf.Parser;
 
 /**
  * Deserializer for Kafka records using Protocol Buffers format.
- * Supports both standard protobuf serialization and Confluent Schema Registry serialization using messages indices.
+ * Supports both standard protobuf serialization and Confluent / Glue Schema Registry serialization using messages 
+ * indices.
  * 
  * For Confluent-serialized data, assumes the magic byte and schema ID have already been stripped
  * by the Kafka ESM, leaving only the message index (if present) and protobuf data.
@@ -33,19 +37,22 @@ import com.google.protobuf.Parser;
 public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProtobufDeserializer.class);
+    private static final String PROTOBUF_PARSER_METHOD = "parser";
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected <T> T deserializeObject(byte[] data, Class<T> type) throws IOException {
-        // If no Protobuf generated class is passed we cannot deserialize using Protobuf
+    protected <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType)
+            throws IOException {
+        // If no Protobuf generated class is passed, we cannot deserialize using Protobuf
         if (Message.class.isAssignableFrom(type)) {
             try {
-                // Get the parser from the generated Protobuf class
-                Parser<Message> parser = (Parser<Message>) type.getMethod("parser").invoke(null);
-
-                // Try to deserialize the data, handling potential Confluent message indices
-                Message message = deserializeWithMessageIndexHandling(data, parser);
-                return type.cast(message);
+                switch (schemaRegistryType) {
+                    case GLUE:
+                        return glueDeserializer(data, type);
+                    case CONFLUENT:
+                        return confluentDeserializer(data, type);
+                    default:
+                        return defaultDeserializer(data, type);
+                }
             } catch (Exception e) {
                 throw new IOException("Failed to deserialize Protobuf data.", e);
             }
@@ -56,44 +63,48 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
         }
     }
 
-    private Message deserializeWithMessageIndexHandling(byte[] data, Parser<Message> parser) throws IOException {
+    @SuppressWarnings("unchecked")
+    private <T> T defaultDeserializer(byte[] data, Class<T> type) throws IOException {
         try {
-            LOGGER.debug("Attempting to deserialize as standard protobuf data");
-            return parser.parseFrom(data);
+            LOGGER.debug("Using default Protobuf deserializer");
+            Parser<Message> parser = (Parser<Message>) type.getMethod(PROTOBUF_PARSER_METHOD).invoke(null);
+            Message message = parser.parseFrom(data);
+            return type.cast(message);
         } catch (Exception e) {
-            LOGGER.debug("Standard protobuf parsing failed, attempting Confluent message-index handling");
-            return deserializeWithMessageIndex(data, parser);
+            throw new IOException("Failed to deserialize Protobuf data.", e);
         }
     }
 
-    private Message deserializeWithMessageIndex(byte[] data, Parser<Message> parser) throws IOException {
-        CodedInputStream codedInputStream = CodedInputStream.newInstance(data);
+    @SuppressWarnings("unchecked")
+    private <T> T confluentDeserializer(byte[] data, Class<T> type)
+            throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        LOGGER.debug("Using Confluent Deserializer");
+        Parser<Message> parser = (Parser<Message>) type.getMethod(PROTOBUF_PARSER_METHOD).invoke(null);
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        int size = ByteUtils.readVarint(buffer);
 
-        try {
-            // https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format
-            // Read the first varint - this could be:
-            // 1. A single 0 (simple case - first message type)
-            // 2. The length of the message index array (complex case)
-            int firstValue = codedInputStream.readUInt32();
-
-            if (firstValue == 0) {
-                // Simple case: Single 0 byte means first message type
-                LOGGER.debug("Found simple message-index case (single 0), parsing remaining data as protobuf");
-                return parser.parseFrom(codedInputStream);
-            } else {
-                // Complex case: firstValue is the length of the message index array
-                LOGGER.debug("Found complex message-index case with array length: {}, skipping {} message index values",
-                        firstValue, firstValue);
-                for (int i = 0; i < firstValue; i++) {
-                    codedInputStream.readUInt32(); // Skip each message index value
-                }
-                // Now the remaining data should be the actual protobuf message
-                LOGGER.debug("Finished skipping message indexes, parsing remaining data as protobuf");
-                return parser.parseFrom(codedInputStream);
+        // Only if the size is greater than zero, continue reading varInt.
+        // https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                ByteUtils.readVarint(buffer);
             }
-
-        } catch (Exception e) {
-            throw new IOException("Failed to parse protobuf data with or without message index", e);
         }
+        Message message = parser.parseFrom(buffer);
+        return type.cast(message);
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T glueDeserializer(byte[] data, Class<T> type)
+            throws IOException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+        LOGGER.debug("Using Glue Deserializer");
+        CodedInputStream codedInputStream = CodedInputStream.newInstance(data);
+        Parser<Message> parser = (Parser<Message>) type.getMethod(PROTOBUF_PARSER_METHOD).invoke(null);
+
+        // Seek one byte forward. Based on Glue Proto deserializer implementation
+        codedInputStream.readUInt32();
+
+        Message message = parser.parseFrom(codedInputStream);
+        return type.cast(message);
     }
 }
