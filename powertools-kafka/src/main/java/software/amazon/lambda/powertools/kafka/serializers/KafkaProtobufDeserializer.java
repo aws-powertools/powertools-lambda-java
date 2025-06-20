@@ -58,7 +58,7 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
 
     private <T> T defaultDeserializer(byte[] data, Class<T> type) throws IOException {
         try {
-            LOGGER.info("Using default Protobuf deserializer");
+            LOGGER.debug("Using default Protobuf deserializer");
             Parser<Message> parser = (Parser<Message>) type.getMethod("parser").invoke(null);
             Message message = parser.parseFrom(data);
             return type.cast(message);
@@ -70,13 +70,12 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
     private <T> T confluentDeserializer(byte[] data, Class<T> type) throws IOException {
         try {
 
-            LOGGER.info("Using confluentDeserializer");
+            LOGGER.debug("Using Confluent Deserializer");
             Parser<Message> parser = (Parser<Message>) type.getMethod("parser").invoke(null);
             ByteBuffer buffer = ByteBuffer.wrap(data);
             int size = ByteUtils.readVarint(buffer);
 
             // Only if the size is greater than zero, continue reading varInt. based on Glue Proto deserializer implementation
-            // Ref: https://tiny.amazon.com/1ru6rz8z/codeamazpackMaveblob1963thir
             if (size > 0) {
                 for (int i = 0; i < size; i++) {
                     ByteUtils.readVarint(buffer);
@@ -93,12 +92,11 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
     private <T> T glueDeserializer(byte[] data, Class<T> type) throws IOException {
         try {
 
-            LOGGER.info("Using glueDeserializer");
+            LOGGER.debug("Using Glue Deserializer");
             CodedInputStream codedInputStream = CodedInputStream.newInstance(data);
             Parser<Message> parser = (Parser<Message>) type.getMethod("parser").invoke(null);
 
             // Seek one byte forward. Based on Glue Proto deserializer implementation
-            // Ref: https://tiny.amazon.com/1c9cadl8g/codeamazpackMaveblobcf94thir
             codedInputStream.readUInt32();
 
             Message message = parser.parseFrom(codedInputStream);
