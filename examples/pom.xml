@@ -20,7 +20,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-examples</artifactId>
-    <version>2.0.0</version>
+    <version>2.1.1</version>
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) - Examples</name>
@@ -39,6 +39,7 @@
         <module>powertools-examples-parameters/sam</module>
         <module>powertools-examples-parameters/sam-graalvm</module>
         <module>powertools-examples-serialization</module>
+        <module>powertools-examples-kafka</module>
         <module>powertools-examples-batch</module>
         <module>powertools-examples-validation</module>
         <module>powertools-examples-cloudformation</module>
