@@ -1,0 +1,45 @@
+[
+{
+  "name":"software.amazon.lambda.powertools.utilities.EventDeserializerTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testDeserializeALBEventMessageAsObjectShouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent"] }, {"name":"testDeserializeAMQEventMessageAsListShouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.ActiveMQEvent"] }, {"name":"testDeserializeAPIGWEventBodyAsObject_shouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent"] }, {"name":"testDeserializeAPIGatewayEventAsList_shouldThrowException","parameterTypes":["com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent"] }, {"name":"testDeserializeAPIGatewayMapEventAsList_shouldThrowException","parameterTypes":["java.util.Map"] }, {"name":"testDeserializeAPIGatewayNoBodyAsList_shouldThrowException","parameterTypes":[] }, {"name":"testDeserializeAPIGatewayNoBody_shouldThrowException","parameterTypes":["com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent"] }, {"name":"testDeserializeApiGWV2EventMessageAsObjectShouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent"] }, {"name":"testDeserializeCWLEventMessageAsObjectShouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.CloudWatchLogsEvent"] }, {"name":"testDeserializeCfcrEventMessageAsObjectShouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent"] }, {"name":"testDeserializeEmptyEventAsList_shouldThrowException","parameterTypes":[] }, {"name":"testDeserializeKFEventMessageAsListShouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.KinesisFirehoseEvent"] }, {"name":"testDeserializeKafipEventMessageAsListShouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsFirehoseInputPreprocessingEvent"] }, {"name":"testDeserializeKafkaEventMessageAsList_shouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.KafkaEvent"] }, {"name":"testDeserializeKasipEventMessageAsListShouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsStreamsInputPreprocessingEvent"] }, {"name":"testDeserializeKinesisEventMessageAsList_shouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.KinesisEvent"] }, {"name":"testDeserializeMapAsObject_shouldReturnObject","parameterTypes":[] }, {"name":"testDeserializeProductAsProduct_shouldReturnProduct","parameterTypes":[] }, {"name":"testDeserializeRabbitMQEventMessageAsListShouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.RabbitMQEvent"] }, {"name":"testDeserializeSNSEventMessageAsObject_shouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.SNSEvent"] }, {"name":"testDeserializeSQSEventMessageAsList_shouldReturnList","parameterTypes":["com.amazonaws.services.lambda.runtime.events.SQSEvent"] }, {"name":"testDeserializeSQSEventMessageAsObject_shouldThrowException","parameterTypes":["com.amazonaws.services.lambda.runtime.events.SQSEvent"] }, {"name":"testDeserializeSQSEventNoBody_shouldThrowException","parameterTypes":["com.amazonaws.services.lambda.runtime.events.SQSEvent"] }, {"name":"testDeserializeScheduledEventMessageAsObject_shouldReturnObject","parameterTypes":["com.amazonaws.services.lambda.runtime.events.ScheduledEvent"] }, {"name":"testDeserializeStringArrayAsList_shouldReturnList","parameterTypes":[] }, {"name":"testDeserializeStringAsList_shouldThrowException","parameterTypes":[] }, {"name":"testDeserializeStringAsObject_shouldReturnObject","parameterTypes":[] }, {"name":"testDeserializeStringAsString_shouldReturnString","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.utilities.jmespath.Base64FunctionTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testPowertoolsBase64","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunctionTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testBase64GzipDecompressNull","parameterTypes":[] }, {"name":"testConstructor","parameterTypes":[] }, {"name":"testPowertoolsGzip","parameterTypes":[] }, {"name":"testPowertoolsGzipEmptyJsonAttribute","parameterTypes":[] }, {"name":"testPowertoolsGzipNotCompressedJsonAttribute","parameterTypes":[] }, {"name":"testPowertoolsGzipWrongArgumentType","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.utilities.jmespath.JsonFunctionTest",
+  "allDeclaredFields":true,
+  "allDeclaredClasses":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllPublicMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"testJsonFunction","parameterTypes":[] }, {"name":"testJsonFunctionChild","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.utilities.model.Product",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setId","parameterTypes":["long"] }, {"name":"setName","parameterTypes":["java.lang.String"] }, {"name":"setPrice","parameterTypes":["double"] }]
+}
+]

@@ -1,0 +1,39 @@
+{
+    "Records": [
+      {
+        "messageId": "d9144555-9a4f-4ec3-99a0-34ce359b4b54",
+        "receiptHandle": "13e7f7851d2eaa5c01f208ebadbf1e72==",
+        "body": "{  \"id\": 1234,  \"name\": \"product\",  \"price\": 42}",
+        "attributes": {
+            "ApproximateReceiveCount": "1",
+            "SentTimestamp": "1601975706495",
+            "SenderId": "AROAIFU437PVZ5L2J53F5",
+            "ApproximateFirstReceiveTimestamp": "1601975706499"
+        },
+        "messageAttributes": {
+        },
+        "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
+        "eventSource": "aws:sqs",
+        "eventSourceARN": "arn:aws:sqs:eu-central-1:123456789012:TestLambda",
+        "awsRegion": "eu-central-1"
+      },
+      {
+        "messageId": "d9144555-9a4f-4ec3-99a0-34ce359b4b54",
+        "receiptHandle": "13e7f7851d2eaa5c01f208ebadbf1e72==",
+        "body": "{  \"id\": 12345,  \"name\": \"product5\",  \"price\": 45}",
+        "attributes": {
+          "ApproximateReceiveCount": "1",
+          "SentTimestamp": "1601975706495",
+          "SenderId": "AROAIFU437PVZ5L2J53F5",
+          "ApproximateFirstReceiveTimestamp": "1601975706499"
+        },
+        "messageAttributes": {
+
+        },
+        "md5OfBody": "13e7f7851d2eaa5c01f208ebadbf1e72",
+        "eventSource": "aws:sqs",
+        "eventSourceARN": "arn:aws:sqs:eu-central-1:123456789012:TestLambda",
+        "awsRegion": "eu-central-1"
+      }
+    ]
+}
