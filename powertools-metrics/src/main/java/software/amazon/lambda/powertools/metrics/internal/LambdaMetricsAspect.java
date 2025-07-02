@@ -155,5 +155,6 @@ public class LambdaMetricsAspect implements Resource {
 
     @Override
     public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }

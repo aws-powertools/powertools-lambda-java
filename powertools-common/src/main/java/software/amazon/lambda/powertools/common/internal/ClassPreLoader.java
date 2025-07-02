@@ -28,6 +28,9 @@ import java.util.Enumeration;
 public class ClassPreLoader {
     public static final String CLASSES_FILE = "classesloaded.txt";
 
+    private ClassPreLoader() {
+        // Hide default constructor
+    }
     /**
      * Initializes the classes listed in the classesloaded resource
      */

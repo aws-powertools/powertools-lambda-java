@@ -83,6 +83,7 @@ public class IdempotencyHandler implements Resource{
 
     @Override
     public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // This is a no-op, as we don't need to do anything after restore
     }
 
     /**
