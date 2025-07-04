@@ -1,7 +1,4 @@
-name: Request for Comments (RFC)
-description: Feature design and detailed proposals
-title: "RFC: TITLE"
-labels: ["RFC", "triage"]
+title: "RFC: <Title>"
 body:
   - type: markdown
     attributes:
@@ -15,21 +12,18 @@ body:
   - type: dropdown
     id: area
     attributes:
-      label: Which Powertools for AWS Lambda (Java) utility does this relate to?
+      label: Which area does this RFC relate to?
       options:
         - Tracer
         - Logger
         - Metrics
-        - Middleware factory
         - Parameters
-        - Batch processing
-        - Typing
+        - SQS Large Message Handling
+        - SQS Batch Processing
         - Validation
-        - Event Source Data Classes
-        - Parser
         - Idempotency
-        - Feature flags
-        - JMESPath functions
+        - Custom Resources
+        - Serialization
         - Other
     validations:
       required: true
@@ -81,7 +75,7 @@ body:
     attributes:
       label: Alternative solutions
       description: Please describe what alternative solutions to this use case, if any
-      render: markdown
+      render: Markdown
     validations:
       required: false
   - type: checkboxes
@@ -89,7 +83,7 @@ body:
     attributes:
       label: Acknowledgment
       options:
-        - label: This feature request meets [Powertools for AWS Lambda (Java) Tenets](https://docs.powertools.aws.dev/lambda/Java/#tenets)
+        - label: This RFC meets [Powertools for AWS Lambda (Java) Tenets](https://docs.powertools.aws.dev/lambda/java/latest/#tenets)
           required: true
         - label: Should this be considered in other Powertools for AWS Lambda languages? i.e. [Python](https://github.com/aws-powertools/powertools-lambda-python/), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript/), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet/)
           required: false
@@ -98,10 +92,16 @@ body:
       value: |
         ---
 
-        **Disclaimer**: We value your time and bandwidth. As such, any pull requests created on non-triaged issues might not be successful.
+        **Disclaimer**: After creating an RFC, please wait until it is reviewed and signed-off by a maintainer before implementing it. This will reduce amount of rework and the chance that a pull request gets rejected.
 
         Metadata information for admin purposes, please leave them empty.
 
         * RFC PR:
         * Approved by: ''
         * Reviewed by: ''
+  - type: input
+    id: notes
+    attributes:
+      label: Future readers
+      description: Please not edit this field
+      value: "Please react with 👍 and your use case to help us understand customer demand."
