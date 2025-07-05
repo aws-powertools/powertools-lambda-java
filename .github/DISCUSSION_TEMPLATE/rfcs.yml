@@ -19,7 +19,7 @@ body:
         - Metrics
         - Parameters
         - Large Messages
-        - SQS Batch Processing
+        - Batch Processing
         - Validation
         - Idempotency
         - Custom Resources
