@@ -1,7 +1,7 @@
 name: I Made This (showcase your work)
 description: Share what you did with Powertools for AWS Lambda (Java) 💞💞. Blog post, workshops, presentation, sample apps, etc.
 title: "[I Made This]: <TITLE>"
-labels: ["community-content"]
+labels: ["community-content", "triage"]
 body:
   - type: markdown
     attributes:

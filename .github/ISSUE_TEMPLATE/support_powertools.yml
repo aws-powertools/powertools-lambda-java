@@ -1,7 +1,7 @@
 name: Support Powertools for AWS Lambda (Java) (become a reference)
 description: Add your organization's name or logo to the Powertools for AWS Lambda (Java) documentation
 title: "[Support Powertools for AWS Lambda (Java)]: <your organization name>"
-labels: ["customer-reference"]
+labels: ["customer-reference", "triage"]
 body:
   - type: markdown
     attributes:
