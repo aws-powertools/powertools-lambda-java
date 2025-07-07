@@ -1,6 +1,7 @@
 name: Bug report
 description: Report a reproducible bug to help us improve
 title: "Bug: TITLE"
+type: "Bug"
 labels: ["bug", "triage"]
 body:
   - type: markdown
@@ -49,7 +50,7 @@ body:
     id: version
     attributes:
       label: Powertools for AWS Lambda (Java) version
-      placeholder: "latest, 1.19.0"
+      placeholder: "latest, 2.0.1"
       value: latest
     validations:
       required: true
