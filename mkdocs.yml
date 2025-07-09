@@ -15,8 +15,9 @@ nav:
   - Utilities:
       - utilities/idempotency.md
       - utilities/parameters.md
-      - utilities/large_messages.md
       - utilities/batch.md
+      - utilities/kafka.md
+      - utilities/large_messages.md
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
@@ -101,8 +102,9 @@ plugins:
         Utilities:
           - utilities/idempotency.md
           - utilities/parameters.md
-          - utilities/large_messages.md
           - utilities/batch.md
+          - utilities/kafka.md
+          - utilities/large_messages.md
           - utilities/validation.md
           - utilities/custom_resources.md
           - utilities/serialization.md
@@ -115,10 +117,11 @@ extra_css:
 extra_javascript:
   - javascript/aws-amplify.min.js
   - javascript/extra.js
+  - https://docs.powertools.aws.dev/shared/mermaid.min.js
 
 extra:
   powertools:
-    version: 2.0.0
+    version: 2.1.1
   version:
     provider: mike
     default: latest
