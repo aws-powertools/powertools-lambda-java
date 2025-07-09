@@ -1,0 +1,10 @@
+{
+  "namespace": "software.amazon.lambda.powertools.kafka.serializers.test.avro",
+  "type": "record",
+  "name": "TestProduct",
+  "fields": [
+    {"name": "id", "type": "int"},
+    {"name": "name", "type": "string"},
+    {"name": "price", "type": "double"}
+  ]
+}

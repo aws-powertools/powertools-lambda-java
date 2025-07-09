@@ -1,7 +1,7 @@
-site_name: Powertools for AWS Lambda (Java) Preview
-site_description: Powertools for AWS Lambda (Java) Preview
+site_name: Powertools for AWS Lambda (Java)
+site_description: Powertools for AWS Lambda (Java)
 site_author: Amazon Web Services
-site_url: https://docs.powertools.aws.dev/lambda/java/preview/
+site_url: https://docs.powertools.aws.dev/lambda/java/
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
@@ -15,8 +15,9 @@ nav:
   - Utilities:
       - utilities/idempotency.md
       - utilities/parameters.md
-      - utilities/large_messages.md
       - utilities/batch.md
+      - utilities/kafka.md
+      - utilities/large_messages.md
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
@@ -101,8 +102,9 @@ plugins:
         Utilities:
           - utilities/idempotency.md
           - utilities/parameters.md
-          - utilities/large_messages.md
           - utilities/batch.md
+          - utilities/kafka.md
+          - utilities/large_messages.md
           - utilities/validation.md
           - utilities/custom_resources.md
           - utilities/serialization.md
@@ -115,10 +117,14 @@ extra_css:
 extra_javascript:
   - javascript/aws-amplify.min.js
   - javascript/extra.js
+  - https://docs.powertools.aws.dev/shared/mermaid.min.js
 
 extra:
   powertools:
-    version: 2.0.0-RC1
+    version: 2.1.1
+  version:
+    provider: mike
+    default: latest
 
 repo_url: https://github.com/aws-powertools/powertools-lambda-java
 edit_uri: edit/main/docs
