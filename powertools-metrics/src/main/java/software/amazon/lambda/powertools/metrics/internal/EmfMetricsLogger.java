@@ -164,8 +164,9 @@ public class EmfMetricsLogger implements Metrics {
             } else {
                 LOGGER.warn("No metrics were emitted");
             }
+        } else {
+            emfLogger.flush();
         }
-        emfLogger.flush();
     }
 
     @Override
