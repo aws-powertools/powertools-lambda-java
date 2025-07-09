@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <log4j.version>2.24.0</log4j.version>
+        <log4j.version>2.24.3</log4j.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <aspectj.version>1.9.20.1</aspectj.version>
@@ -34,7 +34,7 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
-            <version>1.2.3</version>
+            <version>1.3.0</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
