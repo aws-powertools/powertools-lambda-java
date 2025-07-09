@@ -14,6 +14,7 @@ or [AWS AppConfig](https://aws.amazon.com/systems-manager/features/appconfig/).
 * Retrieve one or multiple parameters from an underlying provider in a standard way
 * Cache parameter values for a given amount of time (defaults to 5 seconds)
 * Transform parameter values from JSON or base 64 encoded strings
+* GraalVM support
 
 ## Install
 In order to provide lightweight dependencies, each parameters module is available as its own

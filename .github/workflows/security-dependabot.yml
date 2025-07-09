@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'aws-powertools/powertools-lambda-java' }}
     permissions:
-      pull-requests: read
+      pull-requests: write
     steps:
       - id: dependabot-metadata
         name: Fetch Dependabot metadata
