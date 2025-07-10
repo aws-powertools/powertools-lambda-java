@@ -7,16 +7,3 @@ updates:
     labels:
       - "maven"
       - "dependencies"
-    ignore:
-      # Ignore Mockito 5.X.X as it does not support Java 8
-      - dependency-name: "org.mockito:mockito-*"
-        update-types: ["version-update:semver-major"]
-
-  - package-ecosystem: "maven"
-    directory: "/"
-    target-branch: "v2"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "maven"
-      - "dependencies"
