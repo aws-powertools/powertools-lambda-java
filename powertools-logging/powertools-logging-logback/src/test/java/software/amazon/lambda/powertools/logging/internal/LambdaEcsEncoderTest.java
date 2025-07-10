@@ -150,7 +150,7 @@ class LambdaEcsEncoderTest {
         result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (stack is logged with root cause first)
-        assertThat(result).contains("\"message\":\"Error\",\"error.message\":\"Unexpected value\",\"error.type\":\"java.lang.IllegalStateException\",\"error.stack_trace\":\"java.lang.IllegalStateException: Unexpected value\n");
+        assertThat(result).contains("\"message\":\"Error\",\"error.message\":\"Unexpected value\",\"error.type\":\"java.lang.IllegalStateException\",\"error.stack_trace\":\"java.lang.IllegalStateException: Unexpected value\\n");
     }
 
     private void setMDC() {
