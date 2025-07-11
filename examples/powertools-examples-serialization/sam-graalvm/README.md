@@ -64,7 +64,7 @@ sam build --use-container --build-image powertools-examples-serialization-sam-gr
 To test the HTTP endpoint, we can post a product to the test URL:
 
 ```bash
-curl -X POST https://gct1q3gaw0.execute-api.eu-west-1.amazonaws.com/Prod/product/ -H "Content-Type: application/json" -d '{"id": 1234, "name": "product", "price": 42}'
+curl -X POST https://[REST-API-ID].execute-api.[REGION].amazonaws.com/Prod/product/ -H "Content-Type: application/json" -d '{"id": 1234, "name": "product", "price": 42}'
 ```
 
 The result will indicate that the handler has successfully deserialized the request body:
