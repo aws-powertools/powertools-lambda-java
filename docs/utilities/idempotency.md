@@ -983,7 +983,9 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
         <dependency>
            <groupId>com.amazonaws</groupId>
            <artifactId>DynamoDBLocal</artifactId>
-           <version>2.6.0</version>
+           <!-- Use newest version if you are on Java >11 -->
+           <!-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocalHistory.html -->
+           <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Needed when building locally on M1 Mac -->
