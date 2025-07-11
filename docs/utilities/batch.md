@@ -512,7 +512,7 @@ used with SQS FIFO. In that case, an `UnsupportedOperationException` is thrown.
     ```
 === "Example with SQS (using custom executor)"
 
-    ```java hl_lines="13"
+    ```java hl_lines="4 10 15"
     public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
 
         private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
