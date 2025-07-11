@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>software.amazon.lambda.examples</groupId>
     <version>2.1.1</version>
-    <artifactId>powertools-examples-serialization</artifactId>
+    <artifactId>powertools-examples-serialization-sam</artifactId>
     <packaging>jar</packaging>
     <name>Powertools for AWS Lambda (Java) - Examples - Serialization</name>
 

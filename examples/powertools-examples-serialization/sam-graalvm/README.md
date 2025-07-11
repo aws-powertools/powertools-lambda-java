@@ -1,6 +1,6 @@
 #  Powertools for AWS Lambda (Java) - Serialization Example
 
-This project contains an example of Lambda function using the serialization utilities module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/utilities/serialization/).
+This project contains an example of Lambda function using the serialization utilities module of Powertools for AWS Lambda (Java). For more information on this module, please refer to the [documentation](https://docs.powertools.aws.dev/lambda-java/latest/utilities/serialization/).
 
 The project contains two `RequestHandler`s - 
 
@@ -21,7 +21,41 @@ in JSON looks like this:
 ## Deploy the sample application
 
 This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting
-started with SAM in [the examples directory](../README.md)
+started with SAM in [the examples directory](../../README.md)
+
+## Configuration
+
+- Set the environment to use GraalVM
+
+```shell
+export JAVA_HOME=<path to GraalVM>
+```
+
+## Build the sample application
+
+- Build the Docker image that will be used as the environment for SAM build:
+
+```shell
+docker build --platform linux/amd64 . -t powertools-examples-serialization-sam-graalvm
+```
+
+- Build the SAM project using the docker image
+
+```shell
+sam build --use-container --build-image powertools-examples-serialization-sam-graalvm
+```
+
+#### [Optional] Building with -SNAPSHOT versions of PowerTools
+
+- If you are testing the example with a -SNAPSHOT version of PowerTools, the maven build inside the docker image will fail. This is because the -SNAPSHOT version of the PowerTools library that you are working on is still not available in maven central/snapshot repository.
+  To get around this, follow these steps:
+    - Create the native image using the `docker` command below on your development machine. The native image is created in the `target` directory.
+        - `` docker run --platform linux/amd64  -it -v `pwd`:`pwd` -w `pwd` -v ~/.m2:/root/.m2 powertools-examples-serialization-sam-graalvm mvn clean -Pnative-image package -DskipTests ``
+    - Edit the [`Makefile`](Makefile) remove this line
+        - `mvn clean package -P native-image`
+    - Build the SAM project using the docker image
+        - `sam build --use-container --build-image powertools-examples-serialization-sam-graalvm`
+
 
 ## Test the application
 
