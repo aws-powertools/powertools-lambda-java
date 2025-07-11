@@ -125,19 +125,19 @@ public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler
                 this.successHandler.accept(eventRecord);
             }
             return Optional.empty();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             String sequenceNumber = eventRecord.getEventID();
             LOGGER.error("Error while processing record with eventID {}: {}, adding it to batch item failures",
-                    sequenceNumber, t.getMessage());
-            LOGGER.error("Error was", t);
+                    sequenceNumber, e.getMessage());
+            LOGGER.error("Error was", e);
 
             // Report failure if we have a handler
             if (this.failureHandler != null) {
                 // A failing failure handler is no reason to fail the batch
                 try {
-                    this.failureHandler.accept(eventRecord, t);
-                } catch (Throwable t2) {
-                    LOGGER.warn("failureHandler threw handling failure", t2);
+                    this.failureHandler.accept(eventRecord, e);
+                } catch (Exception e2) {
+                    LOGGER.warn("failureHandler threw handling failure", e2);
                 }
             }
 

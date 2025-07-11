@@ -48,6 +48,8 @@ class DdbBatchProcessorTest {
 
     private void processMessageSucceeds(DynamodbEvent.DynamodbStreamRecord record, Context context) {
         // Great success
+        // Printing to satisfy pmd_analyse
+        System.out.println("Great success, record: " + record + ", context: " + context);
     }
 
     private void processMessageFailsForFixedMessage(DynamodbEvent.DynamodbStreamRecord record, Context context) {

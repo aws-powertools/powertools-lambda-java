@@ -30,7 +30,7 @@ public class DynamoDBStreamBatchHandlerParallel implements RequestHandler<Dynamo
         return handler.processBatchInParallel(ddbEvent, context, executor);
     }
 
-    private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
+    private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord) {
         LOGGER.info("Processing DynamoDB Stream Record" + dynamodbStreamRecord);
     }
 

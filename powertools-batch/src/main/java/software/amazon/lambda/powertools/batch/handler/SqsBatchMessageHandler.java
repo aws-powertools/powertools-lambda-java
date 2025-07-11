@@ -162,18 +162,18 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
                 this.successHandler.accept(message);
             }
             return Optional.empty();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures",
-                    message.getMessageId(), t.getMessage());
-            LOGGER.error("Error was", t);
+                    message.getMessageId(), e.getMessage());
+            LOGGER.error("Error was", e);
 
             // Report failure if we have a handler
             if (this.failureHandler != null) {
                 // A failing failure handler is no reason to fail the batch
                 try {
-                    this.failureHandler.accept(message, t);
-                } catch (Throwable t2) {
-                    LOGGER.warn("failureHandler threw handling failure", t2);
+                    this.failureHandler.accept(message, e);
+                } catch (Exception e2) {
+                    LOGGER.warn("failureHandler threw handling failure", e2);
                 }
             }
             return Optional.of(SQSBatchResponse.BatchItemFailure.builder().withItemIdentifier(message.getMessageId())

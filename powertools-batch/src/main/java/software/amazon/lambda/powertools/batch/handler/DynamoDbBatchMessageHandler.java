@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -110,19 +109,19 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
                 this.successHandler.accept(streamRecord);
             }
             return Optional.empty();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             String sequenceNumber = streamRecord.getDynamodb().getSequenceNumber();
             LOGGER.error("Error while processing record with id {}: {}, adding it to batch item failures",
-                    sequenceNumber, t.getMessage());
-            LOGGER.error("Error was", t);
+                    sequenceNumber, e.getMessage());
+            LOGGER.error("Error was", e);
 
             // Report failure if we have a handler
             if (this.failureHandler != null) {
                 // A failing failure handler is no reason to fail the batch
                 try {
-                    this.failureHandler.accept(streamRecord, t);
-                } catch (Throwable t2) {
-                    LOGGER.warn("failureHandler threw handling failure", t2);
+                    this.failureHandler.accept(streamRecord, e);
+                } catch (Exception e2) {
+                    LOGGER.warn("failureHandler threw handling failure", e2);
                 }
             }
             return Optional.of(StreamsEventResponse.BatchItemFailure.builder().withItemIdentifier(sequenceNumber).build());

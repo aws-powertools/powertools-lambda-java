@@ -32,7 +32,7 @@ public class KinesisBatchHandlerParallel implements RequestHandler<KinesisEvent,
         return handler.processBatchInParallel(kinesisEvent, context, executor);
     }
 
-    private void processMessage(Product p, Context c) {
+    private void processMessage(Product p) {
         LOGGER.info("Processing product " + p);
     }
 
