@@ -9,20 +9,25 @@ import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 
-public class DynamoDBStreamBatchHandler implements RequestHandler<DynamodbEvent, StreamsEventResponse> {
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBStreamBatchHandler.class);
+public class DynamoDBStreamBatchHandlerParallel implements RequestHandler<DynamodbEvent, StreamsEventResponse> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamoDBStreamBatchHandlerParallel.class);
     private final BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler;
+    private final ExecutorService executor;
 
-    public DynamoDBStreamBatchHandler() {
+    public DynamoDBStreamBatchHandlerParallel() {
         handler = new BatchMessageHandlerBuilder()
                 .withDynamoDbBatchHandler()
                 .buildWithRawMessageHandler(this::processMessage);
+        executor = Executors.newFixedThreadPool(2);
     }
 
     @Override
     public StreamsEventResponse handleRequest(DynamodbEvent ddbEvent, Context context) {
-        return handler.processBatch(ddbEvent, context);
+        return handler.processBatchInParallel(ddbEvent, context, executor);
     }
 
     private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord) {

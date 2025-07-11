@@ -15,15 +15,20 @@
 package software.amazon.lambda.powertools.batch.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
+import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.batch.internal.MultiThreadMDC;
@@ -99,7 +104,7 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
 
     @Override
     public SQSBatchResponse processBatchInParallel(SQSEvent event, Context context) {
-        if (!event.getRecords().isEmpty() && event.getRecords().get(0).getAttributes().get(MESSAGE_GROUP_ID_KEY) != null) {
+        if (isFIFOEnabled(event)) {
             throw new UnsupportedOperationException("FIFO queues are not supported in parallel mode, use the processBatch method instead");
         }
 
@@ -109,11 +114,34 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
                 .map(sqsMessage -> {
 
                     multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    return processBatchItem(sqsMessage, context);
+                    Optional<SQSBatchResponse.BatchItemFailure> failureOpt = processBatchItem(sqsMessage, context);
+                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                    return failureOpt;
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+
+        return SQSBatchResponse.builder().withBatchItemFailures(batchItemFailures).build();
+    }
+
+    @Override
+    public SQSBatchResponse processBatchInParallel(SQSEvent event, Context context, Executor executor) {
+        if (isFIFOEnabled(event)) {
+            throw new UnsupportedOperationException("FIFO queues are not supported in parallel mode, use the processBatch method instead");
+        }
+
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        List<SQSBatchResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = event.getRecords().stream()
+                .map(eventRecord -> CompletableFuture.runAsync(() -> {
+                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                    Optional<SQSBatchResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
+                    failureOpt.ifPresent(batchItemFailures::add);
+                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                }, executor))
+                .collect(Collectors.toList());
+        futures.forEach(CompletableFuture::join);
 
         return SQSBatchResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
@@ -134,22 +162,26 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
                 this.successHandler.accept(message);
             }
             return Optional.empty();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             LOGGER.error("Error while processing message with messageId {}: {}, adding it to batch item failures",
-                    message.getMessageId(), t.getMessage());
-            LOGGER.error("Error was", t);
+                    message.getMessageId(), e.getMessage());
+            LOGGER.error("Error was", e);
 
             // Report failure if we have a handler
             if (this.failureHandler != null) {
                 // A failing failure handler is no reason to fail the batch
                 try {
-                    this.failureHandler.accept(message, t);
-                } catch (Throwable t2) {
-                    LOGGER.warn("failureHandler threw handling failure", t2);
+                    this.failureHandler.accept(message, e);
+                } catch (Exception e2) {
+                    LOGGER.warn("failureHandler threw handling failure", e2);
                 }
             }
             return Optional.of(SQSBatchResponse.BatchItemFailure.builder().withItemIdentifier(message.getMessageId())
                     .build());
         }
+    }
+
+    private boolean isFIFOEnabled(SQSEvent sqsEvent) {
+        return !sqsEvent.getRecords().isEmpty() && sqsEvent.getRecords().get(0).getAttributes().get(MESSAGE_GROUP_ID_KEY) != null;
     }
 }

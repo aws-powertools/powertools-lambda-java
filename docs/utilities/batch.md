@@ -510,6 +510,31 @@ used with SQS FIFO. In that case, an `UnsupportedOperationException` is thrown.
         }
     }
     ```
+=== "Example with SQS (using custom executor)"
+
+    ```java hl_lines="4 10 15"
+    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+
+        private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+        private final ExecutorService executor;
+    
+        public SqsBatchHandler() {
+            handler = new BatchMessageHandlerBuilder()
+                    .withSqsBatchHandler()
+                    .buildWithMessageHandler(this::processMessage, Product.class);
+            executor = Executors.newFixedThreadPool(2);
+        }
+    
+        @Override
+        public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+            return handler.processBatchInParallel(sqsEvent, context, executor);
+        }
+    
+        private void processMessage(Product p, Context c) {
+            // Process the product
+        }
+    }
+    ```
 
 
 ## Handling Messages

@@ -18,8 +18,12 @@ package software.amazon.lambda.powertools.batch.handler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -77,12 +81,31 @@ public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler
                 .parallelStream() // Parallel processing
                 .map(eventRecord -> {
                     multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    return processBatchItem(eventRecord, context);
+                    Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
+                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                    return failureOpt;
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
+        return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
+    }
+
+    @Override
+    public StreamsEventResponse processBatchInParallel(KinesisEvent event, Context context, Executor executor) {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
+        List<CompletableFuture<Void>> futures = event.getRecords().stream()
+                .map(eventRecord -> CompletableFuture.runAsync(() -> {
+                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                    Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
+                    failureOpt.ifPresent(batchItemFailures::add);
+                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                }, executor))
+                .collect(Collectors.toList());
+        futures.forEach(CompletableFuture::join);
         return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
 
@@ -102,19 +125,19 @@ public class KinesisStreamsBatchMessageHandler<M> implements BatchMessageHandler
                 this.successHandler.accept(eventRecord);
             }
             return Optional.empty();
-        } catch (Throwable t) {
+        } catch (Exception e) {
             String sequenceNumber = eventRecord.getEventID();
             LOGGER.error("Error while processing record with eventID {}: {}, adding it to batch item failures",
-                    sequenceNumber, t.getMessage());
-            LOGGER.error("Error was", t);
+                    sequenceNumber, e.getMessage());
+            LOGGER.error("Error was", e);
 
             // Report failure if we have a handler
             if (this.failureHandler != null) {
                 // A failing failure handler is no reason to fail the batch
                 try {
-                    this.failureHandler.accept(eventRecord, t);
-                } catch (Throwable t2) {
-                    LOGGER.warn("failureHandler threw handling failure", t2);
+                    this.failureHandler.accept(eventRecord, e);
+                } catch (Exception e2) {
+                    LOGGER.warn("failureHandler threw handling failure", e2);
                 }
             }
 

@@ -16,6 +16,9 @@ package software.amazon.lambda.powertools.batch.handler;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+
 /**
  * The basic interface a batch message handler must meet.
  *
@@ -50,4 +53,14 @@ public interface BatchMessageHandler<E, R> {
      * @return A partial batch response
      */
     R processBatchInParallel(E event, Context context);
+
+
+    /**
+     * Same as {@link #processBatchInParallel(Object, Context)} but with an option to provide custom {@link Executor}
+     * @param event   The Lambda event containing the batch to process
+     * @param context The lambda context
+     * @param executor Custom executor to use for parallel processing
+     * @return A partial batch response
+     */
+    R processBatchInParallel(E event, Context context, Executor executor);
 }

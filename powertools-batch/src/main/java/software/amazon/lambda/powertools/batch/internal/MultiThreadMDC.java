@@ -44,4 +44,11 @@ public class MultiThreadMDC {
             mdcAwareThreads.add(thread);
         }
     }
+
+    public void removeThread(String thread) {
+        if (mdcAwareThreads.contains(thread)) {
+            LOGGER.debug("Removing thread {}", thread);
+            mdcAwareThreads.remove(thread);
+        }
+    }
 }

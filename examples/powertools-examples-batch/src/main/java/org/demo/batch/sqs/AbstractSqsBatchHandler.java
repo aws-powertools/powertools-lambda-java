@@ -42,11 +42,10 @@ public class AbstractSqsBatchHandler {
     /**
      * Simulate some processing (I/O + S3 put request)
      * @param p deserialized product
-     * @param context Lambda context
      */
     @Logging
     @Tracing
-    protected void processMessage(Product p, Context context) {
+    protected void processMessage(Product p) {
         TracingUtils.putAnnotation("productId", p.getId());
         TracingUtils.putAnnotation("Thread", Thread.currentThread().getName());
         MDC.put("product", String.valueOf(p.getId()));
