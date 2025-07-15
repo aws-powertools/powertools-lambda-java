@@ -23,8 +23,12 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 
+import org.crac.Core;
+import org.crac.Resource;
+
 import com.amazonaws.services.lambda.runtime.Context;
 
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
@@ -33,11 +37,15 @@ import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 @Aspect
-public class LambdaMetricsAspect {
+public class LambdaMetricsAspect implements Resource {
     public static final String TRACE_ID_PROPERTY = "xray_trace_id";
     public static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String SERVICE_DIMENSION = "Service";
     private static final String FUNCTION_NAME_ENV_VAR = "POWERTOOLS_METRICS_FUNCTION_NAME";
+
+    public LambdaMetricsAspect() {
+        Core.getGlobalContext().register(this);
+    }
 
     private String functionName(FlushMetrics metrics, Context context) {
         if (!"".equals(metrics.functionName())) {
@@ -138,5 +146,15 @@ public class LambdaMetricsAspect {
 
             metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
         }
+    }
+
+    @Override
+    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }
