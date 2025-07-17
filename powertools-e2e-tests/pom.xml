@@ -234,6 +234,41 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>e2e-graal</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.5.3</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skipAfterFailureCount>1</skipAfterFailureCount>
+                            <includes>
+                                <include>**/MetricsE2ET.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/TracingE2ET.java</exclude>
+                            </excludes>
+                            <systemPropertyVariables>
+                                <!-- This will bundle the handlers/* using GraalVM into a native image and deploy
+                                them using the AL2023.provided runtime. The same E2E test output is expected for such 
+                                deployments. -->
+                                <graalvm.enabled>true</graalvm.enabled>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

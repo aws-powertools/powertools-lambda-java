@@ -19,13 +19,10 @@ import static java.util.Collections.singletonList;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,10 +32,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.BundlingOptions;
-import software.amazon.awscdk.BundlingOutput;
 import software.amazon.awscdk.CfnOutput;
 import software.amazon.awscdk.DefaultStackSynthesizer;
-import software.amazon.awscdk.DockerVolume;
 import software.amazon.awscdk.Duration;
 import software.amazon.awscdk.RemovalPolicy;
 import software.amazon.awscdk.Stack;
@@ -59,6 +54,7 @@ import software.amazon.awscdk.services.kinesis.Stream;
 import software.amazon.awscdk.services.kinesis.StreamMode;
 import software.amazon.awscdk.services.lambda.Code;
 import software.amazon.awscdk.services.lambda.Function;
+import software.amazon.awscdk.services.lambda.Runtime;
 import software.amazon.awscdk.services.lambda.StartingPosition;
 import software.amazon.awscdk.services.lambda.Tracing;
 import software.amazon.awscdk.services.lambda.eventsources.DynamoEventSource;
@@ -218,47 +214,31 @@ public class Infrastructure {
                         .build())
                 .build();
 
-        List<String> packagingInstruction = Arrays.asList(
-                "/bin/sh",
-                "-c",
-                "cd " + pathToFunction +
-                        " && timeout -s SIGKILL 5m mvn clean install -ff " +
-                        " -Dmaven.test.skip=true " +
-                        " -Dmaven.compiler.source=" + runtime.getMvnProperty() +
-                        " -Dmaven.compiler.target=" + runtime.getMvnProperty() +
-                        " && cp /asset-input/" + pathToFunction + "/target/function.jar /asset-output/");
+        boolean isGraalVMEnabled = Boolean.parseBoolean(System.getProperty("graalvm.enabled", "false"));
+        DockerConfiguration dockerConfig = isGraalVMEnabled
+                ? DockerConfiguration.createGraalVMDefault(runtime)
+                : DockerConfiguration.createJVMDefault(runtime);
 
-        BundlingOptions.Builder builderOptions = BundlingOptions.builder()
-                .command(packagingInstruction)
-                .image(runtime.getCdkRuntime().getBundlingImage())
-                .volumes(singletonList(
-                        // Mount local .m2 repo to avoid download all the dependencies again inside the container
-                        DockerVolume.builder()
-                                .hostPath(System.getProperty("user.home") + "/.m2/")
-                                .containerPath("/root/.m2/")
-                                .build()))
-                .user("root")
-                .outputType(BundlingOutput.ARCHIVED);
+        BundlingOptions bundlingOptions = isGraalVMEnabled
+                ? dockerConfig.createGraalVMBundlingOptions(pathToFunction, runtime)
+                : dockerConfig.createJVMBundlingOptions(pathToFunction, runtime);
 
         functionName = stackName + "-function";
         CfnOutput.Builder.create(e2eStack, FUNCTION_NAME_OUTPUT)
                 .value(functionName)
                 .build();
 
-        LOG.debug("Building Lambda function with command " +
-                packagingInstruction.stream().collect(Collectors.joining(" ", "[", "]")));
+        LOG.debug("Building Lambda function with " + (isGraalVMEnabled ? "GraalVM" : "JVM") + " configuration");
         Function function = Function.Builder
                 .create(e2eStack, functionName)
                 .code(Code.fromAsset("handlers/", AssetOptions.builder()
-                        .bundling(builderOptions
-                                .command(packagingInstruction)
-                                .build())
+                        .bundling(bundlingOptions)
                         .build()))
                 .functionName(functionName)
                 .handler("software.amazon.lambda.powertools.e2e.Function::handleRequest")
                 .memorySize(1024)
                 .timeout(Duration.seconds(timeout))
-                .runtime(runtime.getCdkRuntime())
+                .runtime(isGraalVMEnabled ? Runtime.PROVIDED_AL2023 : runtime.getCdkRuntime())
                 .environment(envVar)
                 .tracing(tracing ? Tracing.ACTIVE : Tracing.DISABLED)
                 .build();
@@ -457,17 +437,19 @@ public class Infrastructure {
     private void uploadAssets() {
         Map<String, Asset> assets = findAssets();
         assets.forEach((objectKey, asset) -> {
-            if (!asset.assetPath.endsWith(".jar")) {
+            // .zip will be used for GraalVM bundles.
+            if (!asset.assetPath.endsWith(".jar") && !asset.assetPath.endsWith(".zip")) {
+                LOG.info("Skipping upload of {}", asset);
                 return;
             }
+            LOG.info("Uploading {}", asset);
 
             ListObjectsV2Response objects = s3
                     .listObjectsV2(ListObjectsV2Request.builder().bucket(asset.bucketName).build());
             if (objects.contents().stream().anyMatch(o -> o.key().equals(objectKey))) {
-                LOG.debug("Asset already exists, skipping");
+                LOG.debug("{} already exists, skipping", asset);
                 return;
             }
-            LOG.info("Uploading asset " + objectKey + " to " + asset.bucketName);
             s3.putObject(PutObjectRequest.builder().bucket(asset.bucketName).key(objectKey).build(),
                     Paths.get(cfnAssetDirectory, asset.assetPath));
         });
