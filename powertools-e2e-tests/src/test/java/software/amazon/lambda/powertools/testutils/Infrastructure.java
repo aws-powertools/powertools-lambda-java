@@ -228,7 +228,7 @@ public class Infrastructure {
                 .value(functionName)
                 .build();
 
-        LOG.debug("Building Lambda function with " + (isGraalVMEnabled ? "GraalVM" : "JVM") + " configuration");
+        LOG.debug("Building Lambda function with {} configuration", isGraalVMEnabled ? "GraalVM" : "JVM");
         Function function = Function.Builder
                 .create(e2eStack, functionName)
                 .code(Code.fromAsset("handlers/", AssetOptions.builder()
