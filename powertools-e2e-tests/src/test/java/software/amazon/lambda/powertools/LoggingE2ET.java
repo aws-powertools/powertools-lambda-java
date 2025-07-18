@@ -19,22 +19,25 @@ import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTIO
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 import static software.amazon.lambda.powertools.testutils.logging.InvocationLogs.Level.INFO;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
-public class LoggingE2ET {
+class LoggingE2ET {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -42,17 +45,17 @@ public class LoggingE2ET {
     private static String functionName;
 
     @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public static void setup() {
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    static void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(LoggingE2ET.class.getSimpleName())
                 .tracing(true)
                 .pathToFunction("logging")
                 .environmentVariables(
                         Stream.of(new String[][] {
-                                        {"POWERTOOLS_LOG_LEVEL", "INFO"},
-                                        {"POWERTOOLS_SERVICE_NAME", LoggingE2ET.class.getSimpleName()}
-                                })
+                                { "POWERTOOLS_LOG_LEVEL", "INFO" },
+                                { "POWERTOOLS_SERVICE_NAME", LoggingE2ET.class.getSimpleName() }
+                        })
                                 .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
         Map<String, String> outputs = infrastructure.deploy();
@@ -60,14 +63,14 @@ public class LoggingE2ET {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @Test
-    public void test_logInfoWithAdditionalKeys() throws JsonProcessingException {
+    void test_logInfoWithAdditionalKeys() throws JsonProcessingException {
         // GIVEN
         String orderId = UUID.randomUUID().toString();
         String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId + "\"}}";

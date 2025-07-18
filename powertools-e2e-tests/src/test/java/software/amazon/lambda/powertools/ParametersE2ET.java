@@ -24,22 +24,24 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
+
 import software.amazon.lambda.powertools.testutils.AppConfig;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ParametersE2ET {
+class ParametersE2ET {
     private final AppConfig appConfig;
     private Infrastructure infrastructure;
     private String functionName;
 
-    public ParametersE2ET() {
+    ParametersE2ET() {
         String appName = UUID.randomUUID().toString();
         Map<String, String> params = new HashMap<>();
         params.put("key1", "value1");
@@ -48,17 +50,17 @@ public class ParametersE2ET {
     }
 
     @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public void setup() {
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
+    void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(ParametersE2ET.class.getSimpleName())
                 .pathToFunction("parameters")
                 .appConfig(appConfig)
                 .environmentVariables(
                         Stream.of(new String[][] {
-                                        {"POWERTOOLS_LOG_LEVEL", "INFO"},
-                                        {"POWERTOOLS_SERVICE_NAME", ParametersE2ET.class.getSimpleName()}
-                                })
+                                { "POWERTOOLS_LOG_LEVEL", "INFO" },
+                                { "POWERTOOLS_SERVICE_NAME", ParametersE2ET.class.getSimpleName() }
+                        })
                                 .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
         Map<String, String> outputs = infrastructure.deploy();
@@ -66,14 +68,14 @@ public class ParametersE2ET {
     }
 
     @AfterAll
-    public void tearDown() {
+    void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @Test
-    public void test_getAppConfigValue() {
+    void test_getAppConfigValue() {
         for (Map.Entry<String, String> configKey : appConfig.getConfigurationValues().entrySet()) {
 
             // Arrange
