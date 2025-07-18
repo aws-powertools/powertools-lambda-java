@@ -70,7 +70,7 @@ jobs:
       - name: Run e2e test with Maven
         env:
             JAVA_VERSION: ${{ matrix.java }}
-        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e -B verify --file powertools-e2e-tests/pom.xml
+        run: mvn -DskipTests -ntp install --file pom.xml && mvn -Pe2e -B -ntp verify --file powertools-e2e-tests/pom.xml
 
   e2e-graal:  
     name: End-to-end GraalVM Tests (Java ${{ matrix.java }})
@@ -102,4 +102,4 @@ jobs:
       - name: Run e2e-graal test with Maven
         env:
             JAVA_VERSION: ${{ matrix.java }}
-        run: mvn -DskipTests install --file pom.xml && mvn -Pe2e-graal -B verify --file powertools-e2e-tests/pom.xml
+        run: mvn -DskipTests -ntp install --file pom.xml && mvn -Pe2e-graal -B -ntp verify --file powertools-e2e-tests/pom.xml
