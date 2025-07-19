@@ -42,7 +42,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
-public class IdempotencyTest {
+class IdempotencyTest {
 
     @Mock
     private Context context;
@@ -56,7 +56,7 @@ public class IdempotencyTest {
     }
 
     @Test
-    public void endToEndTest() {
+    void endToEndTest() {
         // For this test, we'll simplify and just verify that the function works with mocks
         // The important part is that our new mocking approach doesn't break existing functionality
         

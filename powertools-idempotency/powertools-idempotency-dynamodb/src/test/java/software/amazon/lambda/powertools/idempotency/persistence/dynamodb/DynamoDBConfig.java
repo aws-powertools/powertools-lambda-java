@@ -20,14 +20,14 @@ import org.mockito.MockitoAnnotations;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
-public class DynamoDBConfig {
+class DynamoDBConfig {
     protected static final String TABLE_NAME = "idempotency_table";
     
     @Mock
     protected DynamoDbClient client;
     
     @BeforeEach
-    public void setupMocks() {
+    void setupMocks() {
         MockitoAnnotations.openMocks(this);
     }
 }

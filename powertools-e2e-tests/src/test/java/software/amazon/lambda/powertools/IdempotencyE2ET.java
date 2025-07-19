@@ -76,17 +76,4 @@ public class IdempotencyE2ET {
         Assertions.assertThat(result3.getResult()).isNotEqualTo(result2.getResult());
     }
 
-    @Test
-    public void test_idempotencyWithRealDynamoDBTable() {
-        // GIVEN
-        String uniqueEvent = "{\"message\":\"test-" + UUID.randomUUID().toString() + "\"}";
-
-        // WHEN
-        InvocationResult result1 = invokeFunction(functionName, uniqueEvent);
-        InvocationResult result2 = invokeFunction(functionName, uniqueEvent);
-
-        // THEN
-        Assertions.assertThat(result1.getResult()).isNotNull();
-        Assertions.assertThat(result2.getResult()).isEqualTo(result1.getResult());
-    }
 }

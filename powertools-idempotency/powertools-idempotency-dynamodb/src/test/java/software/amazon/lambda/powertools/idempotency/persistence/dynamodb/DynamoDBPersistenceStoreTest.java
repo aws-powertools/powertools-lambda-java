@@ -27,7 +27,6 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
-import software.amazon.awssdk.services.dynamodb.model.ResourceNotFoundException;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -37,7 +36,6 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +50,7 @@ import static org.mockito.Mockito.doThrow;
 /**
  * Unit tests for DynamoDBPersistenceStore using mocked DynamoDB client.
  */
-public class DynamoDBPersistenceStoreTest {
+class DynamoDBPersistenceStoreTest {
     protected static final String TABLE_NAME = "idempotency_table";
     private DynamoDBPersistenceStore dynamoDBPersistenceStore;
     
@@ -60,7 +58,7 @@ public class DynamoDBPersistenceStoreTest {
     private DynamoDbClient client;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
         dynamoDBPersistenceStore = DynamoDBPersistenceStore.builder()
                 .withTableName(TABLE_NAME)
@@ -71,7 +69,7 @@ public class DynamoDBPersistenceStoreTest {
     // =================================================================
     //<editor-fold desc="putRecord">
     @Test
-    public void putRecord_shouldCreateRecordInDynamoDB() throws IdempotencyItemAlreadyExistsException {
+    void putRecord_shouldCreateRecordInDynamoDB() throws IdempotencyItemAlreadyExistsException {
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         
@@ -83,7 +81,7 @@ public class DynamoDBPersistenceStoreTest {
     }
 
     @Test
-    public void putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExist() {
+    void putRecord_shouldThrowIdempotencyItemAlreadyExistsException_IfRecordAlreadyExist() {
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
 
@@ -114,7 +112,7 @@ public class DynamoDBPersistenceStoreTest {
     //<editor-fold desc="getRecord">
 
     @Test
-    public void getRecord_shouldReturnExistingRecord() throws IdempotencyItemNotFoundException {
+    void getRecord_shouldReturnExistingRecord() throws IdempotencyItemNotFoundException {
         Instant now = Instant.now();
         long expiry = now.plus(30, ChronoUnit.SECONDS).getEpochSecond();
         
@@ -136,7 +134,7 @@ public class DynamoDBPersistenceStoreTest {
     }
 
     @Test
-    public void getRecord_shouldThrowException_whenRecordIsAbsent() {
+    void getRecord_shouldThrowException_whenRecordIsAbsent() {
         GetItemResponse response = GetItemResponse.builder().build();
         when(client.getItem(any(GetItemRequest.class))).thenReturn(response);
 
@@ -151,7 +149,7 @@ public class DynamoDBPersistenceStoreTest {
     //<editor-fold desc="updateRecord">
 
     @Test
-    public void updateRecord_shouldUpdateRecord() {
+    void updateRecord_shouldUpdateRecord() {
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         
@@ -173,7 +171,7 @@ public class DynamoDBPersistenceStoreTest {
     //<editor-fold desc="deleteRecord">
 
     @Test
-    public void deleteRecord_shouldDeleteRecord() {
+    void deleteRecord_shouldDeleteRecord() {
         when(client.deleteItem(any(DeleteItemRequest.class))).thenReturn(null);
 
         dynamoDBPersistenceStore.deleteRecord("key");
@@ -186,7 +184,7 @@ public class DynamoDBPersistenceStoreTest {
 
     @Test
     @SetEnvironmentVariable(key = Constants.IDEMPOTENCY_DISABLED_ENV, value = "true")
-    public void idempotencyDisabled_noClientShouldBeCreated() {
+    void idempotencyDisabled_noClientShouldBeCreated() {
         DynamoDBPersistenceStore store = DynamoDBPersistenceStore.builder().withTableName(TABLE_NAME).build();
         assertThatThrownBy(() -> store.getRecord("fake")).isInstanceOf(NullPointerException.class);
     }
