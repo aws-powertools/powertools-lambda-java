@@ -10,6 +10,7 @@ updates:
   - package-ecosystem: docker
     directories:
       - "/powertools-e2e-tests"
+      - "/examples"
     labels: [ ]
     schedule:
       interval: daily
