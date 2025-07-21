@@ -47,6 +47,7 @@ jobs:
       id-token: write
     environment: E2E
     strategy:
+      fail-fast: false
       max-parallel: 3
       matrix:
         java:
@@ -79,6 +80,7 @@ jobs:
       id-token: write
     environment: E2E
     strategy:
+      fail-fast: false
       max-parallel: 3
       matrix:
         java:
