@@ -234,6 +234,41 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>e2e-graal</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>3.5.3</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <skipAfterFailureCount>1</skipAfterFailureCount>
+                            <includes>
+                                <!-- Add additional E2E tests here when adding new GraalVM support to utilities. -->
+                                <include>**/MetricsE2ET.java</include>
+                                <include>**/LoggingE2ET.java</include>
+                                <include>**/ParametersE2ET.java</include>
+                            </includes>
+                            <excludes>
+                                <exclude>**/TracingE2ET.java</exclude>
+                            </excludes>
+                            <systemPropertyVariables>
+                                <graalvm.enabled>true</graalvm.enabled>
+                            </systemPropertyVariables>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>

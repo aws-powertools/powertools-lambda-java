@@ -38,22 +38,22 @@ import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 import software.amazon.lambda.powertools.testutils.metrics.MetricsFetcher;
 
-public class MetricsE2ET {
-    private static final String namespace = "MetricsE2ENamespace_" + UUID.randomUUID();
-    private static final String service = "MetricsE2EService_" + UUID.randomUUID();
+class MetricsE2ET {
+    private static final String NAMESPACE = "MetricsE2ENamespace_" + UUID.randomUUID();
+    private static final String SERVICE = "MetricsE2EService_" + UUID.randomUUID();
     private static Infrastructure infrastructure;
     private static String functionName;
 
     @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public static void setup() {
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    static void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(MetricsE2ET.class.getSimpleName())
                 .pathToFunction("metrics")
                 .environmentVariables(
                         Stream.of(new String[][] {
-                                { "POWERTOOLS_METRICS_NAMESPACE", namespace },
-                                { "POWERTOOLS_SERVICE_NAME", service }
+                                { "POWERTOOLS_METRICS_NAMESPACE", NAMESPACE },
+                                { "POWERTOOLS_SERVICE_NAME", SERVICE }
                         })
                                 .collect(Collectors.toMap(data -> data[0], data -> data[1])))
                 .build();
@@ -62,14 +62,14 @@ public class MetricsE2ET {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @Test
-    public void test_recordMetrics() {
+    void test_recordMetrics() {
         // GIVEN
 
         Instant currentTimeTruncatedToMinutes = Instant.now(Clock.systemUTC()).truncatedTo(ChronoUnit.MINUTES);
@@ -84,17 +84,17 @@ public class MetricsE2ET {
         // THEN
         MetricsFetcher metricsFetcher = new MetricsFetcher();
         List<Double> coldStart = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
-                namespace,
+                NAMESPACE,
                 "ColdStart", Stream.of(new String[][] {
                         { "FunctionName", functionName },
-                        { "Service", service } }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
+                        { "Service", SERVICE } }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
         assertThat(coldStart.get(0)).isEqualTo(1);
         List<Double> orderMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(),
-                60, namespace,
+                60, NAMESPACE,
                 "orders", Collections.singletonMap("Environment", "test"));
         assertThat(orderMetrics.get(0)).isEqualTo(2);
         List<Double> productMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(),
-                invocationResult.getEnd(), 60, namespace,
+                invocationResult.getEnd(), 60, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
         // When searching across a 1 minute time period with a period of 60 we find both metrics and the sum is 12
@@ -102,24 +102,22 @@ public class MetricsE2ET {
         assertThat(productMetrics.get(0)).isEqualTo(12);
 
         orderMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
-                namespace,
-                "orders", Collections.singletonMap("Service", service));
+                NAMESPACE,
+                "orders", Collections.singletonMap("Service", SERVICE));
         assertThat(orderMetrics.get(0)).isEqualTo(2);
         productMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
-                namespace,
-                "products", Collections.singletonMap("Service", service));
+                NAMESPACE,
+                "products", Collections.singletonMap("Service", SERVICE));
         assertThat(productMetrics.get(0)).isEqualTo(12);
 
         Instant searchStartTime = currentTimeTruncatedToMinutes.plusSeconds(15);
         Instant searchEndTime = currentTimeTruncatedToMinutes.plusSeconds(45);
 
-        List<Double> productMetricDataResult = metricsFetcher.fetchMetrics(searchStartTime, searchEndTime, 1, namespace,
+        List<Double> productMetricDataResult = metricsFetcher.fetchMetrics(searchStartTime, searchEndTime, 1, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
         // We are searching across the time period the metric was created but with a period of 1 second. Only the high
         // resolution metric will be available at this point
-
         assertThat(productMetricDataResult.get(0)).isEqualTo(8);
-
     }
 }
