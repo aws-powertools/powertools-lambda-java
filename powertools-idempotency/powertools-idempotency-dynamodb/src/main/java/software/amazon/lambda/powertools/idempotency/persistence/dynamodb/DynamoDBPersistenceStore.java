@@ -124,19 +124,19 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
     @Override
     public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
         try {
-            String PRIMING_RECORD_KEY = "__invoke_prime__";
+            String primingRecordKey = "__invoke_prime__";
             Instant now = Instant.now();
             long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
             DataRecord primingDataRecord = new DataRecord(
-                    PRIMING_RECORD_KEY,
+                    primingRecordKey,
                     DataRecord.Status.COMPLETED,
                     expiry,
                     null, // no data
                     null // no validation
             );
             putRecord(primingDataRecord, Instant.now());
-            getRecord(PRIMING_RECORD_KEY);
-            deleteRecord(PRIMING_RECORD_KEY);
+            getRecord(primingRecordKey);
+            deleteRecord(primingRecordKey);
         } catch (Exception unknown) {
             // This is unexpected but we must continue without any interruption
         }
