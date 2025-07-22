@@ -25,7 +25,7 @@ public class DynamoDBStreamBatchHandler implements RequestHandler<DynamodbEvent,
         return handler.processBatch(ddbEvent, context);
     }
 
-    private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
+    private void processMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord) {
         LOGGER.info("Processing DynamoDB Stream Record" + dynamodbStreamRecord);
     }
 

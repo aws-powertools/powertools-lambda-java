@@ -23,7 +23,12 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
@@ -45,7 +50,7 @@ class SQSBatchProcessorTest {
     private void processMessageSucceeds(SQSEvent.SQSMessage sqsMessage) {
     }
 
-    private void processMessageInParallelSucceeds(SQSEvent.SQSMessage sqsMessage) {
+    private void processMessageInParallelSucceeds(SQSEvent.SQSMessage sqsMessage, Context context) {
         String thread = Thread.currentThread().getName();
         if (!threadList.contains(thread)) {
             threadList.add(thread);
@@ -86,6 +91,25 @@ class SQSBatchProcessorTest {
         }
     }
 
+    private SQSBatchResponse testParallelBatchExecution(SQSEvent event,
+                                                        BiConsumer<SQSEvent.SQSMessage, Context> messageHandler,
+                                                        Executor executor) {
+        // Arrange
+        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWithRawMessageHandler(messageHandler);
+
+        // Act
+        SQSBatchResponse sqsBatchResponse;
+        if (executor == null) {
+            sqsBatchResponse = handler.processBatchInParallel(event, context);
+        } else {
+            sqsBatchResponse = handler.processBatchInParallel(event, context, executor);
+        }
+
+        return sqsBatchResponse;
+    }
+
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
     void batchProcessingSucceedsAndReturns(SQSEvent event) {
@@ -104,13 +128,7 @@ class SQSBatchProcessorTest {
     @ParameterizedTest
     @Event(value = "sqs_event_big.json", type = SQSEvent.class)
     void parallelBatchProcessingSucceedsAndReturns(SQSEvent event) {
-        // Arrange
-        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
-                .withSqsBatchHandler()
-                .buildWithRawMessageHandler(this::processMessageInParallelSucceeds);
-
-        // Act
-        SQSBatchResponse sqsBatchResponse = handler.processBatchInParallel(event, context);
+        SQSBatchResponse sqsBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelSucceeds, null);
 
         // Assert
         assertThat(sqsBatchResponse.getBatchItemFailures()).isEmpty();
@@ -137,13 +155,7 @@ class SQSBatchProcessorTest {
     @ParameterizedTest
     @Event(value = "sqs_event_big.json", type = SQSEvent.class)
     void parallelBatchProcessing_shouldAddMessageToBatchFailure_whenException_withMessage(SQSEvent event) {
-        // Arrange
-        BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
-                .withSqsBatchHandler()
-                .buildWithRawMessageHandler(this::processMessageInParallelFailsForFixedMessage);
-
-        // Act
-        SQSBatchResponse sqsBatchResponse = handler.processBatchInParallel(event, context);
+        SQSBatchResponse sqsBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelFailsForFixedMessage, null);
 
         // Assert
         assertThat(sqsBatchResponse.getBatchItemFailures()).hasSize(1);
@@ -236,6 +248,32 @@ class SQSBatchProcessorTest {
         assertThat(wasCalledAndFailed.get()).isTrue();
         SQSBatchResponse.BatchItemFailure batchItemFailure = sqsBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("e9144555-9a4f-4ec3-99a0-34ce359b4b54");
+    }
+
+    @ParameterizedTest
+    @Event(value = "sqs_event_big.json", type = SQSEvent.class)
+    void parallelBatchProcessingWithExecutorSucceedsAndReturns(SQSEvent event) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        SQSBatchResponse sqsBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelSucceeds, executor);
+        executor.shutdown();
+
+        // Assert
+        assertThat(sqsBatchResponse.getBatchItemFailures()).isEmpty();
+        assertThat(threadList).hasSizeGreaterThan(1);
+    }
+
+    @ParameterizedTest
+    @Event(value = "sqs_event_big.json", type = SQSEvent.class)
+    void parallelBatchProcessingWithExecutor_shouldAddMessageToBatchFailure_whenException_withMessage(SQSEvent event) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+        SQSBatchResponse sqsBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelFailsForFixedMessage, executor);
+        executor.shutdown();
+
+        // Assert
+        assertThat(sqsBatchResponse.getBatchItemFailures()).hasSize(1);
+        SQSBatchResponse.BatchItemFailure batchItemFailure = sqsBatchResponse.getBatchItemFailures().get(0);
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo("e9144555-9a4f-4ec3-99a0-34ce359b4b54");
+        assertThat(threadList).hasSizeGreaterThan(1);
     }
 
 

@@ -23,7 +23,12 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.BiConsumer;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
@@ -81,6 +86,25 @@ class KinesisBatchProcessorTest {
         }
     }
 
+    private StreamsEventResponse testParallelBatchExecution(KinesisEvent event,
+                                                            BiConsumer<KinesisEvent.KinesisEventRecord, Context> messageHandler,
+                                                            Executor executor) {
+        // Arrange
+        BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
+                .withKinesisBatchHandler()
+                .buildWithRawMessageHandler(messageHandler);
+
+        // Act
+        StreamsEventResponse kinesisBatchResponse;
+        if (executor == null) {
+            kinesisBatchResponse = handler.processBatchInParallel(event, context);
+        } else {
+            kinesisBatchResponse = handler.processBatchInParallel(event, context, executor);
+        }
+
+        return kinesisBatchResponse;
+    }
+
     // A handler that throws an exception for _one_ of the deserialized products in the same messages
     public void processMessageFailsForFixedProduct(Product product, Context context) {
         if (product.getId() == 1234) {
@@ -106,13 +130,7 @@ class KinesisBatchProcessorTest {
     @ParameterizedTest
     @Event(value = "kinesis_event_big.json", type = KinesisEvent.class)
     void batchProcessingInParallelSucceedsAndReturns(KinesisEvent event) {
-        // Arrange
-        BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
-                .withKinesisBatchHandler()
-                .buildWithRawMessageHandler(this::processMessageInParallelSucceeds);
-
-        // Act
-        StreamsEventResponse kinesisBatchResponse = handler.processBatchInParallel(event, context);
+        StreamsEventResponse kinesisBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelSucceeds, null);
 
         // Assert
         assertThat(kinesisBatchResponse.getBatchItemFailures()).isEmpty();
@@ -140,13 +158,7 @@ class KinesisBatchProcessorTest {
     @ParameterizedTest
     @Event(value = "kinesis_event_big.json", type = KinesisEvent.class)
     void batchProcessingInParallel_shouldAddMessageToBatchFailure_whenException_withMessage(KinesisEvent event) {
-        // Arrange
-        BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
-                .withKinesisBatchHandler()
-                .buildWithRawMessageHandler(this::processMessageInParallelFailsForFixedMessage);
-
-        // Act
-        StreamsEventResponse kinesisBatchResponse = handler.processBatchInParallel(event, context);
+        StreamsEventResponse kinesisBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelFailsForFixedMessage, null);
 
         // Assert
         assertThat(kinesisBatchResponse.getBatchItemFailures()).hasSize(1);
@@ -225,6 +237,35 @@ class KinesisBatchProcessorTest {
         StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
         assertThat(batchItemFailure.getItemIdentifier()).isEqualTo(
                 "49545115243490985018280067714973144582180062593244200961");
+    }
+
+    @ParameterizedTest
+    @Event(value = "kinesis_event_big.json", type = KinesisEvent.class)
+    void batchProcessingInParallelWithExecutorSucceedsAndReturns(KinesisEvent event) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        StreamsEventResponse kinesisBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelSucceeds, executor);
+        executor.shutdown();
+
+        // Assert
+        assertThat(kinesisBatchResponse.getBatchItemFailures()).isEmpty();
+        assertThat(threadList).hasSizeGreaterThan(1);
+    }
+
+    @ParameterizedTest
+    @Event(value = "kinesis_event_big.json", type = KinesisEvent.class)
+    void batchProcessingInParallelWithExecutor_shouldAddMessageToBatchFailure_whenException_withMessage(KinesisEvent event) {
+        ExecutorService executor = Executors.newFixedThreadPool(2);
+
+        StreamsEventResponse kinesisBatchResponse = testParallelBatchExecution(event, this::processMessageInParallelFailsForFixedMessage, executor);
+        executor.shutdown();
+
+        // Assert
+        assertThat(kinesisBatchResponse.getBatchItemFailures()).hasSize(1);
+        StreamsEventResponse.BatchItemFailure batchItemFailure = kinesisBatchResponse.getBatchItemFailures().get(0);
+        assertThat(batchItemFailure.getItemIdentifier()).isEqualTo(
+                "49545115243490985018280067714973144582180062593244200961");
+        assertThat(threadList).hasSizeGreaterThan(1);
     }
 
 }

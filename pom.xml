@@ -20,7 +20,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>2.1.1</version>
+    <version>2.2.0</version>
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) - Parent</name>
@@ -81,17 +81,17 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <maven.deploy.plugin.version>3.1.2</maven.deploy.plugin.version>
-        <log4j.version>2.24.3</log4j.version>
-        <slf4j.version>2.0.7</slf4j.version>
-        <jackson.version>2.17.2</jackson.version>
-        <aws.sdk.version>2.31.62</aws.sdk.version>
+        <log4j.version>2.25.1</log4j.version>
+        <slf4j.version>2.0.17</slf4j.version>
+        <jackson.version>2.19.2</jackson.version>
+        <aws.sdk.version>2.31.78</aws.sdk.version>
         <aws.xray.recorder.version>2.18.2</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lambda.core.version>1.3.0</lambda.core.version>
         <lambda.events.version>3.16.0</lambda.events.version>
-        <lambda.serial.version>1.1.5</lambda.serial.version>
-        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <lambda.serial.version>1.1.6</lambda.serial.version>
+        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.7</aspectj.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
@@ -107,7 +107,7 @@
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
-        <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <junit.version>5.10.2</junit.version>
         <aws-embedded-metrics.version>4.1.2</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
@@ -303,7 +303,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.15.0</version>
+                <version>3.18.0</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -329,7 +329,7 @@
             <dependency>
                 <groupId>org.assertj</groupId>
                 <artifactId>assertj-core</artifactId>
-                <version>3.26.3</version>
+                <version>3.27.3</version>
                 <scope>test</scope>
                 <exclusions>
                     <exclusion>
@@ -380,9 +380,9 @@
                 <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>com.github.tomakehurst</groupId>
-                <artifactId>wiremock-jre8</artifactId>
-                <version>2.35.2</version>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>3.13.1</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
@@ -512,7 +512,7 @@
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.7.0</version>
+                <version>0.8.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>

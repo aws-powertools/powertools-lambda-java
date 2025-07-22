@@ -1,22 +1,26 @@
 version: 2
 updates:
-  - package-ecosystem: "maven"
+  - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "weekly"
-    labels:
-      - "maven"
-      - "dependencies"
-    ignore:
-      # Ignore Mockito 5.X.X as it does not support Java 8
-      - dependency-name: "org.mockito:mockito-*"
-        update-types: ["version-update:semver-major"]
+      interval: "daily"
+    commit-message:
+      prefix: chore
+
+  - package-ecosystem: docker
+    directories:
+      - "/powertools-e2e-tests/src/test/resources/docker"
+      - "/docs"
+      - "/examples/**"
+    schedule:
+      interval: daily
+    commit-message:
+      prefix: chore
 
   - package-ecosystem: "maven"
     directory: "/"
-    target-branch: "v2"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     labels:
       - "maven"
       - "dependencies"

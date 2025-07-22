@@ -1,0 +1,51 @@
+{
+  "resources":{
+  "includes":[{
+    "pattern":"\\Qalb_event.json\\E"
+  }, {
+    "pattern":"\\Qamq_event.json\\E"
+  }, {
+    "pattern":"\\Qapigw_event.json\\E"
+  }, {
+    "pattern":"\\Qapigw_event_no_body.json\\E"
+  }, {
+    "pattern":"\\Qapigwv2_event.json\\E"
+  }, {
+    "pattern":"\\Qcfcr_event.json\\E"
+  }, {
+    "pattern":"\\Qcustom_event.json\\E"
+  }, {
+    "pattern":"\\Qcustom_event_gzip.json\\E"
+  }, {
+    "pattern":"\\Qcustom_event_json.json\\E"
+  }, {
+    "pattern":"\\Qcustom_event_map.json\\E"
+  }, {
+    "pattern":"\\Qcwl_event.json\\E"
+  }, {
+    "pattern":"\\Qjunit-platform.properties\\E"
+  }, {
+    "pattern":"\\Qkafip_event.json\\E"
+  }, {
+    "pattern":"\\Qkafka_event.json\\E"
+  }, {
+    "pattern":"\\Qkasip_event.json\\E"
+  }, {
+    "pattern":"\\Qkf_event.json\\E"
+  }, {
+    "pattern":"\\Qkinesis_event.json\\E"
+  }, {
+    "pattern":"\\Qrabbitmq_event.json\\E"
+  }, {
+    "pattern":"\\Qscheduled_event.json\\E"
+  }, {
+    "pattern":"\\Qsimplelogger.properties\\E"
+  }, {
+    "pattern":"\\Qsns_event.json\\E"
+  }, {
+    "pattern":"\\Qsqs_event.json\\E"
+  }, {
+    "pattern":"\\Qsqs_event_no_body.json\\E"
+  }]},
+  "bundles":[]
+}

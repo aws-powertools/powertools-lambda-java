@@ -26,7 +26,7 @@ public class KinesisBatchHandler implements RequestHandler<KinesisEvent, Streams
         return handler.processBatch(kinesisEvent, context);
     }
 
-    private void processMessage(Product p, Context c) {
+    private void processMessage(Product p) {
         LOGGER.info("Processing product " + p);
     }
 
