@@ -155,7 +155,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.10.2</version> <!-- or newer version -->
+                        <version>0.11.0</version> <!-- or newer version -->
                         <extensions>true</extensions>
                         <executions>
                             <execution>
