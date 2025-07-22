@@ -14,6 +14,9 @@
 
 package software.amazon.lambda.powertools.metrics;
 
+import org.crac.Core;
+import org.crac.Resource;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -23,11 +26,12 @@ import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 /**
  * Factory for accessing the singleton Metrics instance
  */
-public final class MetricsFactory {
+public final class MetricsFactory implements Resource {
     private static MetricsProvider provider = new EmfMetricsProvider();
     private static Metrics metrics;
 
     private MetricsFactory() {
+        Core.getGlobalContext().register(this);
     }
 
     /**
@@ -67,5 +71,15 @@ public final class MetricsFactory {
         provider = metricsProvider;
         // Reset the metrics instance so it will be recreated with the new provider
         metrics = null;
+    }
+
+    @Override
+    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }

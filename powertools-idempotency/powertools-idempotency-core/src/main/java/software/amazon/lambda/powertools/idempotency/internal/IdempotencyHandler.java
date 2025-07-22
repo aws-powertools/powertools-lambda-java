@@ -23,7 +23,6 @@ import java.util.function.BiFunction;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +46,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  * {@link software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore}
  * to store the result of previous calls.
  */
-public class IdempotencyHandler implements Resource{
+public class IdempotencyHandler {
     private static final Logger LOG = LoggerFactory.getLogger(IdempotencyHandler.class);
     private static final int MAX_RETRIES = 2;
 
@@ -62,28 +61,6 @@ public class IdempotencyHandler implements Resource{
         this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
         persistenceStore.configure(Idempotency.getInstance().getConfig(), functionName);
-    }
-
-    /**
-     * Primes the persistent store by invoking the get record method with a key that doesn't exist.
-     *
-     * @param context
-     * @throws Exception
-     */
-    @Override
-    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
-        try {
-            persistenceStore.getRecord("__invoke_prime__");
-        } catch (IdempotencyItemNotFoundException keyNotFound) {
-            // This is expected, as we are priming the store
-        } catch (Exception unknown) {
-            // This is unexpected but we must continue without any interruption
-        }
-    }
-
-    @Override
-    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
-        // This is a no-op, as we don't need to do anything after restore
     }
 
     /**
