@@ -9,11 +9,13 @@ updates:
 
   - package-ecosystem: docker
     directories:
-      - "/powertools-e2e-tests"
-      - "/examples"
-    labels: [ ]
+      - "/powertools-e2e-tests/src/test/resources/docker"
+      - "/docs"
+      - "/examples/**"
     schedule:
       interval: daily
+    commit-message:
+      prefix: chore
 
   - package-ecosystem: "maven"
     directory: "/"
