@@ -25,7 +25,6 @@ import org.aspectj.lang.annotation.Pointcut;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
-import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
