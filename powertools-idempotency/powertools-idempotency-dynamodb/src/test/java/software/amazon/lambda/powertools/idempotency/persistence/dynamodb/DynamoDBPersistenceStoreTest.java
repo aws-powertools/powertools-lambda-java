@@ -16,9 +16,10 @@ package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -50,6 +51,7 @@ import static org.mockito.Mockito.doThrow;
 /**
  * Unit tests for DynamoDBPersistenceStore using mocked DynamoDB client.
  */
+@ExtendWith(MockitoExtension.class)
 class DynamoDBPersistenceStoreTest {
     protected static final String TABLE_NAME = "idempotency_table";
     private DynamoDBPersistenceStore dynamoDBPersistenceStore;
@@ -59,7 +61,6 @@ class DynamoDBPersistenceStoreTest {
 
     @BeforeEach
     void setup() {
-        MockitoAnnotations.openMocks(this);
         dynamoDBPersistenceStore = DynamoDBPersistenceStore.builder()
                 .withTableName(TABLE_NAME)
                 .withDynamoDbClient(client)

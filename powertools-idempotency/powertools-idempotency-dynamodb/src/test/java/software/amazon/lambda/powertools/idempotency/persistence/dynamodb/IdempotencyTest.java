@@ -22,8 +22,9 @@ import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
@@ -42,6 +43,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
+@ExtendWith(MockitoExtension.class)
 class IdempotencyTest {
 
     @Mock
@@ -50,10 +52,6 @@ class IdempotencyTest {
     @Mock
     private DynamoDbClient client;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     void endToEndTest() {
@@ -61,7 +59,6 @@ class IdempotencyTest {
         // The important part is that our new mocking approach doesn't break existing functionality
         
         when(client.putItem(any(PutItemRequest.class))).thenReturn(null);
-        when(client.getItem(any(GetItemRequest.class))).thenReturn(GetItemResponse.builder().build());
 
         IdempotencyFunction function = new IdempotencyFunction(client);
 
