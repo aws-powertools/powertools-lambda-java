@@ -14,7 +14,8 @@ updates:
       - "/examples/**"
     schedule:
       interval: daily
-    labels: [ ]
+    commit-message:
+      prefix: chore
 
   - package-ecosystem: "maven"
     directory: "/"
