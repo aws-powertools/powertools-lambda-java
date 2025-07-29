@@ -108,7 +108,7 @@
         <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-        <junit.version>5.10.2</junit.version>
+        <junit.version>5.13.4</junit.version>
         <aws-embedded-metrics.version>4.1.2</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
