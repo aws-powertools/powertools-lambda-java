@@ -46,7 +46,7 @@ public class AppConfigProvider extends BaseProvider {
     private final AppConfigDataClient client;
     private final String application;
     private final String environment;
-    private final HashMap<String, EstablishedSession> establishedSessions = new HashMap<>();
+    private final Map<String, EstablishedSession> establishedSessions = new HashMap<>();
 
     AppConfigProvider(CacheManager cacheManager, TransformationManager transformationManager,
             AppConfigDataClient client, String environment, String application) {
@@ -118,7 +118,7 @@ public class AppConfigProvider extends BaseProvider {
                 "Retrieving multiple parameter values is not supported with the AWS App Config Provider");
     }
 
-    private static class EstablishedSession {
+    private static final class EstablishedSession {
         private final String nextSessionToken;
         private final String lastConfigurationValue;
 

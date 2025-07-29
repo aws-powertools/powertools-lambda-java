@@ -39,9 +39,9 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
 
 class AppConfigProviderTest {
 
-    private final String environmentName = "test";
-    private final String applicationName = "fakeApp";
-    private final String defaultTestKey = "key1";
+    private static final String ENVIRONMENT_NAME = "test";
+    private static final String DEFAULT_TEST_KEY = "key1";
+    private static final String APPLICATION_NAME = "fakeApp";
 
     @Mock
     AppConfigDataClient client;
@@ -59,8 +59,8 @@ class AppConfigProviderTest {
 
         provider = AppConfigProvider.builder()
                 .withClient(client)
-                .withApplication(applicationName)
-                .withEnvironment(environmentName)
+                .withApplication(APPLICATION_NAME)
+                .withEnvironment(ENVIRONMENT_NAME)
                 .withCacheManager(new CacheManager())
                 .withTransformationManager(new TransformationManager())
                 .build();
@@ -103,10 +103,10 @@ class AppConfigProviderTest {
                 .thenReturn(firstResponse, secondResponse, thirdResponse, forthResponse);
 
         // Act
-        String returnedValue1 = provider.getValue(defaultTestKey);
-        String returnedValue2 = provider.getValue(defaultTestKey);
-        String returnedValue3 = provider.getValue(defaultTestKey);
-        String returnedValue4 = provider.getValue(defaultTestKey);
+        String returnedValue1 = provider.getValue(DEFAULT_TEST_KEY);
+        String returnedValue2 = provider.getValue(DEFAULT_TEST_KEY);
+        String returnedValue3 = provider.getValue(DEFAULT_TEST_KEY);
+        String returnedValue4 = provider.getValue(DEFAULT_TEST_KEY);
 
         // Assert
         assertThat(returnedValue1).isEqualTo(firstResponse.configuration().asUtf8String());
@@ -115,9 +115,9 @@ class AppConfigProviderTest {
                 .asUtf8String()); // Third response is mocked to return null and should re-use previous value
         assertThat(returnedValue4).isEqualTo(secondResponse.configuration()
                 .asUtf8String()); // Forth response is mocked to return empty and should re-use previous value
-        assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(applicationName);
-        assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(environmentName);
-        assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(defaultTestKey);
+        assertThat(startSessionRequestCaptor.getValue().applicationIdentifier()).isEqualTo(APPLICATION_NAME);
+        assertThat(startSessionRequestCaptor.getValue().environmentIdentifier()).isEqualTo(ENVIRONMENT_NAME);
+        assertThat(startSessionRequestCaptor.getValue().configurationProfileIdentifier()).isEqualTo(DEFAULT_TEST_KEY);
         assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(0).configurationToken()).isEqualTo(
                 firstSession.initialConfigurationToken());
         assertThat(getLatestConfigurationRequestCaptor.getAllValues().get(1).configurationToken()).isEqualTo(
@@ -141,7 +141,7 @@ class AppConfigProviderTest {
                 .thenReturn(response);
 
         // Act
-        String returnedValue = provider.getValue(defaultTestKey);
+        String returnedValue = provider.getValue(DEFAULT_TEST_KEY);
 
         // Assert
         assertThat(returnedValue).isNull();
@@ -204,7 +204,7 @@ class AppConfigProviderTest {
         // Act & Assert
         assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                 .withCacheManager(new CacheManager())
-                .withApplication(applicationName)
+                .withApplication(APPLICATION_NAME)
                 .withClient(client)
                 .build())
                 .withMessage("No environment provided; please provide one");
@@ -215,7 +215,7 @@ class AppConfigProviderTest {
         // Act & Assert
         assertThatIllegalStateException().isThrownBy(() -> AppConfigProvider.builder()
                 .withCacheManager(new CacheManager())
-                .withEnvironment(environmentName)
+                .withEnvironment(ENVIRONMENT_NAME)
                 .withClient(client)
                 .build())
                 .withMessage("No application provided; please provide one");
