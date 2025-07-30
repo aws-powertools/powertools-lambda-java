@@ -30,8 +30,12 @@ public final class MetricsFactory implements Resource {
     private static MetricsProvider provider = new EmfMetricsProvider();
     private static Metrics metrics;
 
-    private MetricsFactory() {
-        Core.getGlobalContext().register(this);
+    // Dummy instance to register MetricsFactory with CRaC
+    private static final MetricsFactory INSTANCE = new MetricsFactory();
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(INSTANCE);
     }
 
     /**
@@ -75,6 +79,7 @@ public final class MetricsFactory implements Resource {
 
     @Override
     public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        MetricsFactory.getMetricsInstance();
         ClassPreLoader.preloadClasses();
     }
 

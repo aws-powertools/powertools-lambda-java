@@ -55,7 +55,7 @@ import static software.amazon.lambda.powertools.idempotency.persistence.DataReco
  * DynamoDB version of the {@link PersistenceStore}. Will store idempotency data in DynamoDB.<br>
  * Use the {@link Builder} to create a new instance.
  */
-public class DynamoDBPersistenceStore extends BasePersistenceStore implements PersistenceStore, Resource {
+public final class DynamoDBPersistenceStore extends BasePersistenceStore implements PersistenceStore, Resource {
 
     public static final String IDEMPOTENCY = "idempotency";
     private static final Logger LOG = LoggerFactory.getLogger(DynamoDBPersistenceStore.class);

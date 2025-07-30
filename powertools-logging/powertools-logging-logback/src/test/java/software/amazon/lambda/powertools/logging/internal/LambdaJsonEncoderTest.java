@@ -368,7 +368,7 @@ class LambdaJsonEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"thread\":\"main\",\"thread_id\":1,\"thread_priority\":5");
+        assertThat(result).contains("\"thread\":\"main\",\"thread_id\":"+ Thread.currentThread().getId() +",\"thread_priority\":5");
     }
 
     @Test

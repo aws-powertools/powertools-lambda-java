@@ -25,12 +25,13 @@ import java.util.Enumeration;
 /**
  * Used to preload classes to support automatic priming for SnapStart
  */
-public class ClassPreLoader {
+public final class ClassPreLoader {
     public static final String CLASSES_FILE = "classesloaded.txt";
 
     private ClassPreLoader() {
         // Hide default constructor
     }
+
     /**
      * Initializes the classes listed in the classesloaded resource
      */
@@ -67,7 +68,11 @@ public class ClassPreLoader {
                 }
                 final String className = line.stripTrailing();
                 if (!className.isBlank()) {
-                    Class.forName(className, true, ClassPreLoader.class.getClassLoader());
+                    try {
+                        Class.forName(className, true, ClassPreLoader.class.getClassLoader());
+                    } catch (ClassNotFoundException e) {
+                        // No action is required if a class listed in the file cannot be found
+                    }
                 }
             }
         } catch (Exception ignored) {
