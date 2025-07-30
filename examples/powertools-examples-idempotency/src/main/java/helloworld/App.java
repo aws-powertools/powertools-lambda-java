@@ -34,6 +34,7 @@ import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
 import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -91,6 +92,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
      */
     @Idempotent // The magic is here!
     @Logging(logEvent = true)
+    @Tracing
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
 
@@ -130,6 +132,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
      * @return The contents of the given URL
      * @throws IOException
      */
+    @Tracing
     private String getPageContents(String address) throws IOException {
         URL url = new URL(address);
         try (BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream(), StandardCharsets.UTF_8))) {
