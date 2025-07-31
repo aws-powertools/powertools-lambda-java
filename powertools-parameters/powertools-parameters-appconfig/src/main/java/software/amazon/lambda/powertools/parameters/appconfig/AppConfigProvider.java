@@ -16,6 +16,8 @@ package software.amazon.lambda.powertools.parameters.appconfig;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationRequest;
 import software.amazon.awssdk.services.appconfigdata.model.GetLatestConfigurationResponse;
@@ -44,10 +46,10 @@ public class AppConfigProvider extends BaseProvider {
     private final AppConfigDataClient client;
     private final String application;
     private final String environment;
-    private final HashMap<String, EstablishedSession> establishedSessions = new HashMap<>();
+    private final Map<String, EstablishedSession> establishedSessions = new HashMap<>();
 
     AppConfigProvider(CacheManager cacheManager, TransformationManager transformationManager,
-                      AppConfigDataClient client, String environment, String application) {
+            AppConfigDataClient client, String environment, String application) {
         super(cacheManager, transformationManager);
         this.client = client;
         this.application = application;
@@ -63,7 +65,6 @@ public class AppConfigProvider extends BaseProvider {
         return new AppConfigProviderBuilder();
     }
 
-
     /**
      * Retrieve the parameter value from the AppConfig parameter store.<br />
      *
@@ -76,13 +77,12 @@ public class AppConfigProvider extends BaseProvider {
         // so that we can the initial token. If we already have a session, we can take
         // the next request token from there.
         EstablishedSession establishedSession = establishedSessions.getOrDefault(key, null);
-        String sessionToken = establishedSession != null ?
-                establishedSession.nextSessionToken :
-                client.startConfigurationSession(StartConfigurationSessionRequest.builder()
-                                .applicationIdentifier(this.application)
-                                .environmentIdentifier(this.environment)
-                                .configurationProfileIdentifier(key)
-                                .build())
+        String sessionToken = establishedSession != null ? establishedSession.nextSessionToken
+                : client.startConfigurationSession(StartConfigurationSessionRequest.builder()
+                        .applicationIdentifier(this.application)
+                        .environmentIdentifier(this.environment)
+                        .configurationProfileIdentifier(key)
+                        .build())
                         .initialConfigurationToken();
 
         // Get the configuration using the token
@@ -93,16 +93,18 @@ public class AppConfigProvider extends BaseProvider {
         // Get the next session token we'll use next time we are asked for this key
         String nextSessionToken = response.nextPollConfigurationToken();
 
-        // Get the value of the key. Note that AppConfig will return null if the value
-        // has not changed since we last asked for it in this session - in this case
-        // we return the value we stashed at last request.
-        String value = response.configuration() != null ?
-                response.configuration().asUtf8String() : // if we have a new value, use it
-                establishedSession != null ?
-                        establishedSession.lastConfigurationValue :
-                        // if we don't but we have a previous value, use that
-                        null; // otherwise we've got no value
-
+        // Get the value of the key. Note that AppConfig will return an empty value if the configuration has not changed
+        // since we last asked for it in this session - in this case we return the value we stashed at last request.
+        // https://docs.aws.amazon.com/appconfig/latest/userguide/appconfig-code-samples-using-API-read-configuration.html
+        SdkBytes configFromApi = response.configuration();
+        String value;
+        if (configFromApi != null && configFromApi.asByteArray().length != 0) {
+            value = configFromApi.asUtf8String();
+        } else if (establishedSession != null) {
+            value = establishedSession.lastConfigurationValue;
+        } else {
+            value = null;
+        }
         // Update the cache so we can get the next value later
         establishedSessions.put(key, new EstablishedSession(nextSessionToken, value));
 
@@ -116,7 +118,7 @@ public class AppConfigProvider extends BaseProvider {
                 "Retrieving multiple parameter values is not supported with the AWS App Config Provider");
     }
 
-    private static class EstablishedSession {
+    private static final class EstablishedSession {
         private final String nextSessionToken;
         private final String lastConfigurationValue;
 
