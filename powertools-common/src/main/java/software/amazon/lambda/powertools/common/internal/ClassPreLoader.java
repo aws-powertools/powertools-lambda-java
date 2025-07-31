@@ -68,15 +68,24 @@ public final class ClassPreLoader {
                 }
                 final String className = line.stripTrailing();
                 if (!className.isBlank()) {
-                    try {
-                        Class.forName(className, true, ClassPreLoader.class.getClassLoader());
-                    } catch (ClassNotFoundException e) {
-                        // No action is required if a class listed in the file cannot be found
-                    }
+                    loadClassIfFound(className);
                 }
             }
         } catch (Exception ignored) {
             // No action is required if preloading fails for any reason
+        }
+    }
+
+    /**
+     * Initializes the class with given name if found, ignores otherwise
+     *
+     * @param className
+     */
+    private static void loadClassIfFound(String className) {
+        try {
+            Class.forName(className, true, ClassPreLoader.class.getClassLoader());
+        } catch (ClassNotFoundException e) {
+            // No action is required if the class with given name cannot be found
         }
     }
 }
