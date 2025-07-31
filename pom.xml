@@ -117,6 +117,7 @@
         <mockito.version>5.18.0</mockito.version>
         <mockito-junit-jupiter.version>5.18.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
+        <crac.version>1.4.0</crac.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
@@ -263,6 +264,11 @@
                 <groupId>co.elastic.logging</groupId>
                 <artifactId>logback-ecs-encoder</artifactId>
                 <version>${elastic.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.crac</groupId>
+                <artifactId>crac</artifactId>
+                <version>${crac.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>

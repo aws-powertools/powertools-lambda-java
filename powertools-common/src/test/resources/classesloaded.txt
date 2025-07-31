@@ -1,0 +1,2 @@
+software.amazon.lambda.powertools.common.internal.NonExistingClass
+software.amazon.lambda.powertools.common.internal.ClassPreLoaderTest$DummyClass

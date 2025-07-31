@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
+import org.crac.Core;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
@@ -37,6 +39,7 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.idempotency.persistence.PersistenceStore;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +55,7 @@ import static software.amazon.lambda.powertools.idempotency.persistence.DataReco
  * DynamoDB version of the {@link PersistenceStore}. Will store idempotency data in DynamoDB.<br>
  * Use the {@link Builder} to create a new instance.
  */
-public class DynamoDBPersistenceStore extends BasePersistenceStore implements PersistenceStore {
+public final class DynamoDBPersistenceStore extends BasePersistenceStore implements PersistenceStore, Resource {
 
     public static final String IDEMPOTENCY = "idempotency";
     private static final Logger LOG = LoggerFactory.getLogger(DynamoDBPersistenceStore.class);
@@ -109,6 +112,39 @@ public class DynamoDBPersistenceStore extends BasePersistenceStore implements Pe
                 this.dynamoDbClient = null;
             }
         }
+        Core.getGlobalContext().register(this);
+    }
+
+    /**
+     * Primes the persistent store by invoking the get record method with a key that doesn't exist.
+     *
+     * @param context
+     * @throws Exception
+     */
+    @Override
+    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        try {
+            String primingRecordKey = "__invoke_prime__";
+            Instant now = Instant.now();
+            long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
+            DataRecord primingDataRecord = new DataRecord(
+                    primingRecordKey,
+                    DataRecord.Status.COMPLETED,
+                    expiry,
+                    null, // no data
+                    null // no validation
+            );
+            putRecord(primingDataRecord, Instant.now());
+            getRecord(primingRecordKey);
+            deleteRecord(primingRecordKey);
+        } catch (Exception unknown) {
+            // This is unexpected but we must continue without any interruption
+        }
+    }
+
+    @Override
+    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // This is a no-op, as we don't need to do anything after restore
     }
 
     public static Builder builder() {
