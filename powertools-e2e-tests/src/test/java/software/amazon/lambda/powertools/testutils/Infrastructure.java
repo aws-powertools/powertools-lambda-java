@@ -491,7 +491,7 @@ public final class Infrastructure {
         return assets;
     }
 
-    public static class Builder {
+    public static final class Builder {
         public long timeoutInSeconds = 30;
         public String pathToFunction;
         public String testName;
