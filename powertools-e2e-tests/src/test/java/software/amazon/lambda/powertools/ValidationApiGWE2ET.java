@@ -61,47 +61,50 @@ class ValidationApiGWE2ET {
 
     @Test
     void test_validInboundApiGWEvent() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/validation/valid_api_gw_in_out_event.json");
-        String validEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/valid_api_gw_in_out_event.json")) {
+            String validEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
 
-        // WHEN
-        InvocationResult invocationResult = invokeFunction(functionName, validEvent);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, validEvent);
 
-        // THEN
-        // invocation should pass validation and return 200
-        JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-        assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
-        assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
+            // THEN
+            // invocation should pass validation and return 200
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
+            assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
+        }
     }
 
     @Test
     void test_invalidInboundApiGWEvent() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_api_gw_in_event.json");
-        String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/invalid_api_gw_in_event.json")) {
+            String invalidEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
 
-        // WHEN
-        InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
-        // THEN
-        // invocation should fail inbound validation and return 400
-        JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-        assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-        assertThat(validJsonNode.get("body").asText()).contains(": required property 'price' not found");
+            // THEN
+            // invocation should fail inbound validation and return 400
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
+            assertThat(validJsonNode.get("body").asText()).contains(": required property 'price' not found");
+        }
     }
 
     @Test
     void test_invalidOutboundApiGWEvent() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_api_gw_out_event.json");
-        String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/invalid_api_gw_out_event.json")) {
+            String invalidEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
 
-        // WHEN
-        InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
-        // THEN
-        // invocation should fail outbound validation and return 400
-        JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-        assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-        assertThat(validJsonNode.get("body").asText())
-                .contains("/price: must have an exclusive maximum value of 1000");
+            // THEN
+            // invocation should fail outbound validation and return 400
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
+            assertThat(validJsonNode.get("body").asText())
+                    .contains("/price: must have an exclusive maximum value of 1000");
+        }
     }
 }
