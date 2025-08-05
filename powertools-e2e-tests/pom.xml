@@ -213,9 +213,6 @@
                             <includes>
                                 <include>**/*E2ET.java</include>
                             </includes>
-                            <excludes>
-                                <exclude>**/TracingE2ET.java</exclude>
-                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -245,9 +242,6 @@
                                 <include>**/LoggingE2ET.java</include>
                                 <include>**/ParametersE2ET.java</include>
                             </includes>
-                            <excludes>
-                                <exclude>**/TracingE2ET.java</exclude>
-                            </excludes>
                             <systemPropertyVariables>
                                 <graalvm.enabled>true</graalvm.enabled>
                             </systemPropertyVariables>
