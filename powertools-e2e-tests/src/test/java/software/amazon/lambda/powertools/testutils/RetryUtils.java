@@ -26,7 +26,7 @@ import io.github.resilience4j.retry.RetryConfig;
 /**
  * Utility class for consistent retry configuration across all test utilities.
  */
-public class RetryUtils {
+public final class RetryUtils {
     private static final Logger LOG = LoggerFactory.getLogger(RetryUtils.class);
 
     private static final RetryConfig DEFAULT_RETRY_CONFIG = RetryConfig.custom()

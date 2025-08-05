@@ -269,13 +269,8 @@ class BatchE2ET {
 
     class Product {
         private long id;
-
         private String name;
-
         private double price;
-
-        public Product() {
-        }
 
         public Product(long id, String name, double price) {
             this.id = id;
