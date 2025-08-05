@@ -126,7 +126,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.2.3</version>
+                        <version>3.5.3</version>
                         <configuration>
                             <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-tracing,experimental-class-define-support
                                 --add-opens java.base/java.util=ALL-UNNAMED
