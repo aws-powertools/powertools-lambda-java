@@ -171,18 +171,16 @@ class BatchE2ET {
                 .build());
 
         // THEN
-        // When the retry loop finishes it means we found all products in the result
+        ScanRequest scanRequest = ScanRequest.builder().tableName(outputTable).build();
         RetryUtils.withRetry(() -> {
-            ScanResponse items = ddbClient.scan(ScanRequest.builder()
-                    .tableName(outputTable)
-                    .build());
+            ScanResponse items = ddbClient.scan(scanRequest);
             if (!areAllTestProductsPresent(items)) {
                 throw new DataNotReadyException("sqs-batch-processing not complete yet");
             }
             return null;
         }, "sqs-batch-processing", DataNotReadyException.class).get();
 
-        ScanResponse finalItems = ddbClient.scan(ScanRequest.builder().tableName(outputTable).build());
+        ScanResponse finalItems = ddbClient.scan(scanRequest);
         assertThat(areAllTestProductsPresent(finalItems)).isTrue();
     }
 
@@ -208,18 +206,16 @@ class BatchE2ET {
                 .build());
 
         // THEN
-        // When the retry loop finishes it means we found all products in the result
+        ScanRequest scanRequest = ScanRequest.builder().tableName(outputTable).build();
         RetryUtils.withRetry(() -> {
-            ScanResponse items = ddbClient.scan(ScanRequest.builder()
-                    .tableName(outputTable)
-                    .build());
+            ScanResponse items = ddbClient.scan(scanRequest);
             if (!areAllTestProductsPresent(items)) {
                 throw new DataNotReadyException("kinesis-batch-processing not complete yet");
             }
             return null;
         }, "kinesis-batch-processing", DataNotReadyException.class).get();
 
-        ScanResponse finalItems = ddbClient.scan(ScanRequest.builder().tableName(outputTable).build());
+        ScanResponse finalItems = ddbClient.scan(scanRequest);
         assertThat(areAllTestProductsPresent(finalItems)).isTrue();
     }
 
@@ -241,18 +237,16 @@ class BatchE2ET {
                 .build());
 
         // THEN
+        ScanRequest scanRequest = ScanRequest.builder().tableName(outputTable).build();
         RetryUtils.withRetry(() -> {
-            ScanResponse items = ddbClient.scan(ScanRequest.builder()
-                    .tableName(outputTable)
-                    .build());
-
+            ScanResponse items = ddbClient.scan(scanRequest);
             if (items.count() != 1) {
                 throw new DataNotReadyException("DDB streams processing not complete yet");
             }
             return null;
         }, "ddb-streams-batch-processing", DataNotReadyException.class).get();
 
-        ScanResponse finalItems = ddbClient.scan(ScanRequest.builder().tableName(outputTable).build());
+        ScanResponse finalItems = ddbClient.scan(scanRequest);
         assertThat(finalItems.count()).isEqualTo(1);
         assertThat(finalItems.items().get(0).get("id").s()).isEqualTo(theId);
     }
