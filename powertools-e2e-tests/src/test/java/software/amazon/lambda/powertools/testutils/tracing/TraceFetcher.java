@@ -171,7 +171,7 @@ public class TraceFetcher {
         private Instant start;
         private Instant end;
         private String filterExpression;
-        private List<String> excludedSegments = Arrays.asList("Initialization", "Invocation", "Overhead");
+        private List<String> excludedSegments = Arrays.asList("Initialization", "Init", "Invocation", "Overhead");
 
         public TraceFetcher build() {
             if (filterExpression == null) {
@@ -183,7 +183,8 @@ public class TraceFetcher {
             if (end == null) {
                 end = start.plus(1, ChronoUnit.MINUTES);
             }
-            LOG.debug("Looking for traces from {} to {} with filter {}", start, end, filterExpression);
+            LOG.debug("Looking for traces from {} to {} with filter {} and excluded segments {}", start, end,
+                    filterExpression, excludedSegments);
             return new TraceFetcher(start, end, filterExpression, excludedSegments);
         }
 

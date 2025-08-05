@@ -80,15 +80,7 @@ class TracingE2ET {
                 .build()
                 .fetchTrace();
 
-        assertThat(trace.getSubsegments()).hasSize(2);
-
-        // We need to filter segments based on name because they are not returned in-order from the X-Ray API
-        // The Init segment is created by default for Lambda functions in X-Ray
-        final SubSegment initSegment = trace.getSubsegments().stream()
-                .filter(subSegment -> "Init".equals(subSegment.getName()))
-                .findFirst().orElse(null);
-        assertThat(initSegment.getName()).isEqualTo("Init");
-        assertThat(initSegment.getAnnotations()).isNull();
+        assertThat(trace.getSubsegments()).hasSize(1);
 
         final SubSegment handleRequestSegment = trace.getSubsegments().stream()
                 .filter(subSegment -> "## handleRequest".equals(subSegment.getName()))
