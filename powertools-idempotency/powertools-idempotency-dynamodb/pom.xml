@@ -66,9 +66,9 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>DynamoDBLocal</artifactId>
-            <!-- >2.2.0 is not compatible with Java 11 anymore -->
+            <!-- >2.5.4 is not compatible with Java 11 anymore -->
             <!-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocalHistory.html -->
-            <version>2.2.0</version>
+            <version>2.5.4</version>
             <scope>test</scope>
         </dependency>
         <!--Needed when building locally on M1 Mac-->
