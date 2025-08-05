@@ -110,7 +110,8 @@
         <dependency>
             <groupId>io.github.resilience4j</groupId>
             <artifactId>resilience4j-retry</artifactId>
-            <version>2.3.0</version>
+            <!-- 2.x. not compatible with Java 11 anymore -->
+            <version>1.7.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
