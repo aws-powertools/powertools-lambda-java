@@ -98,7 +98,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  * `PutObjectRequest`)
  * and the CloudFormation stack is created (with the SDK `createStack`)
  */
-public class Infrastructure {
+public final class Infrastructure {
     public static final String FUNCTION_NAME_OUTPUT = "functionName";
     private static final Logger LOG = LoggerFactory.getLogger(Infrastructure.class);
 
@@ -121,7 +121,6 @@ public class Infrastructure {
     private final String kinesisStream;
     private final String largeMessagesBucket;
     private String ddbStreamsTableName;
-    private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
 
@@ -224,7 +223,7 @@ public class Infrastructure {
                 ? dockerConfig.createGraalVMBundlingOptions(pathToFunction, runtime)
                 : dockerConfig.createJVMBundlingOptions(pathToFunction, runtime);
 
-        functionName = stackName + "-function";
+        String functionName = stackName + "-function";
         CfnOutput.Builder.create(e2eStack, FUNCTION_NAME_OUTPUT)
                 .value(functionName)
                 .build();

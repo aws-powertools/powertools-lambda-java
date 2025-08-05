@@ -112,12 +112,11 @@ public class TraceFetcher {
                 trace.segments().forEach(segment -> {
                     try {
                         SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
-                        if (document.getOrigin().equals("AWS::Lambda::Function")) {
-                            if (document.hasSubsegments()) {
-                                getNestedSubSegments(document.getSubsegments(), traceRes,
-                                        Collections.emptyList());
-                            }
+                        if ("AWS::Lambda::Function".equals(document.getOrigin()) && document.hasSubsegments()) {
+                            getNestedSubSegments(document.getSubsegments(), traceRes,
+                                    Collections.emptyList());
                         }
+
                     } catch (JsonProcessingException e) {
                         LOG.error("Failed to parse segment document: " + e.getMessage());
                         throw new RuntimeException(e);
