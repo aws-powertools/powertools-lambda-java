@@ -110,8 +110,6 @@ class LargeMessageIdempotentE2ET {
     @Test
     void test_ttlNotExpired_doesNotInsertInDDB_ttlExpired_insertInDDB() throws InterruptedException,
             IOException {
-        int waitMs = 15000;
-
         // GIVEN
         InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
         String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);

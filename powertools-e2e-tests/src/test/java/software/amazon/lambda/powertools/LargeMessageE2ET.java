@@ -147,7 +147,7 @@ class LargeMessageE2ET {
     }
 
     @Test
-    void smallSQSMessage_shouldNotReadFromS3() throws IOException {
+    void smallSQSMessage_shouldNotReadFromS3() {
         // GIVEN
         final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
                 .withPayloadSupportEnabled(s3Client, bucketName);
