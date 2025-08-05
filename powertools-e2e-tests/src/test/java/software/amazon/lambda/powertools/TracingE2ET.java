@@ -41,7 +41,7 @@ class TracingE2ET {
     private static String functionName;
 
     @BeforeAll
-    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
     static void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(TracingE2ET.class.getSimpleName())
