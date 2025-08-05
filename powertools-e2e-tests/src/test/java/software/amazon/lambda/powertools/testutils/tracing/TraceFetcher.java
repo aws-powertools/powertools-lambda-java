@@ -14,25 +14,21 @@
 
 package software.amazon.lambda.powertools.testutils.tracing;
 
-import static java.time.Duration.ofSeconds;
-
-import com.evanlennick.retry4j.CallExecutor;
-import com.evanlennick.retry4j.CallExecutorBuilder;
-import com.evanlennick.retry4j.Status;
-import com.evanlennick.retry4j.config.RetryConfig;
-import com.evanlennick.retry4j.config.RetryConfigBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -43,6 +39,7 @@ import software.amazon.awssdk.services.xray.model.GetTraceSummariesRequest;
 import software.amazon.awssdk.services.xray.model.GetTraceSummariesResponse;
 import software.amazon.awssdk.services.xray.model.TimeRangeType;
 import software.amazon.awssdk.services.xray.model.TraceSummary;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSegment;
 
 /**
@@ -50,8 +47,8 @@ import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSe
  */
 public class TraceFetcher {
 
-    private static final ObjectMapper MAPPER =
-            new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final ObjectMapper MAPPER = new ObjectMapper()
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     private static final Logger LOG = LoggerFactory.getLogger(TraceFetcher.class);
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
@@ -88,27 +85,12 @@ public class TraceFetcher {
      * @return traces
      */
     public Trace fetchTrace() {
-        Callable<Trace> callable = () ->
-        {
+        Supplier<Trace> supplier = () -> {
             List<String> traceIds = getTraceIds();
             return getTrace(traceIds);
         };
 
-        RetryConfig retryConfig = new RetryConfigBuilder()
-                .withMaxNumberOfTries(10)
-                .retryOnAnyException()
-                .withDelayBetweenTries(ofSeconds(5))
-                .withRandomExponentialBackoff()
-                .build();
-        CallExecutor<Trace> callExecutor = new CallExecutorBuilder<Trace>()
-                .config(retryConfig)
-                .afterFailedTryListener(s ->
-                {
-                    LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
-                })
-                .build();
-        Status<Trace> status = callExecutor.execute(callable);
-        return status.getResult();
+        return RetryUtils.withRetry(supplier, "trace-fetcher", TraceNotFoundException.class).get();
     }
 
     /**
@@ -122,14 +104,12 @@ public class TraceFetcher {
                 .traceIds(traceIds)
                 .build());
         if (!tracesResponse.hasTraces()) {
-            throw new RuntimeException("No trace found");
+            throw new TraceNotFoundException("No trace found");
         }
         Trace traceRes = new Trace();
-        tracesResponse.traces().forEach(trace ->
-        {
+        tracesResponse.traces().forEach(trace -> {
             if (trace.hasSegments()) {
-                trace.segments().forEach(segment ->
-                {
+                trace.segments().forEach(segment -> {
                     try {
                         SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
                         if (document.getOrigin().equals("AWS::Lambda::Function")) {
@@ -149,8 +129,7 @@ public class TraceFetcher {
     }
 
     private void getNestedSubSegments(List<SubSegment> subsegments, Trace traceRes, List<String> idsToIgnore) {
-        subsegments.forEach(subsegment ->
-        {
+        subsegments.forEach(subsegment -> {
             List<String> subSegmentIdsToIgnore = Collections.emptyList();
             if (!excludedSegments.contains(subsegment.getName()) && !idsToIgnore.contains(subsegment.getId())) {
                 traceRes.addSubSegment(subsegment);
@@ -179,12 +158,12 @@ public class TraceFetcher {
                 .filterExpression(filterExpression)
                 .build());
         if (!traceSummaries.hasTraceSummaries()) {
-            throw new RuntimeException("No trace id found");
+            throw new TraceNotFoundException("No trace id found");
         }
-        List<String> traceIds =
-                traceSummaries.traceSummaries().stream().map(TraceSummary::id).collect(Collectors.toList());
+        List<String> traceIds = traceSummaries.traceSummaries().stream().map(TraceSummary::id)
+                .collect(Collectors.toList());
         if (traceIds.isEmpty()) {
-            throw new RuntimeException("No trace id found");
+            throw new TraceNotFoundException("No trace id found");
         }
         return traceIds;
     }
@@ -236,8 +215,8 @@ public class TraceFetcher {
         }
 
         public Builder functionName(String functionName) {
-            this.filterExpression =
-                    String.format("service(id(name: \"%s\", type: \"AWS::Lambda::Function\"))", functionName);
+            this.filterExpression = String.format("service(id(name: \"%s\", type: \"AWS::Lambda::Function\"))",
+                    functionName);
             return this;
         }
     }

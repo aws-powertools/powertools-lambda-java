@@ -14,20 +14,15 @@
 
 package software.amazon.lambda.powertools.testutils.metrics;
 
-import static java.time.Duration.ofSeconds;
-
-import com.evanlennick.retry4j.CallExecutor;
-import com.evanlennick.retry4j.CallExecutorBuilder;
-import com.evanlennick.retry4j.Status;
-import com.evanlennick.retry4j.config.RetryConfig;
-import com.evanlennick.retry4j.config.RetryConfigBuilder;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -39,6 +34,7 @@ import software.amazon.awssdk.services.cloudwatch.model.Metric;
 import software.amazon.awssdk.services.cloudwatch.model.MetricDataQuery;
 import software.amazon.awssdk.services.cloudwatch.model.MetricStat;
 import software.amazon.awssdk.services.cloudwatch.model.StandardUnit;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 
 /**
  * Class in charge of retrieving the actual metrics of a Lambda execution on CloudWatch
@@ -73,7 +69,7 @@ public class MetricsFetcher {
             dimensions.forEach((key, value) -> dimensionsList.add(Dimension.builder().name(key).value(value).build()));
         }
 
-        Callable<List<Double>> callable = () -> {
+        Supplier<List<Double>> supplier = () -> {
             LOG.debug("Get Metrics for namespace {}, start {}, end {}, metric {}, dimensions {}", namespace, start,
                     end, metricName, dimensionsList);
             GetMetricDataResponse metricData = cloudwatch.getMetricData(GetMetricDataRequest.builder()
@@ -96,24 +92,11 @@ public class MetricsFetcher {
                     .build());
             List<Double> values = metricData.metricDataResults().get(0).values();
             if (values == null || values.isEmpty()) {
-                throw new Exception("No data found for metric " + metricName);
+                throw new MetricDataNotFoundException("No data found for metric " + metricName);
             }
             return values;
         };
 
-        RetryConfig retryConfig = new RetryConfigBuilder()
-                .withMaxNumberOfTries(10)
-                .retryOnAnyException()
-                .withDelayBetweenTries(ofSeconds(2))
-                .withRandomExponentialBackoff()
-                .build();
-        CallExecutor<List<Double>> callExecutor = new CallExecutorBuilder<List<Double>>()
-                .config(retryConfig)
-                .afterFailedTryListener(s -> {
-                    LOG.warn("{}, attempts: {}", s.getLastExceptionThatCausedRetry().getMessage(), s.getTotalTries());
-                })
-                .build();
-        Status<List<Double>> status = callExecutor.execute(callable);
-        return status.getResult();
+        return RetryUtils.withRetry(supplier, "metrics-fetcher-" + metricName, MetricDataNotFoundException.class).get();
     }
 }
