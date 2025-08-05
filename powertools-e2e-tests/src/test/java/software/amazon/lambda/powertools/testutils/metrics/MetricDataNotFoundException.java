@@ -14,11 +14,13 @@
 
 package software.amazon.lambda.powertools.testutils.metrics;
 
+import software.amazon.lambda.powertools.testutils.DataNotReadyException;
+
 /**
  * Exception thrown when metric data is not found in CloudWatch.
  * This exception is used to trigger retries as metrics may not be available immediately.
  */
-public class MetricDataNotFoundException extends RuntimeException {
+public class MetricDataNotFoundException extends DataNotReadyException {
     public MetricDataNotFoundException(String message) {
         super(message);
     }

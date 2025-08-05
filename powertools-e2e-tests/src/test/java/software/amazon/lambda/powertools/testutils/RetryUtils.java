@@ -39,15 +39,16 @@ public class RetryUtils {
     }
 
     /**
-     * Creates a retry instance with default configuration for the specified exception type.
+     * Creates a retry instance with default configuration for the specified throwable types.
      * 
      * @param name the name for the retry instance
-     * @param retryOnException the exception class to retry on
+     * @param retryOnThrowables the throwable classes to retry on
      * @return configured Retry instance
      */
-    public static Retry createRetry(String name, Class<? extends Exception> retryOnException) {
+    @SafeVarargs
+    public static Retry createRetry(String name, Class<? extends Throwable>... retryOnThrowables) {
         RetryConfig config = RetryConfig.from(DEFAULT_RETRY_CONFIG)
-                .retryExceptions(retryOnException)
+                .retryExceptions(retryOnThrowables)
                 .build();
 
         Retry retry = Retry.of(name, config);
@@ -58,16 +59,17 @@ public class RetryUtils {
     }
 
     /**
-     * Decorates a supplier with retry logic for the specified exception type.
+     * Decorates a supplier with retry logic for the specified throwable types.
      * 
      * @param supplier the supplier to decorate
      * @param name the name for the retry instance
-     * @param retryOnException the exception class to retry on
+     * @param retryOnThrowables the throwable classes to retry on
      * @return decorated supplier with retry logic
      */
+    @SafeVarargs
     public static <T> Supplier<T> withRetry(Supplier<T> supplier, String name,
-            Class<? extends Exception> retryOnException) {
-        Retry retry = createRetry(name, retryOnException);
+            Class<? extends Throwable>... retryOnThrowables) {
+        Retry retry = createRetry(name, retryOnThrowables);
         return Retry.decorateSupplier(retry, supplier);
     }
 }

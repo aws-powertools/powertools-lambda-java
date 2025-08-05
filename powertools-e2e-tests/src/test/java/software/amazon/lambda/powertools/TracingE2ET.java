@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
@@ -33,21 +34,21 @@ import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSe
 import software.amazon.lambda.powertools.testutils.tracing.Trace;
 import software.amazon.lambda.powertools.testutils.tracing.TraceFetcher;
 
-public class TracingE2ET {
-    private static final String service = "TracingE2EService_" + UUID.randomUUID();
+class TracingE2ET {
+    private static final String SERVICE = "TracingE2EService_" + UUID.randomUUID();
 
     private static Infrastructure infrastructure;
     private static String functionName;
 
     @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public static void setup() {
+    @Timeout(value = 10, unit = TimeUnit.MINUTES)
+    static void setup() {
         infrastructure = Infrastructure.builder()
                 .testName(TracingE2ET.class.getSimpleName())
                 .pathToFunction("tracing")
                 .tracing(true)
                 .environmentVariables(
-                        Map.of("POWERTOOLS_SERVICE_NAME", service,
+                        Map.of("POWERTOOLS_SERVICE_NAME", SERVICE,
                                 "POWERTOOLS_TRACER_CAPTURE_RESPONSE", "true"))
                 .build();
         Map<String, String> outputs = infrastructure.deploy();
@@ -55,14 +56,14 @@ public class TracingE2ET {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @Test
-    public void test_tracing() {
+    void test_tracing() {
         // GIVEN
         final String message = "Hello World";
         final String event = String.format("{\"message\":\"%s\"}", message);
@@ -92,12 +93,13 @@ public class TracingE2ET {
         final SubSegment handleRequestSegment = trace.getSubsegments().stream()
                 .filter(subSegment -> subSegment.getName().equals("## handleRequest"))
                 .findFirst().orElse(null);
+        assertNotNull(handleRequestSegment);
         assertThat(handleRequestSegment.getName()).isEqualTo("## handleRequest");
         assertThat(handleRequestSegment.getAnnotations()).hasSize(2);
         assertThat(handleRequestSegment.getAnnotations()).containsEntry("ColdStart", true);
-        assertThat(handleRequestSegment.getAnnotations()).containsEntry("Service", service);
+        assertThat(handleRequestSegment.getAnnotations()).containsEntry("Service", SERVICE);
         assertThat(handleRequestSegment.getMetadata()).hasSize(1);
-        final Map<String, Object> metadata = (Map<String, Object>) handleRequestSegment.getMetadata().get(service);
+        final Map<String, Object> metadata = (Map<String, Object>) handleRequestSegment.getMetadata().get(SERVICE);
         assertThat(metadata).containsEntry("handleRequest response", result);
         assertThat(handleRequestSegment.getSubsegments()).hasSize(2);
 
@@ -115,7 +117,7 @@ public class TracingE2ET {
         assertThat(buildMessage.getAnnotations()).containsEntry("message", message);
         assertThat(buildMessage.getMetadata()).hasSize(1);
         final Map<String, Object> buildMessageSegmentMetadata = (Map<String, Object>) buildMessage.getMetadata()
-                .get(service);
+                .get(SERVICE);
         assertThat(buildMessageSegmentMetadata).containsEntry("buildMessage response", result);
     }
 }

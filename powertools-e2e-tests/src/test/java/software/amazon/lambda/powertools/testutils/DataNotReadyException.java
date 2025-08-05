@@ -12,16 +12,14 @@
  *
  */
 
-package software.amazon.lambda.powertools.testutils.tracing;
-
-import software.amazon.lambda.powertools.testutils.DataNotReadyException;
+package software.amazon.lambda.powertools.testutils;
 
 /**
- * Exception thrown when trace data is not found in X-Ray.
- * This exception is used to trigger retries as traces may not be available immediately.
+ * Exception thrown when test data is not ready yet.
+ * This exception is used to trigger retries in tests waiting for async operations.
  */
-public class TraceNotFoundException extends DataNotReadyException {
-    public TraceNotFoundException(String message) {
+public class DataNotReadyException extends RuntimeException {
+    public DataNotReadyException(String message) {
         super(message);
     }
 }

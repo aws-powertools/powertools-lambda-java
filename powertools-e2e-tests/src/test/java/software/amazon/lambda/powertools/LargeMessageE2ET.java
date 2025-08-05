@@ -36,9 +36,11 @@ import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.lambda.powertools.testutils.DataNotReadyException;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 
-public class LargeMessageE2ET {
+class LargeMessageE2ET {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageE2ET.class);
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
@@ -62,7 +64,7 @@ public class LargeMessageE2ET {
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public static void setup() {
+    static void setup() {
         String random = UUID.randomUUID().toString().substring(0, 6);
         bucketName = "largemessagebucket" + random;
         String queueName = "largemessagequeue" + random;
@@ -84,14 +86,14 @@ public class LargeMessageE2ET {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @AfterEach
-    public void reset() {
+    void reset() {
         if (messageId != null) {
             Map<String, AttributeValue> itemToDelete = new HashMap<>();
             itemToDelete.put("functionName", AttributeValue.builder().s(functionName).build());
@@ -102,8 +104,8 @@ public class LargeMessageE2ET {
     }
 
     @Test
-    public void bigSQSMessageOffloadedToS3_shouldLoadFromS3() throws IOException, InterruptedException {
-        // given
+    void bigSQSMessageOffloadedToS3_shouldLoadFromS3() throws IOException {
+        // GIVEN
         final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
                 .withPayloadSupportEnabled(s3Client, bucketName);
         try (AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(
@@ -111,16 +113,15 @@ public class LargeMessageE2ET {
             InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
             String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
-            // when
+            // WHEN
             client.sendMessage(SendMessageRequest
                     .builder()
                     .queueUrl(queueUrl)
                     .messageBody(bigMessage)
                     .build());
         }
-        Thread.sleep(30000); // wait for function to be executed
 
-        // then
+        // THEN
         QueryRequest request = QueryRequest
                 .builder()
                 .tableName(tableName)
@@ -128,8 +129,17 @@ public class LargeMessageE2ET {
                 .expressionAttributeValues(
                         Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
                 .build();
-        QueryResponse response = dynamoDbClient.query(request);
-        List<Map<String, AttributeValue>> items = response.items();
+
+        RetryUtils.withRetry(() -> {
+            QueryResponse response = dynamoDbClient.query(request);
+            if (response.items().size() != 1) {
+                throw new DataNotReadyException("Large message processing not complete yet");
+            }
+            return null;
+        }, "large-message-processing", DataNotReadyException.class).get();
+
+        QueryResponse finalResponse = dynamoDbClient.query(request);
+        List<Map<String, AttributeValue>> items = finalResponse.items();
         assertThat(items).hasSize(1);
         messageId = items.get(0).get("id").s();
         assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(300977);
@@ -137,8 +147,8 @@ public class LargeMessageE2ET {
     }
 
     @Test
-    public void smallSQSMessage_shouldNotReadFromS3() throws IOException, InterruptedException {
-        // given
+    void smallSQSMessage_shouldNotReadFromS3() throws IOException {
+        // GIVEN
         final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
                 .withPayloadSupportEnabled(s3Client, bucketName);
         try (AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(
@@ -146,16 +156,14 @@ public class LargeMessageE2ET {
                 extendedClientConfig)) {
             String message = "Hello World";
 
-            // when
+            // WHEN
             client.sendMessage(SendMessageRequest
                     .builder()
                     .queueUrl(queueUrl)
                     .messageBody(message)
                     .build());
 
-            Thread.sleep(30000); // wait for function to be executed
-
-            // then
+            // THEN
             QueryRequest request = QueryRequest
                     .builder()
                     .tableName(tableName)
@@ -163,8 +171,17 @@ public class LargeMessageE2ET {
                     .expressionAttributeValues(
                             Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
                     .build();
-            QueryResponse response = dynamoDbClient.query(request);
-            List<Map<String, AttributeValue>> items = response.items();
+
+            RetryUtils.withRetry(() -> {
+                QueryResponse response = dynamoDbClient.query(request);
+                if (response.items().size() != 1) {
+                    throw new DataNotReadyException("Small message processing not complete yet");
+                }
+                return null;
+            }, "small-message-processing", DataNotReadyException.class).get();
+
+            QueryResponse finalResponse = dynamoDbClient.query(request);
+            List<Map<String, AttributeValue>> items = finalResponse.items();
             assertThat(items).hasSize(1);
             messageId = items.get(0).get("id").s();
             assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(
