@@ -110,7 +110,7 @@ class TracingE2ET {
         assertThat(sub.getName()).isIn("## internal_stuff", "## buildMessage");
 
         SubSegment buildMessage = handleRequestSegment.getSubsegments().stream()
-                .filter(subSegment -> subSegment.getName().equals("## buildMessage"))
+                .filter(subSegment -> "## buildMessage".equals(subSegment.getName()))
                 .findFirst().orElse(null);
         assertThat(buildMessage).isNotNull();
         assertThat(buildMessage.getAnnotations()).hasSize(1);

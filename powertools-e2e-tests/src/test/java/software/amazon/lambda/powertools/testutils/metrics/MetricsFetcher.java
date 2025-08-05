@@ -17,6 +17,7 @@ package software.amazon.lambda.powertools.testutils.metrics;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -76,7 +77,7 @@ public class MetricsFetcher {
                     .startTime(start)
                     .endTime(end)
                     .metricDataQueries(MetricDataQuery.builder()
-                            .id(metricName.toLowerCase())
+                            .id(metricName.toLowerCase(Locale.ROOT))
                             .metricStat(MetricStat.builder()
                                     .unit(StandardUnit.COUNT)
                                     .metric(Metric.builder()
