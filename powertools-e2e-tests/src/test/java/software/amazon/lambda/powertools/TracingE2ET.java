@@ -91,7 +91,7 @@ class TracingE2ET {
         assertThat(initSegment.getAnnotations()).isNull();
 
         final SubSegment handleRequestSegment = trace.getSubsegments().stream()
-                .filter(subSegment -> subSegment.getName().equals("## handleRequest"))
+                .filter(subSegment -> "## handleRequest".equals(subSegment.getName()))
                 .findFirst().orElse(null);
         assertNotNull(handleRequestSegment);
         assertThat(handleRequestSegment.getName()).isEqualTo("## handleRequest");

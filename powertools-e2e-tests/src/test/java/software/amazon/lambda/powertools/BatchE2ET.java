@@ -131,7 +131,7 @@ class BatchE2ET {
                 .build());
 
         for (Map<String, AttributeValue> item : items.items()) {
-            HashMap<String, AttributeValue> key = new HashMap<String, AttributeValue>() {
+            Map<String, AttributeValue> key = new HashMap<String, AttributeValue>() {
                 {
                     put("functionName", AttributeValue.builder()
                             .s(item.get("functionName").s())

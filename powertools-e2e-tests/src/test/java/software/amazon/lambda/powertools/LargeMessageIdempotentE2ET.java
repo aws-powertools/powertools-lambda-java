@@ -111,22 +111,23 @@ class LargeMessageIdempotentE2ET {
     void test_ttlNotExpired_doesNotInsertInDDB_ttlExpired_insertInDDB() throws InterruptedException,
             IOException {
         // GIVEN
-        InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
-        String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        String s3Key = UUID.randomUUID().toString();
+        try (InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt")) {
+            String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
-        // upload manually to S3
-        String key = UUID.randomUUID().toString();
-        s3Client.putObject(PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build(), RequestBody.fromString(bigMessage));
+            // upload manually to S3
+            s3Client.putObject(PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build(), RequestBody.fromString(bigMessage));
+        }
 
         // WHEN
         SendMessageRequest messageRequest = SendMessageRequest.builder()
                 .queueUrl(queueUrl)
                 .messageBody(String.format(
                         "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"%s\",\"s3Key\":\"%s\"}]",
-                        bucketName, key))
+                        bucketName, s3Key))
                 .messageAttributes(Collections.singletonMap("SQSLargePayloadSize", MessageAttributeValue.builder()
                         .stringValue("300977")
                         .dataType("Number")

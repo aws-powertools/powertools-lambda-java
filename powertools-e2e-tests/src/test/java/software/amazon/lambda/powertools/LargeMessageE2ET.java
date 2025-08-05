@@ -109,8 +109,8 @@ class LargeMessageE2ET {
         final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
                 .withPayloadSupportEnabled(s3Client, bucketName);
         try (AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(
-                SqsClient.builder().region(region).httpClient(httpClient).build(), extendedClientConfig)) {
-            InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
+                SqsClient.builder().region(region).httpClient(httpClient).build(), extendedClientConfig);
+                InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");) {
             String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
             // WHEN

@@ -61,17 +61,17 @@ class ValidationALBE2ET {
 
     @Test
     void test_validInboundSQSEvent() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream("/validation/valid_alb_in_out_event.json");
-        String validEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/valid_alb_in_out_event.json")) {
+            String validEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, validEvent);
 
-        // WHEN
-        InvocationResult invocationResult = invokeFunction(functionName, validEvent);
-
-        // THEN
-        // invocation should pass validation and return 200
-        JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-        assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
-        assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
+            // THEN
+            // invocation should pass validation and return 200
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
+            assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
+        }
     }
 
     @Test
