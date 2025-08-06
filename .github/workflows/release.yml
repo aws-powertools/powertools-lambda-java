@@ -133,7 +133,7 @@ jobs:
     steps:
       - id: download_source
         name: Download artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.6.1
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v4.6.1
         with:
           name: source
       - name: Setup Java
@@ -168,7 +168,7 @@ jobs:
     steps:
       - id: download_source
         name: Download artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.6.1
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v4.6.1
         with:
           name: source
       - name: Setup Java
@@ -191,7 +191,7 @@ jobs:
     steps:
       - id: download_source
         name: Download artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.6.1
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v4.6.1
         with:
           name: source
       - name: Setup Java
@@ -229,7 +229,7 @@ jobs:
           ref: ${{ env.RELEASE_COMMIT }}
       - id: download_source
         name: Download artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.6.1
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v4.6.1
         with:
           name: source
       - id: setup-git
