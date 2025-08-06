@@ -109,6 +109,7 @@ public class TraceFetcher {
         if (!tracesResponse.hasTraces()) {
             throw new TraceNotFoundException(String.format("No trace found for traceIds %s", traceIds));
         }
+        
         Trace traceRes = new Trace();
         tracesResponse.traces().forEach(trace -> {
             if (trace.hasSegments()) {
@@ -116,6 +117,7 @@ public class TraceFetcher {
                     try {
                         SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
                         if ("AWS::Lambda::Function".equals(document.getOrigin()) && document.hasSubsegments()) {
+                            LOG.debug("Populating subsegments for document {}", MAPPER.writeValueAsString(document));
                             getNestedSubSegments(document.getSubsegments(), traceRes, Collections.emptyList());
                         } else if ("AWS::Lambda::Function".equals(document.getOrigin())) {
                             LOG.debug(
@@ -133,6 +135,7 @@ public class TraceFetcher {
                 throw new TraceNotFoundException(String.format("No segments found in trace %s", trace.id()));
             }
         });
+
         return traceRes;
     }
 
