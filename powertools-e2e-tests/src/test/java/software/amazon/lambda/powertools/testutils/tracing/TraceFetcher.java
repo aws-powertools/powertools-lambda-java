@@ -149,21 +149,30 @@ public class TraceFetcher {
      * @return a list of trace ids
      */
     private List<String> getTraceIds() {
+        LOG.debug("Searching for traces from {} to {} with filter: {}", start, end, filterExpression);
         GetTraceSummariesResponse traceSummaries = xray.getTraceSummaries(GetTraceSummariesRequest.builder()
                 .startTime(start)
                 .endTime(end)
-                .timeRangeType(TimeRangeType.EVENT)
+                .timeRangeType(TimeRangeType.TRACE_ID)
                 .sampling(false)
                 .filterExpression(filterExpression)
                 .build());
+
+        LOG.debug("Found {} trace summaries",
+                traceSummaries.hasTraceSummaries() ? traceSummaries.traceSummaries().size() : 0);
+
         if (!traceSummaries.hasTraceSummaries()) {
-            throw new TraceNotFoundException("No trace id found");
+            throw new TraceNotFoundException(String.format("No trace id found for filter '%s' between %s and %s",
+                    filterExpression, start, end));
         }
         List<String> traceIds = traceSummaries.traceSummaries().stream().map(TraceSummary::id)
                 .collect(Collectors.toList());
         if (traceIds.isEmpty()) {
-            throw new TraceNotFoundException("No trace id found");
+            throw new TraceNotFoundException(
+                    String.format("Empty trace summary found for filter '%s' between %s and %s",
+                            filterExpression, start, end));
         }
+        LOG.debug("Found trace IDs: {}", traceIds);
         return traceIds;
     }
 
@@ -183,9 +192,13 @@ public class TraceFetcher {
             if (end == null) {
                 end = start.plus(1, ChronoUnit.MINUTES);
             }
-            LOG.debug("Looking for traces from {} to {} with filter {} and excluded segments {}", start, end,
-                    filterExpression, excludedSegments);
-            return new TraceFetcher(start, end, filterExpression, excludedSegments);
+            // Expand search window by 1 minute on each side to account for timing imprecisions
+            Instant expandedStart = start.minus(1, ChronoUnit.MINUTES);
+            Instant expandedEnd = end.plus(1, ChronoUnit.MINUTES);
+            LOG.debug(
+                    "Looking for traces from {} to {} (expanded from {} to {}) with filter {} and excluded segments {}",
+                    expandedStart, expandedEnd, start, end, filterExpression, excludedSegments);
+            return new TraceFetcher(expandedStart, expandedEnd, filterExpression, excludedSegments);
         }
 
         public Builder start(Instant start) {
