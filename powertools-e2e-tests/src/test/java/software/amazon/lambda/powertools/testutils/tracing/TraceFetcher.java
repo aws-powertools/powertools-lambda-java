@@ -109,7 +109,7 @@ public class TraceFetcher {
         if (!tracesResponse.hasTraces()) {
             throw new TraceNotFoundException(String.format("No trace found for traceIds %s", traceIds));
         }
-        
+
         Trace traceRes = new Trace();
         tracesResponse.traces().forEach(trace -> {
             if (trace.hasSegments()) {
@@ -119,6 +119,12 @@ public class TraceFetcher {
                         if ("AWS::Lambda::Function".equals(document.getOrigin()) && document.hasSubsegments()) {
                             LOG.debug("Populating subsegments for document {}", MAPPER.writeValueAsString(document));
                             getNestedSubSegments(document.getSubsegments(), traceRes, Collections.emptyList());
+                            // If only the default (excluded) subsegments were populated we need to keep retrying for
+                            // our custom subsegments. They might appear later.
+                            if (traceRes.getSubsegments().isEmpty()) {
+                                throw new TraceNotFoundException(
+                                        "Found AWS::Lambda::Function SegmentDocument with no non-excluded subsegments.");
+                            }
                         } else if ("AWS::Lambda::Function".equals(document.getOrigin())) {
                             LOG.debug(
                                     "Found AWS::Lambda::Function SegmentDocument with no subsegments. Retrying {}",
