@@ -27,7 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -46,9 +48,10 @@ import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSe
  * Class in charge of retrieving the actual traces of a Lambda execution on X-Ray
  */
 public class TraceFetcher {
-
-    private static final ObjectMapper MAPPER = new ObjectMapper()
-            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+            .disable(MapperFeature.REQUIRE_HANDLERS_FOR_JAVA8_TIMES)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     private static final Logger LOG = LoggerFactory.getLogger(TraceFetcher.class);
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
@@ -104,7 +107,7 @@ public class TraceFetcher {
                 .traceIds(traceIds)
                 .build());
         if (!tracesResponse.hasTraces()) {
-            throw new TraceNotFoundException("No trace found");
+            throw new TraceNotFoundException(String.format("No trace found for traceIds %s", traceIds));
         }
         Trace traceRes = new Trace();
         tracesResponse.traces().forEach(trace -> {
@@ -113,15 +116,21 @@ public class TraceFetcher {
                     try {
                         SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
                         if ("AWS::Lambda::Function".equals(document.getOrigin()) && document.hasSubsegments()) {
-                            getNestedSubSegments(document.getSubsegments(), traceRes,
-                                    Collections.emptyList());
+                            getNestedSubSegments(document.getSubsegments(), traceRes, Collections.emptyList());
+                        } else if ("AWS::Lambda::Function".equals(document.getOrigin())) {
+                            LOG.debug(
+                                    "Found AWS::Lambda::Function SegmentDocument with no subsegments. Retrying {}",
+                                    MAPPER.writeValueAsString(document));
+                            throw new TraceNotFoundException(
+                                    "Found AWS::Lambda::Function SegmentDocument with no subsegments.");
                         }
-
                     } catch (JsonProcessingException e) {
                         LOG.error("Failed to parse segment document: " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                 });
+            } else {
+                throw new TraceNotFoundException(String.format("No segments found in trace %s", trace.id()));
             }
         });
         return traceRes;
