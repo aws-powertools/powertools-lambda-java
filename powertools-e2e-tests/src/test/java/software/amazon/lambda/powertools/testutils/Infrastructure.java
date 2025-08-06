@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -97,7 +98,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  * `PutObjectRequest`)
  * and the CloudFormation stack is created (with the SDK `createStack`)
  */
-public class Infrastructure {
+public final class Infrastructure {
     public static final String FUNCTION_NAME_OUTPUT = "functionName";
     private static final Logger LOG = LoggerFactory.getLogger(Infrastructure.class);
 
@@ -120,7 +121,6 @@ public class Infrastructure {
     private final String kinesisStream;
     private final String largeMessagesBucket;
     private String ddbStreamsTableName;
-    private String functionName;
     private Object cfnTemplate;
     private String cfnAssetDirectory;
 
@@ -223,7 +223,7 @@ public class Infrastructure {
                 ? dockerConfig.createGraalVMBundlingOptions(pathToFunction, runtime)
                 : dockerConfig.createJVMBundlingOptions(pathToFunction, runtime);
 
-        functionName = stackName + "-function";
+        String functionName = stackName + "-function";
         CfnOutput.Builder.create(e2eStack, FUNCTION_NAME_OUTPUT)
                 .value(functionName)
                 .build();
@@ -469,10 +469,18 @@ public class Infrastructure {
             files.iterator().forEachRemaining(file -> {
                 String assetPath = file.get("source").get("path").asText();
                 String assetPackaging = file.get("source").get("packaging").asText();
-                String bucketName = file.get("destinations").get("current_account-current_region").get("bucketName")
-                        .asText();
-                String objectKey = file.get("destinations").get("current_account-current_region").get("objectKey")
-                        .asText();
+                JsonNode destinations = file.get("destinations");
+                String bucketName = null;
+                String objectKey = null;
+                Iterator<String> fieldNames = destinations.fieldNames();
+                while (fieldNames.hasNext()) {
+                    String fieldName = fieldNames.next();
+                    if (fieldName.startsWith("current_account-current_region")) {
+                        bucketName = destinations.get(fieldName).get("bucketName").asText();
+                        objectKey = destinations.get(fieldName).get("objectKey").asText();
+                        break;
+                    }
+                }
                 Asset asset = new Asset(assetPath, assetPackaging, bucketName.replace("${AWS::AccountId}", account)
                         .replace("${AWS::Region}", region.toString()));
                 assets.put(objectKey, asset);
@@ -483,7 +491,7 @@ public class Infrastructure {
         return assets;
     }
 
-    public static class Builder {
+    public static final class Builder {
         public long timeoutInSeconds = 30;
         public String pathToFunction;
         public String testName;

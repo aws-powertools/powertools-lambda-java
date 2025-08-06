@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -44,9 +46,11 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.lambda.powertools.testutils.DataNotReadyException;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 
-public class LargeMessageIdempotentE2ET {
+class LargeMessageIdempotentE2ET {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageIdempotentE2ET.class);
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
@@ -72,10 +76,9 @@ public class LargeMessageIdempotentE2ET {
     private static String queueUrl;
     private static String tableName;
 
-
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public static void setup() {
+    static void setup() {
         String random = UUID.randomUUID().toString().substring(0, 6);
         bucketName = "largemessagebucket" + random;
         String queueName = "largemessagequeue" + random;
@@ -98,34 +101,33 @@ public class LargeMessageIdempotentE2ET {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @Test
-    public void test_ttlNotExpired_doesNotInsertInDDB_ttlExpired_insertInDDB() throws InterruptedException,
+    void test_ttlNotExpired_doesNotInsertInDDB_ttlExpired_insertInDDB() throws InterruptedException,
             IOException {
-        int waitMs = 15000;
-
         // GIVEN
-        InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");
-        String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+        String s3Key = UUID.randomUUID().toString();
+        try (InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt")) {
+            String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 
-        // upload manually to S3
-        String key = UUID.randomUUID().toString();
-        s3Client.putObject(PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .build(), RequestBody.fromString(bigMessage));
+            // upload manually to S3
+            s3Client.putObject(PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build(), RequestBody.fromString(bigMessage));
+        }
 
         // WHEN
         SendMessageRequest messageRequest = SendMessageRequest.builder()
                 .queueUrl(queueUrl)
                 .messageBody(String.format(
                         "[\"software.amazon.payloadoffloading.PayloadS3Pointer\",{\"s3BucketName\":\"%s\",\"s3Key\":\"%s\"}]",
-                        bucketName, key))
+                        bucketName, s3Key))
                 .messageAttributes(Collections.singletonMap("SQSLargePayloadSize", MessageAttributeValue.builder()
                         .stringValue("300977")
                         .dataType("Number")
@@ -135,7 +137,6 @@ public class LargeMessageIdempotentE2ET {
         // First invocation
         // send message to SQS with the good pointer and metadata
         sqsClient.sendMessage(messageRequest);
-        Thread.sleep(waitMs); // wait for the function to be invoked & executed
 
         // THEN
         QueryRequest request = QueryRequest
@@ -145,6 +146,15 @@ public class LargeMessageIdempotentE2ET {
                 .expressionAttributeValues(
                         Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
                 .build();
+
+        RetryUtils.withRetry(() -> {
+            QueryResponse response = dynamoDbClient.query(request);
+            if (response.items().size() != 1) {
+                throw new DataNotReadyException("First invocation processing not complete yet");
+            }
+            return null;
+        }, "first-invocation-processing", DataNotReadyException.class).get();
+
         QueryResponse response = dynamoDbClient.query(request);
         List<Map<String, AttributeValue>> items = response.items();
         assertThat(items).hasSize(1);
@@ -156,7 +166,14 @@ public class LargeMessageIdempotentE2ET {
         // Second invocation
         // send the same message before ttl expires
         sqsClient.sendMessage(messageRequest);
-        Thread.sleep(waitMs); // wait for the function to be invoked & executed
+
+        RetryUtils.withRetry(() -> {
+            QueryResponse resp = dynamoDbClient.query(request);
+            if (resp.items().size() != 1) {
+                throw new DataNotReadyException("Second invocation processing not complete yet");
+            }
+            return null;
+        }, "second-invocation-processing", DataNotReadyException.class).get();
 
         // THEN
         response = dynamoDbClient.query(request);
@@ -174,7 +191,14 @@ public class LargeMessageIdempotentE2ET {
         // Third invocation
         // send the same message again
         sqsClient.sendMessage(messageRequest);
-        Thread.sleep(waitMs); // wait for the function to be invoked
+
+        RetryUtils.withRetry(() -> {
+            QueryResponse resp = dynamoDbClient.query(request);
+            if (resp.items().size() != 2) {
+                throw new DataNotReadyException("Third invocation processing not complete yet");
+            }
+            return null;
+        }, "third-invocation-processing", DataNotReadyException.class).get();
 
         // THEN
         response = dynamoDbClient.query(request);
