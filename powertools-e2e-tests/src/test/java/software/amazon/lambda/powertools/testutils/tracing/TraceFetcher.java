@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.testutils.tracing;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -31,6 +32,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
+import io.github.resilience4j.retry.RetryConfig;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -93,7 +95,12 @@ public class TraceFetcher {
             return getTrace(traceIds);
         };
 
-        return RetryUtils.withRetry(supplier, "trace-fetcher", TraceNotFoundException.class).get();
+        RetryConfig customConfig = RetryConfig.custom()
+                .maxAttempts(120) // 120 attempts over 10 minutes
+                .waitDuration(Duration.ofSeconds(5)) // 5 seconds between attempts
+                .build();
+
+        return RetryUtils.withRetry(supplier, "trace-fetcher", customConfig, TraceNotFoundException.class).get();
     }
 
     /**

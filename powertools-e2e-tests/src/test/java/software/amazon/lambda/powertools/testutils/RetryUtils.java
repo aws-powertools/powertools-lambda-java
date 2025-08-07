@@ -47,7 +47,21 @@ public final class RetryUtils {
      */
     @SafeVarargs
     public static Retry createRetry(String name, Class<? extends Throwable>... retryOnThrowables) {
-        RetryConfig config = RetryConfig.from(DEFAULT_RETRY_CONFIG)
+        return createRetry(name, DEFAULT_RETRY_CONFIG, retryOnThrowables);
+    }
+
+    /**
+     * Creates a retry instance with custom configuration for the specified throwable types.
+     * 
+     * @param name the name for the retry instance
+     * @param customConfig the custom retry configuration
+     * @param retryOnThrowables the throwable classes to retry on
+     * @return configured Retry instance
+     */
+    @SafeVarargs
+    public static Retry createRetry(String name, RetryConfig customConfig,
+            Class<? extends Throwable>... retryOnThrowables) {
+        RetryConfig config = RetryConfig.from(customConfig)
                 .retryExceptions(retryOnThrowables)
                 .build();
 
@@ -70,6 +84,22 @@ public final class RetryUtils {
     public static <T> Supplier<T> withRetry(Supplier<T> supplier, String name,
             Class<? extends Throwable>... retryOnThrowables) {
         Retry retry = createRetry(name, retryOnThrowables);
+        return Retry.decorateSupplier(retry, supplier);
+    }
+
+    /**
+     * Decorates a supplier with custom retry logic for the specified throwable types.
+     * 
+     * @param supplier the supplier to decorate
+     * @param name the name for the retry instance
+     * @param customConfig the custom retry configuration
+     * @param retryOnThrowables the throwable classes to retry on
+     * @return decorated supplier with retry logic
+     */
+    @SafeVarargs
+    public static <T> Supplier<T> withRetry(Supplier<T> supplier, String name, RetryConfig customConfig,
+            Class<? extends Throwable>... retryOnThrowables) {
+        Retry retry = createRetry(name, customConfig, retryOnThrowables);
         return Retry.decorateSupplier(retry, supplier);
     }
 }
