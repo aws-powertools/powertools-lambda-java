@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.testutils.metrics;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -74,8 +75,9 @@ public class MetricsFetcher {
             LOG.debug("Get Metrics for namespace {}, start {}, end {}, metric {}, dimensions {}", namespace, start,
                     end, metricName, dimensionsList);
             GetMetricDataResponse metricData = cloudwatch.getMetricData(GetMetricDataRequest.builder()
-                    .startTime(start)
-                    .endTime(end)
+                    // Add 1 minute padding around start and end time to account time imprecisions
+                    .startTime(start.minus(Duration.ofMinutes(1)))
+                    .endTime(end.plus(Duration.ofMinutes(1)))
                     .metricDataQueries(MetricDataQuery.builder()
                             .id(metricName.toLowerCase(Locale.ROOT))
                             .metricStat(MetricStat.builder()
