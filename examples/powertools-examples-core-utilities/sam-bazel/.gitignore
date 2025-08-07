@@ -1,0 +1,20 @@
+# Bazel build outputs
+bazel-*
+MODULE.bazel.lock
+
+# SAM build outputs
+.aws-sam/
+
+# JAR files
+*.jar
+
+# Maven lock file (generated)
+maven_install.json
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# OS files
+.DS_Store
