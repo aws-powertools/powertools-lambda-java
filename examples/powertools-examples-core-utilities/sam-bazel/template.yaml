@@ -22,7 +22,7 @@ Resources:
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
-      CodeUri: bazel-bin/powertools_sam_deploy_deploy.jar
+      CodeUri: bazel-bin/powertools_sam_deploy.jar
       Handler: helloworld.App::handleRequest
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -37,7 +37,7 @@ Resources:
   HelloWorldStreamFunction:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: bazel-bin/powertools_sam_deploy_deploy.jar
+      CodeUri: bazel-bin/powertools_sam_deploy.jar
       Handler: helloworld.AppStream::handleRequest
       MemorySize: 512
       Tracing: Active

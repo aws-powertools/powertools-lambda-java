@@ -64,7 +64,7 @@ java_import(
 )
 
 java_binary(
-    name = "powertools_sam_deploy",
+    name = "powertools_sam",
     main_class = "helloworld.App",
     runtime_deps = [":powertools_sam_lib"],
     deploy_manifest_lines = [

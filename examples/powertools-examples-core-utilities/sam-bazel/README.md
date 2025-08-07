@@ -16,7 +16,7 @@ To deploy the example, check out the instructions for getting started with SAM i
 
 ```bash
 # Build the application
-bazel build //:powertools_sam_deploy_deploy.jar
+bazel build //:powertools_sam_deploy.jar
 
 # Deploy the application
 sam deploy --guided
@@ -26,7 +26,7 @@ sam deploy --guided
 
 ```bash
 # Build the application
-bazel build //:powertools_sam_deploy_deploy.jar
+bazel build //:powertools_sam_deploy.jar
 
 # Test a single function locally
 sam local invoke HelloWorldFunction --event events/event.json
