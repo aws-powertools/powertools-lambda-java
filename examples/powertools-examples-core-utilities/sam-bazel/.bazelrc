@@ -1,0 +1,27 @@
+# Java compilation settings
+build --java_language_version=11
+build --java_runtime_version=11
+
+# Enable worker strategy for better performance
+build --strategy=Javac=worker
+build --worker_sandboxing
+
+# Modern Java build optimizations
+build --experimental_strict_java_deps=off
+build --incompatible_java_common_parameters=false
+
+# Performance optimizations
+build --experimental_reuse_sandbox_directories
+build --worker_multiplex
+
+# Disk cache for better performance
+build --disk_cache=~/.cache/bazel-disk-cache
+
+# Remote cache configuration (optional)
+# build --remote_cache=grpc://localhost:9092
+
+# Build event stream for better observability
+# build --build_event_json_file=build_events.json
+
+# Strict visibility for better dependency management
+build --incompatible_enforce_config_setting_visibility=false
