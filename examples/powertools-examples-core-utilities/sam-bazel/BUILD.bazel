@@ -6,11 +6,15 @@ java_library(
     resources = glob(["src/main/resources/**"]),
     deps = [
         "@maven//:software_amazon_lambda_powertools_tracing",
+        "@maven//:software_amazon_lambda_powertools_logging",
         "@maven//:software_amazon_lambda_powertools_logging_log4j",
         "@maven//:software_amazon_lambda_powertools_metrics",
         "@maven//:com_amazonaws_aws_lambda_java_core",
         "@maven//:com_amazonaws_aws_lambda_java_events",
         "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_slf4j_slf4j_api",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:org_apache_logging_log4j_log4j_api",
     ],
 )
 
