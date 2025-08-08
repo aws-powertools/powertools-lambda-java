@@ -14,25 +14,25 @@
 
 package software.amazon.lambda.powertools.testutils.tracing;
 
-import static java.time.Duration.ofSeconds;
-
-import com.evanlennick.retry4j.CallExecutor;
-import com.evanlennick.retry4j.CallExecutorBuilder;
-import com.evanlennick.retry4j.Status;
-import com.evanlennick.retry4j.config.RetryConfig;
-import com.evanlennick.retry4j.config.RetryConfigBuilder;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+
+import io.github.resilience4j.retry.RetryConfig;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
@@ -43,15 +43,17 @@ import software.amazon.awssdk.services.xray.model.GetTraceSummariesRequest;
 import software.amazon.awssdk.services.xray.model.GetTraceSummariesResponse;
 import software.amazon.awssdk.services.xray.model.TimeRangeType;
 import software.amazon.awssdk.services.xray.model.TraceSummary;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 import software.amazon.lambda.powertools.testutils.tracing.SegmentDocument.SubSegment;
 
 /**
  * Class in charge of retrieving the actual traces of a Lambda execution on X-Ray
  */
 public class TraceFetcher {
-
-    private static final ObjectMapper MAPPER =
-            new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+            .disable(MapperFeature.REQUIRE_HANDLERS_FOR_JAVA8_TIMES)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .build();
     private static final Logger LOG = LoggerFactory.getLogger(TraceFetcher.class);
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
@@ -88,27 +90,17 @@ public class TraceFetcher {
      * @return traces
      */
     public Trace fetchTrace() {
-        Callable<Trace> callable = () ->
-        {
+        Supplier<Trace> supplier = () -> {
             List<String> traceIds = getTraceIds();
             return getTrace(traceIds);
         };
 
-        RetryConfig retryConfig = new RetryConfigBuilder()
-                .withMaxNumberOfTries(10)
-                .retryOnAnyException()
-                .withDelayBetweenTries(ofSeconds(5))
-                .withRandomExponentialBackoff()
+        RetryConfig customConfig = RetryConfig.custom()
+                .maxAttempts(120) // 120 attempts over 10 minutes
+                .waitDuration(Duration.ofSeconds(5)) // 5 seconds between attempts
                 .build();
-        CallExecutor<Trace> callExecutor = new CallExecutorBuilder<Trace>()
-                .config(retryConfig)
-                .afterFailedTryListener(s ->
-                {
-                    LOG.warn(s.getLastExceptionThatCausedRetry().getMessage() + ", attempts: " + s.getTotalTries());
-                })
-                .build();
-        Status<Trace> status = callExecutor.execute(callable);
-        return status.getResult();
+
+        return RetryUtils.withRetry(supplier, "trace-fetcher", customConfig, TraceNotFoundException.class).get();
     }
 
     /**
@@ -122,35 +114,46 @@ public class TraceFetcher {
                 .traceIds(traceIds)
                 .build());
         if (!tracesResponse.hasTraces()) {
-            throw new RuntimeException("No trace found");
+            throw new TraceNotFoundException(String.format("No trace found for traceIds %s", traceIds));
         }
+
         Trace traceRes = new Trace();
-        tracesResponse.traces().forEach(trace ->
-        {
+        tracesResponse.traces().forEach(trace -> {
             if (trace.hasSegments()) {
-                trace.segments().forEach(segment ->
-                {
+                trace.segments().forEach(segment -> {
                     try {
                         SegmentDocument document = MAPPER.readValue(segment.document(), SegmentDocument.class);
-                        if (document.getOrigin().equals("AWS::Lambda::Function")) {
-                            if (document.hasSubsegments()) {
-                                getNestedSubSegments(document.getSubsegments(), traceRes,
-                                        Collections.emptyList());
+                        if ("AWS::Lambda::Function".equals(document.getOrigin()) && document.hasSubsegments()) {
+                            LOG.debug("Populating subsegments for document {}", MAPPER.writeValueAsString(document));
+                            getNestedSubSegments(document.getSubsegments(), traceRes, Collections.emptyList());
+                            // If only the default (excluded) subsegments were populated we need to keep retrying for
+                            // our custom subsegments. They might appear later.
+                            if (traceRes.getSubsegments().isEmpty()) {
+                                throw new TraceNotFoundException(
+                                        "Found AWS::Lambda::Function SegmentDocument with no non-excluded subsegments.");
                             }
+                        } else if ("AWS::Lambda::Function".equals(document.getOrigin())) {
+                            LOG.debug(
+                                    "Found AWS::Lambda::Function SegmentDocument with no subsegments. Retrying {}",
+                                    MAPPER.writeValueAsString(document));
+                            throw new TraceNotFoundException(
+                                    "Found AWS::Lambda::Function SegmentDocument with no subsegments.");
                         }
                     } catch (JsonProcessingException e) {
                         LOG.error("Failed to parse segment document: " + e.getMessage());
                         throw new RuntimeException(e);
                     }
                 });
+            } else {
+                throw new TraceNotFoundException(String.format("No segments found in trace %s", trace.id()));
             }
         });
+
         return traceRes;
     }
 
     private void getNestedSubSegments(List<SubSegment> subsegments, Trace traceRes, List<String> idsToIgnore) {
-        subsegments.forEach(subsegment ->
-        {
+        subsegments.forEach(subsegment -> {
             List<String> subSegmentIdsToIgnore = Collections.emptyList();
             if (!excludedSegments.contains(subsegment.getName()) && !idsToIgnore.contains(subsegment.getId())) {
                 traceRes.addSubSegment(subsegment);
@@ -171,21 +174,30 @@ public class TraceFetcher {
      * @return a list of trace ids
      */
     private List<String> getTraceIds() {
+        LOG.debug("Searching for traces from {} to {} with filter: {}", start, end, filterExpression);
         GetTraceSummariesResponse traceSummaries = xray.getTraceSummaries(GetTraceSummariesRequest.builder()
                 .startTime(start)
                 .endTime(end)
-                .timeRangeType(TimeRangeType.EVENT)
+                .timeRangeType(TimeRangeType.TRACE_ID)
                 .sampling(false)
                 .filterExpression(filterExpression)
                 .build());
+
+        LOG.debug("Found {} trace summaries",
+                traceSummaries.hasTraceSummaries() ? traceSummaries.traceSummaries().size() : 0);
+
         if (!traceSummaries.hasTraceSummaries()) {
-            throw new RuntimeException("No trace id found");
+            throw new TraceNotFoundException(String.format("No trace id found for filter '%s' between %s and %s",
+                    filterExpression, start, end));
         }
-        List<String> traceIds =
-                traceSummaries.traceSummaries().stream().map(TraceSummary::id).collect(Collectors.toList());
+        List<String> traceIds = traceSummaries.traceSummaries().stream().map(TraceSummary::id)
+                .collect(Collectors.toList());
         if (traceIds.isEmpty()) {
-            throw new RuntimeException("No trace id found");
+            throw new TraceNotFoundException(
+                    String.format("Empty trace summary found for filter '%s' between %s and %s",
+                            filterExpression, start, end));
         }
+        LOG.debug("Found trace IDs: {}", traceIds);
         return traceIds;
     }
 
@@ -193,7 +205,7 @@ public class TraceFetcher {
         private Instant start;
         private Instant end;
         private String filterExpression;
-        private List<String> excludedSegments = Arrays.asList("Initialization", "Invocation", "Overhead");
+        private List<String> excludedSegments = Arrays.asList("Initialization", "Init", "Invocation", "Overhead");
 
         public TraceFetcher build() {
             if (filterExpression == null) {
@@ -205,8 +217,13 @@ public class TraceFetcher {
             if (end == null) {
                 end = start.plus(1, ChronoUnit.MINUTES);
             }
-            LOG.debug("Looking for traces from {} to {} with filter {}", start, end, filterExpression);
-            return new TraceFetcher(start, end, filterExpression, excludedSegments);
+            // Expand search window by 1 minute on each side to account for timing imprecisions
+            Instant expandedStart = start.minus(1, ChronoUnit.MINUTES);
+            Instant expandedEnd = end.plus(1, ChronoUnit.MINUTES);
+            LOG.debug(
+                    "Looking for traces from {} to {} (expanded from {} to {}) with filter {} and excluded segments {}",
+                    expandedStart, expandedEnd, start, end, filterExpression, excludedSegments);
+            return new TraceFetcher(expandedStart, expandedEnd, filterExpression, excludedSegments);
         }
 
         public Builder start(Instant start) {
@@ -236,8 +253,8 @@ public class TraceFetcher {
         }
 
         public Builder functionName(String functionName) {
-            this.filterExpression =
-                    String.format("service(id(name: \"%s\", type: \"AWS::Lambda::Function\"))", functionName);
+            this.filterExpression = String.format("service(id(name: \"%s\", type: \"AWS::Lambda::Function\"))",
+                    functionName);
             return this;
         }
     }

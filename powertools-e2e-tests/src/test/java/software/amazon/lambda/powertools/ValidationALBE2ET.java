@@ -38,67 +38,70 @@ import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
 class ValidationALBE2ET {
 
-	private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
-	private static Infrastructure infrastructure;
-	private static String functionName;
+    private static Infrastructure infrastructure;
+    private static String functionName;
 
-	@BeforeAll
-	@Timeout(value = 5, unit = TimeUnit.MINUTES)
-	public static void setup() {
-		infrastructure = Infrastructure.builder().testName(ValidationALBE2ET.class.getSimpleName())
-				.pathToFunction("validation-alb-event").build();
-		Map<String, String> outputs = infrastructure.deploy();
-		functionName = outputs.get(FUNCTION_NAME_OUTPUT);
-	}
+    @BeforeAll
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    static void setup() {
+        infrastructure = Infrastructure.builder().testName(ValidationALBE2ET.class.getSimpleName())
+                .pathToFunction("validation-alb-event").build();
+        Map<String, String> outputs = infrastructure.deploy();
+        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
+    }
 
-	@AfterAll
-	public static void tearDown() {
-		if (infrastructure != null) {
-			infrastructure.destroy();
-		}
-	}
+    @AfterAll
+    static void tearDown() {
+        if (infrastructure != null) {
+            infrastructure.destroy();
+        }
+    }
 
-	@Test
-	void test_validInboundSQSEvent() throws IOException {
-		InputStream inputStream = this.getClass().getResourceAsStream("/validation/valid_alb_in_out_event.json");
-		String validEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+    @Test
+    void test_validInboundSQSEvent() throws IOException {
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/valid_alb_in_out_event.json")) {
+            String validEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, validEvent);
 
-		// WHEN
-		InvocationResult invocationResult = invokeFunction(functionName, validEvent);
+            // THEN
+            // invocation should pass validation and return 200
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
+            assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
+        }
+    }
 
-		// THEN
-		// invocation should pass validation and return 200
-		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(200);
-		assertThat(validJsonNode.get("body").asText()).isEqualTo("{\"price\": 150}");
-	}
+    @Test
+    void test_invalidInboundSQSEvent() throws IOException {
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/invalid_alb_in_event.json")) {
+            String invalidEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
 
-	@Test
-	void test_invalidInboundSQSEvent() throws IOException {
-		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_alb_in_event.json");
-		String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
-		// WHEN
-		InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
+            // THEN
+            // invocation should fail inbound validation and return an error message
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("errorMessage").asText()).contains(": required property 'price' not found");
+        }
+    }
 
-		// THEN
-		// invocation should fail inbound validation and return an error message
-		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("errorMessage").asText()).contains(": required property 'price' not found");
-	}
+    @Test
+    void test_invalidOutboundSQSEvent() throws IOException {
+        try (InputStream is = this.getClass().getResourceAsStream("/validation/invalid_alb_out_event.json")) {
+            String invalidEvent = IOUtils.toString(is, StandardCharsets.UTF_8);
 
-	@Test
-	void test_invalidOutboundSQSEvent() throws IOException {
-		InputStream inputStream = this.getClass().getResourceAsStream("/validation/invalid_alb_out_event.json");
-		String invalidEvent = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+            // WHEN
+            InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
 
-		// WHEN
-		InvocationResult invocationResult = invokeFunction(functionName, invalidEvent);
-
-		// THEN
-		// invocation should fail outbound validation and return 400
-		JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-		assertThat(validJsonNode.get("errorMessage").asText()).contains("/price: must have an exclusive maximum value of 1000");
-	}
+            // THEN
+            // invocation should fail outbound validation and return 400
+            JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
+            assertThat(validJsonNode.get("errorMessage").asText())
+                    .contains("/price: must have an exclusive maximum value of 1000");
+        }
+    }
 }

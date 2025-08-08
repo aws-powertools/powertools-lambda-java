@@ -15,10 +15,7 @@
 package software.amazon.lambda.powertools;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +23,16 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
@@ -44,18 +46,18 @@ import software.amazon.awssdk.services.dynamodb.model.ScanResponse;
 import software.amazon.awssdk.services.kinesis.KinesisClient;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequest;
 import software.amazon.awssdk.services.kinesis.model.PutRecordsRequestEntry;
-import software.amazon.awssdk.services.kinesis.model.PutRecordsResponse;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageBatchRequestEntry;
+import software.amazon.lambda.powertools.testutils.DataNotReadyException;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-public class BatchE2ET {
+class BatchE2ET {
     private static final SdkHttpClient httpClient = UrlConnectionHttpClient.builder().build();
     private static final Region region = Region.of(System.getProperty("AWS_DEFAULT_REGION", "eu-west-1"));
     private static Infrastructure infrastructure;
-    private static String functionName;
     private static String queueUrl;
     private static String kinesisStreamName;
 
@@ -71,13 +73,12 @@ public class BatchE2ET {
         testProducts = Arrays.asList(
                 new Product(1, "product1", 1.23),
                 new Product(2, "product2", 4.56),
-                new Product(3, "product3", 6.78)
-        );
+                new Product(3, "product3", 6.78));
     }
 
     @BeforeAll
     @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    public static void setup() {
+    static void setup() {
         String random = UUID.randomUUID().toString().substring(0, 6);
         String queueName = "batchqueue" + random;
         kinesisStreamName = "batchstream" + random;
@@ -94,7 +95,6 @@ public class BatchE2ET {
                 .build();
 
         Map<String, String> outputs = infrastructure.deploy();
-        functionName = outputs.get(FUNCTION_NAME_OUTPUT);
         queueUrl = outputs.get("QueueURL");
         kinesisStreamName = outputs.get("KinesisStreamName");
         outputTable = outputs.get("TableNameForAsyncTests");
@@ -117,21 +117,21 @@ public class BatchE2ET {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @AfterEach
-    public void cleanUpTest() {
+    void cleanUpTest() {
         // Delete everything in the output table
         ScanResponse items = ddbClient.scan(ScanRequest.builder()
                 .tableName(outputTable)
                 .build());
 
         for (Map<String, AttributeValue> item : items.items()) {
-            HashMap<String, AttributeValue> key = new HashMap<String, AttributeValue>() {
+            Map<String, AttributeValue> key = new HashMap<>() {
                 {
                     put("functionName", AttributeValue.builder()
                             .s(item.get("functionName").s())
@@ -150,7 +150,7 @@ public class BatchE2ET {
     }
 
     @Test
-    public void sqsBatchProcessingSucceeds() throws InterruptedException {
+    void sqsBatchProcessingSucceeds() {
         List<SendMessageBatchRequestEntry> entries = testProducts.stream()
                 .map(p -> {
                     try {
@@ -169,17 +169,23 @@ public class BatchE2ET {
                 .entries(entries)
                 .queueUrl(queueUrl)
                 .build());
-        Thread.sleep(30000); // wait for function to be executed
 
         // THEN
-        ScanResponse items = ddbClient.scan(ScanRequest.builder()
-                .tableName(outputTable)
-                .build());
-        validateAllItemsHandled(items);
+        ScanRequest scanRequest = ScanRequest.builder().tableName(outputTable).build();
+        RetryUtils.withRetry(() -> {
+            ScanResponse items = ddbClient.scan(scanRequest);
+            if (!areAllTestProductsPresent(items)) {
+                throw new DataNotReadyException("sqs-batch-processing not complete yet");
+            }
+            return null;
+        }, "sqs-batch-processing", DataNotReadyException.class).get();
+
+        ScanResponse finalItems = ddbClient.scan(scanRequest);
+        assertThat(areAllTestProductsPresent(finalItems)).isTrue();
     }
 
     @Test
-    public void kinesisBatchProcessingSucceeds() throws InterruptedException {
+    void kinesisBatchProcessingSucceeds() {
         List<PutRecordsRequestEntry> entries = testProducts.stream()
                 .map(p -> {
                     try {
@@ -194,21 +200,27 @@ public class BatchE2ET {
                 .collect(Collectors.toList());
 
         // WHEN
-        PutRecordsResponse result = kinesisClient.putRecords(PutRecordsRequest.builder()
+        kinesisClient.putRecords(PutRecordsRequest.builder()
                 .streamName(kinesisStreamName)
                 .records(entries)
                 .build());
-        Thread.sleep(30000); // wait for function to be executed
 
         // THEN
-        ScanResponse items = ddbClient.scan(ScanRequest.builder()
-                .tableName(outputTable)
-                .build());
-        validateAllItemsHandled(items);
+        ScanRequest scanRequest = ScanRequest.builder().tableName(outputTable).build();
+        RetryUtils.withRetry(() -> {
+            ScanResponse items = ddbClient.scan(scanRequest);
+            if (!areAllTestProductsPresent(items)) {
+                throw new DataNotReadyException("kinesis-batch-processing not complete yet");
+            }
+            return null;
+        }, "kinesis-batch-processing", DataNotReadyException.class).get();
+
+        ScanResponse finalItems = ddbClient.scan(scanRequest);
+        assertThat(areAllTestProductsPresent(finalItems)).isTrue();
     }
 
     @Test
-    public void ddbStreamsBatchProcessingSucceeds() throws InterruptedException {
+    void ddbStreamsBatchProcessingSucceeds() {
         // GIVEN
         String theId = "my-test-id";
 
@@ -223,38 +235,42 @@ public class BatchE2ET {
                     }
                 })
                 .build());
-        Thread.sleep(90000); // wait for function to be executed
 
         // THEN
-        ScanResponse items = ddbClient.scan(ScanRequest.builder()
-                .tableName(outputTable)
-                .build());
+        ScanRequest scanRequest = ScanRequest.builder().tableName(outputTable).build();
+        RetryUtils.withRetry(() -> {
+            ScanResponse items = ddbClient.scan(scanRequest);
+            if (items.count() != 1) {
+                throw new DataNotReadyException("DDB streams processing not complete yet");
+            }
+            return null;
+        }, "ddb-streams-batch-processing", DataNotReadyException.class).get();
 
-        assertThat(items.count()).isEqualTo(1);
-        assertThat(items.items().get(0).get("id").s()).isEqualTo(theId);
+        ScanResponse finalItems = ddbClient.scan(scanRequest);
+        assertThat(finalItems.count()).isEqualTo(1);
+        assertThat(finalItems.items().get(0).get("id").s()).isEqualTo(theId);
     }
 
-    private void validateAllItemsHandled(ScanResponse items) {
+    private boolean areAllTestProductsPresent(ScanResponse items) {
         for (Product p : testProducts) {
             boolean foundIt = false;
             for (Map<String, AttributeValue> a : items.items()) {
                 if (a.get("id").s().equals(Long.toString(p.id))) {
                     foundIt = true;
+                    break;
                 }
             }
-            assertThat(foundIt).isTrue();
+            if (!foundIt) {
+                return false;
+            }
         }
+        return true;
     }
 
     class Product {
         private long id;
-
         private String name;
-
         private double price;
-
-        public Product() {
-        }
 
         public Product(long id, String name, double price) {
             this.id = id;
