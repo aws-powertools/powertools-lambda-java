@@ -1,0 +1,78 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
+java_library(
+    name = "powertools_sam_lib_base",
+    srcs = glob(["src/main/java/**/*.java"]),
+    resources = glob(["src/main/resources/**"]),
+    deps = [
+        "@maven//:software_amazon_lambda_powertools_tracing",
+        "@maven//:software_amazon_lambda_powertools_logging",
+        "@maven//:software_amazon_lambda_powertools_logging_log4j",
+        "@maven//:software_amazon_lambda_powertools_metrics",
+        "@maven//:com_amazonaws_aws_lambda_java_core",
+        "@maven//:com_amazonaws_aws_lambda_java_events",
+        "@maven//:org_aspectj_aspectjrt",
+        "@maven//:org_slf4j_slf4j_api",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:org_apache_logging_log4j_log4j_api",
+    ],
+)
+
+genrule(
+    name = "aspectj_weave",
+    srcs = [
+        ":powertools_sam_lib_base",
+        "@maven//:software_amazon_lambda_powertools_tracing",
+        "@maven//:software_amazon_lambda_powertools_logging",
+        "@maven//:software_amazon_lambda_powertools_metrics",
+        "@maven//:com_amazonaws_aws_lambda_java_core",
+        "@maven//:com_amazonaws_aws_lambda_java_events",
+        "@maven//:org_aspectj_aspectjrt",
+    ],
+    outs = ["powertools_sam_lib_woven.jar"],
+    tools = [
+        "@maven//:org_aspectj_aspectjweaver",
+        "@maven//:org_aspectj_aspectjtools",
+    ],
+    cmd = """
+        # Get dependency JARs for classpath
+        ASPECTJ_TOOLS="$$(echo $(locations @maven//:org_aspectj_aspectjtools) $(locations @maven//:org_aspectj_aspectjweaver) | tr ' ' ':')"
+        ASPECTJ_RT="$(locations @maven//:org_aspectj_aspectjrt)"
+        LAMBDA_JARS="$$(echo $(locations @maven//:com_amazonaws_aws_lambda_java_core) $(locations @maven//:com_amazonaws_aws_lambda_java_events) | tr ' ' ':')"
+        ALL_DEPS="$$ASPECTJ_TOOLS:$$ASPECTJ_RT:$$LAMBDA_JARS"
+        
+        BASE_JAR=$$(echo $(locations :powertools_sam_lib_base) | cut -d' ' -f1)
+        POWERTOOLS_JARS="$$(echo $(locations @maven//:software_amazon_lambda_powertools_tracing) $(locations @maven//:software_amazon_lambda_powertools_logging) $(locations @maven//:software_amazon_lambda_powertools_metrics) | tr ' ' ':')"
+        
+        java -cp "$$ALL_DEPS" \
+            org.aspectj.tools.ajc.Main \
+            -inpath "$$BASE_JAR" \
+            -aspectpath "$$POWERTOOLS_JARS" \
+            -outjar $(location powertools_sam_lib_woven.jar) \
+            -source 11 -target 11 -nowarn
+    """,
+)
+
+java_import(
+    name = "powertools_sam_lib",
+    jars = [":powertools_sam_lib_woven.jar"],
+    deps = [
+        "@maven//:software_amazon_lambda_powertools_tracing",
+        "@maven//:software_amazon_lambda_powertools_logging",
+        "@maven//:software_amazon_lambda_powertools_logging_log4j",
+        "@maven//:software_amazon_lambda_powertools_metrics",
+        "@maven//:com_amazonaws_aws_lambda_java_core",
+        "@maven//:com_amazonaws_aws_lambda_java_events",
+        "@maven//:org_aspectj_aspectjrt",
+    ],
+)
+
+java_binary(
+    name = "powertools_sam",
+    main_class = "helloworld.App",
+    runtime_deps = [":powertools_sam_lib"],
+    deploy_manifest_lines = [
+        "Main-Class: helloworld.App",
+    ],
+    create_executable = False,
+)

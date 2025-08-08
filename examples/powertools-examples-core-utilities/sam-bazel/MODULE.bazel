@@ -1,0 +1,27 @@
+module(name = "powertools_sam_bazel", version = "1.0.0")
+
+bazel_dep(name = "rules_java", version = "8.12.0")
+bazel_dep(name = "rules_jvm_external", version = "6.3")
+
+maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
+
+maven.install(
+    artifacts = [
+        "software.amazon.lambda:powertools-tracing:2.2.1",
+        "software.amazon.lambda:powertools-logging:2.2.1",
+        "software.amazon.lambda:powertools-logging-log4j:2.2.1",
+        "software.amazon.lambda:powertools-metrics:2.2.1",
+        "com.amazonaws:aws-lambda-java-core:1.3.0",
+        "com.amazonaws:aws-lambda-java-events:3.16.1",
+        "org.aspectj:aspectjrt:1.9.22",
+        "org.aspectj:aspectjweaver:1.9.22",
+        "org.aspectj:aspectjtools:1.9.22",
+        "org.slf4j:slf4j-api:2.0.16",
+    ],
+    repositories = [
+        "https://repo1.maven.org/maven2",
+    ],
+    lock_file = "//:maven_install.json",
+)
+
+use_repo(maven, "maven")

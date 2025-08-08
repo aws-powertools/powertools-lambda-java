@@ -34,7 +34,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import software.amazon.lambda.powertools.testutils.DataNotReadyException;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
+import software.amazon.lambda.powertools.testutils.RetryUtils;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 import software.amazon.lambda.powertools.testutils.metrics.MetricsFetcher;
 
@@ -89,16 +91,20 @@ class MetricsE2ET {
                         { "FunctionName", functionName },
                         { "Service", SERVICE } }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
         assertThat(coldStart.get(0)).isEqualTo(1);
-        List<Double> orderMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(),
-                60, NAMESPACE,
-                "orders", Collections.singletonMap("Environment", "test"));
+        List<Double> orderMetrics = RetryUtils.withRetry(() -> {
+            List<Double> metrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(),
+                    60, NAMESPACE, "orders", Collections.singletonMap("Environment", "test"));
+            if (metrics.get(0) != 2.0) {
+                throw new DataNotReadyException("Expected 2.0 orders but got " + metrics.get(0));
+            }
+            return metrics;
+        }, "orderMetricsRetry", DataNotReadyException.class).get();
         assertThat(orderMetrics.get(0)).isEqualTo(2);
         List<Double> productMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(),
                 invocationResult.getEnd(), 60, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
         // When searching across a 1 minute time period with a period of 60 we find both metrics and the sum is 12
-
         assertThat(productMetrics.get(0)).isEqualTo(12);
 
         orderMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
