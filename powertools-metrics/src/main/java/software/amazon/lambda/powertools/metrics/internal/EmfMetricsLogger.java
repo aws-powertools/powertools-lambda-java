@@ -50,7 +50,7 @@ public class EmfMetricsLogger implements Metrics {
 
     private final software.amazon.cloudwatchlogs.emf.logger.MetricsLogger emfLogger;
     private final EnvironmentProvider environmentProvider;
-    private boolean raiseOnEmptyMetrics = false;
+    private AtomicBoolean raiseOnEmptyMetrics = new AtomicBoolean(false);
     private String namespace;
     private Map<String, String> defaultDimensions = new HashMap<>();
     private final AtomicBoolean hasMetrics = new AtomicBoolean(false);
@@ -133,7 +133,7 @@ public class EmfMetricsLogger implements Metrics {
 
     @Override
     public void setRaiseOnEmptyMetrics(boolean raiseOnEmptyMetrics) {
-        this.raiseOnEmptyMetrics = raiseOnEmptyMetrics;
+        this.raiseOnEmptyMetrics.set(raiseOnEmptyMetrics);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class EmfMetricsLogger implements Metrics {
         Validator.validateNamespace(namespace);
 
         if (!hasMetrics.get()) {
-            if (raiseOnEmptyMetrics) {
+            if (raiseOnEmptyMetrics.get()) {
                 throw new IllegalStateException("No metrics were emitted");
             } else {
                 LOGGER.warn("No metrics were emitted");
