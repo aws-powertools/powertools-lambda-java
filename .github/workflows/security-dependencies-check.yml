@@ -6,20 +6,12 @@
 #
 # Triggers:
 #   - pull_request
-#   - push
-#   - workflow_dispatch
-#   - cron: daily at 12:00PM
 
 on:
-  pull_request: 
-  workflow_dispatch:
-  push:
-    branches: [ main ]
-  schedule:
-    - cron: '0 12 * * *' # Run daily at 12:00 UTC
+  pull_request:
 
 name: Verify Dependencies
-run-name: Verify Dependencies – ${{ github.event_name }}
+run-name: Verify Dependencies – ${{ github.event_name }}
 
 permissions:
   contents: read
