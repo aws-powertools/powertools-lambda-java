@@ -9,7 +9,7 @@ Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless 
 
 > Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
 
-**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/preview)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=feature_request.yml)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=bug_report.yml)** | **[Detailed blog post](https://aws.amazon.com/blogs/compute/introducing-v2-of-powertools-for-aws-lambda-java/)**
+**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/latest)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=feature_request.yml)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=bug_report.yml)** | **[Detailed blog post](https://aws.amazon.com/blogs/compute/introducing-v2-of-powertools-for-aws-lambda-java/)**
 
 ## Installation
 
