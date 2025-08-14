@@ -1,15 +1,15 @@
-# Powertools for AWS Lambda (Java) V2
+# Powertools for AWS Lambda (Java)
 
-**This is pre-release code for Powertools for AWS Lambda (Java) V2! Please check out the `main` branch for the stable release** 
-
-![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) [![V2 Build Status](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/pr_build.yml/badge.svg?branch=v2)](https://github.com/aws-powertools/powertools-lambda-java/actions/workflows/pr_build.yml) **MAVEN DEPLOY NOT DONE** [![codecov.io](https://codecov.io/github/aws-powertools/powertools-lambda-java/branch/v2/graphs/badge.svg)](https://app.codecov.io/gh/aws-powertools/powertools-lambda-java/tree/v2)
+![aws provider](https://img.shields.io/badge/provider-AWS-orange?logo=amazon-aws&color=ff9900) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-java&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-java)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aws-powertools_powertools-lambda-java&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aws-powertools_powertools-lambda-java)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-java/badge)](https://api.securityscorecards.dev/projects/github.com/aws-powertools/powertools-lambda-java) ![Maven Central](https://img.shields.io/maven-central/v/software.amazon.lambda/powertools-parent) [![codecov.io](https://codecov.io/github/aws-powertools/powertools-lambda-java/branch/main/graphs/badge.svg)](https://app.codecov.io/gh/aws-powertools/powertools-lambda-java)
 
 
 Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity.
 
 > Also available in [Python](https://github.com/aws-powertools/powertools-lambda-python), [TypeScript](https://github.com/aws-powertools/powertools-lambda-typescript), and [.NET](https://github.com/aws-powertools/powertools-lambda-dotnet).
 
-**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/preview)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&template=feature_request.md&title=)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&template=bug_report.md&title=)** | **[Detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/)**
+**[📜Documentation](https://docs.powertools.aws.dev/lambda-java/preview)** | **[Feature request](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=feature_request.yml)** | **[🐛Bug Report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=bug_report.yml)** | **[Detailed blog post](https://aws.amazon.com/blogs/compute/introducing-v2-of-powertools-for-aws-lambda-java/)**
 
 ## Installation
 
@@ -153,7 +153,7 @@ More info [here](https://github.com/aws-powertools/powertools-lambda-java/pull/1
 
 ## Examples
 
-See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/v1.18.0/examples)** for example projects showcasing usage of different utilities.
+See the latest release of the **[examples](https://github.com/aws-powertools/powertools-lambda-java/tree/main/examples)** for example projects showcasing usage of different utilities.
 
 Have a demo project to contribute which showcase usage of different utilities from powertools? We are happy to accept it [here](CONTRIBUTING.md#security-issue-notifications).
 
@@ -161,7 +161,7 @@ Have a demo project to contribute which showcase usage of different utilities fr
 
 ### Becoming a reference customer
 
-Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (Java), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (Java) (become a reference)](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=customer-reference&template=support_powertools.yml&title=%5BSupport+Lambda+Powertools%5D%3A+%3Cyour+organization+name%3E) issue.
+Knowing which companies are using this library is important to help prioritize the project internally. If your company is using Powertools for AWS Lambda (Java), you can request to have your name and logo added to the README file by raising a [Support Powertools for AWS Lambda (Java) (become a reference)](https://github.com/aws-powertools/powertools-lambda-java/issues/new?template=support_powertools.yml) issue.
 
 The following companies, among others, use Powertools:
 
@@ -170,15 +170,10 @@ The following companies, among others, use Powertools:
 * [Europace AG](https://europace.de/)
 * [Vertex Pharmaceuticals](https://www.vrtx.com/)
 
-## Credits
-
-* [MkDocs](https://www.mkdocs.org/)
-* [Material for MkDocs](https://squidfunk.github.io/mkdocs-material/)
-
 ## Connect
 
-* **Powertools for AWS Lambda on Discord**: `#java` - **[Invite link](https://discord.gg/B8zZKbbyET)**
-* **Email**: <aws-lambda-powertools-feedback@amazon.com>
+- **Powertools for AWS Lambda on Discord**: `#java` - **[Invite link](https://discord.gg/B8zZKbbyET)**
+- **Email**: <aws-powertools-maintainers@amazon.com>
 
 ## Security disclosures
 
@@ -186,4 +181,4 @@ If you think you’ve found a potential security issue, please do not post it in
 
 ## License
 
-This library is licensed under the Apache License, Version 2.0. See the LICENSE file.
+This library is licensed under the MIT-0 License. See the [LICENSE](https://github.com/aws-powertools/powertools-lambda-java/blob/main/LICENSE) file.
