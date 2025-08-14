@@ -49,7 +49,7 @@
             <plugin>
                 <groupId>dev.aspectj</groupId>
                 <artifactId>aspectj-maven-plugin</artifactId>
-                <version>1.14</version>
+                <version>1.14.1</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
