@@ -81,22 +81,10 @@
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <profiles>
         <profile>
             <id>generate-graalvm-files</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-subclass</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -104,8 +92,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.5.3</version>
                         <configuration>
-                            <argLine>
-                                -Dorg.graalvm.nativeimage.imagecode=agent
+                            <argLine>-Dorg.graalvm.nativeimage.imagecode=agent
                                 -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-common,experimental-class-define-support
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
@@ -117,13 +104,6 @@
         </profile>
         <profile>
             <id>graalvm-native</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-subclass</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -146,6 +126,12 @@
                                 <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
                                 <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
                                 <buildArg>--no-fallback</buildArg>
+                                <buildArg>-Dorg.graalvm.nativeimage.imagecode=agent</buildArg>
+                                <buildArg>--initialize-at-build-time=org.slf4j.simple.SimpleLogger</buildArg>
+                                <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
+                                <buildArg>--initialize-at-build-time=org.junit.Ignore</buildArg>
+                                <buildArg>--initialize-at-build-time=java.lang.annotation.Annotation</buildArg>
+                                <buildArg>--initialize-at-build-time=org.junit.runners.model.FrameworkField</buildArg>
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
