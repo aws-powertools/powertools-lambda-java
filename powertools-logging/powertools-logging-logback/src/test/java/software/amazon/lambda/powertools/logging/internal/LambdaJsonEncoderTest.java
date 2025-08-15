@@ -19,8 +19,6 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -29,7 +27,6 @@ import ch.qos.logback.classic.spi.LoggingEvent;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.util.JSONPObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,7 +48,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
@@ -70,15 +67,13 @@ import software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder;
 class LambdaJsonEncoderTest {
     private static final Logger logger = (Logger) LoggerFactory.getLogger(LambdaJsonEncoderTest.class.getName());
 
-    @Mock
     private Context context;
 
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
-        openMocks(this);
         MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
-        setupContext();
+        context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
@@ -88,7 +83,7 @@ class LambdaJsonEncoderTest {
     }
 
     @AfterEach
-    void cleanUp() throws IOException{
+    void cleanUp() throws IOException {
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
     }
 
@@ -103,7 +98,7 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
-                        "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\",\"timestamp\":");
+                "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":1,\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\",\"timestamp\":");
     }
 
     @Test
@@ -114,7 +109,7 @@ class LambdaJsonEncoderTest {
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
         msg.setEventSource("eb");
-        msg.setAwsRegion("eu-west-1");
+        msg.setAwsRegion("eu-central-1");
         SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
         attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
         msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
@@ -125,7 +120,8 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                .contains(
+                        "\"input\":{\"awsRegion\":\"eu-central-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 // Should auto-escape double quotes around id
                 .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
@@ -146,7 +142,7 @@ class LambdaJsonEncoderTest {
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
         msg.setEventSource("eb");
-        msg.setAwsRegion("eu-west-1");
+        msg.setAwsRegion("eu-central-1");
         SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
         attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
         msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
@@ -157,7 +153,8 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                .contains("\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                .contains(
+                        "\"input\":{\"awsRegion\":\"eu-central-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 // Should auto-escape double quotes around id
                 .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
@@ -192,7 +189,8 @@ class LambdaJsonEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("{\"level\":\"INFO\",\"message\":\"message\",\"cold_start\":false,\"function_arn\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"function_memory_size\":1024,\"function_name\":\"testFunction\",\"function_request_id\":\"RequestId\",\"function_version\":1,\"sampling_rate\":0.2,\"service\":\"Service\",\"timestamp\":");
+        assertThat(result).contains(
+                "{\"level\":\"INFO\",\"message\":\"message\",\"cold_start\":false,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":1,\"sampling_rate\":0.2,\"service\":\"Service\",\"timestamp\":");
 
         // WHEN (powertoolsInfo = false)
         encoder.setIncludePowertoolsInfo(false);
@@ -200,7 +198,8 @@ class LambdaJsonEncoderTest {
         result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (no powertools info in logs)
-        assertThat(result).doesNotContain("cold_start", "function_arn", "function_memory_size", "function_name", "function_request_id", "function_version", "sampling_rate", "service");
+        assertThat(result).doesNotContain("cold_start", "function_arn", "function_memory_size", "function_name",
+                "function_request_id", "function_version", "sampling_rate", "service");
     }
 
     @Test
@@ -212,20 +211,22 @@ class LambdaJsonEncoderTest {
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
         msg.setEventSource("eb");
-        msg.setAwsRegion("eu-west-1");
+        msg.setAwsRegion("eu-central-1");
         SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
         attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
         msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
         StructuredArgument argument = StructuredArguments.entry("msg", msg);
 
         // WHEN
-        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null, new Object[]{argument});
+        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null,
+                new Object[] { argument });
         byte[] encoded = encoder.encode(loggingEvent);
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (logged as JSON)
         assertThat(result)
-                .contains("\"message\":\"A message\",\"msg\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}");
+                .contains(
+                        "\"message\":\"A message\",\"msg\":{\"awsRegion\":\"eu-central-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}");
     }
 
     @Test
@@ -252,7 +253,7 @@ class LambdaJsonEncoderTest {
             SQSEvent.SQSMessage message = new SQSEvent.SQSMessage();
             message.setBody("body");
             message.setMessageId("1234abcd");
-            message.setAwsRegion("eu-west-1");
+            message.setAwsRegion("eu-central-1");
 
             // WHEN
             requestHandler.handleRequest(message, context);
@@ -260,8 +261,9 @@ class LambdaJsonEncoderTest {
             // THEN
             File logFile = new File("target/logfile.json");
             assertThat(contentOf(logFile))
-                .contains("\"message\":\"Handler Event\"")
-                .contains("\"event\":{\"awsRegion\":\"eu-west-1\",\"body\":\"body\",\"messageId\":\"1234abcd\"}");
+                    .contains("\"message\":\"Handler Event\"")
+                    .contains(
+                            "\"event\":{\"awsRegion\":\"eu-central-1\",\"body\":\"body\",\"messageId\":\"1234abcd\"}");
         } finally {
             LoggingConstants.POWERTOOLS_LOG_EVENT = false;
         }
@@ -288,7 +290,10 @@ class LambdaJsonEncoderTest {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
         // WHEN
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(Collections.singletonMap("key", "value"))), output, context);
+        requestStreamHandler.handleRequest(
+                new ByteArrayInputStream(
+                        new ObjectMapper().writeValueAsBytes(Collections.singletonMap("key", "value"))),
+                output, context);
 
         // THEN
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
@@ -345,7 +350,8 @@ class LambdaJsonEncoderTest {
         String input = "<user><firstName>Bob</firstName><lastName>The Sponge</lastName></user>";
 
         // WHEN
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), output, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), output,
+                context);
 
         // THEN
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
@@ -353,8 +359,8 @@ class LambdaJsonEncoderTest {
 
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
-                    .contains("\"message\":\"Handler Response\"")
-                    .contains("\"response\":\""+input+"\"");
+                .contains("\"message\":\"Handler Response\"")
+                .contains("\"response\":\"" + input + "\"");
     }
 
     @Test
@@ -368,7 +374,8 @@ class LambdaJsonEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"thread\":\"main\",\"thread_id\":"+ Thread.currentThread().getId() +",\"thread_priority\":5");
+        assertThat(result).contains(
+                "\"thread\":\"main\",\"thread_id\":" + Thread.currentThread().getId() + ",\"thread_priority\":5");
     }
 
     @Test
@@ -388,7 +395,7 @@ class LambdaJsonEncoderTest {
         // THEN
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone(timeZone));
-        assertThat(result).contains("\"timestamp\":\""+simpleDateFormat.format(date)+"\"");
+        assertThat(result).contains("\"timestamp\":\"" + simpleDateFormat.format(date) + "\"");
     }
 
     @Test
@@ -396,7 +403,8 @@ class LambdaJsonEncoderTest {
         // GIVEN
         LambdaJsonEncoder encoder = new LambdaJsonEncoder();
         encoder.start();
-        LoggingEvent errorloggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Error", new IllegalStateException("Unexpected value"), null);
+        LoggingEvent errorloggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Error",
+                new IllegalStateException("Unexpected value"), null);
 
         // WHEN
         byte[] encoded = encoder.encode(errorloggingEvent);
@@ -406,7 +414,8 @@ class LambdaJsonEncoderTest {
         assertThat(result).contains("\"message\":\"Error\",\"error\":{")
                 .contains("\"message\":\"Unexpected value\"")
                 .contains("\"name\":\"java.lang.IllegalStateException\"")
-                .contains("\"stack\":\"[software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest.shouldLogException");
+                .contains(
+                        "\"stack\":\"[software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest.shouldLogException");
 
         // WHEN (configure a custom throwableConverter)
         encoder = new LambdaJsonEncoder();
@@ -422,12 +431,4 @@ class LambdaJsonEncoderTest {
                 .contains("\"stack\":\"java.lang.IllegalStateException: Unexpected value\\n");
     }
 
-    private void setupContext() {
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getInvokedFunctionArn()).thenReturn(
-                "arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1");
-        when(context.getFunctionVersion()).thenReturn("1");
-        when(context.getMemoryLimitInMB()).thenReturn(1024);
-        when(context.getAwsRequestId()).thenReturn("RequestId");
-    }
 }
