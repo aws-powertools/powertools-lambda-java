@@ -14,8 +14,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powertools-tracing</artifactId>
@@ -87,8 +87,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-common</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -121,13 +123,6 @@
     <profiles>
         <profile>
             <id>generate-graalvm-files</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-subclass</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -135,7 +130,8 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.5.3</version>
                         <configuration>
-                            <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-tracing,experimental-class-define-support
+                            <argLine>-Dorg.graalvm.nativeimage.imagecode=agent
+                                -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-tracing,experimental-class-define-support
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                             </argLine>
@@ -146,13 +142,6 @@
         </profile>
         <profile>
             <id>graalvm-native</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-subclass</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -177,10 +166,6 @@
                                 <buildArg>--enable-url-protocols=http</buildArg>
                                 <buildArg>--no-fallback</buildArg>
                                 <buildArg>-Dorg.graalvm.nativeimage.imagecode=agent</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.ClassFileVersion:rerun</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.utility.dispatcher.JavaDispatcher:rerun</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.utility.Invoker$Dispatcher:rerun</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.utility.GraalImageCode:rerun</buildArg>
                                 <buildArg>-H:IncludeResources=version.properties</buildArg>
                                 <buildArg>-H:IncludeResources=unreadable.properties</buildArg>
                                 <buildArg>--initialize-at-build-time=org.slf4j.simple.SimpleLogger</buildArg>
@@ -188,19 +173,6 @@
                                 <buildArg>--initialize-at-build-time=org.junit.Ignore</buildArg>
                                 <buildArg>--initialize-at-build-time=java.lang.annotation.Annotation</buildArg>
                                 <buildArg>--initialize-at-build-time=org.junit.runners.model.FrameworkField</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$1</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$2</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.utility.dispatcher.JavaDispatcher$DynamicClassLoader</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$ForLoadedType</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$ForLoadedMethod</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Super$Instantiation$2</buildArg>
-                                <buildArg>
-                                    --trace-class-initialization=net.bytebuddy.description.type.TypeDescription$ForLoadedType,net.bytebuddy.description.method.MethodDescription$ForLoadedMethod,net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable
-                                </buildArg>
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
