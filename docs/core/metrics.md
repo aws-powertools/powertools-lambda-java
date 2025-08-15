@@ -540,7 +540,7 @@ The following example shows how to configure a custom `Metrics` Singleton using 
 
 ### Suppressing metrics output
 
-If you would like to suppress metrics output during your unit tests, you can use the `POWERTOOLS_DISABLE_METRICS` environment variable. For example, using Maven you can set in your build plugins:
+If you would like to suppress metrics output during your unit tests, you can use the `POWERTOOLS_METRICS_DISABLED` environment variable. For example, using Maven you can set in your build plugins:
 
 ```xml
 <plugin>
@@ -548,7 +548,7 @@ If you would like to suppress metrics output during your unit tests, you can use
     <artifactId>maven-surefire-plugin</artifactId>
     <configuration>
         <environmentVariables>
-            <POWERTOOLS_DISABLE_METRICS>true</POWERTOOLS_DISABLE_METRICS>
+            <POWERTOOLS_METRICS_DISABLED>true</POWERTOOLS_METRICS_DISABLED>
         </environmentVariables>
     </configuration>
 </plugin>
