@@ -16,11 +16,7 @@ package org.apache.logging.log4j.layout.template.json.resolver;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -29,27 +25,29 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.slf4j.MDC;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments;
 
 @Order(2)
 class PowertoolsResolverArgumentsTest {
 
-    @Mock
     private Context context;
 
     @BeforeEach
     void setUp() throws IOException {
-        openMocks(this);
         MDC.clear();
-        setupContext();
+        context = new TestLambdaContext();
 
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
@@ -61,7 +59,7 @@ class PowertoolsResolverArgumentsTest {
 
     @AfterEach
     void cleanUp() throws IOException {
-        //Make sure file is cleaned up before running full stack logging regression
+        // Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         FileChannel.open(Paths.get("target/ecslogfile.json"), StandardOpenOption.WRITE).truncate(0).close();
     }
@@ -74,7 +72,7 @@ class PowertoolsResolverArgumentsTest {
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
         msg.setEventSource("eb");
-        msg.setAwsRegion("eu-west-1");
+        msg.setAwsRegion("us-east-1");
         SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
         attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
         msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
@@ -86,7 +84,7 @@ class PowertoolsResolverArgumentsTest {
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
                 .contains(
-                        "\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                        "\"input\":{\"awsRegion\":\"us-east-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
         // Reserved keys should be ignored
@@ -106,7 +104,7 @@ class PowertoolsResolverArgumentsTest {
         msg.setMessageId("1212abcd");
         msg.setBody("plop");
         msg.setEventSource("eb");
-        msg.setAwsRegion("eu-west-1");
+        msg.setAwsRegion("us-east-1");
         SQSEvent.MessageAttribute attribute = new SQSEvent.MessageAttribute();
         attribute.setStringListValues(Arrays.asList("val1", "val2", "val3"));
         msg.setMessageAttributes(Collections.singletonMap("keyAttribute", attribute));
@@ -118,7 +116,7 @@ class PowertoolsResolverArgumentsTest {
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile))
                 .contains(
-                        "\"input\":{\"awsRegion\":\"eu-west-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
+                        "\"input\":{\"awsRegion\":\"us-east-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
 
@@ -131,11 +129,4 @@ class PowertoolsResolverArgumentsTest {
         });
     }
 
-    private void setupContext() {
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getInvokedFunctionArn()).thenReturn("testArn");
-        when(context.getFunctionVersion()).thenReturn("1");
-        when(context.getMemoryLimitInMB()).thenReturn(10);
-        when(context.getAwsRequestId()).thenReturn("RequestId");
-    }
 }

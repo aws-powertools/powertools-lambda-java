@@ -17,8 +17,6 @@ package software.amazon.lambda.powertools.logging.internal;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -36,7 +34,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
@@ -48,16 +46,13 @@ class LambdaEcsEncoderTest {
 
     private static final Logger logger = (Logger) LoggerFactory.getLogger(LambdaEcsEncoderTest.class.getName());
 
-
-    @Mock
     private Context context;
 
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
-        openMocks(this);
         MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
-        setupContext();
+        context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
         try {
             FileChannel.open(Paths.get("target/ecslogfile.json"), StandardOpenOption.WRITE).truncate(0).close();
@@ -67,7 +62,7 @@ class LambdaEcsEncoderTest {
     }
 
     @AfterEach
-    void cleanUp() throws IOException{
+    void cleanUp() throws IOException {
         FileChannel.open(Paths.get("target/ecslogfile.json"), StandardOpenOption.WRITE).truncate(0).close();
     }
 
@@ -78,7 +73,7 @@ class LambdaEcsEncoderTest {
 
         File logFile = new File("target/ecslogfile.json");
         assertThat(contentOf(logFile)).contains(
-                "\"ecs.version\":\"1.2.0\",\"log.level\":\"DEBUG\",\"message\":\"Test debug event\",\"service.name\":\"testLogback\",\"service.version\":\"1\",\"log.logger\":\"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled\",\"process.thread.name\":\"main\",\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"eu-west-1\",\"cloud.account.id\":\"012345678910\",\"faas.id\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"faas.name\":\"testFunction\",\"faas.version\":\"1\",\"faas.memory\":\"1024\",\"faas.execution\":\"RequestId\",\"faas.coldstart\":\"true\",\"trace.id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+                "\"ecs.version\":\"1.2.0\",\"log.level\":\"DEBUG\",\"message\":\"Test debug event\",\"service.name\":\"testLogback\",\"service.version\":\"1\",\"log.logger\":\"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled\",\"process.thread.name\":\"main\",\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"us-east-1\",\"cloud.account.id\":\"123456789012\",\"faas.id\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"faas.name\":\"test-function\",\"faas.version\":\"1\",\"faas.memory\":\"128\",\"faas.execution\":\"test-request-id\",\"faas.coldstart\":\"true\",\"trace.id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
     }
 
     private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);
@@ -94,7 +89,8 @@ class LambdaEcsEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"faas.id\":\"arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1\",\"faas.name\":\"testFunction\",\"faas.version\":\"1\",\"faas.memory\":\"1024\",\"faas.execution\":\"RequestId\",\"faas.coldstart\":\"false\"");
+        assertThat(result).contains(
+                "\"faas.id\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"faas.name\":\"test-function\",\"faas.version\":\"1\",\"faas.memory\":\"128\",\"faas.execution\":\"test-request-id\",\"faas.coldstart\":\"false\"");
 
         // WHEN (includeFaasInfo = false)
         encoder.setIncludeFaasInfo(false);
@@ -116,7 +112,8 @@ class LambdaEcsEncoderTest {
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"eu-west-1\",\"cloud.account.id\":\"012345678910\"");
+        assertThat(result).contains(
+                "\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"us-east-1\",\"cloud.account.id\":\"123456789012\"");
 
         // WHEN (includeCloudInfo = false)
         encoder.setIncludeCloudInfo(false);
@@ -132,14 +129,16 @@ class LambdaEcsEncoderTest {
         // GIVEN
         LambdaEcsEncoder encoder = new LambdaEcsEncoder();
         encoder.start();
-        LoggingEvent errorloggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Error", new IllegalStateException("Unexpected value"), null);
+        LoggingEvent errorloggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Error",
+                new IllegalStateException("Unexpected value"), null);
 
         // WHEN
         byte[] encoded = encoder.encode(errorloggingEvent);
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN
-        assertThat(result).contains("\"message\":\"Error\",\"error.message\":\"Unexpected value\",\"error.type\":\"java.lang.IllegalStateException\",\"error.stack_trace\":\"[software.amazon.lambda.powertools.logging.internal.LambdaEcsEncoderTest.shouldLogException");
+        assertThat(result).contains(
+                "\"message\":\"Error\",\"error.message\":\"Unexpected value\",\"error.type\":\"java.lang.IllegalStateException\",\"error.stack_trace\":\"[software.amazon.lambda.powertools.logging.internal.LambdaEcsEncoderTest.shouldLogException");
 
         // WHEN (configure a custom throwableConverter)
         encoder = new LambdaEcsEncoder();
@@ -150,7 +149,8 @@ class LambdaEcsEncoderTest {
         result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (stack is logged with root cause first)
-        assertThat(result).contains("\"message\":\"Error\",\"error.message\":\"Unexpected value\",\"error.type\":\"java.lang.IllegalStateException\",\"error.stack_trace\":\"java.lang.IllegalStateException: Unexpected value\\n");
+        assertThat(result).contains(
+                "\"message\":\"Error\",\"error.message\":\"Unexpected value\",\"error.type\":\"java.lang.IllegalStateException\",\"error.stack_trace\":\"java.lang.IllegalStateException: Unexpected value\\n");
     }
 
     private void setMDC() {
@@ -165,12 +165,4 @@ class LambdaEcsEncoderTest {
         MDC.put(PowertoolsLoggedFields.SERVICE.getName(), "Service");
     }
 
-    private void setupContext() {
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getInvokedFunctionArn()).thenReturn(
-                "arn:aws:lambda:eu-west-1:012345678910:function:testFunction:1");
-        when(context.getFunctionVersion()).thenReturn("1");
-        when(context.getMemoryLimitInMB()).thenReturn(1024);
-        when(context.getAwsRequestId()).thenReturn("RequestId");
-    }
 }

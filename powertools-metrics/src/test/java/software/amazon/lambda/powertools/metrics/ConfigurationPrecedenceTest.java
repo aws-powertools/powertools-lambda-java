@@ -34,7 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
-import software.amazon.lambda.powertools.metrics.testutils.TestContext;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 /**
  * Tests to verify the hierarchy of precedence for configuration:
@@ -89,7 +89,7 @@ class ConfigurationPrecedenceTest {
                 .build();
 
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -118,7 +118,7 @@ class ConfigurationPrecedenceTest {
                 .build();
 
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithDefaultMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -141,7 +141,7 @@ class ConfigurationPrecedenceTest {
     void environmentVariablesShouldBeUsedWhenNoOverrides() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithDefaultMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -166,7 +166,7 @@ class ConfigurationPrecedenceTest {
                 .build();
 
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithDefaultMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When

@@ -12,14 +12,14 @@
  *
  */
 
-package software.amazon.lambda.powertools.metrics.testutils;
+package software.amazon.lambda.powertools.common.stubs;
 
+import com.amazonaws.services.lambda.runtime.ClientContext;
+import com.amazonaws.services.lambda.runtime.CognitoIdentity;
 import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.LambdaLogger;
 
-/**
- * Simple Lambda context implementation for unit tests
- */
-public class TestContext implements Context {
+public class TestLambdaContext implements Context {
     @Override
     public String getAwsRequestId() {
         return "test-request-id";
@@ -42,27 +42,27 @@ public class TestContext implements Context {
 
     @Override
     public String getFunctionVersion() {
-        return "test-version";
+        return "1";
     }
 
     @Override
     public String getInvokedFunctionArn() {
-        return "test-arn";
+        return "arn:aws:lambda:us-east-1:123456789012:function:test";
     }
 
     @Override
-    public com.amazonaws.services.lambda.runtime.CognitoIdentity getIdentity() {
+    public CognitoIdentity getIdentity() {
         return null;
     }
 
     @Override
-    public com.amazonaws.services.lambda.runtime.ClientContext getClientContext() {
+    public ClientContext getClientContext() {
         return null;
     }
 
     @Override
     public int getRemainingTimeInMillis() {
-        return 1000;
+        return 30000;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class TestContext implements Context {
     }
 
     @Override
-    public com.amazonaws.services.lambda.runtime.LambdaLogger getLogger() {
+    public LambdaLogger getLogger() {
         return null;
     }
 }

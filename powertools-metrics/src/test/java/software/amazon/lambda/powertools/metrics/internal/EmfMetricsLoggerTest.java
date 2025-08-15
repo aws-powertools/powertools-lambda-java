@@ -45,7 +45,7 @@ import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
-import software.amazon.lambda.powertools.metrics.testutils.TestContext;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 class EmfMetricsLoggerTest {
 
@@ -373,7 +373,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldCaptureColdStartMetric() throws Exception {
         // Given
-        Context testContext = new TestContext();
+        Context testContext = new TestLambdaContext();
 
         // When
         metrics.captureColdStartMetric(testContext);
@@ -425,7 +425,7 @@ class EmfMetricsLoggerTest {
         String customNamespace = "CustomNamespace";
         metrics.setNamespace(customNamespace);
 
-        Context testContext = new TestContext();
+        Context testContext = new TestLambdaContext();
 
         DimensionSet dimensions = DimensionSet.of("CustomDim", "CustomValue");
 
@@ -497,7 +497,7 @@ class EmfMetricsLoggerTest {
     @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_DISABLED", value = "true")
     void shouldNotCaptureColdStartMetricWhenDisabled() {
         // Given
-        Context testContext = new TestContext();
+        Context testContext = new TestLambdaContext();
 
         // When
         metrics.captureColdStartMetric(testContext);

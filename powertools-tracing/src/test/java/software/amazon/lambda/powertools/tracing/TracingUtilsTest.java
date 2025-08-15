@@ -16,16 +16,14 @@ package software.amazon.lambda.powertools.tracing;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.xray.AWSXRay;
-import com.amazonaws.xray.entities.Entity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import com.amazonaws.xray.AWSXRay;
+import com.amazonaws.xray.entities.Entity;
 
 class TracingUtilsTest {
     @BeforeEach
@@ -55,8 +53,7 @@ class TracingUtilsTest {
                 .contains(
                         entry("stringKey", "val"),
                         entry("numberKey", 10),
-                        entry("booleanKey", false)
-                );
+                        entry("booleanKey", false));
     }
 
     @Test
@@ -76,10 +73,8 @@ class TracingUtilsTest {
         assertThat(AWSXRay.getTraceEntity().getMetadata())
                 .hasSize(1)
                 .containsKey("service_undefined")
-                .satisfies(map ->
-                        assertThat(map.get("service_undefined"))
-                                .containsEntry("key", "val")
-                );
+                .satisfies(map -> assertThat(map.get("service_undefined"))
+                        .containsEntry("key", "val"));
     }
 
     @Test
@@ -92,21 +87,14 @@ class TracingUtilsTest {
 
     @Test
     void shouldInvokeCodeBlockWrappedWithinSubsegment() {
-        Context test = mock(Context.class);
-
-        TracingUtils.withSubsegment("testSubSegment", subsegment ->
-        {
+        TracingUtils.withSubsegment("testSubSegment", subsegment -> {
             subsegment.putAnnotation("key", "val");
             subsegment.putMetadata("key", "val");
-            test.getFunctionName();
         });
-
-        verify(test).getFunctionName();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
-                .allSatisfy(subsegment ->
-                {
+                .allSatisfy(subsegment -> {
                     assertThat(subsegment.getName())
                             .isEqualTo("## testSubSegment");
 
@@ -142,21 +130,14 @@ class TracingUtilsTest {
 
     @Test
     void shouldInvokeCodeBlockWrappedWithinNamespacedSubsegment() {
-        Context test = mock(Context.class);
-
-        TracingUtils.withSubsegment("testNamespace", "testSubSegment", subsegment ->
-        {
+        TracingUtils.withSubsegment("testNamespace", "testSubSegment", subsegment -> {
             subsegment.putAnnotation("key", "val");
             subsegment.putMetadata("key", "val");
-            test.getFunctionName();
         });
-
-        verify(test).getFunctionName();
 
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
-                .allSatisfy(subsegment ->
-                {
+                .allSatisfy(subsegment -> {
                     assertThat(subsegment.getName())
                             .isEqualTo("## testSubSegment");
 
@@ -174,25 +155,18 @@ class TracingUtilsTest {
 
     @Test
     void shouldInvokeCodeBlockWrappedWithinEntitySubsegment() throws InterruptedException {
-        Context test = mock(Context.class);
-
         Entity traceEntity = AWSXRay.getTraceEntity();
 
-        Thread thread = new Thread(() -> withEntitySubsegment("testSubSegment", traceEntity, subsegment ->
-        {
+        Thread thread = new Thread(() -> withEntitySubsegment("testSubSegment", traceEntity, subsegment -> {
             subsegment.putAnnotation("key", "val");
-            test.getFunctionName();
         }));
 
         thread.start();
         thread.join();
 
-        verify(test).getFunctionName();
-
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
-                .allSatisfy(subsegment ->
-                {
+                .allSatisfy(subsegment -> {
                     assertThat(subsegment.getName())
                             .isEqualTo("## testSubSegment");
 
@@ -207,26 +181,19 @@ class TracingUtilsTest {
 
     @Test
     void shouldInvokeCodeBlockWrappedWithinNamespacedEntitySubsegment() throws InterruptedException {
-        Context test = mock(Context.class);
-
         Entity traceEntity = AWSXRay.getTraceEntity();
 
-        Thread thread =
-                new Thread(() -> withEntitySubsegment("testNamespace", "testSubSegment", traceEntity, subsegment ->
-                {
+        Thread thread = new Thread(
+                () -> withEntitySubsegment("testNamespace", "testSubSegment", traceEntity, subsegment -> {
                     subsegment.putAnnotation("key", "val");
-                    test.getFunctionName();
                 }));
 
         thread.start();
         thread.join();
 
-        verify(test).getFunctionName();
-
         assertThat(AWSXRay.getTraceEntity().getSubsegments())
                 .hasSize(1)
-                .allSatisfy(subsegment ->
-                {
+                .allSatisfy(subsegment -> {
                     assertThat(subsegment.getName())
                             .isEqualTo("## testSubSegment");
 
