@@ -99,6 +99,9 @@ jobs:
       - id: graalvm-native-test
         name: GraalVM Native Test
         run: |
+          # Build the entire project first to ensure test-jar dependencies are available
+          mvn -B install -DskipTests
+          
           # Find modules with graalvm-native profile and run tests.
           # This will make sure to discover new GraalVM supported modules automatically in the future.
           for module in powertools-*/pom.xml; do
