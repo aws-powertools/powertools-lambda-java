@@ -217,9 +217,9 @@ class LambdaJsonEncoderTest {
         StructuredArgument argument = StructuredArguments.entry("msg", msg);
 
         // WHEN
-        LoggingEvent structuredLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null,
+        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null,
                 new Object[] { argument });
-        byte[] encoded = encoder.encode(structuredLoggingEvent);
+        byte[] encoded = encoder.encode(loggingEvent);
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (logged as JSON)

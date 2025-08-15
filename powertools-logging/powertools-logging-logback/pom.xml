@@ -97,8 +97,7 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.5.3</version>
                         <configuration>
-                            <argLine>
-                                -Dorg.graalvm.nativeimage.imagecode=agent
+                            <argLine>-Dorg.graalvm.nativeimage.imagecode=agent
                                 -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-logging-logback,experimental-class-define-support
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
@@ -129,9 +128,6 @@
                         <configuration>
                             <imageName>powertools-logging-logback</imageName>
                             <buildArgs>
-                                <buildArg>
-                                    --initialize-at-build-time=org.junit.platform.launcher.core.DiscoveryIssueNotifier$1
-                                </buildArg>
                                 <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
                                 <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
                                 <buildArg>--no-fallback</buildArg>
