@@ -144,6 +144,9 @@
                                 <buildArg>--initialize-at-build-time=org.junit.Ignore</buildArg>
                                 <buildArg>--initialize-at-build-time=java.lang.annotation.Annotation</buildArg>
                                 <buildArg>--initialize-at-build-time=org.junit.runners.model.FrameworkField</buildArg>
+                                <buildArg>
+                                    --initialize-at-build-time=org.junit.platform.launcher.core.DiscoveryIssueNotifier$1
+                                </buildArg>
                             </buildArgs>
                         </configuration>
                     </plugin>
