@@ -18,15 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatRuntimeException;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
@@ -37,6 +38,7 @@ import software.amazon.awssdk.services.appconfigdata.model.StartConfigurationSes
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+@ExtendWith(MockitoExtension.class)
 class AppConfigProviderTest {
 
     private static final String ENVIRONMENT_NAME = "test";
@@ -55,8 +57,6 @@ class AppConfigProviderTest {
 
     @BeforeEach
     void init() {
-        openMocks(this);
-
         provider = AppConfigProvider.builder()
                 .withClient(client)
                 .withApplication(APPLICATION_NAME)
