@@ -19,17 +19,19 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import org.assertj.core.data.MapEntry;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
@@ -43,26 +45,25 @@ import software.amazon.awssdk.services.ssm.model.Parameter;
 import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
+@ExtendWith(MockitoExtension.class)
 public class ParamProvidersIntegrationTest {
-
     @Mock
     SsmClient ssmClient;
 
     @Mock
     DynamoDbClient ddbClient;
+
     @Captor
     ArgumentCaptor<GetParameterRequest> ssmParamCaptor;
+
     @Captor
     ArgumentCaptor<GetParametersByPathRequest> ssmParamByPathCaptor;
+
     @Mock
     SecretsManagerClient secretsManagerClient;
+
     @Captor
     ArgumentCaptor<GetSecretValueRequest> secretsCaptor;
-
-    @BeforeEach
-    public void setup() throws IllegalAccessException {
-        openMocks(this);
-    }
 
     @Test
     public void ssmProvider_get() {
