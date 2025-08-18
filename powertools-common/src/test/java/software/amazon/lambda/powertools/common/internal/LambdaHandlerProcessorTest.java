@@ -16,10 +16,15 @@ package software.amazon.lambda.powertools.common.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Optional;
 
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.Signature;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearEnvironmentVariable;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
@@ -29,10 +34,6 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
-import software.amazon.lambda.powertools.common.stubs.TestInputStream;
-import software.amazon.lambda.powertools.common.stubs.TestOutputStream;
-import software.amazon.lambda.powertools.common.stubs.TestProceedingJoinPoint;
-import software.amazon.lambda.powertools.common.stubs.TestSignature;
 
 class LambdaHandlerProcessorTest {
 
@@ -47,7 +48,7 @@ class LambdaHandlerProcessorTest {
 
     @Test
     void isHandlerMethod_shouldRecognizeRequestStreamHandler() {
-        Object[] args = { new TestInputStream(), new TestOutputStream(), new TestLambdaContext() };
+        Object[] args = { mock(InputStream.class), mock(OutputStream.class), new TestLambdaContext() };
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         assertThat(LambdaHandlerProcessor.isHandlerMethod(pjpMock)).isTrue();
@@ -72,7 +73,7 @@ class LambdaHandlerProcessorTest {
 
     @Test
     void placedOnStreamHandler_shouldRecognizeRequestStreamHandler() {
-        Object[] args = { new TestInputStream(), new TestOutputStream(), new TestLambdaContext() };
+        Object[] args = { mock(InputStream.class), mock(OutputStream.class), new TestLambdaContext() };
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         assertThat(LambdaHandlerProcessor.placedOnStreamHandler(pjpMock)).isTrue();
@@ -120,7 +121,7 @@ class LambdaHandlerProcessorTest {
 
     @Test
     void placedOnStreamHandler_shouldInvalidateOnTypeOfArgs_invalidOutputStreamArg() {
-        Object[] args = { new TestInputStream(), new Object(), new TestLambdaContext() };
+        Object[] args = { mock(InputStream.class), new Object(), new TestLambdaContext() };
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         boolean isPlacedOnStreamHandler = LambdaHandlerProcessor.placedOnStreamHandler(pjpMock);
@@ -130,7 +131,7 @@ class LambdaHandlerProcessorTest {
 
     @Test
     void placedOnStreamHandler_shouldInvalidateOnTypeOfArgs_invalidContextArg() {
-        Object[] args = { new TestInputStream(), new TestOutputStream(), new Object() };
+        Object[] args = { mock(InputStream.class), mock(OutputStream.class), new Object() };
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         boolean isPlacedOnStreamHandler = LambdaHandlerProcessor.placedOnStreamHandler(pjpMock);
@@ -170,7 +171,7 @@ class LambdaHandlerProcessorTest {
 
     @Test
     void extractContext_fromStreamRequestHandler() {
-        Object[] args = { new TestInputStream(), new TestOutputStream(), new TestLambdaContext() };
+        Object[] args = { mock(InputStream.class), mock(OutputStream.class), new TestLambdaContext() };
         ProceedingJoinPoint pjpMock = mockRequestHandlerPjp(RequestStreamHandler.class, args);
 
         Context context = LambdaHandlerProcessor.extractContext(pjpMock);
@@ -230,7 +231,14 @@ class LambdaHandlerProcessorTest {
     }
 
     private ProceedingJoinPoint mockRequestHandlerPjp(Class<?> handlerClass, Object[] handlerArgs) {
-        TestSignature signature = new TestSignature(handlerClass);
-        return new TestProceedingJoinPoint(signature, handlerArgs);
+        ProceedingJoinPoint pjp = mock(ProceedingJoinPoint.class);
+        Signature signature = mock(Signature.class);
+
+        when(signature.getDeclaringType()).thenReturn(handlerClass);
+        when(signature.getName()).thenReturn("handleRequest");
+        when(pjp.getSignature()).thenReturn(signature);
+        when(pjp.getArgs()).thenReturn(handlerArgs);
+
+        return pjp;
     }
 }
