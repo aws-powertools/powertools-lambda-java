@@ -137,15 +137,10 @@
                                 <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
                                 <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
                                 <buildArg>--no-fallback</buildArg>
-                                <buildArg>-Dorg.graalvm.nativeimage.imagecode=agent</buildArg>
-                                <buildArg>--initialize-at-build-time=org.slf4j.simple.SimpleLogger</buildArg>
-                                <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
-                                <buildArg>--initialize-at-build-time=org.junit.Ignore</buildArg>
-                                <buildArg>--initialize-at-build-time=java.lang.annotation.Annotation</buildArg>
-                                <buildArg>--initialize-at-build-time=org.junit.runners.model.FrameworkField</buildArg>
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                                <buildArg>-H:Log=registerResource:5</buildArg>
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
                         </configuration>
