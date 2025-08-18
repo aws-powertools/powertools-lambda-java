@@ -66,6 +66,7 @@ import software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder;
 @Order(2)
 class LambdaJsonEncoderTest {
     private static final Logger logger = (Logger) LoggerFactory.getLogger(LambdaJsonEncoderTest.class.getName());
+    private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);
 
     private Context context;
 
@@ -167,8 +168,6 @@ class LambdaJsonEncoderTest {
         });
     }
 
-    private final LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "message", null, null);
-
     @Test
     void shouldNotLogPowertoolsInfo() {
         // GIVEN
@@ -218,9 +217,9 @@ class LambdaJsonEncoderTest {
         StructuredArgument argument = StructuredArguments.entry("msg", msg);
 
         // WHEN
-        LoggingEvent loggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null,
+        LoggingEvent structuredLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "A message", null,
                 new Object[] { argument });
-        byte[] encoded = encoder.encode(loggingEvent);
+        byte[] encoded = encoder.encode(structuredLoggingEvent);
         String result = new String(encoded, StandardCharsets.UTF_8);
 
         // THEN (logged as JSON)
