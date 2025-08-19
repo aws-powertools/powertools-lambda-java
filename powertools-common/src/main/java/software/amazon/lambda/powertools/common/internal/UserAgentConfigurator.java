@@ -19,14 +19,14 @@ import static software.amazon.lambda.powertools.common.internal.SystemWrapper.ge
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * Can be used to create a string that can server as a User-Agent suffix in requests made with the AWS SDK clients
  */
-public class UserAgentConfigurator {
+public final class UserAgentConfigurator {
 
     public static final String NA = "NA";
     public static final String VERSION_KEY = "powertools.version";
@@ -37,7 +37,7 @@ public class UserAgentConfigurator {
     private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurator.class);
     private static final String NO_OP = "no-op";
     private static final String POWERTOOLS_VERSION = getProjectVersion();
-    private static final String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + POWERTOOLS_VERSION + " PTEnv/"
+    private static final String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + POWERTOOLS_VERSION + " PTENV/"
             + PT_EXEC_ENV_VARIABLE;
 
     private UserAgentConfigurator() {
@@ -52,7 +52,6 @@ public class UserAgentConfigurator {
     static String getProjectVersion() {
         return getVersionFromProperties(VERSION_PROPERTIES_FILENAME, VERSION_KEY);
     }
-
 
     /**
      * Retrieves the project version from a properties file.
@@ -84,8 +83,17 @@ public class UserAgentConfigurator {
     }
 
     /**
+     * Configures the AWS SDK to use Powertools user agent by setting the sdk.ua.appId system property.
+     * This should be called during library initialization to ensure the user agent is properly configured.
+     */
+    public static void configureUserAgent(String ptFeature) {
+        System.out.println("CONFIGURE UA " + ptFeature);
+        System.setProperty("sdk.ua.appId", getUserAgent(ptFeature));
+    }
+
+    /**
      * Retrieves the user agent string for the Powertools for AWS Lambda.
-     * It follows the pattern PT/{PT_FEATURE}/{PT_VERSION} PTEnv/{PT_EXEC_ENV}
+     * It follows the pattern PT/{PT_FEATURE}/{PT_VERSION} PTENV/{PT_EXEC_ENV}
      * The version of the project is automatically retrieved.
      * The PT_EXEC_ENV is automatically retrieved from the AWS_EXECUTION_ENV environment variable.
      * If it AWS_EXECUTION_ENV is not set, PT_EXEC_ENV defaults to "NA"
@@ -105,7 +113,7 @@ public class UserAgentConfigurator {
             ptFeature = NO_OP;
         }
         return userAgent
-                .replace(PT_FEATURE_VARIABLE, ptFeature)
+                .replace(PT_FEATURE_VARIABLE, ptFeature.toUpperCase())
                 .replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
     }
 }

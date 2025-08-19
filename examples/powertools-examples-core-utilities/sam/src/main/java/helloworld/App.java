@@ -34,6 +34,13 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 
+import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.core.SdkSystemSetting;
+import software.amazon.awssdk.core.interceptor.ExecutionAttributes;
+import software.amazon.awssdk.core.interceptor.ExecutionInterceptor;
+import software.amazon.awssdk.http.SdkHttpRequest;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.Metrics;
@@ -50,13 +57,32 @@ import software.amazon.lambda.powertools.tracing.TracingUtils;
  */
 public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     private static final Logger log = LoggerFactory.getLogger(App.class);
+    private static final S3Client s3Client = S3Client.builder()
+            .region(Region.of(System.getenv(SdkSystemSetting.AWS_REGION.environmentVariable())))
+            .credentialsProvider(EnvironmentVariableCredentialsProvider.create())
+            .overrideConfiguration(c -> c.addExecutionInterceptor(new ExecutionInterceptor() {
+                @Override
+                public void beforeTransmission(
+                        software.amazon.awssdk.core.interceptor.Context.BeforeTransmission context,
+                        ExecutionAttributes executionAttributes) {
+                    SdkHttpRequest request = context.httpRequest();
+                    log.info("User-Agent header: {}", request.headers().get("User-Agent"));
+                }
+            }))
+            .build();
     private static final Metrics metrics = MetricsFactory.getMetricsInstance();
+
+    public App() {
+        log.info("sdk.ua.appId system property: {}", System.getProperty("sdk.ua.appId"));
+        s3Client.listBuckets();
+    }
 
     @Logging(logEvent = true, samplingRate = 0.7)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
     @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
         Map<String, String> headers = new HashMap<>();
+        s3Client.listBuckets();
 
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");

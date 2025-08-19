@@ -19,11 +19,22 @@ Globals:
         POWERTOOLS_METRICS_NAMESPACE: Coreutilities
 
 Resources:
+  TestBucket:
+    Type: AWS::S3::Bucket
+
   HelloWorldFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: .
       Handler: helloworld.App::handleRequest
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref TestBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:ListAllMyBuckets
+              Resource: "*"
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           POWERTOOLS_SERVICE_NAME: hello
