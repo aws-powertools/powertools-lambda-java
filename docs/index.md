@@ -10,7 +10,7 @@ Powertools for AWS Lambda (Java) is a suite of utilities for AWS Lambda Function
 
 
 ???+ tip "Looking for a quick run through of the core utilities?"
-    Check out [this detailed blog post](https://aws.amazon.com/blogs/opensource/simplifying-serverless-best-practices-with-aws-lambda-powertools-java/) with a practical example. To dive deeper, 
+    Check out [this detailed blog post](https://aws.amazon.com/blogs/compute/introducing-v2-of-powertools-for-aws-lambda-java/) with a practical example. To dive deeper, 
     the [Powertools for AWS Lambda (Java) workshop](https://catalog.us-east-1.prod.workshops.aws/workshops/a7011c82-e4af-4a52-80fa-fcd61f1dacd9/en-US/introduction) is a great next step.
 
 ## Tenets
