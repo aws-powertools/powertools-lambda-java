@@ -19,7 +19,7 @@
   "required_pull_request_reviews": {
     "url": "https://api.github.com/repos/aws-powertools/powertools-lambda-java/branches/main/protection/required_pull_request_reviews",
     "dismiss_stale_reviews": true,
-    "require_code_owner_reviews": false,
+    "require_code_owner_reviews": true,
     "require_last_push_approval": true,
     "required_approving_review_count": 1,
     "dismissal_restrictions": {
@@ -37,7 +37,7 @@
   },
   "enforce_admins": {
     "url": "https://api.github.com/repos/aws-powertools/powertools-lambda-java/branches/main/protection/enforce_admins",
-    "enabled": false
+    "enabled": true
   },
   "required_linear_history": {
     "enabled": true
