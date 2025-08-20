@@ -24,20 +24,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -61,18 +61,13 @@ import software.amazon.lambda.powertools.idempotency.persistence.BasePersistence
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
+@ExtendWith(MockitoExtension.class)
 public class IdempotencyAspectTest {
 
-    @Mock
-    private Context context;
+    private Context context = new TestLambdaContext();
 
     @Mock
     private BasePersistenceStore store;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     @Test
     public void firstCall_shouldPutInStore() {
@@ -84,8 +79,6 @@ public class IdempotencyAspectTest {
                 .configure();
 
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
-
-        when(context.getRemainingTimeInMillis()).thenReturn(30000);
 
         Product p = new Product(42, "fake product", 12);
         Basket basket = function.handleRequest(p, context);
@@ -123,8 +116,6 @@ public class IdempotencyAspectTest {
                 .configure();
 
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
-
-        when(context.getRemainingTimeInMillis()).thenReturn(30000);
 
         Product p = new Product(42, "fake product", 12);
         Basket basket = function.handleRequest(p, context);
@@ -393,8 +384,6 @@ public class IdempotencyAspectTest {
 
         // WHEN
         boolean registerContext = true;
-        when(context.getRemainingTimeInMillis()).thenReturn(30000);
-
         IdempotencyInternalFunction function = new IdempotencyInternalFunction(registerContext);
         Product p = new Product(42, "fake product", 12);
         Basket basket = function.handleRequest(p, context);
