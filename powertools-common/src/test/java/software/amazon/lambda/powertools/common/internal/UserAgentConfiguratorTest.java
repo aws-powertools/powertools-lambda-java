@@ -91,7 +91,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+                .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/NA");
 
     }
 
@@ -101,7 +101,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/NO-OP/" + VERSION + " PTENV/NA");
+                .isEqualTo("PT/no-op/" + VERSION + " PTEnv/NA");
     }
 
     @Test
@@ -110,7 +110,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/NO-OP/" + VERSION + " PTENV/NA");
+                .isEqualTo("PT/no-op/" + VERSION + " PTEnv/NA");
     }
 
     @Test
@@ -120,15 +120,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/AWS_Lambda_java8");
-    }
-
-    @Test
-    void testConfigureUserAgent() {
-        UserAgentConfigurator.configureUserAgent("test-feature");
-        
-        assertThat(System.getProperty("sdk.ua.appId"))
-                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+                .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");
     }
 
 }
