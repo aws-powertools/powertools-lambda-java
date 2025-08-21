@@ -99,6 +99,17 @@
     <profiles>
         <profile>
             <id>generate-graalvm-files</id>
+            <!-- The AWS DynamoDBClient uses com.amazonaws.xray.interceptors.TracingInterceptor if available on the
+            classpath. If the DynamoDB persistence store is used together with tracing, this would fail in GraalVM 
+            otherwise since it tries to load the tracing interceptor at runtime. This makes sure it is included in
+            reflect-config.json -->
+            <dependencies>
+                <dependency>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-xray-recorder-sdk-aws-sdk-v2-instrumentor</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
