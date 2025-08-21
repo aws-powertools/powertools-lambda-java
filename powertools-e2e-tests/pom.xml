@@ -25,7 +25,7 @@
 
     <artifactId>powertools-e2e-tests</artifactId>
     <name>Powertools for AWS Lambda (Java) - End-to-end tests</name>
-    <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
+    <description>Powertools for AWS Lambda (Java) – End-To-End Tests</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
