@@ -111,3 +111,8 @@ example/HelloWorldFunction/build
 build/
 .terraform*
 terraform.tfstate*
+
+# Kiro and related folders
+.kiro/
+.claude/
+.amazonq/
