@@ -1,0 +1,12 @@
+@"
+## Instructions
+
+The following folders were added to `.gitignore`:
+
+- `.kiro/`
+- `.claude/`
+- `.amazonq/`
+
+These are configuration/cache folders created by LLM tools.  
+Adding them to `.gitignore` prevents accidental deletion (e.g., when running `git clean`).
+"@ | Out-File -FilePath .github\instructions -Encoding UTF8
