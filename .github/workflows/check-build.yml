@@ -58,6 +58,8 @@ on:
       - '.github/workflows/**'
 
 name: Build
+permissions:
+  contents: read
 run-name: Build - ${{ github.event_name }}
 
 jobs:
