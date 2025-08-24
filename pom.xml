@@ -68,6 +68,7 @@
         <module>powertools-idempotency</module>
         <module>powertools-large-messages</module>
         <module>powertools-e2e-tests</module>
+        <module>powertools-e2e-tests/handlers</module>
         <module>powertools-batch</module>
         <module>powertools-parameters/powertools-parameters-ssm</module>
         <module>powertools-parameters/powertools-parameters-secrets</module>
@@ -84,7 +85,7 @@
         <log4j.version>2.25.1</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.19.2</jackson.version>
-        <aws.sdk.version>2.32.21</aws.sdk.version>
+        <aws.sdk.version>2.32.28</aws.sdk.version>
         <aws.xray.recorder.version>2.19.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -97,14 +98,14 @@
         <maven-surefire-plugin.version>3.2.5</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.11.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.2.1</maven-gpg-plugin.version>
         <aspectj-maven-plugin.version>1.14.1</aspectj-maven-plugin.version>
         <maven-surefire-plugin.version>3.5.3</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.13</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
-        <maven-javadoc-plugin.version>3.11.2</maven-javadoc-plugin.version>
+        <maven-javadoc-plugin.version>3.11.3</maven-javadoc-plugin.version>
         <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
         <junit.version>5.13.4</junit.version>
