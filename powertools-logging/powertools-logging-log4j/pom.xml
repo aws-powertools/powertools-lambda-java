@@ -145,7 +145,6 @@
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                                <buildArg>-H:Log=registerResource:5</buildArg>
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
                         </configuration>
