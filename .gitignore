@@ -112,7 +112,7 @@ build/
 .terraform*
 terraform.tfstate*
 
-# Kiro and related folders
+# LLMs
 .kiro/
 .claude/
 .amazonq/
