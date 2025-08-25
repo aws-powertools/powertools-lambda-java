@@ -1,26 +1,35 @@
 #  Powertools for AWS Lambda (Java) Examples 
 
 This directory holds example projects demoing different components of the Powertools for AWS Lambda (Java).
+
 Each example can be copied from its subdirectory and used independently of the rest of this repository.
 
 ## Examples
 
 * [powertools-examples-core-utilities](powertools-examples-core-utilities) - Demonstrates the core logging, tracing, and metrics modules with different build tools and languages 
   * [CDK](./powertools-examples-core-utilities/cdk)
-  * [Gradle](./powertools-examples-core-utilities/gradle)
   * [SAM](./powertools-examples-core-utilities/sam) 
+  * [SAM GraalVM](./powertools-examples-core-utilities/sam-graalvm)
   * [Serverless](./powertools-examples-core-utilities/serverless)
+  * [Terraform](./powertools-examples-core-utilities/terraform)
+  * [Gradle](./powertools-examples-core-utilities/gradle)
   * [Kotlin](./powertools-examples-core-utilities/kotlin)
 * [powertools-examples-idempotency](powertools-examples-idempotency) - An idempotent HTTP API
+  * [SAM](./powertools-examples-idempotency/sam)
+  * [SAM GraalVM](./powertools-examples-idempotency/sam-graalvm)
 * [powertools-examples-parameters](powertools-examples-parameters) - Uses the parameters module to provide runtime parameters to a function
+  * [SAM](./powertools-examples-parameters/sam)
+  * [SAM GraalVM](./powertools-examples-parameters/sam-graalvm)
 * [powertools-examples-serialization](powertools-examples-serialization) - Uses the serialization module to serialize and deserialize API Gateway & SQS payloads
+  * [SAM](./powertools-examples-serialization/sam)
+  * [SAM GraalVM](./powertools-examples-serialization/sam-graalvm)
 * [powertools-examples-validation](powertools-examples-validation) - Uses the validation module to validate user requests received via API Gateway
 * [powertools-examples-cloudformation](powertools-examples-cloudformation) - Deploys a Cloudformation custom resource
 * [powertools-examples-batch](powertools-examples-batch) - Examples for each of the different batch processing deployments
+* [powertools-examples-kafka](powertools-examples-kafka) - Examples for Kafka event processing
 
 ## Working with AWS Serverless Application Model (SAM) Examples
-Many of the examples use [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/) (SAM). To get started
-with them, you can use the SAM Command Line Interface (SAM CLI) to build it and deploy an example to AWS. 
+Many of the examples use [AWS Serverless Application Model](https://aws.amazon.com/serverless/sam/) (SAM). To get started with them, you can use the SAM Command Line Interface (SAM CLI) to build it and deploy an example to AWS. 
 
 To use the SAM CLI, you need the following tools.
 
@@ -29,17 +38,13 @@ To use the SAM CLI, you need the following tools.
 * Maven - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
-To learn more about SAM, 
-[check out the developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli.html).
-You can use the CLI to [test events locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-invoke.html),
-and [run the application locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-start-api.html),
-amongst other things.
+To learn more about SAM, [check out the developer guide](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli.html). You can use the CLI to [test events locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-invoke.html), and [run the application locally](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/using-sam-cli-local-start-api.html), amongst other things.
 
 To build and deploy an example application for the first time, run the following in your shell:
 
 ```bash
 # Switch to the directory containing an example for the powertools-idempotency module
-$ cd powertools-examples-idempotency
+$ cd powertools-examples-idempotency/sam
 
 # Build and deploy the example
 $ sam build
@@ -56,7 +61,7 @@ The first command will build the source of your application. The second command 
 
 You can find your API Gateway Endpoint URL in the output values displayed after deployment.
 
-If you're not using SAM, you can look for examples for other tools under [powertools-examples-core](./powertools-examples-core)
+If you're not using SAM, you can look for examples for other tools under [powertools-examples-core-utilities](./powertools-examples-core-utilities)
 
 ### External examples
 
@@ -69,8 +74,7 @@ You can find more examples in the https://github.com/aws/aws-sam-cli-app-templat
 
 ### SAM - Other Tools 
 
-If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit.  
-The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
+If you prefer to use an integrated development environment (IDE) to build and test your application, you can use the AWS Toolkit. The AWS Toolkit is an open source plug-in for popular IDEs that uses the SAM CLI to build and deploy serverless applications on AWS. The AWS Toolkit also adds a simplified step-through debugging experience for Lambda function code. See the following links to get started.
 
 * [PyCharm](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
 * [IntelliJ](https://docs.aws.amazon.com/toolkit-for-jetbrains/latest/userguide/welcome.html)
