@@ -18,8 +18,6 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -54,7 +52,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junitpioneer.jupiter.ClearEnvironmentVariable;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.junitpioneer.jupiter.SetSystemProperty;
-import org.mockito.Mock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -72,6 +69,7 @@ import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
@@ -99,15 +97,13 @@ class LambdaLoggingAspectTest {
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
 
-    @Mock
     private Context context;
 
     @BeforeEach
     void setUp() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException {
-        openMocks(this);
         MDC.clear();
         writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
-        setupContext();
+        context = new TestLambdaContext();
         requestHandler = new PowertoolsLogEnabled();
         requestStreamHandler = new PowertoolsLogEnabledForStream();
         resetLogLevel(Level.INFO);
@@ -124,7 +120,7 @@ class LambdaLoggingAspectTest {
 
     @AfterEach
     void cleanUp() throws IOException {
-        //Make sure file is cleaned up before running full stack logging regression
+        // Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
     }
 
@@ -224,7 +220,8 @@ class LambdaLoggingAspectTest {
         assertThat(LOG.isInfoEnabled()).isFalse();
         assertThat(LOG.isWarnEnabled()).isTrue();
         File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile)).doesNotContain(" does not match AWS Lambda Advanced Logging Controls minimum log level");
+        assertThat(contentOf(logFile))
+                .doesNotContain(" does not match AWS Lambda Advanced Logging Controls minimum log level");
     }
 
     @Test
@@ -241,7 +238,8 @@ class LambdaLoggingAspectTest {
         assertThat(LOG.isInfoEnabled()).isTrue();
         File logFile = new File("target/logfile.json");
         // should log a warning as powertools level is lower than lambda level
-        assertThat(contentOf(logFile)).contains("Current log level (INFO) does not match AWS Lambda Advanced Logging Controls minimum log level (WARN). This can lead to data loss, consider adjusting them.");
+        assertThat(contentOf(logFile)).contains(
+                "Current log level (INFO) does not match AWS Lambda Advanced Logging Controls minimum log level (WARN). This can lead to data loss, consider adjusting them.");
     }
 
     @Test
@@ -265,11 +263,11 @@ class LambdaLoggingAspectTest {
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry(FUNCTION_ARN.getName(), "testArn")
-                .containsEntry(FUNCTION_MEMORY_SIZE.getName(), "10")
+                .containsEntry(FUNCTION_ARN.getName(), "arn:aws:lambda:us-east-1:123456789012:function:test")
+                .containsEntry(FUNCTION_MEMORY_SIZE.getName(), "128")
                 .containsEntry(FUNCTION_VERSION.getName(), "1")
-                .containsEntry(FUNCTION_NAME.getName(), "testFunction")
-                .containsEntry(FUNCTION_REQUEST_ID.getName(), "RequestId")
+                .containsEntry(FUNCTION_NAME.getName(), "test-function")
+                .containsEntry(FUNCTION_REQUEST_ID.getName(), "test-request-id")
                 .containsKey(FUNCTION_COLD_START.getName())
                 .containsKey(SERVICE.getName());
     }
@@ -278,30 +276,30 @@ class LambdaLoggingAspectTest {
     void shouldSetLambdaContextForStreamHandlerWhenEnabled() throws IOException {
         requestStreamHandler = new PowertoolsLogEnabledForStream();
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
-                .containsEntry(FUNCTION_ARN.getName(), "testArn")
-                .containsEntry(FUNCTION_MEMORY_SIZE.getName(), "10")
+                .containsEntry(FUNCTION_ARN.getName(), "arn:aws:lambda:us-east-1:123456789012:function:test")
+                .containsEntry(FUNCTION_MEMORY_SIZE.getName(), "128")
                 .containsEntry(FUNCTION_VERSION.getName(), "1")
-                .containsEntry(FUNCTION_NAME.getName(), "testFunction")
-                .containsEntry(FUNCTION_REQUEST_ID.getName(), "RequestId")
+                .containsEntry(FUNCTION_NAME.getName(), "test-function")
+                .containsEntry(FUNCTION_REQUEST_ID.getName(), "test-request-id")
                 .containsKey(FUNCTION_COLD_START.getName())
                 .containsKey(SERVICE.getName());
     }
 
     @Test
     void shouldSetColdStartFlagOnFirstCallNotOnSecondCall() throws IOException {
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE)
                 .containsEntry(FUNCTION_COLD_START.getName(), "true");
 
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[]{}), new ByteArrayOutputStream(),
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
                 context);
 
         assertThat(MDC.getCopyOfContextMap())
@@ -346,7 +344,7 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    void shouldLogDebugWhenSamplingEnvVarEqualsOne() throws IllegalAccessException {
+    void shouldLogDebugWhenSamplingEnvVarEqualsOne() {
         // GIVEN
         LoggingConstants.POWERTOOLS_SAMPLING_RATE = "1";
         PowertoolsLogEnabled handler = new PowertoolsLogEnabled();
@@ -360,7 +358,7 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    void shouldNotLogDebugWhenSamplingEnvVarIsTooBig() throws IllegalAccessException {
+    void shouldNotLogDebugWhenSamplingEnvVarIsTooBig() {
         // GIVEN
         LoggingConstants.POWERTOOLS_SAMPLING_RATE = "42";
 
@@ -378,7 +376,7 @@ class LambdaLoggingAspectTest {
         LoggingConstants.POWERTOOLS_SAMPLING_RATE = "NotANumber";
 
         // WHEN
-            requestHandler.handleRequest(new Object(), context);
+        requestHandler.handleRequest(new Object(), context);
 
         // THEN
         File logFile = new File("target/logfile.json");
@@ -509,7 +507,7 @@ class LambdaLoggingAspectTest {
         requestHandler.handleRequest(singletonList("ListOfOneElement"), context);
 
         // THEN
-        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar)requestHandler).getLogger();
+        TestLogger logger = (TestLogger) ((PowertoolsLogEventEnvVar) requestHandler).getLogger();
         assertThat(logger.getArguments()).isNull();
     }
 
@@ -521,7 +519,8 @@ class LambdaLoggingAspectTest {
         Map<String, String> map = Collections.singletonMap("key", "value");
 
         // WHEN
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(map)), output, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new ObjectMapper().writeValueAsBytes(map)), output,
+                context);
 
         // THEN
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
@@ -586,7 +585,8 @@ class LambdaLoggingAspectTest {
         String input = "<user><firstName>Bob</firstName><lastName>The Sponge</lastName></user>";
 
         // WHEN
-        requestStreamHandler.handleRequest(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), output, context);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)), output,
+                context);
 
         // THEN
         assertThat(new String(output.toByteArray(), StandardCharsets.UTF_8))
@@ -737,7 +737,8 @@ class LambdaLoggingAspectTest {
         String output = outputStream.toString("UTF-8");
         assertThat(output)
                 .contains("WARN. Multiple LoggingManagers were found on the classpath")
-                .contains("WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies")
+                .contains(
+                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies")
                 .contains("WARN. Using the first LoggingManager found on the classpath: [" + list.get(0) + "]");
     }
 
@@ -757,17 +758,10 @@ class LambdaLoggingAspectTest {
         assertThat(output)
                 .contains("ERROR. No LoggingManager was found on the classpath")
                 .contains("ERROR. Applying default LoggingManager: POWERTOOLS_LOG_LEVEL variable is ignored")
-                .contains("ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
+                .contains(
+                        "ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
 
         assertThat(loggingManager).isExactlyInstanceOf(DefautlLoggingManager.class);
-    }
-
-    private void setupContext() {
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getInvokedFunctionArn()).thenReturn("testArn");
-        when(context.getFunctionVersion()).thenReturn("1");
-        when(context.getMemoryLimitInMB()).thenReturn(10);
-        when(context.getAwsRequestId()).thenReturn("RequestId");
     }
 
     private void resetLogLevel(Level level)

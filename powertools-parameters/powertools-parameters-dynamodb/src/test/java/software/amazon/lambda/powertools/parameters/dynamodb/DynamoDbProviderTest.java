@@ -23,13 +23,17 @@ import static software.amazon.lambda.powertools.parameters.transform.Transformer
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
@@ -40,17 +44,23 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.dynamodb.exception.DynamoDbProviderSchemaException;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+@ExtendWith(MockitoExtension.class)
 public class DynamoDbProviderTest {
 
     private final String tableName = "ddb-test-table";
+
     @Mock
     DynamoDbClient client;
+
     @Mock
     TransformationManager transformationManager;
+
     @Captor
     ArgumentCaptor<GetItemRequest> getItemValueCaptor;
+
     @Captor
     ArgumentCaptor<QueryRequest> queryRequestCaptor;
+
     private DynamoDbProvider provider;
 
     @BeforeEach
@@ -59,7 +69,6 @@ public class DynamoDbProviderTest {
         CacheManager cacheManager = new CacheManager();
         provider = new DynamoDbProvider(cacheManager, transformationManager, client, tableName);
     }
-
 
     @Test
     public void getValue() {
@@ -83,7 +92,6 @@ public class DynamoDbProviderTest {
         assertThat(getItemValueCaptor.getValue().tableName()).isEqualTo(tableName);
         assertThat(getItemValueCaptor.getValue().key().get("id").s()).isEqualTo(key);
     }
-
 
     @Test
     public void getValueWithNullResultsReturnsNull() {
@@ -124,12 +132,10 @@ public class DynamoDbProviderTest {
                 .item(responseData)
                 .build());
         // Act
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
-        {
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
             provider.getValue(key);
         });
     }
-
 
     @Test
     public void getValues() {
@@ -191,8 +197,7 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
-        {
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
             // Act
             provider.getMultipleValues(key);
         });
@@ -212,8 +217,7 @@ public class DynamoDbProviderTest {
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(response);
 
         // Assert
-        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () ->
-        {
+        Assertions.assertThrows(DynamoDbProviderSchemaException.class, () -> {
             // Act
             provider.getMultipleValues(key);
         });
@@ -227,6 +231,7 @@ public class DynamoDbProviderTest {
                 .withCacheManager(new CacheManager())
                 .build());
     }
+
     @Test
     public void testDynamoDBBuilder_withoutParameter_shouldHaveDefaultTransformationManager() {
 
@@ -234,7 +239,7 @@ public class DynamoDbProviderTest {
         DynamoDbProvider dynamoDbProvider = DynamoDbProvider.builder().withTable("test-table")
                 .build();
         // Assert
-        assertDoesNotThrow(()->dynamoDbProvider.withTransformation(json));
+        assertDoesNotThrow(() -> dynamoDbProvider.withTransformation(json));
     }
 
 }

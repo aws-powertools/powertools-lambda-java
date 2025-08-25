@@ -14,8 +14,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>powertools-common</artifactId>
@@ -77,13 +77,13 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -94,7 +94,6 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.18.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -105,7 +104,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <version>3.5.3</version>
                         <configuration>
-                            <argLine>-Dmockito.mock.maker=subclass -Dorg.graalvm.nativeimage.imagecode=agent -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-common,experimental-class-define-support
+                            <argLine>
+                                -Dorg.graalvm.nativeimage.imagecode=agent
+                                -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-common,experimental-class-define-support
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                             </argLine>
@@ -120,7 +121,6 @@
                 <dependency>
                     <groupId>org.mockito</groupId>
                     <artifactId>mockito-subclass</artifactId>
-                    <version>5.18.0</version>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -129,7 +129,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.11.0</version> <!-- or newer version -->
+                        <version>0.11.0</version>
                         <extensions>true</extensions>
                         <executions>
                             <execution>
@@ -146,33 +146,10 @@
                                 <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
                                 <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
                                 <buildArg>--no-fallback</buildArg>
-                                <buildArg>-Dorg.graalvm.nativeimage.imagecode=agent</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.ClassFileVersion:rerun</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.utility.dispatcher.JavaDispatcher:rerun</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.utility.Invoker$Dispatcher:rerun</buildArg>
-                                <buildArg>-H:ClassInitialization=net.bytebuddy.utility.GraalImageCode:rerun</buildArg>
-                                <buildArg>--initialize-at-build-time=org.slf4j.simple.SimpleLogger</buildArg>
-                                <buildArg>--initialize-at-build-time=org.slf4j.LoggerFactory</buildArg>
-                                <buildArg>--initialize-at-build-time=org.junit.Ignore</buildArg>
-                                <buildArg>--initialize-at-build-time=java.lang.annotation.Annotation</buildArg>
-                                <buildArg>--initialize-at-build-time=org.junit.runners.model.FrameworkField</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$1</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Argument$BindingMechanic$2</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.utility.dispatcher.JavaDispatcher$DynamicClassLoader</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$AbstractBase</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.type.TypeDescription$ForLoadedType</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.description.method.MethodDescription$ForLoadedMethod</buildArg>
-                                <buildArg>--initialize-at-build-time=net.bytebuddy.implementation.bind.annotation.Super$Instantiation$2</buildArg>
-                                <buildArg>
-                                    --trace-class-initialization=net.bytebuddy.description.type.TypeDescription$ForLoadedType,net.bytebuddy.description.method.MethodDescription$ForLoadedMethod,net.bytebuddy.description.method.MethodDescription$InDefinedShape$AbstractBase$ForLoadedExecutable
-                                </buildArg>
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                                <buildArg>-H:Log=registerResource:5</buildArg>
+                                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
                         </configuration>
                     </plugin>
@@ -192,5 +169,18 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

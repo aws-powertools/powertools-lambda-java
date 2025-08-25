@@ -20,7 +20,6 @@ import static java.time.temporal.ChronoUnit.MINUTES;
 import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
@@ -30,8 +29,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserialize;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -43,13 +44,10 @@ public class BaseProviderTest {
     CacheManager cacheManager;
     TransformationManager transformationManager;
     BasicProvider provider;
-
     boolean getFromStore = false;
 
     @BeforeEach
     public void setup() {
-        openMocks(this);
-
         clock = Clock.systemDefaultZone();
         cacheManager = new CacheManager();
         transformationManager = new TransformationManager();
@@ -197,8 +195,8 @@ public class BaseProviderTest {
     public void get_complexTransformation_shouldTransformInObject() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
-        ObjectToDeserialize objectToDeserialize =
-                provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
+        ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo",
+                ObjectToDeserialize.class);
 
         assertThat(objectToDeserialize).matches(
                 o -> o.getFoo().equals("Foo")

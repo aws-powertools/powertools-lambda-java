@@ -37,7 +37,7 @@ import software.amazon.lambda.powertools.metrics.FlushMetrics;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
-import software.amazon.lambda.powertools.metrics.testutils.TestContext;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 class LambdaMetricsAspectTest {
 
@@ -74,7 +74,7 @@ class LambdaMetricsAspectTest {
     void shouldCaptureMetricsFromAnnotatedHandler() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -98,7 +98,7 @@ class LambdaMetricsAspectTest {
     void shouldOverrideEnvironmentVariablesWithAnnotation() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -120,7 +120,7 @@ class LambdaMetricsAspectTest {
     void shouldUseEnvironmentVariablesWhenNoAnnotationOverrides() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithDefaultMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -140,7 +140,7 @@ class LambdaMetricsAspectTest {
     void shouldCaptureColdStartMetricWhenConfigured() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithColdStartMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -166,7 +166,7 @@ class LambdaMetricsAspectTest {
     void shouldNotIncludeServiceDimensionInColdStartMetricWhenServiceUndefined() throws Exception {
         // Given - no service name set, so it will use the default undefined value
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithColdStartMetricsAnnotation();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -195,7 +195,7 @@ class LambdaMetricsAspectTest {
     void shouldUseCustomFunctionNameWhenProvidedForColdStartMetric() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithCustomFunctionName();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -228,7 +228,7 @@ class LambdaMetricsAspectTest {
     void shouldUseServiceNameWhenProvidedForColdStartMetric() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithServiceNameAndColdStart();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When
@@ -247,7 +247,7 @@ class LambdaMetricsAspectTest {
     void shouldHaveNoEffectOnNonHandlerMethod() {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithAnnotationOnWrongMethod();
-        Context context = new TestContext();
+        Context context = new TestLambdaContext();
         Map<String, Object> input = new HashMap<>();
 
         // When

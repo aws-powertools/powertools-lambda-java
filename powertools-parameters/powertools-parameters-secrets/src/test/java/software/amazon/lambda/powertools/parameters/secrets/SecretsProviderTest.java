@@ -25,11 +25,13 @@ import java.util.Base64;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
@@ -37,6 +39,7 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRespon
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
+@ExtendWith(MockitoExtension.class)
 public class SecretsProviderTest {
 
     @Mock
@@ -54,7 +57,6 @@ public class SecretsProviderTest {
 
     @BeforeEach
     public void init() {
-        MockitoAnnotations.openMocks(this);
         cacheManager = new CacheManager();
         provider = new SecretsProvider(cacheManager, transformationManager, client);
     }
@@ -78,8 +80,8 @@ public class SecretsProviderTest {
         String key = "Key2";
         String expectedValue = "Value2";
         byte[] valueb64 = Base64.getEncoder().encode(expectedValue.getBytes());
-        GetSecretValueResponse response =
-                GetSecretValueResponse.builder().secretBinary(SdkBytes.fromByteArray(valueb64)).build();
+        GetSecretValueResponse response = GetSecretValueResponse.builder()
+                .secretBinary(SdkBytes.fromByteArray(valueb64)).build();
         Mockito.when(client.getSecretValue(paramCaptor.capture())).thenReturn(response);
 
         String value = provider.getValue(key);
@@ -90,16 +92,13 @@ public class SecretsProviderTest {
 
     @Test
     public void getMultipleValuesThrowsException() {
-
         // Act & Assert
         assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
                 .withMessage("Impossible to get multiple values from AWS Secrets Manager");
-
     }
 
     @Test
     public void testGetSecretsProvider_withoutParameter_shouldCreateDefaultClient() {
-
         // Act
         SecretsProvider secretsProvider = SecretsProvider.builder()
                 .build();
@@ -111,11 +110,10 @@ public class SecretsProviderTest {
 
     @Test
     public void testGetSecretsProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
-
         // Act
         SecretsProvider secretsProvider = SecretsProvider.builder()
                 .build();
         // Assert
-        assertDoesNotThrow(()->secretsProvider.withTransformation(json));
+        assertDoesNotThrow(() -> secretsProvider.withTransformation(json));
     }
 }
