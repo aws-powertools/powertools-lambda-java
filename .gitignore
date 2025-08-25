@@ -116,7 +116,5 @@ terraform.tfstate*
 .kiro/
 .claude/
 .amazonq/
-
-# Instructions
 .github/instructions
 
