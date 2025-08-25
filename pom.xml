@@ -114,8 +114,8 @@
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
         <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
         <elastic.version>1.7.0</elastic.version>
-        <mockito.version>5.16.0</mockito.version>
-        <mockito-junit-jupiter.version>5.16.0</mockito-junit-jupiter.version>
+        <mockito.version>5.19.1-SNAPSHOT</mockito.version>
+        <mockito-junit-jupiter.version>5.19.1-SNAPSHOT</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
 
@@ -130,6 +130,21 @@
             <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <!-- https://central.sonatype.org/publish/publish-portal-snapshots/#consuming-via-maven -->
+    <repositories>
+        <repository>
+            <name>Central Portal Snapshots</name>
+            <id>central-portal-snapshots</id>
+            <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>

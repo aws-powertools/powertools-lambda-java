@@ -58,6 +58,8 @@ on:
       - '.github/workflows/**'
 
 name: Build
+permissions:
+  contents: read
 run-name: Build - ${{ github.event_name }}
 
 jobs:
@@ -82,7 +84,7 @@ jobs:
       - id: build-maven
         name: Build (Maven)
         run: |
-          mvn -B install --file pom.xml
+          mvn -B -q install --file pom.xml
 
   graalvm-build:
     runs-on: ubuntu-latest
@@ -99,14 +101,17 @@ jobs:
       - id: graalvm-native-test
         name: GraalVM Native Test
         run: |
-          # Find modules with graalvm-native profile and run tests.
+          # Build the entire project first to ensure test-jar dependencies are available
+          mvn -B -q install -DskipTests
+          
+          # Find modules with graalvm-native profile and run tests recursively.
           # This will make sure to discover new GraalVM supported modules automatically in the future.
-          for module in powertools-*/pom.xml; do
+          find . -name "pom.xml" -path "./powertools-*" | while read module; do
             if grep -q "<id>graalvm-native</id>" "$module"; then
               module_dir=$(dirname "$module")
               echo "Regenerating GraalVM metadata for $module_dir"
-              mvn -B -f "$module" -Pgenerate-graalvm-files clean test
+              mvn -B -q -f "$module" -Pgenerate-graalvm-files clean test
               echo "Running GraalVM native tests for $module_dir"
-              mvn -B -f "$module" -Pgraalvm-native test
+              mvn -B -q -f "$module" -Pgraalvm-native test
             fi
           done

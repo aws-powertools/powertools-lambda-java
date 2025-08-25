@@ -135,6 +135,13 @@
                     <artifactId>mockito-subclass</artifactId>
                     <scope>test</scope>
                 </dependency>
+
+                <!-- Required explicitly for @Captor ArgumentCaptor -->
+                <dependency>
+                    <groupId>org.junit.jupiter</groupId>
+                    <artifactId>junit-jupiter-params</artifactId>
+                    <scope>test</scope>
+                </dependency>
             </dependencies>
             <build>
                 <plugins>
@@ -161,7 +168,6 @@
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                                <buildArg>-H:Log=registerResource:5</buildArg>
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
                         </configuration>

@@ -90,13 +90,6 @@
     <profiles>
         <profile>
             <id>generate-graalvm-files</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-subclass</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -117,13 +110,6 @@
         </profile>
         <profile>
             <id>graalvm-native</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.mockito</groupId>
-                    <artifactId>mockito-subclass</artifactId>
-                    <scope>test</scope>
-                </dependency>
-            </dependencies>
             <build>
                 <plugins>
                     <plugin>
@@ -152,7 +138,6 @@
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
                                 <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
-                                <buildArg>-H:Log=registerResource:5</buildArg>
                                 <buildArg>-H:+ReportExceptionStackTraces</buildArg>
                             </buildArgs>
                         </configuration>
