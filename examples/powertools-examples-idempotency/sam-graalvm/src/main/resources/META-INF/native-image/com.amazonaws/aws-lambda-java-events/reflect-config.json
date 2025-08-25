@@ -19,16 +19,11 @@
   },
   {
     "name": "com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent",
-    "allDeclaredFields": true,
-    "allDeclaredMethods": true,
-    "allDeclaredConstructors": true
-  },
-  {
-    "name": "com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent",
     "allDeclaredConstructors": true,
     "allPublicConstructors": true,
     "allDeclaredMethods": true,
     "allPublicMethods": true,
+    "allDeclaredFields": true,
     "allDeclaredClasses": true,
     "allPublicClasses": true
   }
