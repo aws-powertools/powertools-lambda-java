@@ -25,13 +25,13 @@
 
     <artifactId>powertools-e2e-tests</artifactId>
     <name>Powertools for AWS Lambda (Java) - End-to-end tests</name>
-    <description>Powertools for AWS Lambda (Java)End-To-End Tests</description>
+    <description>Powertools for AWS Lambda (Java) – End-To-End Tests</description>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <constructs.version>10.4.2</constructs.version>
-        <cdk.version>2.211.0</cdk.version>
+        <cdk.version>2.212.0</cdk.version>
     </properties>
 
     <dependencies>
