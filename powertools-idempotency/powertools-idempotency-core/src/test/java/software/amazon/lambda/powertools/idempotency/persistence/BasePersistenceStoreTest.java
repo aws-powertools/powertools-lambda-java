@@ -240,12 +240,12 @@ class BasePersistenceStoreTest {
 
         assertThat(status).isEqualTo(2);
         assertThat(cache).hasSize(1);
-        DataRecord dr = cache.get("testFunction#8d6a8f173b46479eff55e0997864a514");
-        assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
-        assertThat(dr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
-        assertThat(dr.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
-        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction#8d6a8f173b46479eff55e0997864a514");
-        assertThat(dr.getPayloadHash()).isEmpty();
+        DataRecord cachedDr = cache.get("testFunction#8d6a8f173b46479eff55e0997864a514");
+        assertThat(cachedDr.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
+        assertThat(cachedDr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
+        assertThat(cachedDr.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
+        assertThat(cachedDr.getIdempotencyKey()).isEqualTo("testFunction#8d6a8f173b46479eff55e0997864a514");
+        assertThat(cachedDr.getPayloadHash()).isEmpty();
     }
 
     @Test
@@ -256,10 +256,10 @@ class BasePersistenceStoreTest {
         persistenceStore.configure(IdempotencyConfig.builder().build(), "myfunc", cache);
 
         Instant now = Instant.now();
-        DataRecord dr = persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), now);
-        assertThat(dr.getIdempotencyKey()).isEqualTo("testFunction.myfunc#8d6a8f173b46479eff55e0997864a514");
-        assertThat(dr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
-        assertThat(dr.getResponseData()).isEqualTo("Response");
+        DataRecord freshDr = persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), now);
+        assertThat(freshDr.getIdempotencyKey()).isEqualTo("testFunction.myfunc#8d6a8f173b46479eff55e0997864a514");
+        assertThat(freshDr.getStatus()).isEqualTo(DataRecord.Status.INPROGRESS);
+        assertThat(freshDr.getResponseData()).isEqualTo("Response");
         assertThat(status).isZero();
     }
 
