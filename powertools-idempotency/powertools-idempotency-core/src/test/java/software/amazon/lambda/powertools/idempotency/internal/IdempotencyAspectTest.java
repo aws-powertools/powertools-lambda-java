@@ -37,10 +37,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
@@ -62,7 +62,7 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 @ExtendWith(MockitoExtension.class)
-public class IdempotencyAspectTest {
+class IdempotencyAspectTest {
 
     private Context context = new TestLambdaContext();
 
@@ -70,7 +70,7 @@ public class IdempotencyAspectTest {
     private BasePersistenceStore store;
 
     @Test
-    public void firstCall_shouldPutInStore() {
+    void firstCall_shouldPutInStore() {
         Idempotency.config()
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
@@ -100,12 +100,13 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void firstCall_shouldPutInStoreAndNotApplyResponseHook() {
+    void firstCall_shouldPutInStoreAndNotApplyResponseHook() {
         Idempotency.config()
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder()
                         .withEventKeyJMESPath("id")
-                        // This hook will add a second product to the basket. It should not run here. Only for
+                        // This hook will add a second product to the basket. It should not run here.
+                        // Only for
                         // idempotent responses.
                         .withResponseHook((responseData, dataRecord) -> {
                             final Basket basket = (Basket) responseData;
@@ -137,7 +138,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void secondCall_notExpired_shouldGetFromStore() throws JsonProcessingException {
+    void secondCall_notExpired_shouldGetFromStore() throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -168,7 +169,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void secondCall_notExpired_shouldNotGetFromStoreIfPresentOnIdempotencyException()
+    void secondCall_notExpired_shouldNotGetFromStoreIfPresentOnIdempotencyException()
             throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
@@ -187,12 +188,13 @@ public class IdempotencyAspectTest {
                 JsonConfig.get().getObjectMapper().writer().writeValueAsString(b),
                 null);
 
-        // A data record on this exception should take precedence over fetching a record from the store / cache
+        // A data record on this exception should take precedence over fetching a record
+        // from the store / cache
         doThrow(new IdempotencyItemAlreadyExistsException(
                 "Test message",
                 new RuntimeException("Test Cause"),
                 dr))
-                        .when(store).saveInProgress(any(), any(), any());
+                .when(store).saveInProgress(any(), any(), any());
 
         // WHEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
@@ -201,12 +203,13 @@ public class IdempotencyAspectTest {
         // THEN
         assertThat(basket).isEqualTo(b);
         assertThat(function.handlerCalled()).isFalse();
-        // Should never call the store because item is already present on IdempotencyItemAlreadyExistsException
+        // Should never call the store because item is already present on
+        // IdempotencyItemAlreadyExistsException
         verify(store, never()).getRecord(any(), any());
     }
 
     @Test
-    public void secondCall_notExpired_shouldGetStringFromStore() {
+    void secondCall_notExpired_shouldGetStringFromStore() {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -236,7 +239,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void secondCall_notExpired_shouldGetStringFromStoreWithResponseHook() {
+    void secondCall_notExpired_shouldGetStringFromStoreWithResponseHook() {
         // GIVEN
         final String RESPONSE_HOOK_SUFFIX = " ResponseHook";
         Idempotency.config()
@@ -271,7 +274,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void secondCall_inProgress_shouldThrowIdempotencyAlreadyInProgressException()
+    void secondCall_inProgress_shouldThrowIdempotencyAlreadyInProgressException()
             throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
@@ -303,7 +306,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void secondCall_inProgress_lambdaTimeout_timeoutExpired_shouldThrowInconsistentState()
+    void secondCall_inProgress_lambdaTimeout_timeoutExpired_shouldThrowInconsistentState()
             throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
@@ -335,7 +338,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void functionThrowException_shouldDeleteRecord_andThrowFunctionException() {
+    void functionThrowException_shouldDeleteRecord_andThrowFunctionException() {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -356,7 +359,7 @@ public class IdempotencyAspectTest {
 
     @Test
     @SetEnvironmentVariable(key = Constants.IDEMPOTENCY_DISABLED_ENV, value = "true")
-    public void testIdempotencyDisabled_shouldJustRunTheFunction() {
+    void testIdempotencyDisabled_shouldJustRunTheFunction() {
         // GIVEN
         Idempotency.config()
                 .withPersistenceStore(store)
@@ -377,7 +380,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodAnnotated_firstCall_shouldPutInStore() {
+    void idempotencyOnSubMethodAnnotated_firstCall_shouldPutInStore() {
         Idempotency.config()
                 .withPersistenceStore(store)
                 .configure();
@@ -405,7 +408,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodAnnotated_firstCall_contextNotRegistered_shouldPutInStore() {
+    void idempotencyOnSubMethodAnnotated_firstCall_contextNotRegistered_shouldPutInStore() {
         Idempotency.config()
                 .withPersistenceStore(store)
                 .configure();
@@ -433,7 +436,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodAnnotated_secondCall_notExpired_shouldGetFromStore()
+    void idempotencyOnSubMethodAnnotated_secondCall_notExpired_shouldGetFromStore()
             throws JsonProcessingException {
         // GIVEN
         Idempotency.config()
@@ -462,7 +465,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodAnnotated_keyJMESPath_shouldPutInStoreWithKey() {
+    void idempotencyOnSubMethodAnnotated_keyJMESPath_shouldPutInStoreWithKey() {
         BasePersistenceStore persistenceStore = spy(BasePersistenceStore.class);
 
         Idempotency.config()
@@ -484,7 +487,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodAnnotated_keyJMESPathArray_shouldPutInStoreWithKey() {
+    void idempotencyOnSubMethodAnnotated_keyJMESPathArray_shouldPutInStoreWithKey() {
         BasePersistenceStore persistenceStore = spy(BasePersistenceStore.class);
 
         Idempotency.config()
@@ -506,7 +509,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodNotAnnotated_shouldThrowException() {
+    void idempotencyOnSubMethodNotAnnotated_shouldThrowException() {
         Idempotency.config()
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder().build()).configure();
@@ -521,7 +524,7 @@ public class IdempotencyAspectTest {
     }
 
     @Test
-    public void idempotencyOnSubMethodVoid_shouldThrowException() {
+    void idempotencyOnSubMethodVoid_shouldThrowException() {
         Idempotency.config()
                 .withPersistenceStore(store)
                 .withConfig(IdempotencyConfig.builder().build()).configure();
