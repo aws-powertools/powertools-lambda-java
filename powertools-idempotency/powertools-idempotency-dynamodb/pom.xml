@@ -186,8 +186,6 @@
                         <configuration>
                             <includeScope>test</includeScope>
                             <excludeTransitive>false</excludeTransitive>
-                            <includeGroupIds>
-                                com.amazonaws,software.amazon.awssdk,org.eclipse.jetty,com.fasterxml.jackson.core,com.fasterxml.jackson.dataformat,com.fasterxml.jackson.datatype,com.almworks.sqlite4java,commons-cli,org.apache.commons,commons-logging,org.apache.logging.log4j,org.slf4j,org.reactivestreams,org.antlr,com.google.guava,jakarta.transaction</includeGroupIds>
                             <outputDirectory>${project.build.directory}/dynamodb-local</outputDirectory>
                         </configuration>
                     </execution>
