@@ -24,6 +24,7 @@ import java.io.IOException;
  * Always fails to send the response
  */
 public class FailToSendResponseHandler extends NoOpCustomResourceHandler {
+    @Override
     CloudFormationResponse buildResponseClient() {
         CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
         try {

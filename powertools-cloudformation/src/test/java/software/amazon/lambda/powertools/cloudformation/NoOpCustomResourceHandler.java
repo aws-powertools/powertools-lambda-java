@@ -27,6 +27,7 @@ public class NoOpCustomResourceHandler extends NullCustomResourceHandler {
         super(mock(SdkHttpClient.class));
     }
 
+    @Override
     CloudFormationResponse buildResponseClient() {
         return mock(CloudFormationResponse.class);
     }

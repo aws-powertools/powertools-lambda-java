@@ -36,6 +36,7 @@ public class ExpectedStatusResourceHandler extends NoOpCustomResourceHandler {
         this.expectedStatus = expectedStatus;
     }
 
+    @Override
     CloudFormationResponse buildResponseClient() {
         // create a CloudFormationResponse that fails if invoked with unexpected status
         CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
