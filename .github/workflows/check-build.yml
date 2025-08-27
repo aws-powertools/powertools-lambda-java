@@ -126,11 +126,14 @@ jobs:
               # Get the relative path from project root
               module_path=${module_dir#./}
               
-              echo "DEBUG: module_dir=$module_dir, module_name=$module_name, module_path=$module_path"
-              echo "DEBUG: Checking for ' $module_path/' in ' $CHANGED_FILES '"
+              # Debug: show what we're actually checking
+              echo "DEBUG: Looking for changes in module: $module_path"
+              echo "DEBUG: Changed files contain pom.xml: $(echo "$CHANGED_FILES" | grep -q "pom.xml" && echo "YES" || echo "NO")"
+              echo "DEBUG: Changed files contain powertools-common/: $(echo "$CHANGED_FILES" | grep -q "powertools-common/" && echo "YES" || echo "NO")"
+              echo "DEBUG: Changed files contain $module_path/: $(echo "$CHANGED_FILES" | grep -q "$module_path/" && echo "YES" || echo "NO")"
               
               # Check if this specific module or common dependencies changed
-              if echo " $CHANGED_FILES " | grep -q " $module_path/" || \
+              if echo "$CHANGED_FILES" | grep -q "$module_path/" || \
                  echo "$CHANGED_FILES" | grep -q "pom.xml" || \
                  echo "$CHANGED_FILES" | grep -q "powertools-common/"; then
                 echo "Changes detected in $module_name - running GraalVM tests"
