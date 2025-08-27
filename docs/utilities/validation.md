@@ -292,3 +292,31 @@ If you need to configure the Jackson ObjectMapper, you can use the `ValidationCo
        }
     }
     ```
+
+## Advanced
+
+### SnapStart priming
+To enable priming with AWS Lambda SnapStart, you need an explicit reference to `ValidationConfig` to allow the library to register before SnapStart takes a memory snapshot.
+
+The `@Validation` annotation uses AspectJ compile-time weaving, which means there may be no runtime reference that triggers `ValidationConfig` to load during the INIT phase. 
+Hence without explicit reference, the priming logic will not execute.
+
+So to ensure `ValidationConfig` is loaded, you need to add an explicit reference in your handler class. This can be done by adding one of the following to your handler class:
+
+=== "Constructor"
+
+    ```java hl_lines="3"
+    ... 
+    public MyHandler() {
+        ValidationConfig.get(); // Ensure ValidationConfig is loaded for SnapStart
+    }
+    ```
+
+=== "Static Initializer"
+
+    ```java hl_lines="3"
+    ...
+    static {
+        ValidationConfig.get(); // Ensure ValidationConfig is loaded for SnapStart
+    }
+    ```
