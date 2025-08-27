@@ -87,7 +87,7 @@ jobs:
           mvn -B -q install --file pom.xml
 
   graalvm-build:
-    runs-on: ubuntu-latest
+    runs-on: aws-powertools_ubuntu-latest_8-core
     steps:
       - id: checkout
         name: Checkout repository

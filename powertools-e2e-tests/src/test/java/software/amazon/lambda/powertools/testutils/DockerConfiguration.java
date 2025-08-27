@@ -88,6 +88,7 @@ public class DockerConfiguration {
                 .environment(environmentVariables)
                 .user("root")
                 .outputType(BundlingOutput.ARCHIVED)
+                .platform("linux/amd64")
                 .build();
     }
 
@@ -111,6 +112,7 @@ public class DockerConfiguration {
                 .volumes(volumes)
                 .user("root")
                 .outputType(BundlingOutput.ARCHIVED)
+                .platform("linux/amd64")
                 .build();
     }
 

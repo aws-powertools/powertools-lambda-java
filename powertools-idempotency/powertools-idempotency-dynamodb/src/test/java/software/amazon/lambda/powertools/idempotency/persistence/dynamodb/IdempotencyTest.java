@@ -16,30 +16,22 @@ package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.amazonaws.services.lambda.runtime.tests.EventLoader;
 
 import software.amazon.awssdk.services.dynamodb.model.ScanRequest;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.handlers.IdempotencyFunction;
 
-public class IdempotencyTest extends DynamoDBConfig {
+class IdempotencyTest extends DynamoDBConfig {
 
-    @Mock
-    private Context context;
-
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
-    }
+    private Context context = new TestLambdaContext();
 
     @Test
-    public void endToEndTest() {
+    void endToEndTest() {
         IdempotencyFunction function = new IdempotencyFunction(client);
 
         APIGatewayProxyResponseEvent response = function

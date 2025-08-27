@@ -85,7 +85,7 @@
         <log4j.version>2.25.1</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.19.2</jackson.version>
-        <aws.sdk.version>2.32.28</aws.sdk.version>
+        <aws.sdk.version>2.32.30</aws.sdk.version>
         <aws.xray.recorder.version>2.19.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -458,6 +458,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-gpg-plugin</artifactId>
                     <version>${maven-gpg-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>exec-maven-plugin</artifactId>
+                    <version>3.5.1</version>
                 </plugin>
             </plugins>
         </pluginManagement>
