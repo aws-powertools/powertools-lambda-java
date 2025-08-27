@@ -45,14 +45,12 @@ public class CloudFormationIntegrationTest {
     public static final String LOG_STREAM_NAME = "test-log-stream";
 
     private static CloudFormationCustomResourceEvent.CloudFormationCustomResourceEventBuilder baseEvent(int httpPort) {
-        CloudFormationCustomResourceEvent.CloudFormationCustomResourceEventBuilder builder = CloudFormationCustomResourceEvent
+        return CloudFormationCustomResourceEvent
                 .builder()
                 .withResponseUrl("http://localhost:" + httpPort + "/")
                 .withStackId("123")
                 .withRequestId("234")
                 .withLogicalResourceId("345");
-
-        return builder;
     }
 
     @ParameterizedTest
