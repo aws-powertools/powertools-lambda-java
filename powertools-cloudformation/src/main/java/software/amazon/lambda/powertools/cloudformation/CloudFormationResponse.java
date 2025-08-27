@@ -46,7 +46,7 @@ import software.amazon.awssdk.utils.StringUtils;
  * <p>
  * This class is thread-safe provided the SdkHttpClient instance used is also thread-safe.
  */
-class CloudFormationResponse {
+public class CloudFormationResponse {
 
     private static final Logger LOG = LoggerFactory.getLogger(CloudFormationResponse.class);
     private final SdkHttpClient client;
