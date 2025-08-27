@@ -21,18 +21,18 @@ import org.crac.Context;
 import org.crac.Resource;
 import org.junit.jupiter.api.Test;
 
-public class ValidationConfigTest {
+class ValidationConfigTest {
 
     ValidationConfig config = ValidationConfig.get();
     Context<Resource> context = mock(Context.class);
 
     @Test
-    public void testBeforeCheckpointDoesNotThrowException() {
+    void testBeforeCheckpointDoesNotThrowException() {
         assertThatNoException().isThrownBy(() -> config.beforeCheckpoint(context));
     }
 
     @Test
-    public void testAfterRestoreDoesNotThrowException() {
+    void testAfterRestoreDoesNotThrowException() {
         assertThatNoException().isThrownBy(() -> config.afterRestore(context));
     }
 }
