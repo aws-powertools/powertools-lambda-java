@@ -14,12 +14,6 @@
 
 package software.amazon.lambda.powertools.cloudformation;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Collections;
@@ -27,8 +21,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import software.amazon.awssdk.http.Header;
 import software.amazon.awssdk.http.HttpExecuteRequest;
 import software.amazon.awssdk.http.HttpExecuteResponse;
@@ -39,20 +42,24 @@ import software.amazon.awssdk.utils.StringInputStream;
 import software.amazon.awssdk.utils.StringUtils;
 
 /**
- * Client for sending responses to AWS CloudFormation custom resources by way of a response URL, which is an Amazon S3
+ * Client for sending responses to AWS CloudFormation custom resources by way of
+ * a response URL, which is an Amazon S3
  * pre-signed URL.
  * <p>
- * See https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-lambda-function-code-cfnresponsemodule.html
+ * See
+ * https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-lambda-function-code-cfnresponsemodule.html
  * <p>
- * This class is thread-safe provided the SdkHttpClient instance used is also thread-safe.
+ * This class is thread-safe provided the SdkHttpClient instance used is also
+ * thread-safe.
  */
-class CloudFormationResponse {
+public class CloudFormationResponse {
 
     private static final Logger LOG = LoggerFactory.getLogger(CloudFormationResponse.class);
     private final SdkHttpClient client;
 
     /**
-     * Creates a new CloudFormationResponse that uses the provided HTTP client and default JSON serialization format.
+     * Creates a new CloudFormationResponse that uses the provided HTTP client and
+     * default JSON serialization format.
      *
      * @param client HTTP client to use for sending requests; cannot be null
      */
@@ -70,36 +77,46 @@ class CloudFormationResponse {
     }
 
     /**
-     * Forwards a response containing a custom payload to the target resource specified by the event. The payload is
+     * Forwards a response containing a custom payload to the target resource
+     * specified by the event. The payload is
      * formed from the event and context data. Status is assumed to be SUCCESS.
      *
      * @param event   custom CF resource event. Cannot be null.
-     * @param context used to specify when the function and any callbacks have completed execution, or to
-     *                access information from within the Lambda execution environment. Cannot be null.
+     * @param context used to specify when the function and any callbacks have
+     *                completed execution, or to
+     *                access information from within the Lambda execution
+     *                environment. Cannot be null.
      * @return the response object
      * @throws IOException                     when unable to send the request
-     * @throws CustomResourceResponseException when unable to synthesize or serialize the response payload
+     * @throws CustomResourceResponseException when unable to synthesize or
+     *                                         serialize the response payload
      */
     public HttpExecuteResponse send(CloudFormationCustomResourceEvent event,
-                                    Context context) throws IOException, CustomResourceResponseException {
+            Context context) throws IOException, CustomResourceResponseException {
         return send(event, context, null);
     }
 
     /**
-     * Forwards a response containing a custom payload to the target resource specified by the event. The payload is
+     * Forwards a response containing a custom payload to the target resource
+     * specified by the event. The payload is
      * formed from the event, context, and response data.
      *
      * @param event        custom CF resource event. Cannot be null.
-     * @param context      used to specify when the function and any callbacks have completed execution, or to
-     *                     access information from within the Lambda execution environment. Cannot be null.
-     * @param responseData response to send, e.g. a list of name-value pairs. If null, an empty success is assumed.
+     * @param context      used to specify when the function and any callbacks have
+     *                     completed execution, or to
+     *                     access information from within the Lambda execution
+     *                     environment. Cannot be null.
+     * @param responseData response to send, e.g. a list of name-value pairs. If
+     *                     null, an empty success is assumed.
      * @return the response object
-     * @throws IOException                     when unable to generate or send the request
-     * @throws CustomResourceResponseException when unable to serialize the response payload
+     * @throws IOException                     when unable to generate or send the
+     *                                         request
+     * @throws CustomResourceResponseException when unable to serialize the response
+     *                                         payload
      */
     public HttpExecuteResponse send(CloudFormationCustomResourceEvent event,
-                                    Context context,
-                                    Response responseData) throws IOException, CustomResourceResponseException {
+            Context context,
+            Response responseData) throws IOException, CustomResourceResponseException {
         // no need to explicitly close in-memory stream
         StringInputStream stream = responseBodyStream(event, context, responseData);
         URI uri = URI.create(event.getResponseUrl());
@@ -129,20 +146,23 @@ class CloudFormationResponse {
     }
 
     /**
-     * Returns the response body as an input stream, for supplying with the HTTP request to the custom resource.
+     * Returns the response body as an input stream, for supplying with the HTTP
+     * request to the custom resource.
      * <p>
-     * If PhysicalResourceId is null at this point it will be replaced with the Lambda LogStreamName.
+     * If PhysicalResourceId is null at this point it will be replaced with the
+     * Lambda LogStreamName.
      *
-     * @throws CustomResourceResponseException if unable to generate the response stream
+     * @throws CustomResourceResponseException if unable to generate the response
+     *                                         stream
      */
     StringInputStream responseBodyStream(CloudFormationCustomResourceEvent event,
-                                         Context context,
-                                         Response resp) throws CustomResourceResponseException {
+            Context context,
+            Response resp) throws CustomResourceResponseException {
         try {
             String reason = "See the details in CloudWatch Log Stream: " + context.getLogStreamName();
             if (resp == null) {
-                String physicalResourceId = event.getPhysicalResourceId() != null ? event.getPhysicalResourceId() :
-                        context.getLogStreamName();
+                String physicalResourceId = event.getPhysicalResourceId() != null ? event.getPhysicalResourceId()
+                        : context.getLogStreamName();
 
                 ResponseBody body = new ResponseBody(event, Response.Status.SUCCESS, physicalResourceId, false, reason);
                 LOG.debug("ResponseBody: {}", body);
@@ -152,12 +172,12 @@ class CloudFormationResponse {
                 if (!StringUtils.isBlank(resp.getReason())) {
                     reason = resp.getReason();
                 }
-                String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId() :
-                        event.getPhysicalResourceId() != null ? event.getPhysicalResourceId() :
-                                context.getLogStreamName();
+                String physicalResourceId = resp.getPhysicalResourceId() != null ? resp.getPhysicalResourceId()
+                        : event.getPhysicalResourceId() != null ? event.getPhysicalResourceId()
+                                : context.getLogStreamName();
 
-                ResponseBody body =
-                        new ResponseBody(event, resp.getStatus(), physicalResourceId, resp.isNoEcho(), reason);
+                ResponseBody body = new ResponseBody(event, resp.getStatus(), physicalResourceId, resp.isNoEcho(),
+                        reason);
                 LOG.debug("ResponseBody: {}", body);
                 ObjectNode node = body.toObjectNode(resp.getJsonNode());
                 return new StringInputStream(node.toString());
@@ -169,10 +189,14 @@ class CloudFormationResponse {
     }
 
     /**
-     * Internal representation of the payload to be sent to the event target URL. Retains all properties of the payload
-     * except for "Data". This is done so that the serialization of the non-"Data" properties and the serialization of
-     * the value of "Data" can be handled by separate ObjectMappers, if need be. The former properties are dictated by
-     * the custom resource but the latter is dictated by the implementor of the custom resource handler.
+     * Internal representation of the payload to be sent to the event target URL.
+     * Retains all properties of the payload
+     * except for "Data". This is done so that the serialization of the non-"Data"
+     * properties and the serialization of
+     * the value of "Data" can be handled by separate ObjectMappers, if need be. The
+     * former properties are dictated by
+     * the custom resource but the latter is dictated by the implementor of the
+     * custom resource handler.
      */
     @SuppressWarnings("unused")
     static class ResponseBody {
@@ -189,10 +213,10 @@ class CloudFormationResponse {
         private final boolean noEcho;
 
         ResponseBody(CloudFormationCustomResourceEvent event,
-                     Response.Status responseStatus,
-                     String physicalResourceId,
-                     boolean noEcho,
-                     String reason) {
+                Response.Status responseStatus,
+                String physicalResourceId,
+                boolean noEcho,
+                String reason) {
             Objects.requireNonNull(event, "CloudFormationCustomResourceEvent cannot be null");
 
             this.physicalResourceId = physicalResourceId;
@@ -233,10 +257,13 @@ class CloudFormationResponse {
         }
 
         /**
-         * Returns this ResponseBody as an ObjectNode with the provided JsonNode as the value of its "Data" property.
+         * Returns this ResponseBody as an ObjectNode with the provided JsonNode as the
+         * value of its "Data" property.
          *
-         * @param dataNode the value of the "Data" property for the returned node; may be null
-         * @return an ObjectNode representation of this ResponseBody and the provided dataNode
+         * @param dataNode the value of the "Data" property for the returned node; may
+         *                 be null
+         * @return an ObjectNode representation of this ResponseBody and the provided
+         *         dataNode
          */
         ObjectNode toObjectNode(JsonNode dataNode) {
             ObjectNode node = MAPPER.valueToTree(this);
