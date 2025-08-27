@@ -124,7 +124,7 @@ jobs:
               module_name=$(basename "$module_dir")
               
               # Check if this specific module or common dependencies changed
-              if echo "$CHANGED_FILES" | grep -q "^$module_name/" || \
+              if echo "$CHANGED_FILES" | grep -q "\b$module_name/" || \
                  echo "$CHANGED_FILES" | grep -q "pom.xml" || \
                  echo "$CHANGED_FILES" | grep -q "powertools-common/"; then
                 echo "Changes detected in $module_name - running GraalVM tests"
