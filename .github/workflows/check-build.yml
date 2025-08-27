@@ -134,7 +134,7 @@ jobs:
               
               # Check if this specific module or common dependencies changed
               if echo "$CHANGED_FILES" | grep -q "$module_path/" || \
-                 echo "$CHANGED_FILES" | grep -q "pom.xml" || \
+                 echo " $CHANGED_FILES " | grep -q " pom.xml " || \
                  echo "$CHANGED_FILES" | grep -q "powertools-common/"; then
                 echo "Changes detected in $module_name - running GraalVM tests"
                 echo "Regenerating GraalVM metadata for $module_dir"
