@@ -14,14 +14,14 @@
 
 package software.amazon.lambda.powertools.idempotency.internal.cache;
 
-import org.junit.jupiter.api.Test;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class LRUCacheTest {
+import org.junit.jupiter.api.Test;
+
+class LRUCacheTest {
 
     @Test
-    public void testLRUCache_shouldRemoveEldestEntry() {
+    void testLRUCache_shouldRemoveEldestEntry() {
         LRUCache<String, String> cache = new LRUCache<>(3);
         cache.put("key1", "value1");
         cache.put("key2", "value2");
