@@ -23,62 +23,40 @@ import static com.github.tomakehurst.wiremock.client.WireMock.urlPathMatching;
 import static com.github.tomakehurst.wiremock.client.WireMock.verify;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.amazonaws.services.lambda.runtime.ClientContext;
-import com.amazonaws.services.lambda.runtime.CognitoIdentity;
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+
 import software.amazon.lambda.powertools.cloudformation.handlers.NoPhysicalResourceIdSetHandler;
 import software.amazon.lambda.powertools.cloudformation.handlers.PhysicalResourceIdSetHandler;
 import software.amazon.lambda.powertools.cloudformation.handlers.RuntimeExceptionThrownHandler;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 @WireMockTest
 public class CloudFormationIntegrationTest {
 
     public static final String PHYSICAL_RESOURCE_ID = UUID.randomUUID().toString();
-    public static final String LOG_STREAM_NAME = "FakeLogStreamName";
-
-    private static CloudFormationCustomResourceEvent updateEventWithPhysicalResourceId(int httpPort,
-                                                                                       String physicalResourceId) {
-        CloudFormationCustomResourceEvent.CloudFormationCustomResourceEventBuilder builder = baseEvent(httpPort);
-
-        builder.withPhysicalResourceId(physicalResourceId);
-        builder.withRequestType("Update");
-
-        return builder.build();
-    }
-
-    private static CloudFormationCustomResourceEvent deleteEventWithPhysicalResourceId(int httpPort,
-                                                                                       String physicalResourceId) {
-        CloudFormationCustomResourceEvent.CloudFormationCustomResourceEventBuilder builder = baseEvent(httpPort);
-
-        builder.withPhysicalResourceId(physicalResourceId);
-        builder.withRequestType("Delete");
-
-        return builder.build();
-    }
+    public static final String LOG_STREAM_NAME = "test-log-stream";
 
     private static CloudFormationCustomResourceEvent.CloudFormationCustomResourceEventBuilder baseEvent(int httpPort) {
-        CloudFormationCustomResourceEvent.CloudFormationCustomResourceEventBuilder builder =
-                CloudFormationCustomResourceEvent.builder()
-                        .withResponseUrl("http://localhost:" + httpPort + "/")
-                        .withStackId("123")
-                        .withRequestId("234")
-                        .withLogicalResourceId("345");
-
-        return builder;
+        return CloudFormationCustomResourceEvent
+                .builder()
+                .withResponseUrl("http://localhost:" + httpPort + "/")
+                .withStackId("123")
+                .withRequestId("234")
+                .withLogicalResourceId("345");
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Update", "Delete"})
+    @ValueSource(strings = { "Update", "Delete" })
     void physicalResourceIdTakenFromRequestForUpdateOrDeleteWhenUserSpecifiesNull(String requestType,
-                                                                                  WireMockRuntimeInfo wmRuntimeInfo) {
+            WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         NoPhysicalResourceIdSetHandler handler = new NoPhysicalResourceIdSetHandler();
@@ -89,18 +67,17 @@ public class CloudFormationIntegrationTest {
                 .withRequestType(requestType)
                 .build();
 
-        handler.handleRequest(event, new FakeContext());
+        handler.handleRequest(event, new TestLambdaContext());
 
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]")));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Update", "Delete"})
+    @ValueSource(strings = { "Update", "Delete" })
     void physicalResourceIdDoesNotChangeWhenRuntimeExceptionThrownWhenUpdatingOrDeleting(String requestType,
-                                                                                         WireMockRuntimeInfo wmRuntimeInfo) {
+            WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
 
         RuntimeExceptionThrownHandler handler = new RuntimeExceptionThrownHandler();
@@ -111,12 +88,11 @@ public class CloudFormationIntegrationTest {
                 .withRequestType(requestType)
                 .build();
 
-        handler.handleRequest(event, new FakeContext());
+        handler.handleRequest(event, new TestLambdaContext());
 
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'FAILED')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]")));
     }
 
     @Test
@@ -127,16 +103,15 @@ public class CloudFormationIntegrationTest {
         CloudFormationCustomResourceEvent createEvent = baseEvent(wmRuntimeInfo.getHttpPort())
                 .withRequestType("Create")
                 .build();
-        handler.handleRequest(createEvent, new FakeContext());
+        handler.handleRequest(createEvent, new TestLambdaContext());
 
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'FAILED')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]")));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Update", "Delete"})
+    @ValueSource(strings = { "Update", "Delete" })
     void physicalResourceIdSetFromRequestOnUpdateOrDeleteWhenCustomerDoesntProvideAPhysicalResourceId(
             String requestType, WireMockRuntimeInfo wmRuntimeInfo) {
         stubFor(put("/").willReturn(ok()));
@@ -149,13 +124,12 @@ public class CloudFormationIntegrationTest {
                 .withRequestType(requestType)
                 .build();
 
-        Response response = handler.handleRequest(event, new FakeContext());
+        Response response = handler.handleRequest(event, new TestLambdaContext());
 
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + PHYSICAL_RESOURCE_ID + "')]")));
     }
 
     @Test
@@ -166,17 +140,16 @@ public class CloudFormationIntegrationTest {
         CloudFormationCustomResourceEvent createEvent = baseEvent(wmRuntimeInfo.getHttpPort())
                 .withRequestType("Create")
                 .build();
-        Response response = handler.handleRequest(createEvent, new FakeContext());
+        Response response = handler.handleRequest(createEvent, new TestLambdaContext());
 
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + LOG_STREAM_NAME + "')]")));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Create", "Update", "Delete"})
+    @ValueSource(strings = { "Create", "Update", "Delete" })
     void physicalResourceIdReturnedFromSuccessToCloudformation(String requestType, WireMockRuntimeInfo wmRuntimeInfo) {
 
         String physicalResourceId = UUID.randomUUID().toString();
@@ -185,17 +158,16 @@ public class CloudFormationIntegrationTest {
         CloudFormationCustomResourceEvent createEvent = baseEvent(wmRuntimeInfo.getHttpPort())
                 .withRequestType(requestType)
                 .build();
-        Response response = handler.handleRequest(createEvent, new FakeContext());
+        Response response = handler.handleRequest(createEvent, new TestLambdaContext());
 
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'SUCCESS')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + physicalResourceId + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + physicalResourceId + "')]")));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Create", "Update", "Delete"})
+    @ValueSource(strings = { "Create", "Update", "Delete" })
     void physicalResourceIdReturnedFromFailedToCloudformation(String requestType, WireMockRuntimeInfo wmRuntimeInfo) {
 
         String physicalResourceId = UUID.randomUUID().toString();
@@ -204,69 +176,12 @@ public class CloudFormationIntegrationTest {
         CloudFormationCustomResourceEvent createEvent = baseEvent(wmRuntimeInfo.getHttpPort())
                 .withRequestType(requestType)
                 .build();
-        Response response = handler.handleRequest(createEvent, new FakeContext());
+        Response response = handler.handleRequest(createEvent, new TestLambdaContext());
 
         assertThat(response).isNotNull();
         verify(putRequestedFor(urlPathMatching("/"))
                 .withRequestBody(matchingJsonPath("[?(@.Status == 'FAILED')]"))
-                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + physicalResourceId + "')]"))
-        );
+                .withRequestBody(matchingJsonPath("[?(@.PhysicalResourceId == '" + physicalResourceId + "')]")));
     }
 
-    private static class FakeContext implements Context {
-        @Override
-        public String getAwsRequestId() {
-            return null;
-        }
-
-        @Override
-        public String getLogGroupName() {
-            return null;
-        }
-
-        @Override
-        public String getLogStreamName() {
-            return LOG_STREAM_NAME;
-        }
-
-        @Override
-        public String getFunctionName() {
-            return null;
-        }
-
-        @Override
-        public String getFunctionVersion() {
-            return null;
-        }
-
-        @Override
-        public String getInvokedFunctionArn() {
-            return null;
-        }
-
-        @Override
-        public CognitoIdentity getIdentity() {
-            return null;
-        }
-
-        @Override
-        public ClientContext getClientContext() {
-            return null;
-        }
-
-        @Override
-        public int getRemainingTimeInMillis() {
-            return 0;
-        }
-
-        @Override
-        public int getMemoryLimitInMB() {
-            return 0;
-        }
-
-        @Override
-        public LambdaLogger getLogger() {
-            return null;
-        }
-    }
 }

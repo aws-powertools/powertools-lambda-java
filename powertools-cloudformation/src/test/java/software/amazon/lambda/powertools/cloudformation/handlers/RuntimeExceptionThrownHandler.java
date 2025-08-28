@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.cloudformation.handlers;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+
 import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
 import software.amazon.lambda.powertools.cloudformation.Response;
 

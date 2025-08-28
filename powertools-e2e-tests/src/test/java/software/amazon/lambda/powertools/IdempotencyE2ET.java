@@ -36,7 +36,7 @@ class IdempotencyE2ET {
     private static String functionName;
 
     @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
     static void setup() {
         String random = UUID.randomUUID().toString().substring(0, 6);
         infrastructure = Infrastructure.builder()

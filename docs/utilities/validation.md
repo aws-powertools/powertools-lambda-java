@@ -292,3 +292,53 @@ If you need to configure the Jackson ObjectMapper, you can use the `ValidationCo
        }
     }
     ```
+
+## Advanced
+
+### Lambda SnapStart priming
+
+The Validation utility integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart priming logic of this utility runs correctly, you need an explicit reference to `ValidationConfig` in your code to allow the library to register before SnapStart takes a memory snapshot. Learn more about what priming is in this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/){target="_blank"}.
+
+If you don't set a custom `ValidationConfig` in your code yet, make sure to reference `ValidationConfig` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
+
+=== "Constructor"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.validation.Validation;
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        public MyFunctionHandler() {
+            ValidationConfig.get(); // Ensure ValidationConfig is loaded for SnapStart
+        }
+
+        @Override
+        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```
+
+=== "Static Initializer"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.validation.Validation;
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        static {
+            ValidationConfig.get(); // Ensure ValidationConfig is loaded for SnapStart
+        }
+
+        @Override
+        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```

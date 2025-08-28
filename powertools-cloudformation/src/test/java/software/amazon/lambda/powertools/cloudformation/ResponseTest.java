@@ -16,11 +16,13 @@ package software.amazon.lambda.powertools.cloudformation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.junit.jupiter.api.Test;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 
 class ResponseTest {
 
@@ -81,7 +83,7 @@ class ResponseTest {
         assertThat(response.toString()).contains("Status = SUCCESS");
         assertThat(response.toString()).contains("PhysicalResourceId = null");
         assertThat(response.toString()).contains("NoEcho = false");
-        assertThat(response.toString()).contains("Reason = "+reason);
+        assertThat(response.toString()).contains("Reason = " + reason);
     }
 
     @Test

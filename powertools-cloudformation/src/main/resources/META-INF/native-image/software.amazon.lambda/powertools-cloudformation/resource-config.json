@@ -1,0 +1,41 @@
+{
+  "resources":{
+  "includes":[{
+    "pattern":"\\QMETA-INF/services/java.lang.System$LoggerFinder\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.net.spi.InetAddressResolverProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.net.spi.URLStreamHandlerProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.nio.channels.spi.SelectorProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/java.util.spi.ResourceBundleControlProvider\\E"
+  }, {
+    "pattern":"\\QMETA-INF/services/org.slf4j.spi.SLF4JServiceProvider\\E"
+  }, {
+    "pattern":"\\Qassets/swagger-ui/index.html\\E"
+  }, {
+    "pattern":"\\Qassets\\E"
+  }, {
+    "pattern":"\\Qhelpers.nashorn.js\\E"
+  }, {
+    "pattern":"\\Qkeystore\\E"
+  }, {
+    "pattern":"\\Qorg/apache/hc/client5/version.properties\\E"
+  }, {
+    "pattern":"\\Qorg/eclipse/jetty/http/encoding.properties\\E"
+  }, {
+    "pattern":"\\Qorg/eclipse/jetty/http/mime.properties\\E"
+  }, {
+    "pattern":"\\Qorg/eclipse/jetty/version/build.properties\\E"
+  }, {
+    "pattern":"\\Qorg/publicsuffix/list/effective_tld_names.dat\\E"
+  }]},
+  "bundles":[{
+    "name":"jakarta.servlet.LocalStrings",
+    "locales":[""]
+  }, {
+    "name":"jakarta.servlet.http.LocalStrings",
+    "locales":[""]
+  }]
+}
