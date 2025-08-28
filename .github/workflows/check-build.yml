@@ -92,6 +92,14 @@ jobs:
       - id: checkout
         name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
+        with:
+          files: |
+            powertools-*/**
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@7f488cf82a3629ee755e4e97342c01d6bed318fa # v1.3.5
         with:
@@ -100,18 +108,36 @@ jobs:
           cache: maven
       - id: graalvm-native-test
         name: GraalVM Native Test
+        if: steps.changed-files.outputs.any_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           # Build the entire project first to ensure test-jar dependencies are available
+          echo "::group::Building project dependencies"
           mvn -B -q install -DskipTests
+          echo "::endgroup::"
           
-          # Find modules with graalvm-native profile and run tests recursively.
-          # This will make sure to discover new GraalVM supported modules automatically in the future.
+          echo "Changes detected in powertools modules: $CHANGED_FILES"
+          
+          # Find modules with graalvm-native profile and run tests
           find . -name "pom.xml" -path "./powertools-*" | while read module; do
             if grep -q "<id>graalvm-native</id>" "$module"; then
               module_dir=$(dirname "$module")
-              echo "Regenerating GraalVM metadata for $module_dir"
-              mvn -B -q -f "$module" -Pgenerate-graalvm-files clean test
-              echo "Running GraalVM native tests for $module_dir"
-              mvn -B -q -f "$module" -Pgraalvm-native test
+              module_name=$(basename "$module_dir")
+              
+              # Check if this specific module or common dependencies changed
+              if echo "$CHANGED_FILES" | grep -q "$module_name/" || \
+                 echo " $CHANGED_FILES " | grep -q " pom.xml " || \
+                 echo "$CHANGED_FILES" | grep -q "powertools-common/"; then
+                echo "::group::Building $module_name with GraalVM"
+                echo "Changes detected in $module_name - running GraalVM tests"
+                echo "Regenerating GraalVM metadata for $module_dir"
+                mvn -B -q -f "$module" -Pgenerate-graalvm-files clean test
+                echo "Running GraalVM native tests for $module_dir"
+                mvn -B -q -f "$module" -Pgraalvm-native test
+                echo "::endgroup::"
+              else
+                echo "No changes detected in $module_name - skipping GraalVM tests"
+              fi
             fi
           done

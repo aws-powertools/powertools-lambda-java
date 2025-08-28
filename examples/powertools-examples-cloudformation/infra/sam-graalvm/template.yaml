@@ -1,0 +1,49 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  powertools-examples-cloudformation-graalvm
+
+  Sample SAM Template for powertools-examples-cloudformation with GraalVM native image
+
+Globals:
+  Function:
+    Timeout: 20
+
+Parameters:
+  BucketNameParam:
+    Type: String
+
+Resources:
+  HelloWorldCustomResource:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt HelloWorldFunction.Arn
+      BucketName: !Ref BucketNameParam
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../
+      Handler: helloworld.App::handleRequest
+      Runtime: provided.al2023
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Policies:
+        - Statement:
+            - Sid: bucketaccess1
+              Effect: Allow
+              Action:
+                - s3:GetLifecycleConfiguration
+                - s3:PutLifecycleConfiguration
+                - s3:CreateBucket
+                - s3:ListBucket
+                - s3:DeleteBucket
+              Resource: '*'
+    Metadata:
+      BuildMethod: makefile
+
+Outputs:
+  HelloWorldFunction:
+    Description: "Hello World Lambda Function ARN"
+    Value: !GetAtt HelloWorldFunction.Arn

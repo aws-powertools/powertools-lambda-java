@@ -12,28 +12,20 @@
  *
  */
 
-package software.amazon.lambda.powertools.cloudformation.handlers;
+package software.amazon.lambda.powertools.cloudformation;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 
-import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
-import software.amazon.lambda.powertools.cloudformation.Response;
+import software.amazon.lambda.powertools.cloudformation.Response.Status;
 
-public class RuntimeExceptionThrownHandler extends AbstractCustomResourceHandler {
+public class ExplicitSuccessResponseHandler extends ExpectedStatusResourceHandler {
+    public ExplicitSuccessResponseHandler() {
+        super(Status.SUCCESS);
+    }
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
-    }
-
-    @Override
-    protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
-    }
-
-    @Override
-    protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
+        return Response.builder().value("whatever").status(Status.SUCCESS).build();
     }
 }
