@@ -113,7 +113,9 @@ jobs:
           CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
           # Build the entire project first to ensure test-jar dependencies are available
+          echo "::group::Building project dependencies"
           mvn -B -q install -DskipTests
+          echo "::endgroup::"
           
           echo "Changes detected in powertools modules: $CHANGED_FILES"
           
@@ -127,11 +129,13 @@ jobs:
               if echo "$CHANGED_FILES" | grep -q "$module_name/" || \
                  echo " $CHANGED_FILES " | grep -q " pom.xml " || \
                  echo "$CHANGED_FILES" | grep -q "powertools-common/"; then
+                echo "::group::Building $module_name with GraalVM"
                 echo "Changes detected in $module_name - running GraalVM tests"
                 echo "Regenerating GraalVM metadata for $module_dir"
                 mvn -B -q -f "$module" -Pgenerate-graalvm-files clean test
                 echo "Running GraalVM native tests for $module_dir"
                 mvn -B -q -f "$module" -Pgraalvm-native test
+                echo "::endgroup::"
               else
                 echo "No changes detected in $module_name - skipping GraalVM tests"
               fi
