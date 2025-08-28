@@ -16,10 +16,15 @@ package software.amazon.lambda.powertools.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.function.BaseFunction;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
@@ -31,9 +36,14 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
  * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
  * is just a wrapper of {@link JsonConfig}.
  */
-public class ValidationConfig {
+public class ValidationConfig implements Resource {
     private SpecVersion.VersionFlag jsonSchemaVersion = SpecVersion.VersionFlag.V7;
     private JsonSchemaFactory factory = JsonSchemaFactory.getInstance(jsonSchemaVersion);
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(get());
+    }
 
     private ValidationConfig() {
     }
@@ -100,6 +110,26 @@ public class ValidationConfig {
      */
     public ObjectMapper getObjectMapper() {
         return JsonConfig.get().getObjectMapper();
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Initialize key components
+        getObjectMapper();
+        getJmesPath();
+        getFactory();
+
+        // Dummy validation
+        String sampleSchema = "{\"type\":\"object\"}";
+        JsonSchema schema = ValidationUtils.getJsonSchema(sampleSchema);
+        ValidationUtils.validate("{\"test\":\"dummy\"}", schema);
+
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 
     private static class ConfigHolder {
