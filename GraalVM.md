@@ -56,5 +56,31 @@ java.lang.InternalError: com.oracle.svm.core.jdk.UnsupportedFeatureError: Defini
 ```
    - This has been [fixed](https://github.com/apache/logging-log4j2/discussions/2364#discussioncomment-8950077) in Log4j 2.24.x. PT has been updated to use this version of Log4j 
 
+3. **Test Class Organization**
+   - **Issue**: Anonymous inner classes and lambda expressions in Mockito matchers cause `NoSuchMethodError` in GraalVM native tests
+   - **Solution**: 
+     - Extract static inner test classes to separate concrete classes in the same package as the class under test
+     - Replace lambda expressions in `ArgumentMatcher` with concrete implementations
+     - Use `mockito-subclass` dependency in GraalVM profiles
+   - **Example**: Replace `argThat(resp -> resp.getStatus() != expectedStatus)` with:
+   ```java
+   argThat(new ArgumentMatcher<Response>() {
+       @Override
+       public boolean matches(Response resp) {
+           return resp != null && resp.getStatus() != expectedStatus;
+       }
+   })
+   ```
+
+4. **Package Visibility Issues**
+   - **Issue**: Test handler classes cannot access package-private methods when placed in subpackages
+   - **Solution**: Place test handler classes in the same package as the class under test, not in subpackages like `handlers/`
+   - **Example**: Use `software.amazon.lambda.powertools.cloudformation` instead of `software.amazon.lambda.powertools.cloudformation.handlers`
+
+5. **Test Stubs Best Practice**
+   - **Best Practice**: Avoid mocking where possible and use concrete test stubs provided by `powertools-common` package
+   - **Solution**: Use `TestLambdaContext` and other test stubs from `powertools-common` test-jar instead of Mockito mocks
+   - **Implementation**: Add `powertools-common` test-jar dependency and replace `mock(Context.class)` with `new TestLambdaContext()`
+
 ## Reference Implementation
 Working example is available in the [examples](examples/powertools-examples-core-utilities/sam-graalvm). 

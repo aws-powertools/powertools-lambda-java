@@ -64,6 +64,29 @@
 
         <!-- Test dependencies -->
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-common</artifactId>
+            <version>${project.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <!-- DynamoDB Local for testing -->
+        <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>DynamoDBLocal</artifactId>
             <!-- >2.2.0 is not compatible with Java 11 anymore -->
@@ -71,17 +94,132 @@
             <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
-        <!--Needed when building locally on M1 Mac-->
-        <dependency>
-            <groupId>io.github.ganadist.sqlite4java</groupId>
-            <artifactId>libsqlite4java-osx-aarch64</artifactId>
-            <version>1.0.392</version>
-            <scope>test</scope>
-            <type>dylib</type>
-        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>generate-graalvm-files</id>
+            <!-- The AWS DynamoDBClient uses com.amazonaws.xray.interceptors.TracingInterceptor if available on the
+            classpath. If the DynamoDB persistence store is used together with tracing, this would fail in GraalVM 
+            otherwise since it tries to load the tracing interceptor at runtime. This makes sure it is included in
+            reflect-config.json -->
+            <dependencies>
+                <dependency>
+                    <groupId>com.amazonaws</groupId>
+                    <artifactId>aws-xray-recorder-sdk-aws-sdk-v2-instrumentor</artifactId>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <argLine>
+                                -Dorg.graalvm.nativeimage.imagecode=agent
+                                -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image/software.amazon.lambda/powertools-idempotency-dynamodb,experimental-class-define-support
+                                --add-opens java.base/java.util=ALL-UNNAMED
+                                --add-opens java.base/java.lang=ALL-UNNAMED
+                            </argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>graalvm-native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>0.11.0</version>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>test-native</id>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <phase>test</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <imageName>powertools-idempotency-dynamodb</imageName>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>com.amazonaws</groupId>
+                                    <artifactId>DynamoDBLocal</artifactId>
+                                </exclusion>
+                            </exclusions>
+                            <buildArgs>
+                                <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
+                                <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
+                                <buildArg>--enable-url-protocols=http</buildArg>
+                                <buildArg>--no-fallback</buildArg>
+                                <buildArg>--verbose</buildArg>
+                                <buildArg>--native-image-info</buildArg>
+                                <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                                <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
+            <!-- Copy DynamoDB Local JAR -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dynamodb-local</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeScope>test</includeScope>
+                            <excludeTransitive>false</excludeTransitive>
+                            <outputDirectory>${project.build.directory}/dynamodb-local</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- Start DynamoDB Local before tests -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-dynamodb-local</id>
+                        <phase>process-test-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <workingDirectory>${project.build.directory}/dynamodb-local</workingDirectory>
+                            <arguments>
+                                <argument>-Djava.library.path=${project.build.directory}/dynamodb-local</argument>
+                                <argument>-cp</argument>
+                                <argument>${project.build.directory}/dynamodb-local/*</argument>
+                                <argument>com.amazonaws.services.dynamodbv2.local.main.ServerRunner</argument>
+                                <argument>-inMemory</argument>
+                                <argument>-port</argument>
+                                <argument>8000</argument>
+                            </arguments>
+                            <async>true</async>
+                            <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -92,6 +230,16 @@
                             <Automatic-Module-Name>software.amazon.awssdk.enhanced.dynamodb</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
+                </configuration>
+            </plugin>
+            <!-- Configure Surefire to expose external DynamoDB Local address -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <dynamodb.endpoint>http://localhost:8000</dynamodb.endpoint>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
