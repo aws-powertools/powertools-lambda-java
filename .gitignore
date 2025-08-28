@@ -111,3 +111,10 @@ example/HelloWorldFunction/build
 build/
 .terraform*
 terraform.tfstate*
+
+# LLMs
+.kiro/
+.claude/
+.amazonq/
+.github/instructions
+

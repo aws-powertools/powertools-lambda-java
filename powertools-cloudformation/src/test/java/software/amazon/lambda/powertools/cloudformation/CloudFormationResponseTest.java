@@ -20,15 +20,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.http.ExecutableHttpRequest;
 import software.amazon.awssdk.http.HttpExecuteRequest;
@@ -37,11 +40,13 @@ import software.amazon.awssdk.http.SdkHttpClient;
 import software.amazon.awssdk.utils.IoUtils;
 import software.amazon.awssdk.utils.StringInputStream;
 import software.amazon.lambda.powertools.cloudformation.CloudFormationResponse.ResponseBody;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 class CloudFormationResponseTest {
 
     /**
-     * Creates a mock CloudFormationCustomResourceEvent with a non-null response URL.
+     * Creates a mock CloudFormationCustomResourceEvent with a non-null response
+     * URL.
      */
     static CloudFormationCustomResourceEvent mockCloudFormationCustomResourceEvent() {
         CloudFormationCustomResourceEvent event = mock(CloudFormationCustomResourceEvent.class);
@@ -50,15 +55,15 @@ class CloudFormationResponseTest {
     }
 
     /**
-     * Creates a CloudFormationResponse that does not make actual HTTP requests. The HTTP response body is the request
+     * Creates a CloudFormationResponse that does not make actual HTTP requests. The
+     * HTTP response body is the request
      * body.
      */
     static CloudFormationResponse testableCloudFormationResponse() {
         SdkHttpClient client = mock(SdkHttpClient.class);
         ExecutableHttpRequest executableRequest = mock(ExecutableHttpRequest.class);
 
-        when(client.prepareRequest(any(HttpExecuteRequest.class))).thenAnswer(args ->
-        {
+        when(client.prepareRequest(any(HttpExecuteRequest.class))).thenAnswer(args -> {
             HttpExecuteRequest request = args.getArgument(0, HttpExecuteRequest.class);
             assertThat(request.contentStreamProvider()).isPresent();
 
@@ -89,7 +94,7 @@ class CloudFormationResponseTest {
         SdkHttpClient client = mock(SdkHttpClient.class);
         CloudFormationResponse response = new CloudFormationResponse(client);
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         assertThatThrownBy(() -> response.send(null, context))
                 .isInstanceOf(CustomResourceResponseException.class);
     }
@@ -99,7 +104,7 @@ class CloudFormationResponseTest {
         SdkHttpClient client = mock(SdkHttpClient.class);
         CloudFormationResponse response = new CloudFormationResponse(client);
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         assertThatThrownBy(() -> response.send(null, context))
                 .isInstanceOf(CustomResourceResponseException.class);
     }
@@ -110,8 +115,9 @@ class CloudFormationResponseTest {
         CloudFormationResponse response = new CloudFormationResponse(client);
 
         CloudFormationCustomResourceEvent event = mock(CloudFormationCustomResourceEvent.class);
-        Context context = mock(Context.class);
-        // not a CustomResourceResponseException since the URL is not part of the response but
+        Context context = new TestLambdaContext();
+        // not a CustomResourceResponseException since the URL is not part of the
+        // response but
         // rather the location the response is sent to
         assertThatThrownBy(() -> response.send(event, context))
                 .isInstanceOf(RuntimeException.class);
@@ -122,8 +128,7 @@ class CloudFormationResponseTest {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
         when(event.getPhysicalResourceId()).thenReturn("This-Is-Ignored");
 
-        Context context = mock(Context.class);
-        when(context.getLogStreamName()).thenReturn("My-Log-Stream-Name");
+        Context context = new TestLambdaContext();
 
         String customPhysicalResourceId = "Custom-Physical-Resource-ID";
         ResponseBody body = new ResponseBody(
@@ -135,7 +140,7 @@ class CloudFormationResponseTest {
     @Test
     void responseBodyWithNullDataNode() {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
 
         ResponseBody responseBody = new ResponseBody(event, Response.Status.FAILED, null, true,
                 "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
@@ -143,7 +148,7 @@ class CloudFormationResponseTest {
 
         String expectedJson = "{" +
                 "\"Status\":\"FAILED\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
                 "\"PhysicalResourceId\":null," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
@@ -157,7 +162,7 @@ class CloudFormationResponseTest {
     @Test
     void responseBodyWithNonNullDataNode() {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         ObjectNode dataNode = ResponseBody.MAPPER.createObjectNode();
         dataNode.put("foo", "bar");
         dataNode.put("baz", 10);
@@ -168,7 +173,7 @@ class CloudFormationResponseTest {
 
         String expectedJson = "{" +
                 "\"Status\":\"FAILED\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
                 "\"PhysicalResourceId\":null," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
@@ -182,7 +187,7 @@ class CloudFormationResponseTest {
     @Test
     void defaultStatusIsSuccess() {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
 
         ResponseBody body = new ResponseBody(
                 event, null, null, false, "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
@@ -192,7 +197,7 @@ class CloudFormationResponseTest {
     @Test
     void customStatus() {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
 
         ResponseBody body = new ResponseBody(
                 event, Response.Status.FAILED, null, false,
@@ -203,21 +208,18 @@ class CloudFormationResponseTest {
     @Test
     void reasonIncludesLogStreamName() {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-
-        String logStreamName = "My-Log-Stream-Name";
-        Context context = mock(Context.class);
-        when(context.getLogStreamName()).thenReturn(logStreamName);
+        Context context = new TestLambdaContext();
 
         ResponseBody body = new ResponseBody(
                 event, Response.Status.SUCCESS, null, false,
                 "See the details in CloudWatch Log Stream: " + context.getLogStreamName());
-        assertThat(body.getReason()).contains(logStreamName);
+        assertThat(body.getReason()).contains(context.getLogStreamName());
     }
 
     @Test
     void sendWithNoResponseData() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
         HttpExecuteResponse response = cfnResponse.send(event, context);
@@ -225,8 +227,8 @@ class CloudFormationResponseTest {
         String actualJson = responseAsString(response);
         String expectedJson = "{" +
                 "\"Status\":\"SUCCESS\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
-                "\"PhysicalResourceId\":null," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
+                "\"PhysicalResourceId\":\"test-log-stream\"," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
                 "\"LogicalResourceId\":null," +
@@ -239,7 +241,7 @@ class CloudFormationResponseTest {
     @Test
     void sendWithNonNullResponseData() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
         Map<String, String> responseData = new LinkedHashMap<>();
@@ -251,8 +253,8 @@ class CloudFormationResponseTest {
         String actualJson = responseAsString(response);
         String expectedJson = "{" +
                 "\"Status\":\"SUCCESS\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
-                "\"PhysicalResourceId\":null," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
+                "\"PhysicalResourceId\":\"test-log-stream\"," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
                 "\"LogicalResourceId\":null," +
@@ -265,15 +267,15 @@ class CloudFormationResponseTest {
     @Test
     void responseBodyStreamNullResponseDefaultsToSuccessStatus() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
         StringInputStream stream = cfnResponse.responseBodyStream(event, context, null);
 
         String expectedJson = "{" +
                 "\"Status\":\"SUCCESS\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
-                "\"PhysicalResourceId\":null," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
+                "\"PhysicalResourceId\":\"test-log-stream\"," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
                 "\"LogicalResourceId\":null," +
@@ -286,15 +288,15 @@ class CloudFormationResponseTest {
     @Test
     void responseBodyStreamSuccessResponse() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
         StringInputStream stream = cfnResponse.responseBodyStream(event, context, Response.success(null));
 
         String expectedJson = "{" +
                 "\"Status\":\"SUCCESS\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
-                "\"PhysicalResourceId\":null," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
+                "\"PhysicalResourceId\":\"test-log-stream\"," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
                 "\"LogicalResourceId\":null," +
@@ -307,15 +309,15 @@ class CloudFormationResponseTest {
     @Test
     void responseBodyStreamFailedResponse() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
 
         StringInputStream stream = cfnResponse.responseBodyStream(event, context, Response.failed(null));
 
         String expectedJson = "{" +
                 "\"Status\":\"FAILED\"," +
-                "\"Reason\":\"See the details in CloudWatch Log Stream: null\"," +
-                "\"PhysicalResourceId\":null," +
+                "\"Reason\":\"See the details in CloudWatch Log Stream: test-log-stream\"," +
+                "\"PhysicalResourceId\":\"test-log-stream\"," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
                 "\"LogicalResourceId\":null," +
@@ -328,17 +330,17 @@ class CloudFormationResponseTest {
     @Test
     void responseBodyStreamFailedResponseWithReason() throws Exception {
         CloudFormationCustomResourceEvent event = mockCloudFormationCustomResourceEvent();
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationResponse cfnResponse = testableCloudFormationResponse();
         String failureReason = "Failed test reason";
-        Response failedResponseWithReason = Response.builder().
-                status(Response.Status.FAILED).reason(failureReason).build();
+        Response failedResponseWithReason = Response.builder().status(Response.Status.FAILED).reason(failureReason)
+                .build();
         StringInputStream stream = cfnResponse.responseBodyStream(event, context, failedResponseWithReason);
 
         String expectedJson = "{" +
                 "\"Status\":\"FAILED\"," +
                 "\"Reason\":\"" + failureReason + "\"," +
-                "\"PhysicalResourceId\":null," +
+                "\"PhysicalResourceId\":\"test-log-stream\"," +
                 "\"StackId\":null," +
                 "\"RequestId\":null," +
                 "\"LogicalResourceId\":null," +

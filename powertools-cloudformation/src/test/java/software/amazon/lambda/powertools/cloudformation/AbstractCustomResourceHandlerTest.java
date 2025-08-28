@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.cloudformation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
@@ -25,14 +24,17 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 import java.io.IOException;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+
 import software.amazon.awssdk.http.SdkHttpClient;
-import software.amazon.lambda.powertools.cloudformation.Response.Status;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 public class AbstractCustomResourceHandlerTest {
 
@@ -68,11 +70,11 @@ public class AbstractCustomResourceHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource(value = {"Create,1,0,0", "Update,0,1,0", "Delete,0,0,1"}, delimiter = ',')
+    @CsvSource(value = { "Create,1,0,0", "Update,0,1,0", "Delete,0,0,1" }, delimiter = ',')
     void eventsDelegateToCorrectHandlerMethod(String eventType, int createCount, int updateCount, int deleteCount) {
         AbstractCustomResourceHandler handler = spy(new NoOpCustomResourceHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         handler.handleRequest(eventOfType(eventType), context);
 
         verify(handler, times(createCount)).create(any(), eq(context));
@@ -84,7 +86,7 @@ public class AbstractCustomResourceHandlerTest {
     void eventOfUnknownRequestTypeSendEmptySuccess() {
         AbstractCustomResourceHandler handler = spy(new NoOpCustomResourceHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("UNKNOWN");
 
         handler.handleRequest(event, context);
@@ -96,16 +98,9 @@ public class AbstractCustomResourceHandlerTest {
 
     @Test
     void defaultStatusResponseSendsSuccess() {
-        ExpectedStatusResourceHandler handler = spy(new ExpectedStatusResourceHandler(Status.SUCCESS) {
-            @Override
-            protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-                return Response.builder()
-                        .value("whatever")
-                        .build();
-            }
-        });
+        SuccessResponseHandler handler = spy(new SuccessResponseHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("Create");
 
         Response response = handler.handleRequest(event, context);
@@ -116,17 +111,9 @@ public class AbstractCustomResourceHandlerTest {
 
     @Test
     void explicitResponseWithStatusSuccessSendsSuccess() {
-        ExpectedStatusResourceHandler handler = spy(new ExpectedStatusResourceHandler(Status.SUCCESS) {
-            @Override
-            protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-                return Response.builder()
-                        .value("whatever")
-                        .status(Status.SUCCESS)
-                        .build();
-            }
-        });
+        ExplicitSuccessResponseHandler handler = spy(new ExplicitSuccessResponseHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("Create");
 
         Response response = handler.handleRequest(event, context);
@@ -137,17 +124,9 @@ public class AbstractCustomResourceHandlerTest {
 
     @Test
     void explicitResponseWithStatusFailedSendsFailure() {
-        ExpectedStatusResourceHandler handler = spy(new ExpectedStatusResourceHandler(Status.FAILED) {
-            @Override
-            protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-                return Response.builder()
-                        .value("whatever")
-                        .status(Status.FAILED)
-                        .build();
-            }
-        });
+        FailedResponseHandler handler = spy(new FailedResponseHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("Create");
 
         Response response = handler.handleRequest(event, context);
@@ -158,14 +137,9 @@ public class AbstractCustomResourceHandlerTest {
 
     @Test
     void exceptionWhenGeneratingResponseSendsFailure() {
-        ExpectedStatusResourceHandler handler = spy(new ExpectedStatusResourceHandler(Status.FAILED) {
-            @Override
-            protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-                throw new RuntimeException("This exception is intentional for testing");
-            }
-        });
+        ExceptionThrowingHandler handler = spy(new ExceptionThrowingHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("Create");
 
         Response response = handler.handleRequest(event, context);
@@ -178,14 +152,9 @@ public class AbstractCustomResourceHandlerTest {
     @Test
     void exceptionWhenSendingResponseInvokesOnSendFailure() {
         // a custom handler that builds response successfully but fails to send it
-        FailToSendResponseHandler handler = spy(new FailToSendResponseHandler() {
-            @Override
-            protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-                return Response.builder().value("Failure happens on send").build();
-            }
-        });
+        SuccessfulSendHandler handler = spy(new SuccessfulSendHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("Create");
 
         Response response = handler.handleRequest(event, context);
@@ -197,15 +166,11 @@ public class AbstractCustomResourceHandlerTest {
 
     @Test
     void bothResponseGenerationAndSendFail() {
-        // a custom handler that fails to build response _and_ fails to send a FAILED response
-        FailToSendResponseHandler handler = spy(new FailToSendResponseHandler() {
-            @Override
-            protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-                throw new RuntimeException("This exception is intentional for testing");
-            }
-        });
+        // a custom handler that fails to build response _and_ fails to send a FAILED
+        // response
+        FailedSendHandler handler = spy(new FailedSendHandler());
 
-        Context context = mock(Context.class);
+        Context context = new TestLambdaContext();
         CloudFormationCustomResourceEvent event = eventOfType("Create");
 
         Response response = handler.handleRequest(event, context);
@@ -214,91 +179,4 @@ public class AbstractCustomResourceHandlerTest {
                 .onSendFailure(eq(event), eq(context), isNull(), any(IOException.class));
     }
 
-    /**
-     * Bare-bones implementation that returns null for abstract methods.
-     */
-    static class NullCustomResourceHandler extends AbstractCustomResourceHandler {
-        NullCustomResourceHandler() {
-        }
-
-        NullCustomResourceHandler(SdkHttpClient client) {
-            super(client);
-        }
-
-        @Override
-        protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-            return null;
-        }
-
-        @Override
-        protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-            return null;
-        }
-
-        @Override
-        protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-            return null;
-        }
-    }
-
-    /**
-     * Uses a mocked CloudFormationResponse to avoid sending actual HTTP requests.
-     */
-    static class NoOpCustomResourceHandler extends NullCustomResourceHandler {
-
-        NoOpCustomResourceHandler() {
-            super(mock(SdkHttpClient.class));
-        }
-
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            return mock(CloudFormationResponse.class);
-        }
-    }
-
-    /**
-     * Creates a handler that will expect the Response to be sent with an expected status. Will throw an AssertionError
-     * if the method is sent with an unexpected status.
-     */
-    static class ExpectedStatusResourceHandler extends NoOpCustomResourceHandler {
-        private final Status expectedStatus;
-
-        ExpectedStatusResourceHandler(Status expectedStatus) {
-            this.expectedStatus = expectedStatus;
-        }
-
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            // create a CloudFormationResponse that fails if invoked with unexpected status
-            CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
-            try {
-                when(cfnResponse.send(any(), any(), argThat(resp -> resp.getStatus() != expectedStatus)))
-                        .thenThrow(new AssertionError("Expected response's status to be " + expectedStatus));
-            } catch (IOException | CustomResourceResponseException e) {
-                // this should never happen
-                throw new RuntimeException("Unexpected mocking exception", e);
-            }
-            return cfnResponse;
-        }
-    }
-
-    /**
-     * Always fails to send the response
-     */
-    static class FailToSendResponseHandler extends NoOpCustomResourceHandler {
-        @Override
-        protected CloudFormationResponse buildResponseClient() {
-            CloudFormationResponse cfnResponse = mock(CloudFormationResponse.class);
-            try {
-                when(cfnResponse.send(any(), any()))
-                        .thenThrow(new IOException("Intentional send failure"));
-                when(cfnResponse.send(any(), any(), any()))
-                        .thenThrow(new IOException("Intentional send failure"));
-            } catch (IOException | CustomResourceResponseException e) {
-                // this should never happen
-                throw new RuntimeException("Unexpected mocking exception", e);
-            }
-            return cfnResponse;
-        }
-    }
 }

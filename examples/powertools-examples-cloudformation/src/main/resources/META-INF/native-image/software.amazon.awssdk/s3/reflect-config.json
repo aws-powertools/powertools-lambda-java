@@ -1,0 +1,27 @@
+[
+  {
+    "name": "software.amazon.awssdk.services.s3.model.CreateBucketRequest",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "software.amazon.awssdk.services.s3.model.DeleteBucketRequest",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "software.amazon.awssdk.services.s3.model.HeadBucketRequest",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "software.amazon.awssdk.services.s3.model.HeadBucketResponse",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "software.amazon.awssdk.services.s3.model.NoSuchBucketException",
+    "allPublicMethods": true,
+    "allPublicConstructors": true
+  }
+]
