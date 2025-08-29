@@ -15,10 +15,7 @@
 package software.amazon.lambda.powertools.logging.log4j;
 
 import java.io.Serializable;
-import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Appender;
@@ -35,24 +32,64 @@ import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
-import org.apache.logging.log4j.message.SimpleMessage;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.logging.internal.BufferManager;
+import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
+
+import static software.amazon.lambda.powertools.logging.log4j.BufferingAppenderConstants.NAME;
 
 /**
- * A minimalistic Log4j2 appender that buffers log events based on trace ID
- * and flushes them when error logs are encountered or manually triggered.
+ * A Log4j2 appender that buffers log events by AWS X-Ray trace ID for optimized Lambda logging.
+ * 
+ * <p>This appender is designed specifically for AWS Lambda functions to reduce log ingestion
+ * by buffering lower-level logs and only outputting them when errors occur, preserving
+ * full context for troubleshooting while minimizing routine log volume.
+ * 
+ * <h3>Key Features:</h3>
+ * <ul>
+ *   <li><strong>Trace-based buffering:</strong> Groups logs by AWS X-Ray trace ID</li>
+ *   <li><strong>Selective output:</strong> Only buffers logs at or below configured verbosity level</li>
+ *   <li><strong>Auto-flush on errors:</strong> Automatically outputs buffered logs when ERROR/FATAL events occur</li>
+ *   <li><strong>Memory management:</strong> Prevents memory leaks with configurable buffer size limits</li>
+ *   <li><strong>Overflow protection:</strong> Warns when logs are discarded due to buffer limits</li>
+ * </ul>
+ * 
+ * <h3>Configuration Example:</h3>
+ * <pre>{@code
+ * <BufferingAppender name="BufferedAppender" 
+ *                    bufferAtVerbosity="INFO" 
+ *                    maxBytes="20480" 
+ *                    flushOnErrorLog="true">
+ *   <AppenderRef ref="ConsoleAppender"/>
+ * </BufferingAppender>
+ * }</pre>
+ * 
+ * <h3>Configuration Parameters:</h3>
+ * <ul>
+ *   <li><strong>bufferAtVerbosity:</strong> Log level to buffer (default: DEBUG). Logs at this level and below are buffered</li>
+ *   <li><strong>maxBytes:</strong> Maximum buffer size in bytes per trace ID (default: 20480)</li>
+ *   <li><strong>flushOnErrorLog:</strong> Whether to flush buffer on ERROR/FATAL logs (default: true)</li>
+ * </ul>
+ * 
+ * <h3>Behavior:</h3>
+ * <ul>
+ *   <li>During Lambda INIT phase (no trace ID): logs are output directly</li>
+ *   <li>During Lambda execution (with trace ID): logs are buffered or output based on level</li>
+ *   <li>When buffer overflows: oldest logs are discarded and a warning is logged</li>
+ *   <li>On Lambda completion: remaining buffered logs can be flushed via {@link software.amazon.lambda.powertools.logging.PowertoolsLogging}</li>
+ * </ul>
+ * 
+ * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushLogBuffer()
  */
-@Plugin(name = "BufferingAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
-public class BufferingAppender extends AbstractAppender {
+@Plugin(name = NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
+public class BufferingAppender extends AbstractAppender implements BufferManager {
 
     private final AppenderRef[] appenderRefs;
     private final Configuration configuration;
     private final Level bufferAtVerbosity;
-    private final int maxBytes;
     private final boolean flushOnErrorLog;
-    private final Map<String, Deque<LogEvent>> bufferCache = new ConcurrentHashMap<>();
-    private final ThreadLocal<Boolean> bufferOverflowTriggered = new ThreadLocal<>();
+    private final KeyBuffer<String, LogEvent> buffer;
 
     protected BufferingAppender(String name, Filter filter, Layout<? extends Serializable> layout,
             AppenderRef[] appenderRefs, Configuration configuration, Level bufferAtVerbosity, int maxBytes,
@@ -61,8 +98,8 @@ public class BufferingAppender extends AbstractAppender {
         this.appenderRefs = appenderRefs;
         this.configuration = configuration;
         this.bufferAtVerbosity = bufferAtVerbosity;
-        this.maxBytes = maxBytes;
         this.flushOnErrorLog = flushOnErrorLog;
+        this.buffer = new KeyBuffer<>(maxBytes, event -> event.getMessage().getFormattedMessage().length());
     }
 
     @Override
@@ -70,9 +107,9 @@ public class BufferingAppender extends AbstractAppender {
         if (appenderRefs == null || appenderRefs.length == 0) {
             return;
         }
+
         LambdaHandlerProcessor.getXrayTraceId().ifPresentOrElse(
                 traceId -> {
-                    // Check if we should buffer this log level
                     if (shouldBuffer(event.getLevel())) {
                         bufferEvent(traceId, event);
                     } else {
@@ -102,38 +139,12 @@ public class BufferingAppender extends AbstractAppender {
     }
 
     private void bufferEvent(String traceId, LogEvent event) {
-        // Create immutable copy to prevent mutation
         LogEvent immutableEvent = Log4jLogEvent.createMemento(event);
-
-        // Check if single event is larger than buffer - discard if so
-        int eventSize = immutableEvent.getMessage().getFormattedMessage().length();
-        if (eventSize > maxBytes) {
-            if (Boolean.TRUE != bufferOverflowTriggered.get()) {
-                bufferOverflowTriggered.set(true);
-            }
-            return;
-        }
-
-        bufferCache.computeIfAbsent(traceId, k -> new ArrayDeque<>()).add(immutableEvent);
-
-        // Simple size check - remove oldest if over limit
-        Deque<LogEvent> buffer = bufferCache.get(traceId);
-        while (getBufferSize(buffer) > maxBytes && !buffer.isEmpty()) {
-            if (Boolean.TRUE != bufferOverflowTriggered.get()) {
-                bufferOverflowTriggered.set(true);
-            }
-            buffer.removeFirst();
-        }
-    }
-
-    private int getBufferSize(Deque<LogEvent> buffer) {
-        return buffer.stream()
-                .mapToInt(event -> event.getMessage().getFormattedMessage().length())
-                .sum();
+        buffer.add(traceId, immutableEvent);
     }
 
     public void clearBuffer() {
-        LambdaHandlerProcessor.getXrayTraceId().ifPresent(bufferCache::remove);
+        LambdaHandlerProcessor.getXrayTraceId().ifPresent(buffer::clear);
     }
 
     public void flushBuffer() {
@@ -141,23 +152,9 @@ public class BufferingAppender extends AbstractAppender {
     }
 
     private void flushBuffer(String traceId) {
-        // Emit buffer overflow warning if it occurred
-        if (Boolean.TRUE == bufferOverflowTriggered.get()) {
-            // Create LogEvent directly since Log4j status logger may not reach target appenders
-            LogEvent warningEvent = Log4jLogEvent.newBuilder()
-                    .setLoggerName("BufferingAppender")
-                    .setLevel(Level.WARN)
-                    .setMessage(new SimpleMessage(
-                            "Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer."))
-                    .setTimeMillis(System.currentTimeMillis())
-                    .build();
-            callAppenders(warningEvent);
-            bufferOverflowTriggered.remove();
-        }
-
-        Deque<LogEvent> buffer = bufferCache.remove(traceId);
-        if (buffer != null) {
-            buffer.forEach(this::callAppenders);
+        Deque<LogEvent> events = buffer.removeAll(traceId);
+        if (events != null) {
+            events.forEach(this::callAppenders);
         }
     }
 
