@@ -35,6 +35,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.message.SimpleMessage;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 
@@ -51,7 +52,7 @@ public class BufferingAppender extends AbstractAppender {
     private final int maxBytes;
     private final boolean flushOnErrorLog;
     private final Map<String, Deque<LogEvent>> bufferCache = new ConcurrentHashMap<>();
-    private final ThreadLocal<Boolean> bufferOverflowWarned = new ThreadLocal<>();
+    private final ThreadLocal<Boolean> bufferOverflowTriggered = new ThreadLocal<>();
 
     protected BufferingAppender(String name, Filter filter, Layout<? extends Serializable> layout,
             AppenderRef[] appenderRefs, Configuration configuration, Level bufferAtVerbosity, int maxBytes,
@@ -107,8 +108,8 @@ public class BufferingAppender extends AbstractAppender {
         // Check if single event is larger than buffer - discard if so
         int eventSize = immutableEvent.getMessage().getFormattedMessage().length();
         if (eventSize > maxBytes) {
-            if (Boolean.TRUE != bufferOverflowWarned.get()) {
-                bufferOverflowWarned.set(true);
+            if (Boolean.TRUE != bufferOverflowTriggered.get()) {
+                bufferOverflowTriggered.set(true);
             }
             return;
         }
@@ -118,8 +119,8 @@ public class BufferingAppender extends AbstractAppender {
         // Simple size check - remove oldest if over limit
         Deque<LogEvent> buffer = bufferCache.get(traceId);
         while (getBufferSize(buffer) > maxBytes && !buffer.isEmpty()) {
-            if (Boolean.TRUE != bufferOverflowWarned.get()) {
-                bufferOverflowWarned.set(true);
+            if (Boolean.TRUE != bufferOverflowTriggered.get()) {
+                bufferOverflowTriggered.set(true);
             }
             buffer.removeFirst();
         }
@@ -140,13 +141,22 @@ public class BufferingAppender extends AbstractAppender {
     }
 
     private void flushBuffer(String traceId) {
+        // Emit buffer overflow warning if it occurred
+        if (Boolean.TRUE == bufferOverflowTriggered.get()) {
+            // Create LogEvent directly since Log4j status logger may not reach target appenders
+            LogEvent warningEvent = Log4jLogEvent.newBuilder()
+                    .setLoggerName("BufferingAppender")
+                    .setLevel(Level.WARN)
+                    .setMessage(new SimpleMessage(
+                            "Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer."))
+                    .setTimeMillis(System.currentTimeMillis())
+                    .build();
+            callAppenders(warningEvent);
+            bufferOverflowTriggered.remove();
+        }
+
         Deque<LogEvent> buffer = bufferCache.remove(traceId);
         if (buffer != null) {
-            // Emit buffer overflow warning if it occurred
-            if (Boolean.TRUE == bufferOverflowWarned.get()) {
-                LOGGER.warn("Buffer size exceeded for trace ID: {}. Some log events were discarded.", traceId);
-                bufferOverflowWarned.remove();
-            }
             buffer.forEach(this::callAppenders);
         }
     }
