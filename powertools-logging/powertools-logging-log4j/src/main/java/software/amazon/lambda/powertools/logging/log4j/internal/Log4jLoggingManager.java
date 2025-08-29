@@ -12,19 +12,23 @@
  *
  */
 
-package software.amazon.lambda.powertools.logging.log4.internal;
+package software.amazon.lambda.powertools.logging.log4j.internal;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.slf4j.Logger;
+
+import software.amazon.lambda.powertools.logging.internal.BufferManager;
 import software.amazon.lambda.powertools.logging.internal.LoggingManager;
+import software.amazon.lambda.powertools.logging.log4j.BufferingAppender;
 
 /**
- * LoggingManager for Log4j2 (see {@link LoggingManager}).
+ * LoggingManager for Log4j2 that provides log level management and buffer operations.
+ * Implements both {@link LoggingManager} and {@link BufferManager} interfaces.
  */
-public class Log4jLoggingManager implements LoggingManager {
+public class Log4jLoggingManager implements LoggingManager, BufferManager {
 
     /**
      * @inheritDoc
@@ -44,5 +48,31 @@ public class Log4jLoggingManager implements LoggingManager {
     public org.slf4j.event.Level getLogLevel(Logger logger) {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         return org.slf4j.event.Level.valueOf(ctx.getLogger(logger.getName()).getLevel().toString());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void flushBuffer() {
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        BufferingAppender bufferingAppender = (BufferingAppender) ctx.getConfiguration()
+                .getAppender("BufferedAppender");
+        if (bufferingAppender != null) {
+            bufferingAppender.flushBuffer();
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void clearBuffer() {
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        BufferingAppender bufferingAppender = (BufferingAppender) ctx.getConfiguration()
+                .getAppender("BufferedAppender");
+        if (bufferingAppender != null) {
+            bufferingAppender.clearBuffer();
+        }
     }
 }

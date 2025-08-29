@@ -14,22 +14,20 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
-import org.slf4j.Logger;
-import org.slf4j.event.Level;
-
 /**
- * When no LoggingManager is found, setting a default one with no action on logging implementation
- * Powertools cannot change the log level based on the environment variable, will use the logger configuration
+ * Interface for logging managers that support buffer operations.
+ * This extends the logging framework capabilities with buffer-specific functionality.
  */
-public class DefautlLoggingManager implements LoggingManager {
+public interface BufferManager {
+    /**
+     * Flushes the log buffer for the current Lambda execution.
+     * This method will flush any buffered logs to the target appender.
+     */
+    void flushBuffer();
 
-    @Override
-    public void setLogLevel(Level logLevel) {
-        // do nothing
-    }
-
-    @Override
-    public Level getLogLevel(Logger logger) {
-        return Level.ERROR;
-    }
+    /**
+     * Clears the log buffer for the current Lambda execution.
+     * This method will discard any buffered logs without outputting them.
+     */
+    void clearBuffer();
 }

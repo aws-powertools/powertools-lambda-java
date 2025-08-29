@@ -31,8 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
@@ -40,7 +38,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -718,50 +715,6 @@ class LambdaLoggingAspectTest {
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", eventId);
-    }
-
-    @Test
-    void testMultipleLoggingManagers_shouldWarnAndSelectFirstOne() throws UnsupportedEncodingException {
-        // GIVEN
-        List<LoggingManager> list = new ArrayList<>();
-        list.add(new TestLoggingManager());
-        list.add(new DefautlLoggingManager());
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(outputStream);
-
-        // WHEN
-        LambdaLoggingAspect.getLoggingManager(list, stream);
-
-        // THEN
-        String output = outputStream.toString("UTF-8");
-        assertThat(output)
-                .contains("WARN. Multiple LoggingManagers were found on the classpath")
-                .contains(
-                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies")
-                .contains("WARN. Using the first LoggingManager found on the classpath: [" + list.get(0) + "]");
-    }
-
-    @Test
-    void testNoLoggingManagers_shouldWarnAndCreateDefault() throws UnsupportedEncodingException {
-        // GIVEN
-        List<LoggingManager> list = new ArrayList<>();
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(outputStream);
-
-        // WHEN
-        LoggingManager loggingManager = LambdaLoggingAspect.getLoggingManager(list, stream);
-
-        // THEN
-        String output = outputStream.toString("UTF-8");
-        assertThat(output)
-                .contains("ERROR. No LoggingManager was found on the classpath")
-                .contains("ERROR. Applying default LoggingManager: POWERTOOLS_LOG_LEVEL variable is ignored")
-                .contains(
-                        "ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
-
-        assertThat(loggingManager).isExactlyInstanceOf(DefautlLoggingManager.class);
     }
 
     private void resetLogLevel(Level level)

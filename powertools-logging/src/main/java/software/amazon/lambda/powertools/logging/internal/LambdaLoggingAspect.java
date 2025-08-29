@@ -35,9 +35,6 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.burt.jmespath.Expression;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -45,14 +42,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Random;
-import java.util.ServiceLoader;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -63,9 +55,13 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.MarkerFactory;
 import org.slf4j.event.Level;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.burt.jmespath.Expression;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
 
 @Aspect
 @DeclarePrecedence("*, software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect")
@@ -77,7 +73,7 @@ public final class LambdaLoggingAspect {
     private static final LoggingManager LOGGING_MANAGER;
 
     static {
-        LOGGING_MANAGER = getLoggingManagerFromServiceLoader();
+        LOGGING_MANAGER = LoggingManagerRegistry.getLoggingManager();
 
         setLogLevel();
 
@@ -90,7 +86,8 @@ public final class LambdaLoggingAspect {
             if (LAMBDA_LOG_LEVEL != null) {
                 Level lambdaLevel = getLevelFromString(LAMBDA_LOG_LEVEL);
                 if (powertoolsLevel.toInt() < lambdaLevel.toInt()) {
-                    LOG.warn("Current log level ({}) does not match AWS Lambda Advanced Logging Controls minimum log level ({}). This can lead to data loss, consider adjusting them.",
+                    LOG.warn(
+                            "Current log level ({}) does not match AWS Lambda Advanced Logging Controls minimum log level ({}). This can lead to data loss, consider adjusting them.",
                             POWERTOOLS_LOG_LEVEL, LAMBDA_LOG_LEVEL);
                 }
             }
@@ -113,58 +110,11 @@ public final class LambdaLoggingAspect {
         return Level.INFO;
     }
 
-    /**
-     * Use {@link ServiceLoader} to lookup for a {@link LoggingManager}.
-     * A file <i>software.amazon.lambda.powertools.logging.internal.LoggingManager</i> must be created in
-     * <i>META-INF/services/</i> folder with the appropriate implementation of the {@link LoggingManager}
-     *
-     * @return an instance of {@link LoggingManager}
-     * @throws IllegalStateException if no {@link LoggingManager} could be found
-     */
-    @SuppressWarnings("java:S106") // S106: System.err is used rather than logger to make sure message is printed
-    private static LoggingManager getLoggingManagerFromServiceLoader() {
-        ServiceLoader<LoggingManager> loggingManagers;
-        SecurityManager securityManager = System.getSecurityManager();
-        if (securityManager == null) {
-            loggingManagers = ServiceLoader.load(LoggingManager.class);
-        } else {
-            final PrivilegedAction<ServiceLoader<LoggingManager>> action = () -> ServiceLoader.load(LoggingManager.class);
-            loggingManagers = AccessController.doPrivileged(action);
-        }
-
-        List<LoggingManager> loggingManagerList = new ArrayList<>();
-        for (LoggingManager lm : loggingManagers) {
-            loggingManagerList.add(lm);
-        }
-        return getLoggingManager(loggingManagerList, System.err);
-    }
-
-    static LoggingManager getLoggingManager(List<LoggingManager> loggingManagerList, PrintStream printStream) {
-        LoggingManager loggingManager;
-        if (loggingManagerList.isEmpty()) {
-            printStream.println("ERROR. No LoggingManager was found on the classpath");
-            printStream.println("ERROR. Applying default LoggingManager: POWERTOOLS_LOG_LEVEL variable is ignored");
-            printStream.println("ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
-            loggingManager = new DefautlLoggingManager();
-        } else {
-            if (loggingManagerList.size() > 1) {
-                printStream.println("WARN. Multiple LoggingManagers were found on the classpath");
-                for (LoggingManager manager : loggingManagerList) {
-                    printStream.println("WARN. Found LoggingManager: [" + manager + "]");
-                }
-                printStream.println("WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
-                printStream.println("WARN. Using the first LoggingManager found on the classpath: [" + loggingManagerList.get(0) + "]");
-            }
-            loggingManager = loggingManagerList.get(0);
-        }
-        return loggingManager;
-    }
-
     private static void setLogLevels(Level logLevel) {
         LOGGING_MANAGER.setLogLevel(logLevel);
     }
 
-    @SuppressWarnings({"EmptyMethod"})
+    @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(logging)")
     public void callAt(Logging logging) {
     }
@@ -174,7 +124,7 @@ public final class LambdaLoggingAspect {
      */
     @Around(value = "callAt(logging) && execution(@Logging * *.*(..))", argNames = "pjp,logging")
     public Object around(ProceedingJoinPoint pjp,
-                         Logging logging) throws Throwable {
+            Logging logging) throws Throwable {
 
         boolean isOnRequestHandler = placedOnRequestHandler(pjp);
         boolean isOnRequestStreamHandler = placedOnStreamHandler(pjp);
@@ -189,7 +139,8 @@ public final class LambdaLoggingAspect {
         Object[] proceedArgs = logEvent(pjp, logging, isOnRequestHandler, isOnRequestStreamHandler);
 
         if (!logging.correlationIdPath().isEmpty()) {
-            captureCorrelationId(logging.correlationIdPath(), proceedArgs, isOnRequestHandler, isOnRequestStreamHandler);
+            captureCorrelationId(logging.correlationIdPath(), proceedArgs, isOnRequestHandler,
+                    isOnRequestStreamHandler);
         }
 
         // To log the result of a RequestStreamHandler (OutputStream), we need to do the following:
@@ -226,7 +177,7 @@ public final class LambdaLoggingAspect {
             if (isOnRequestHandler) {
                 logRequestHandlerResponse(pjp, lambdaFunctionResponse);
             } else if (isOnRequestStreamHandler && backupOutputStream != null) {
-                byte[] bytes = ((ByteArrayOutputStream)proceedArgs[1]).toByteArray();
+                byte[] bytes = ((ByteArrayOutputStream) proceedArgs[1]).toByteArray();
                 logRequestStreamHandlerResponse(pjp, bytes);
                 backupOutputStream.write(bytes);
             }
@@ -236,7 +187,7 @@ public final class LambdaLoggingAspect {
     }
 
     private Object[] logEvent(ProceedingJoinPoint pjp, Logging logging,
-                              boolean isOnRequestHandler,  boolean isOnRequestStreamHandler) {
+            boolean isOnRequestHandler, boolean isOnRequestStreamHandler) {
         Object[] proceedArgs = pjp.getArgs();
 
         if (logging.logEvent() || POWERTOOLS_LOG_EVENT) {
@@ -260,7 +211,7 @@ public final class LambdaLoggingAspect {
     }
 
     private void setLogLevelBasedOnSamplingRate(final ProceedingJoinPoint pjp,
-                                                final Logging logging) {
+            final Logging logging) {
         double samplingRate = samplingRate(logging);
 
         if (isHandlerMethod(pjp)) {
@@ -346,9 +297,9 @@ public final class LambdaLoggingAspect {
     }
 
     private void captureCorrelationId(final String correlationIdPath,
-                                          Object[] proceedArgs,
-                                          final boolean isOnRequestHandler,
-                                          final boolean isOnRequestStreamHandler) {
+            Object[] proceedArgs,
+            final boolean isOnRequestHandler,
+            final boolean isOnRequestStreamHandler) {
         if (isOnRequestHandler) {
             JsonNode jsonNode = JsonConfig.get().getObjectMapper().valueToTree(proceedArgs[0]);
             setCorrelationIdFromNode(correlationIdPath, jsonNode);
@@ -376,7 +327,6 @@ public final class LambdaLoggingAspect {
             LOG.warn("Unable to extract any correlation id. Is your function expecting supported event type?");
         }
     }
-
 
     private byte[] bytesFromInputStreamSafely(final InputStream inputStream) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();

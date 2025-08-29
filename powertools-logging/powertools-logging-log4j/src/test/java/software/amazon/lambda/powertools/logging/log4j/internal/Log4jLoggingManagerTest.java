@@ -1,4 +1,4 @@
-package software.amazon.lambda.powertools.logging.internal;
+package software.amazon.lambda.powertools.logging.log4j.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.slf4j.event.Level.DEBUG;
@@ -10,12 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-import software.amazon.lambda.powertools.logging.log4.internal.Log4jLoggingManager;
 
 class Log4jLoggingManagerTest {
 
-    private final static Logger LOG = LoggerFactory.getLogger(Log4jLoggingManagerTest.class);
-    private final static Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+    private static final Logger LOG = LoggerFactory.getLogger(Log4jLoggingManagerTest.class);
+    private static final Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     @Test
     @Order(1)
