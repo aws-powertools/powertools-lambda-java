@@ -160,6 +160,15 @@ public final class LambdaLoggingAspect {
             // Call Function Handler
             lambdaFunctionResponse = pjp.proceed(proceedArgs);
         } catch (Throwable t) {
+            if (LOGGING_MANAGER instanceof BufferManager) {
+                if (logging.flushBufferOnUncaughtError()) {
+                    ((BufferManager) LOGGING_MANAGER).flushBuffer();
+                } else {
+                    // Clear buffer before error logging to prevent unintended flush. If flushOnErrorLog is enabled on
+                    // the appender the next line would otherwise cause an unintended flush by the appender directly.
+                    ((BufferManager) LOGGING_MANAGER).clearBuffer();
+                }
+            }
             if (logging.logError() || POWERTOOLS_LOG_ERROR) {
                 // logging the exception with additional context
                 logger(pjp).error(MarkerFactory.getMarker("FATAL"), "Exception in Lambda Handler", t);
@@ -168,6 +177,10 @@ public final class LambdaLoggingAspect {
         } finally {
             if (logging.clearState()) {
                 MDC.clear();
+            }
+            // Clear buffer after each handler invocation
+            if (LOGGING_MANAGER instanceof BufferManager) {
+                ((BufferManager) LOGGING_MANAGER).clearBuffer();
             }
             coldStartDone();
         }

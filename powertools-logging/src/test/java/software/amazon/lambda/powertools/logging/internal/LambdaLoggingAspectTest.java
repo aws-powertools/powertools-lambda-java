@@ -78,6 +78,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogDisabledF
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogError;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogErrorNoFlush;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEvent;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventBridgeCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventEnvVar;
@@ -108,6 +109,13 @@ class LambdaLoggingAspectTest {
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", null, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_EVENT", false, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_SAMPLING_RATE", null, true);
+
+        // Reset buffer state for clean test isolation
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            ((TestLoggingManager) loggingManager).resetBufferState();
+        }
+
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         } catch (NoSuchFileException e) {
@@ -715,6 +723,132 @@ class LambdaLoggingAspectTest {
         assertThat(MDC.getCopyOfContextMap())
                 .hasSize(EXPECTED_CONTEXT_SIZE + 1)
                 .containsEntry("correlation_id", eventId);
+    }
+
+    @Test
+    void shouldClearBufferAfterSuccessfulHandlerExecution() {
+        // WHEN
+        requestHandler.handleRequest(new Object(), context);
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldClearBufferAfterSuccessfulStreamHandlerExecution() throws IOException {
+        // WHEN
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+                context);
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldClearBufferAfterHandlerExceptionWithLogError() {
+        // GIVEN
+        requestHandler = new PowertoolsLogError();
+
+        // WHEN
+        try {
+            requestHandler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldClearBufferAfterHandlerExceptionWithEnvVarLogError() {
+        try {
+            // GIVEN
+            LoggingConstants.POWERTOOLS_LOG_ERROR = true;
+            requestHandler = new PowertoolsLogEnabled(true);
+
+            // WHEN
+            try {
+                requestHandler.handleRequest("input", context);
+            } catch (Exception e) {
+                // ignore
+            }
+
+            // THEN
+            LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+            if (loggingManager instanceof TestLoggingManager) {
+                assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+            }
+        } finally {
+            LoggingConstants.POWERTOOLS_LOG_ERROR = false;
+        }
+    }
+
+    @Test
+    void shouldFlushBufferOnUncaughtErrorWhenEnabled() {
+        // GIVEN
+        requestHandler = new PowertoolsLogError();
+
+        // WHEN
+        try {
+            requestHandler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferFlushed()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldNotFlushBufferOnUncaughtErrorWhenDisabled() {
+        // GIVEN
+        PowertoolsLogErrorNoFlush handler = new PowertoolsLogErrorNoFlush();
+
+        // WHEN
+        try {
+            handler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferFlushed()).isFalse();
+        }
+    }
+
+    @Test
+    void shouldClearBufferBeforeErrorLoggingWhenFlushBufferOnUncaughtErrorDisabled() {
+        // GIVEN
+        PowertoolsLogErrorNoFlush handler = new PowertoolsLogErrorNoFlush();
+
+        // WHEN
+        try {
+            handler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN - Buffer should be cleared and not flushed
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+            assertThat(((TestLoggingManager) loggingManager).isBufferFlushed()).isFalse();
+        }
     }
 
     private void resetLogLevel(Level level)

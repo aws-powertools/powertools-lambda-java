@@ -102,4 +102,10 @@ public @interface Logging {
      * Set this attribute to true if you want all custom keys to be deleted on each request.
      */
     boolean clearState() default false;
+
+    /**
+     * Set to true if you want to flush the log buffer when an uncaught exception occurs.
+     * This ensures that buffered logs are output when errors happen.
+     */
+    boolean flushBufferOnUncaughtError() default true;
 }
