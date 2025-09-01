@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <File name="testFile" fileName="target/logfile.json">
+            <PatternLayout pattern="%msg%n" />
+        </File>
+        <BufferingAppender name="FirstBufferingAppender"
+            bufferAtVerbosity="DEBUG"
+            maxBytes="1024"
+            flushOnErrorLog="true">
+            <AppenderRef ref="testFile" />
+        </BufferingAppender>
+        <BufferingAppender name="SecondBufferingAppender"
+            bufferAtVerbosity="DEBUG"
+            maxBytes="1024"
+            flushOnErrorLog="true">
+            <AppenderRef ref="testFile" />
+        </BufferingAppender>
+    </Appenders>
+    <Loggers>
+        <Logger name="test.multiple.appenders" level="DEBUG" additivity="false">
+            <AppenderRef ref="FirstBufferingAppender" />
+            <AppenderRef ref="SecondBufferingAppender" />
+        </Logger>
+    </Loggers>
+</Configuration>

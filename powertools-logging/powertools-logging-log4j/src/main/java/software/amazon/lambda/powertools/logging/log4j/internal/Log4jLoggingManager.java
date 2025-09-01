@@ -14,7 +14,8 @@
 
 package software.amazon.lambda.powertools.logging.log4j.internal;
 
-import static software.amazon.lambda.powertools.logging.log4j.Log4jConstants.BUFFERING_APPENDER_PLUGIN_NAME;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -57,12 +58,7 @@ public class Log4jLoggingManager implements LoggingManager, BufferManager {
      */
     @Override
     public void flushBuffer() {
-        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        BufferingAppender bufferingAppender = (BufferingAppender) ctx.getConfiguration()
-                .getAppender(BUFFERING_APPENDER_PLUGIN_NAME);
-        if (bufferingAppender != null) {
-            bufferingAppender.flushBuffer();
-        }
+        getBufferingAppenders().forEach(BufferingAppender::flushBuffer);
     }
 
     /**
@@ -70,11 +66,15 @@ public class Log4jLoggingManager implements LoggingManager, BufferManager {
      */
     @Override
     public void clearBuffer() {
+        getBufferingAppenders().forEach(BufferingAppender::clearBuffer);
+    }
+
+    private Collection<BufferingAppender> getBufferingAppenders() {
+        // Search all buffering appenders to avoid relying on the appender name given by the user
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        BufferingAppender bufferingAppender = (BufferingAppender) ctx.getConfiguration()
-                .getAppender(BUFFERING_APPENDER_PLUGIN_NAME);
-        if (bufferingAppender != null) {
-            bufferingAppender.clearBuffer();
-        }
+        return ctx.getConfiguration().getAppenders().values().stream()
+                .filter(BufferingAppender.class::isInstance)
+                .map(BufferingAppender.class::cast)
+                .collect(Collectors.toList());
     }
 }

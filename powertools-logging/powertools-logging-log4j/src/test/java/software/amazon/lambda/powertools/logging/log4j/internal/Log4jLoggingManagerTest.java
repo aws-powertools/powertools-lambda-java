@@ -5,6 +5,20 @@ import static org.slf4j.event.Level.DEBUG;
 import static org.slf4j.event.Level.ERROR;
 import static org.slf4j.event.Level.WARN;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.ConfigurationFactory;
+import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -46,5 +60,46 @@ class Log4jLoggingManagerTest {
         // Then
         assertThat(rootLevel).isEqualTo(ERROR);
         assertThat(logLevel).isEqualTo(ERROR);
+    }
+
+    @Test
+    void shouldDetectMultipleBufferingAppendersRegardlessOfName() throws IOException {
+        // Given - configuration with multiple BufferingAppenders with different names
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there in the first run
+        }
+
+        ConfigurationFactory factory = new XmlConfigurationFactory();
+        ConfigurationSource source = new ConfigurationSource(
+                getClass().getResourceAsStream("/log4j2-multiple-buffering.xml"));
+        Configuration config = factory.getConfiguration(null, source);
+
+        LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
+        ctx.setConfiguration(config);
+        ctx.updateLoggers();
+
+        org.apache.logging.log4j.Logger logger = LogManager.getLogger("test.multiple.appenders");
+
+        // When - log messages and flush buffers
+        logger.debug("Test message 1");
+        logger.debug("Test message 2");
+
+        Log4jLoggingManager manager = new Log4jLoggingManager();
+        manager.flushBuffer();
+
+        // Then - both appenders should have flushed their buffers
+        File logFile = new File("target/logfile.json");
+        assertThat(logFile).exists();
+    }
+
+    @AfterEach
+    void cleanUp() throws IOException {
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there
+        }
     }
 }
