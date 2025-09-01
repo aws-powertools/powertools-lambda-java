@@ -436,7 +436,7 @@ Make sure to reference `TracingUtils` in your Lambda handler initialization code
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
         public MyFunctionHandler() {
-            TracingUtils.putAnnotation("init", "priming"); // Ensure TracingUtils is loaded for SnapStart
+            TracingUtils.prime(); // Ensure TracingUtils is loaded for SnapStart
         }
 
         @Override
@@ -457,7 +457,7 @@ Make sure to reference `TracingUtils` in your Lambda handler initialization code
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
         static {
-            TracingUtils.putAnnotation("init", "priming"); // Ensure TracingUtils is loaded for SnapStart
+            TracingUtils.prime(); // Ensure TracingUtils is loaded for SnapStart
         }
 
         @Override

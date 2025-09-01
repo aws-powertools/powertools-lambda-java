@@ -30,6 +30,21 @@ import java.util.function.Supplier;
 import org.crac.Context;
 import org.crac.Core;
 import org.crac.Resource;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.ActiveMQEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.amazonaws.services.lambda.runtime.events.CloudWatchLogsEvent;
+import com.amazonaws.services.lambda.runtime.events.KafkaEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsFirehoseInputPreprocessingEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsStreamsInputPreprocessingEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisFirehoseEvent;
+import com.amazonaws.services.lambda.runtime.events.RabbitMQEvent;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
@@ -114,37 +129,29 @@ public final class JsonConfig implements Resource {
 
     @Override
     public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Preload classes first to ensure this always runs
+        ClassPreLoader.preloadClasses();
+        
         // Initialize key components
-        getObjectMapper();
+        ObjectMapper mapper = getObjectMapper();
         getJmesPath();
         
-        // Perform dummy serialization/deserialization operations to warm up Jackson ObjectMapper
-        try {
-            ObjectMapper mapper = getObjectMapper();
-            
-            // Prime common AWS Lambda event types as suggested by Philipp
-            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent", 
-                "{\"httpMethod\":\"GET\",\"path\":\"/test\",\"headers\":{\"Content-Type\":\"application/json\"}}");
-            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent", 
-                "{\"version\":\"2.0\",\"routeKey\":\"GET /test\",\"requestContext\":{\"http\":{\"method\":\"GET\"}}}");
-            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.SQSEvent", 
-                "{\"Records\":[{\"messageId\":\"test\",\"body\":\"test message\"}]}");
-            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.SNSEvent", 
-                "{\"Records\":[{\"Sns\":{\"Message\":\"test message\",\"TopicArn\":\"arn:aws:sns:us-east-1:123456789012:test\"}}]}");
-            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.KinesisEvent", 
-                "{\"Records\":[{\"kinesis\":{\"data\":\"dGVzdA==\",\"partitionKey\":\"test\"}}]}");
-            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.ScheduledEvent", 
-                "{\"source\":\"aws.events\",\"detail-type\":\"Scheduled Event\"}");
-            
-            // Warm up JMESPath function registry
-            getJmesPath().compile("@").search(mapper.readTree("{\"test\":\"value\"}"));
-            
-        } catch (Exception e) {
-            // Ignore exceptions during priming as they're expected in some environments
-        }
-
-        // Preload classes
-        ClassPreLoader.preloadClasses();
+        // Prime common AWS Lambda event types with realistic events
+        primeEventType(mapper, APIGatewayProxyRequestEvent.class, 
+            "{\"httpMethod\":\"GET\",\"path\":\"/test\",\"headers\":{\"Content-Type\":\"application/json\"},\"requestContext\":{\"accountId\":\"123456789012\"}}");
+        primeEventType(mapper, APIGatewayV2HTTPEvent.class, 
+            "{\"version\":\"2.0\",\"routeKey\":\"GET /test\",\"requestContext\":{\"http\":{\"method\":\"GET\"},\"accountId\":\"123456789012\"}}");
+        primeEventType(mapper, SQSEvent.class, 
+            "{\"Records\":[{\"messageId\":\"test-id\",\"body\":\"test message\",\"eventSource\":\"aws:sqs\"}]}");
+        primeEventType(mapper, SNSEvent.class, 
+            "{\"Records\":[{\"Sns\":{\"Message\":\"test message\",\"TopicArn\":\"arn:aws:sns:us-east-1:123456789012:test\"}}]}");
+        primeEventType(mapper, KinesisEvent.class, 
+            "{\"Records\":[{\"kinesis\":{\"data\":\"dGVzdA==\",\"partitionKey\":\"test\"},\"eventSource\":\"aws:kinesis\"}]}");
+        primeEventType(mapper, ScheduledEvent.class, 
+            "{\"source\":\"aws.events\",\"detail-type\":\"Scheduled Event\",\"detail\":{}}");
+        
+        // Warm up JMESPath function registry
+        getJmesPath().compile("@").search(mapper.readTree("{\"test\":\"value\"}"));
     }
 
     @Override
@@ -152,16 +159,11 @@ public final class JsonConfig implements Resource {
         // No action needed after restore
     }
 
-    private void primeEventType(ObjectMapper mapper, String className, String sampleJson) {
-        try {
-            Class<?> eventClass = Class.forName(className);
-            // Deserialize sample JSON to the event class
-            Object event = mapper.readValue(sampleJson, eventClass);
-            // Serialize back to JSON to warm up both directions
-            mapper.writeValueAsString(event);
-        } catch (Exception e) {
-            // Ignore exceptions for event types that might not be available
-        }
+    private void primeEventType(ObjectMapper mapper, Class<?> eventClass, String sampleJson) throws Exception {
+        // Deserialize sample JSON to the event class
+        Object event = mapper.readValue(sampleJson, eventClass);
+        // Serialize back to JSON to warm up both directions
+        mapper.writeValueAsString(event);
     }
 
     private static class ConfigHolder {

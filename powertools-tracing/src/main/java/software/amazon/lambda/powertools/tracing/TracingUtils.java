@@ -209,31 +209,33 @@ public final class TracingUtils implements Resource {
         return objectMapper;
     }
 
+    /**
+     * Prime TracingUtils for AWS Lambda SnapStart.
+     * This method has no side-effects and can be safely called to trigger SnapStart priming.
+     */
+    public static void prime() {
+        // This method intentionally does nothing but ensures TracingUtils is loaded
+        // The actual priming happens in the beforeCheckpoint() method via CRaC hooks
+    }
+
     @Override
     public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Preload classes first to ensure this always runs
+        ClassPreLoader.preloadClasses();
+        
         // Initialize key components
         if (objectMapper == null) {
             objectMapper = new ObjectMapper();
         }
         
-        // Perform dummy X-Ray operations to warm up the SDK without persisting traces
-        try {
-            // Initialize X-Ray components by accessing them
-            AWSXRay.getGlobalRecorder();
-            
-            // Warm up tracing utilities by calling key methods
-            serviceName();
-            
-            // Initialize ObjectMapper for JSON serialization
-            objectMapper.writeValueAsString("dummy");
-            
-        } catch (Exception e) {
-            // Ignore exceptions during priming as they're expected in some environments
-            LOG.debug("Exception during X-Ray priming (expected in some environments): {}", e.getMessage());
-        }
-
-        // Preload classes
-        ClassPreLoader.preloadClasses();
+        // Initialize X-Ray components by accessing them
+        AWSXRay.getGlobalRecorder();
+        
+        // Warm up tracing utilities by calling key methods
+        serviceName();
+        
+        // Initialize ObjectMapper for JSON serialization
+        objectMapper.writeValueAsString("dummy");
     }
 
     @Override

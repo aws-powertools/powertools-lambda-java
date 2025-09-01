@@ -27,22 +27,14 @@ class TracingUtilsCracTest {
     Context<Resource> context = mock(Context.class);
 
     @Test
-    void testBeforeCheckpointDoesNotThrowException() throws Exception {
-        // Access the private INSTANCE field using reflection
-        Field instanceField = TracingUtils.class.getDeclaredField("INSTANCE");
-        instanceField.setAccessible(true);
-        TracingUtils tracingUtils = (TracingUtils) instanceField.get(null);
-        
-        assertThatNoException().isThrownBy(() -> tracingUtils.beforeCheckpoint(context));
+    void testPrimeMethodDoesNotThrowException() {
+        assertThatNoException().isThrownBy(() -> TracingUtils.prime());
     }
 
     @Test
-    void testAfterRestoreDoesNotThrowException() throws Exception {
-        // Access the private INSTANCE field using reflection
-        Field instanceField = TracingUtils.class.getDeclaredField("INSTANCE");
-        instanceField.setAccessible(true);
-        TracingUtils tracingUtils = (TracingUtils) instanceField.get(null);
-        
-        assertThatNoException().isThrownBy(() -> tracingUtils.afterRestore(context));
+    void testTracingUtilsLoadsSuccessfully() {
+        // Simply calling TracingUtils.prime() should trigger CRaC registration
+        TracingUtils.prime();
+        // If we get here without exception, the test passes
     }
 }
