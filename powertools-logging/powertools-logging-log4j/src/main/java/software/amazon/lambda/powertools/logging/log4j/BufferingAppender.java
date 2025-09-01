@@ -58,7 +58,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  * <h3>Configuration Example:</h3>
  * <pre>{@code
  * <BufferingAppender name="BufferedAppender" 
- *                    bufferAtVerbosity="INFO" 
+ *                    bufferAtVerbosity="DEBUG" 
  *                    maxBytes="20480" 
  *                    flushOnErrorLog="true">
  *   <AppenderRef ref="ConsoleAppender"/>
@@ -80,7 +80,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  *   <li>On Lambda completion: remaining buffered logs can be flushed via {@link software.amazon.lambda.powertools.logging.PowertoolsLogging}</li>
  * </ul>
  * 
- * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushLogBuffer()
+ * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushBuffer()
  */
 @Plugin(name = BUFFERING_APPENDER_PLUGIN_NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
 public class BufferingAppender extends AbstractAppender implements BufferManager {

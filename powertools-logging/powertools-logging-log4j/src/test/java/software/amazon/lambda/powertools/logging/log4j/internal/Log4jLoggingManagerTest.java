@@ -1,6 +1,7 @@
 package software.amazon.lambda.powertools.logging.log4j.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.contentOf;
 import static org.slf4j.event.Level.DEBUG;
 import static org.slf4j.event.Level.ERROR;
 import static org.slf4j.event.Level.WARN;
@@ -92,6 +93,9 @@ class Log4jLoggingManagerTest {
         // Then - both appenders should have flushed their buffers
         File logFile = new File("target/logfile.json");
         assertThat(logFile).exists();
+        assertThat(contentOf(logFile))
+                .contains("Test message 1")
+                .contains("Test message 2");
     }
 
     @AfterEach
