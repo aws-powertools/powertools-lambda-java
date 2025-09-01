@@ -12,6 +12,8 @@ import java.nio.file.StandardOpenOption;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -116,7 +118,7 @@ class BufferingAppenderTest {
         for (int i = 0; i < 100; i++) {
             logger.debug("Debug message " + i);
         }
-        
+
         // When - flush buffer to trigger overflow warning
         BufferingAppender appender = getBufferingAppender();
         appender.flushBuffer();
@@ -128,7 +130,12 @@ class BufferingAppenderTest {
     }
 
     private BufferingAppender getBufferingAppender() {
-        return (BufferingAppender) ((org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false))
-                .getConfiguration().getAppender(Log4jConstants.BUFFERING_APPENDER_PLUGIN_NAME);
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Appender appender = context.getConfiguration().getAppender("BufferingAppender");
+        if (appender == null) {
+            throw new IllegalStateException("BufferingAppender not found in configuration. Available appenders: " +
+                    context.getConfiguration().getAppenders().keySet());
+        }
+        return (BufferingAppender) appender;
     }
 }

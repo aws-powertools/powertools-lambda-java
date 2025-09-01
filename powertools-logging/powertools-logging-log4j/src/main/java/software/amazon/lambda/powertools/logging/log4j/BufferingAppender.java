@@ -14,8 +14,6 @@
 
 package software.amazon.lambda.powertools.logging.log4j;
 
-import static software.amazon.lambda.powertools.logging.log4j.Log4jConstants.BUFFERING_APPENDER_PLUGIN_NAME;
-
 import java.io.Serializable;
 import java.util.Deque;
 
@@ -83,7 +81,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  * 
  * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushBuffer()
  */
-@Plugin(name = BUFFERING_APPENDER_PLUGIN_NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
+@Plugin(name = "BufferingAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
 public class BufferingAppender extends AbstractAppender implements BufferManager {
 
     private final AppenderRef[] appenderRefs;
