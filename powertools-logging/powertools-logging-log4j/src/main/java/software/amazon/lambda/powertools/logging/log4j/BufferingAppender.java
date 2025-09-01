@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.logging.log4j;
 
+import static software.amazon.lambda.powertools.logging.log4j.Log4jConstants.BUFFERING_APPENDER_PLUGIN_NAME;
+
 import java.io.Serializable;
 import java.util.Deque;
 
@@ -36,8 +38,6 @@ import org.apache.logging.log4j.core.impl.Log4jLogEvent;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.BufferManager;
 import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
-
-import static software.amazon.lambda.powertools.logging.log4j.BufferingAppenderConstants.NAME;
 
 /**
  * A Log4j2 appender that buffers log events by AWS X-Ray trace ID for optimized Lambda logging.
@@ -82,7 +82,7 @@ import static software.amazon.lambda.powertools.logging.log4j.BufferingAppenderC
  * 
  * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushLogBuffer()
  */
-@Plugin(name = NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
+@Plugin(name = BUFFERING_APPENDER_PLUGIN_NAME, category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE)
 public class BufferingAppender extends AbstractAppender implements BufferManager {
 
     private final AppenderRef[] appenderRefs;

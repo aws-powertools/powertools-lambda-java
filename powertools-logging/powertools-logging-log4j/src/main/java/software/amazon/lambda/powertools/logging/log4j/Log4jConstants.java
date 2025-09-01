@@ -15,16 +15,16 @@
 package software.amazon.lambda.powertools.logging.log4j;
 
 /**
- * Constants for BufferingAppender configuration and references.
+ * Constants for Log4j2 configuration and references.
  */
-public final class BufferingAppenderConstants {
+public final class Log4jConstants {
 
     /**
-     * The name used for BufferingAppender in Log4j2 configuration and references.
+     * The plugin name for BufferingAppender in Log4j2 configuration.
      */
-    public static final String NAME = "BufferingAppender";
+    public static final String BUFFERING_APPENDER_PLUGIN_NAME = "BufferingAppender";
 
-    private BufferingAppenderConstants() {
+    private Log4jConstants() {
         // Utility class
     }
 }

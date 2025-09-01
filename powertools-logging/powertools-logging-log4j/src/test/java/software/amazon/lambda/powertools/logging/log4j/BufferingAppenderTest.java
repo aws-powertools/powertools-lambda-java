@@ -112,6 +112,6 @@ class BufferingAppenderTest {
 
     private BufferingAppender getBufferingAppender() {
         return (BufferingAppender) ((org.apache.logging.log4j.core.LoggerContext) LogManager.getContext(false))
-                .getConfiguration().getAppender(BufferingAppenderConstants.NAME);
+                .getConfiguration().getAppender(Log4jConstants.BUFFERING_APPENDER_PLUGIN_NAME);
     }
 }

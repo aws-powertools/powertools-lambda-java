@@ -14,6 +14,8 @@
 
 package software.amazon.lambda.powertools.logging.log4j.internal;
 
+import static software.amazon.lambda.powertools.logging.log4j.Log4jConstants.BUFFERING_APPENDER_PLUGIN_NAME;
+
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -23,8 +25,6 @@ import org.slf4j.Logger;
 import software.amazon.lambda.powertools.logging.internal.BufferManager;
 import software.amazon.lambda.powertools.logging.internal.LoggingManager;
 import software.amazon.lambda.powertools.logging.log4j.BufferingAppender;
-
-import static software.amazon.lambda.powertools.logging.log4j.BufferingAppenderConstants.NAME;
 
 /**
  * LoggingManager for Log4j2 that provides log level management and buffer operations.
@@ -59,7 +59,7 @@ public class Log4jLoggingManager implements LoggingManager, BufferManager {
     public void flushBuffer() {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         BufferingAppender bufferingAppender = (BufferingAppender) ctx.getConfiguration()
-                .getAppender(NAME);
+                .getAppender(BUFFERING_APPENDER_PLUGIN_NAME);
         if (bufferingAppender != null) {
             bufferingAppender.flushBuffer();
         }
@@ -72,7 +72,7 @@ public class Log4jLoggingManager implements LoggingManager, BufferManager {
     public void clearBuffer() {
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
         BufferingAppender bufferingAppender = (BufferingAppender) ctx.getConfiguration()
-                .getAppender(NAME);
+                .getAppender(BUFFERING_APPENDER_PLUGIN_NAME);
         if (bufferingAppender != null) {
             bufferingAppender.clearBuffer();
         }
