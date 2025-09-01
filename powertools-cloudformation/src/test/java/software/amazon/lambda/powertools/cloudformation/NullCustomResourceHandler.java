@@ -12,28 +12,36 @@
  *
  */
 
-package software.amazon.lambda.powertools.cloudformation.handlers;
+package software.amazon.lambda.powertools.cloudformation;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 
-import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
-import software.amazon.lambda.powertools.cloudformation.Response;
+import software.amazon.awssdk.http.SdkHttpClient;
 
-public class RuntimeExceptionThrownHandler extends AbstractCustomResourceHandler {
+/**
+ * Bare-bones implementation that returns null for abstract methods.
+ */
+public class NullCustomResourceHandler extends AbstractCustomResourceHandler {
+    public NullCustomResourceHandler() {
+    }
+
+    public NullCustomResourceHandler(SdkHttpClient client) {
+        super(client);
+    }
 
     @Override
     protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
+        return null;
     }
 
     @Override
     protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
+        return null;
     }
 
     @Override
     protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
+        return null;
     }
 }

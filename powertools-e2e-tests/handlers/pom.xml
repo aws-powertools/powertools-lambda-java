@@ -20,7 +20,7 @@
         <maven.shade.version>3.6.0</maven.shade.version>
         <aspectj.plugin.version>1.13.1</aspectj.plugin.version>
         <maven.compiler.version>3.11.0</maven.compiler.version>
-        <aws.sdk.version>2.32.30</aws.sdk.version>
+        <aws.sdk.version>2.32.31</aws.sdk.version>
         <aspectj.version>1.9.20.1</aspectj.version>
     </properties>
 
@@ -154,7 +154,7 @@
                         <dependency>
                             <groupId>org.apache.logging.log4j</groupId>
                             <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
-                            <version>0.1.0</version>
+                            <version>0.2.0</version>
                         </dependency>
                     </dependencies>
                 </plugin>

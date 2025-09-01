@@ -12,28 +12,14 @@
  *
  */
 
-package software.amazon.lambda.powertools.cloudformation.handlers;
+package software.amazon.lambda.powertools.cloudformation;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
 
-import software.amazon.lambda.powertools.cloudformation.AbstractCustomResourceHandler;
-import software.amazon.lambda.powertools.cloudformation.Response;
-
-public class RuntimeExceptionThrownHandler extends AbstractCustomResourceHandler {
-
+public class SuccessfulSendHandler extends FailToSendResponseHandler {
     @Override
     protected Response create(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
-    }
-
-    @Override
-    protected Response update(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
-    }
-
-    @Override
-    protected Response delete(CloudFormationCustomResourceEvent event, Context context) {
-        throw new RuntimeException("failure");
+        return Response.builder().value("Failure happens on send").build();
     }
 }
