@@ -93,9 +93,10 @@ class Log4jLoggingManagerTest {
         // Then - both appenders should have flushed their buffers
         File logFile = new File("target/logfile.json");
         assertThat(logFile).exists();
-        assertThat(contentOf(logFile))
-                .contains("Test message 1")
-                .contains("Test message 2");
+        String content = contentOf(logFile);
+        // Each message should appear twice (once from each BufferingAppender)
+        assertThat(content.split("Test message 1", -1)).hasSize(3); // 2 occurrences = 3 parts
+        assertThat(content.split("Test message 2", -1)).hasSize(3); // 2 occurrences = 3 parts
     }
 
     @AfterEach
