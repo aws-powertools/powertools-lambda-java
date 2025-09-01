@@ -26,9 +26,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,20 +38,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LoggingE2ET {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static Infrastructure infrastructure;
-    private static String functionName;
+    private Infrastructure infrastructure;
+    private String functionName;
 
-    @BeforeAll
-    @Timeout(value = 10, unit = TimeUnit.MINUTES)
-    static void setup() {
+    private void setupInfrastructure(String pathToFunction) {
         infrastructure = Infrastructure.builder()
-                .testName(LoggingE2ET.class.getSimpleName())
+                .testName(LoggingE2ET.class.getSimpleName() + "-" + pathToFunction)
                 .tracing(true)
-                .pathToFunction("logging")
+                .pathToFunction(pathToFunction)
                 .environmentVariables(
                         Stream.of(new String[][] {
                                 { "POWERTOOLS_LOG_LEVEL", "INFO" },
@@ -63,37 +63,50 @@ class LoggingE2ET {
     }
 
     @AfterAll
-    static void tearDown() {
+    void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
-    @Test
-    void test_logInfoWithAdditionalKeys() throws JsonProcessingException {
-        // GIVEN
-        String orderId = UUID.randomUUID().toString();
-        String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId + "\"}}";
+    @ParameterizedTest
+    @ValueSource(strings = { "logging" })
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
+    void test_logInfoWithAdditionalKeys(String pathToFunction) throws JsonProcessingException {
+        setupInfrastructure(pathToFunction);
 
-        // WHEN
-        InvocationResult invocationResult1 = invokeFunction(functionName, event);
-        InvocationResult invocationResult2 = invokeFunction(functionName, event);
+        try {
+            // GIVEN
+            String orderId = UUID.randomUUID().toString();
+            String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId + "\"}}";
 
-        // THEN
-        String[] functionLogs = invocationResult1.getLogs().getFunctionLogs(INFO);
-        assertThat(functionLogs).hasSize(1);
+            // WHEN
+            InvocationResult invocationResult1 = invokeFunction(functionName, event);
+            InvocationResult invocationResult2 = invokeFunction(functionName, event);
 
-        JsonNode jsonNode = objectMapper.readTree(functionLogs[0]);
-        assertThat(jsonNode.get("message").asText()).isEqualTo("New Order");
-        assertThat(jsonNode.get("orderId").asText()).isEqualTo(orderId);
-        assertThat(jsonNode.get("cold_start").asBoolean()).isTrue();
-        assertThat(jsonNode.get("xray_trace_id").asText()).isNotBlank();
-        assertThat(jsonNode.get("function_request_id").asText()).isEqualTo(invocationResult1.getRequestId());
+            // THEN
+            String[] functionLogs = invocationResult1.getLogs().getFunctionLogs(INFO);
+            assertThat(functionLogs).hasSize(1);
 
-        // second call should not be cold start
-        functionLogs = invocationResult2.getLogs().getFunctionLogs(INFO);
-        assertThat(functionLogs).hasSize(1);
-        jsonNode = objectMapper.readTree(functionLogs[0]);
-        assertThat(jsonNode.get("cold_start").asBoolean()).isFalse();
+            JsonNode jsonNode = objectMapper.readTree(functionLogs[0]);
+            assertThat(jsonNode.get("message").asText()).isEqualTo("New Order");
+            assertThat(jsonNode.get("orderId").asText()).isEqualTo(orderId);
+            assertThat(jsonNode.get("cold_start").asBoolean()).isTrue();
+            assertThat(jsonNode.get("xray_trace_id").asText()).isNotBlank();
+            assertThat(jsonNode.get("function_request_id").asText()).isEqualTo(invocationResult1.getRequestId());
+
+            // second call should not be cold start
+            functionLogs = invocationResult2.getLogs().getFunctionLogs(INFO);
+            assertThat(functionLogs).hasSize(1);
+            jsonNode = objectMapper.readTree(functionLogs[0]);
+            assertThat(jsonNode.get("cold_start").asBoolean()).isFalse();
+
+        } finally {
+            // Clean up infrastructure after each parameter
+            if (infrastructure != null) {
+                infrastructure.destroy();
+                infrastructure = null;
+            }
+        }
     }
 }
