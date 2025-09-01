@@ -18,9 +18,10 @@ import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.apache.logging.log4j.core.config.xml.XmlConfigurationFactory;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,13 @@ class Log4jLoggingManagerTest {
     private static final Logger LOG = LoggerFactory.getLogger(Log4jLoggingManagerTest.class);
     private static final Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
+    @BeforeEach
+    void setUp() {
+        // Force reconfiguration from XML to ensure clean state
+        Configurator.reconfigure();
+    }
+
     @Test
-    @Order(1)
     void getLogLevel_shouldReturnConfiguredLogLevel() {
         // Given log4j2.xml in resources
 
@@ -47,7 +53,6 @@ class Log4jLoggingManagerTest {
     }
 
     @Test
-    @Order(2)
     void resetLogLevel() {
         // Given log4j2.xml in resources
 
@@ -109,6 +114,9 @@ class Log4jLoggingManagerTest {
 
     @AfterEach
     void cleanUp() throws IOException {
+        // Reset to original configuration from XML
+        Configurator.reconfigure();
+
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         } catch (NoSuchFileException e) {
