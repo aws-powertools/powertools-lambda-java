@@ -14,12 +14,15 @@
 
 package software.amazon.lambda.powertools.e2e;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+
 import software.amazon.lambda.powertools.logging.Logging;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
 public class Function implements RequestHandler<Input, String> {
     private static final Logger LOG = LoggerFactory.getLogger(Function.class);
@@ -28,6 +31,9 @@ public class Function implements RequestHandler<Input, String> {
     public String handleRequest(Input input, Context context) {
         input.getKeys().forEach(MDC::put);
         LOG.info(input.getMessage());
+
+        // Flush buffer manually since we buffer at INFO level to test log buffering
+        PowertoolsLogging.flushBuffer();
 
         return "OK";
     }

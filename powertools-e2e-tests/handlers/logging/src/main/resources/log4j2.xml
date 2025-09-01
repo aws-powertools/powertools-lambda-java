@@ -4,13 +4,14 @@
         <Console name="JsonAppender" target="SYSTEM_OUT">
             <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
         </Console>
+        <!-- We buffer everything to implicitly test buffer flushing -->
+        <BufferingAppender name="BufferedAppender" bufferAtVerbosity="INFO">
+            <AppenderRef ref="JsonAppender" />
+        </BufferingAppender>
     </Appenders>
     <Loggers>
         <Root level="INFO">
-            <AppenderRef ref="JsonAppender"/>
+            <AppenderRef ref="BufferedAppender" />
         </Root>
-        <Logger name="JsonLogger" level="INFO" additivity="false">
-            <AppenderRef ref="JsonAppender"/>
-        </Logger>
     </Loggers>
 </Configuration>
