@@ -78,38 +78,30 @@ class Log4jLoggingManagerTest {
         }
 
         LoggerContext ctx = (LoggerContext) LogManager.getContext(false);
-        Configuration originalConfig = ctx.getConfiguration();
+        ConfigurationFactory factory = new XmlConfigurationFactory();
+        ConfigurationSource source = new ConfigurationSource(
+                getClass().getResourceAsStream("/log4j2-multiple-buffering.xml"));
+        Configuration config = factory.getConfiguration(null, source);
 
-        try {
-            ConfigurationFactory factory = new XmlConfigurationFactory();
-            ConfigurationSource source = new ConfigurationSource(
-                    getClass().getResourceAsStream("/log4j2-multiple-buffering.xml"));
-            Configuration config = factory.getConfiguration(null, source);
+        ctx.setConfiguration(config);
+        ctx.updateLoggers();
 
-            ctx.setConfiguration(config);
-            ctx.updateLoggers();
+        org.apache.logging.log4j.Logger logger = LogManager.getLogger("test.multiple.appenders");
 
-            org.apache.logging.log4j.Logger logger = LogManager.getLogger("test.multiple.appenders");
+        // When - log messages and flush buffers
+        logger.debug("Test message 1");
+        logger.debug("Test message 2");
 
-            // When - log messages and flush buffers
-            logger.debug("Test message 1");
-            logger.debug("Test message 2");
+        Log4jLoggingManager manager = new Log4jLoggingManager();
+        manager.flushBuffer();
 
-            Log4jLoggingManager manager = new Log4jLoggingManager();
-            manager.flushBuffer();
-
-            // Then - both appenders should have flushed their buffers
-            File logFile = new File("target/logfile.json");
-            assertThat(logFile).exists();
-            String content = contentOf(logFile);
-            // Each message should appear twice (once from each BufferingAppender)
-            assertThat(content.split("Test message 1", -1)).hasSize(3); // 2 occurrences = 3 parts
-            assertThat(content.split("Test message 2", -1)).hasSize(3); // 2 occurrences = 3 parts
-        } finally {
-            // Restore original configuration to prevent test interference
-            ctx.setConfiguration(originalConfig);
-            ctx.updateLoggers();
-        }
+        // Then - both appenders should have flushed their buffers
+        File logFile = new File("target/logfile.json");
+        assertThat(logFile).exists();
+        String content = contentOf(logFile);
+        // Each message should appear twice (once from each BufferingAppender)
+        assertThat(content.split("Test message 1", -1)).hasSize(3); // 2 occurrences = 3 parts
+        assertThat(content.split("Test message 2", -1)).hasSize(3); // 2 occurrences = 3 parts
     }
 
     @AfterEach

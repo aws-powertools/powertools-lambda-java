@@ -28,7 +28,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Order;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,8 +44,18 @@ class LogbackLoggingManagerTest {
     private static final Logger LOG = LoggerFactory.getLogger(LogbackLoggingManagerTest.class);
     private static final Logger ROOT = LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
+    @BeforeEach
+    void setUp() throws JoranException, IOException {
+        resetLogbackConfig("/logback-test.xml");
+        
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there in the first run
+        }
+    }
+
     @Test
-    @Order(1)
     void getLogLevel_shouldReturnConfiguredLogLevel() {
         LogbackLoggingManager manager = new LogbackLoggingManager();
         Level logLevel = manager.getLogLevel(LOG);
@@ -56,7 +66,6 @@ class LogbackLoggingManagerTest {
     }
 
     @Test
-    @Order(2)
     void resetLogLevel() {
         LogbackLoggingManager manager = new LogbackLoggingManager();
         manager.setLogLevel(ERROR);
@@ -68,18 +77,7 @@ class LogbackLoggingManagerTest {
     @Test
     void shouldDetectMultipleBufferingAppendersRegardlessOfName() throws IOException, JoranException {
         // Given - configuration with multiple BufferingAppenders with different names
-        try {
-            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-        } catch (NoSuchFileException e) {
-            // may not be there in the first run
-        }
-
-        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        context.reset();
-
-        JoranConfigurator configurator = new JoranConfigurator();
-        configurator.setContext(context);
-        configurator.doConfigure(getClass().getResourceAsStream("/logback-multiple-buffering.xml"));
+        resetLogbackConfig("/logback-multiple-buffering.xml");
 
         Logger logger = LoggerFactory.getLogger("test.multiple.appenders");
 
@@ -100,11 +98,15 @@ class LogbackLoggingManagerTest {
     }
 
     @AfterEach
-    void cleanUp() throws IOException {
-        try {
-            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-        } catch (NoSuchFileException e) {
-            // may not be there
-        }
+    void cleanUp() throws JoranException {
+        resetLogbackConfig("/logback-test.xml");
+    }
+
+    private void resetLogbackConfig(String configFileName) throws JoranException {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        context.reset();
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(context);
+        configurator.doConfigure(getClass().getResourceAsStream(configFileName));
     }
 }
