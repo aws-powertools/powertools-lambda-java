@@ -56,6 +56,7 @@ public class AppStream implements RequestStreamHandler {
 
             writer.write("{\"body\": \"" + System.currentTimeMillis() + "\"} ");
         } catch (IOException e) {
+            log.error("Exception caught in handler", e);
             log.error("Something has gone wrong: ", e);
         }
     }
