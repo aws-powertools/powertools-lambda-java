@@ -193,8 +193,20 @@
     </Match>
     <Match>
         <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
-        <Class name="software.amazon.lambda.powertools.validation.ValidationConfig"/>
-        <Method name="beforeCheckpoint"/>
+        <Or>
+            <And>
+                <Class name="software.amazon.lambda.powertools.validation.ValidationConfig"/>
+                <Method name="beforeCheckpoint"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
+                <Method name="beforeCheckpoint"/>
+            </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.utilities.JsonConfig"/>
+                <Method name="beforeCheckpoint"/>
+            </And>
+        </Or>
     </Match>
     <!--Functionally needed-->
     <Match>

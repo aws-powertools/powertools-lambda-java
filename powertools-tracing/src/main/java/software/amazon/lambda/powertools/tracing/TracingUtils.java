@@ -21,16 +21,32 @@ import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.Consumer;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 
 /**
  * A class of helper functions to add additional functionality and ease
  * of use.
  */
-public final class TracingUtils {
+public final class TracingUtils implements Resource {
     private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
+
+    // Dummy instance to register TracingUtils with CRaC
+    private static final TracingUtils INSTANCE = new TracingUtils();
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(INSTANCE);
+    }
+
+    private TracingUtils() {
+        // Private constructor for singleton pattern
+    }
 
     /**
      * Put an annotation to the current subsegment with a String value.
@@ -191,5 +207,37 @@ public final class TracingUtils {
 
     public static ObjectMapper objectMapper() {
         return objectMapper;
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Initialize key components
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+        
+        // Perform dummy X-Ray operations to warm up the SDK without persisting traces
+        try {
+            // Initialize X-Ray components by accessing them
+            AWSXRay.getGlobalRecorder();
+            
+            // Warm up tracing utilities by calling key methods
+            serviceName();
+            
+            // Initialize ObjectMapper for JSON serialization
+            objectMapper.writeValueAsString("dummy");
+            
+        } catch (Exception e) {
+            // Ignore exceptions during priming as they're expected in some environments
+            LOG.debug("Exception during X-Ray priming (expected in some environments): {}", e.getMessage());
+        }
+
+        // Preload classes
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }

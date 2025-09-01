@@ -419,5 +419,55 @@ Below is an example configuration needed for each test case.
         }
     ```
 
+## Advanced
 
+### Lambda SnapStart priming
 
+The Tracing utility integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart priming logic of this utility runs correctly, you need an explicit reference to `TracingUtils` in your code to allow the library to register before SnapStart takes a memory snapshot. Learn more about what priming is in this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/){target="_blank"}.
+
+Make sure to reference `TracingUtils` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
+
+=== "Constructor"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.tracing.Tracing;
+    import software.amazon.lambda.powertools.tracing.TracingUtils;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        public MyFunctionHandler() {
+            TracingUtils.putAnnotation("init", "priming"); // Ensure TracingUtils is loaded for SnapStart
+        }
+
+        @Override
+        @Tracing
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```
+
+=== "Static Initializer"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.tracing.Tracing;
+    import software.amazon.lambda.powertools.tracing.TracingUtils;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        static {
+            TracingUtils.putAnnotation("init", "priming"); // Ensure TracingUtils is loaded for SnapStart
+        }
+
+        @Override
+        @Tracing
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```
+
+!!! note "Important: Direct TracingUtils reference required"
+    Using only the `@Tracing` annotation is not sufficient to trigger SnapStart priming. You must have a direct reference to `TracingUtils` in your code (as shown in the examples above) to ensure the CRaC hooks are properly registered.

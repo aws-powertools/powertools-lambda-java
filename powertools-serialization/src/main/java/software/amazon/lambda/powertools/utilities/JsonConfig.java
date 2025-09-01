@@ -27,11 +27,15 @@ import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionRegistry;
 import io.burt.jmespath.jackson.JacksonRuntime;
 import java.util.function.Supplier;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 import software.amazon.lambda.powertools.utilities.jmespath.JsonFunction;
 
-public final class JsonConfig {
+public final class JsonConfig implements Resource {
 
     private static final Supplier<ObjectMapper> objectMapperSupplier = () -> JsonMapper.builder()
             // Don't throw an exception when json has extra fields you are not serializing on.
@@ -60,6 +64,11 @@ public final class JsonConfig {
             .build();
 
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(get());
+    }
 
     private JsonConfig() {
     }
@@ -101,6 +110,58 @@ public final class JsonConfig {
                 .build();
 
         jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Initialize key components
+        getObjectMapper();
+        getJmesPath();
+        
+        // Perform dummy serialization/deserialization operations to warm up Jackson ObjectMapper
+        try {
+            ObjectMapper mapper = getObjectMapper();
+            
+            // Prime common AWS Lambda event types as suggested by Philipp
+            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent", 
+                "{\"httpMethod\":\"GET\",\"path\":\"/test\",\"headers\":{\"Content-Type\":\"application/json\"}}");
+            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent", 
+                "{\"version\":\"2.0\",\"routeKey\":\"GET /test\",\"requestContext\":{\"http\":{\"method\":\"GET\"}}}");
+            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.SQSEvent", 
+                "{\"Records\":[{\"messageId\":\"test\",\"body\":\"test message\"}]}");
+            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.SNSEvent", 
+                "{\"Records\":[{\"Sns\":{\"Message\":\"test message\",\"TopicArn\":\"arn:aws:sns:us-east-1:123456789012:test\"}}]}");
+            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.KinesisEvent", 
+                "{\"Records\":[{\"kinesis\":{\"data\":\"dGVzdA==\",\"partitionKey\":\"test\"}}]}");
+            primeEventType(mapper, "com.amazonaws.services.lambda.runtime.events.ScheduledEvent", 
+                "{\"source\":\"aws.events\",\"detail-type\":\"Scheduled Event\"}");
+            
+            // Warm up JMESPath function registry
+            getJmesPath().compile("@").search(mapper.readTree("{\"test\":\"value\"}"));
+            
+        } catch (Exception e) {
+            // Ignore exceptions during priming as they're expected in some environments
+        }
+
+        // Preload classes
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
+    }
+
+    private void primeEventType(ObjectMapper mapper, String className, String sampleJson) {
+        try {
+            Class<?> eventClass = Class.forName(className);
+            // Deserialize sample JSON to the event class
+            Object event = mapper.readValue(sampleJson, eventClass);
+            // Serialize back to JSON to warm up both directions
+            mapper.writeValueAsString(event);
+        } catch (Exception e) {
+            // Ignore exceptions for event types that might not be available
+        }
     }
 
     private static class ConfigHolder {
