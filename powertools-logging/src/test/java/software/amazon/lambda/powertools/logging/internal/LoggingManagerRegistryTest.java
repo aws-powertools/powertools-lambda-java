@@ -91,8 +91,9 @@ class LoggingManagerRegistryTest {
         // THEN
         String output = outputStream.toString("UTF-8");
         assertThat(output).isEmpty();
-        assertThat(loggingManager).isSameAs(testManager);
-        assertThat(loggingManager).isInstanceOf(BufferManager.class);
+        assertThat(loggingManager)
+                .isSameAs(testManager)
+                .isInstanceOf(BufferManager.class);
     }
 
     @Test
@@ -102,9 +103,10 @@ class LoggingManagerRegistryTest {
         LoggingManager second = LoggingManagerRegistry.getLoggingManager();
 
         // THEN
-        assertThat(first).isSameAs(second);
-        assertThat(first).isNotNull();
-        assertThat(first).isInstanceOf(BufferManager.class);
+        assertThat(first)
+                .isSameAs(second)
+                .isNotNull()
+                .isInstanceOf(BufferManager.class);
     }
 
     @Test

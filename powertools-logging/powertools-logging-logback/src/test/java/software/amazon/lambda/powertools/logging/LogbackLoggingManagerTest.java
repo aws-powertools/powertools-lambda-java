@@ -47,7 +47,7 @@ class LogbackLoggingManagerTest {
     @BeforeEach
     void setUp() throws JoranException, IOException {
         resetLogbackConfig("/logback-test.xml");
-        
+
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         } catch (NoSuchFileException e) {
@@ -75,7 +75,7 @@ class LogbackLoggingManagerTest {
     }
 
     @Test
-    void shouldDetectMultipleBufferingAppendersRegardlessOfName() throws IOException, JoranException {
+    void shouldDetectMultipleBufferingAppendersRegardlessOfName() throws JoranException {
         // Given - configuration with multiple BufferingAppenders with different names
         resetLogbackConfig("/logback-multiple-buffering.xml");
 

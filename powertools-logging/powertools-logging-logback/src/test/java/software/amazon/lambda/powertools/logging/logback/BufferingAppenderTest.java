@@ -130,7 +130,7 @@ class BufferingAppenderTest {
     void shouldLogOverflowWarningWhenBufferOverflows() {
         // When - fill buffer beyond capacity to trigger overflow
         for (int i = 0; i < 100; i++) {
-            logger.debug("Debug message " + i);
+            logger.debug("Debug message {}", i);
         }
 
         // When - flush buffer to trigger overflow warning

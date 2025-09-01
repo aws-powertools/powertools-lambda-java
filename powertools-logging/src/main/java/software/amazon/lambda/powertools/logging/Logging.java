@@ -72,7 +72,7 @@ public @interface Logging {
 
     /**
      * Set to true if you want to log the response sent by the Lambda function handler.<br/>
-     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_RESPONE' environment variable
+     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_RESPONSE' environment variable
      */
     boolean logResponse() default false;
 

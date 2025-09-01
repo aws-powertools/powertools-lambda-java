@@ -130,12 +130,9 @@ public final class LambdaLoggingAspect {
         boolean isOnRequestStreamHandler = placedOnStreamHandler(pjp);
 
         setLogLevelBasedOnSamplingRate(pjp, logging);
-
         addLambdaContextToLoggingContext(pjp);
-
         getXrayTraceId().ifPresent(xRayTraceId -> MDC.put(FUNCTION_TRACE_ID.getName(), xRayTraceId));
 
-        // Log Event
         Object[] proceedArgs = logEvent(pjp, logging, isOnRequestHandler, isOnRequestStreamHandler);
 
         if (!logging.correlationIdPath().isEmpty()) {
@@ -143,58 +140,28 @@ public final class LambdaLoggingAspect {
                     isOnRequestStreamHandler);
         }
 
-        // To log the result of a RequestStreamHandler (OutputStream), we need to do the following:
-        // 1. backup a reference to the OutputStream provided by Lambda
-        // 2. create a temporary OutputStream and pass it to the handler method
-        // 3. retrieve this temporary stream to log it (if enabled)
-        // 4. write it back to the OutputStream provided by Lambda
         OutputStream backupOutputStream = null;
-        if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE) && isOnRequestStreamHandler) {
-            backupOutputStream = (OutputStream) proceedArgs[1];
-            proceedArgs[1] = new ByteArrayOutputStream();
+        if (isOnRequestStreamHandler) {
+            // To log the result of a RequestStreamHandler (OutputStream), we need to do the following:
+            // 1. backup a reference to the OutputStream provided by Lambda
+            // 2. create a temporary OutputStream and pass it to the handler method
+            // 3. retrieve this temporary stream to log it (if enabled)
+            // 4. write it back to the OutputStream provided by Lambda
+            backupOutputStream = prepareOutputStreamForLogging(logging, proceedArgs);
         }
 
         Object lambdaFunctionResponse;
-
         try {
-            // Call Function Handler
             lambdaFunctionResponse = pjp.proceed(proceedArgs);
         } catch (Throwable t) {
-            if (LOGGING_MANAGER instanceof BufferManager) {
-                if (logging.flushBufferOnUncaughtError()) {
-                    ((BufferManager) LOGGING_MANAGER).flushBuffer();
-                } else {
-                    // Clear buffer before error logging to prevent unintended flush. If flushOnErrorLog is enabled on
-                    // the appender the next line would otherwise cause an unintended flush by the appender directly.
-                    ((BufferManager) LOGGING_MANAGER).clearBuffer();
-                }
-            }
-            if (logging.logError() || POWERTOOLS_LOG_ERROR) {
-                // logging the exception with additional context
-                logger(pjp).error(MarkerFactory.getMarker("FATAL"), "Exception in Lambda Handler", t);
-            }
+            handleException(pjp, logging, t);
             throw t;
         } finally {
-            if (logging.clearState()) {
-                MDC.clear();
-            }
-            // Clear buffer after each handler invocation
-            if (LOGGING_MANAGER instanceof BufferManager) {
-                ((BufferManager) LOGGING_MANAGER).clearBuffer();
-            }
-            coldStartDone();
+            performCleanup(logging);
         }
 
-        // Log Response
-        if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE)) {
-            if (isOnRequestHandler) {
-                logRequestHandlerResponse(pjp, lambdaFunctionResponse);
-            } else if (isOnRequestStreamHandler && backupOutputStream != null) {
-                byte[] bytes = ((ByteArrayOutputStream) proceedArgs[1]).toByteArray();
-                logRequestStreamHandlerResponse(pjp, bytes);
-                backupOutputStream.write(bytes);
-            }
-        }
+        logResponse(pjp, logging, lambdaFunctionResponse, isOnRequestHandler, isOnRequestStreamHandler,
+                backupOutputStream, proceedArgs);
 
         return lambdaFunctionResponse;
     }
@@ -352,6 +319,53 @@ public final class LambdaLoggingAspect {
             }
             writer.flush();
             return out.toByteArray();
+        }
+    }
+
+    private OutputStream prepareOutputStreamForLogging(Logging logging,
+            Object[] proceedArgs) {
+        if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE)) {
+            OutputStream backupOutputStream = (OutputStream) proceedArgs[1];
+            proceedArgs[1] = new ByteArrayOutputStream();
+            return backupOutputStream;
+        }
+        return null;
+    }
+
+    private void handleException(ProceedingJoinPoint pjp, Logging logging, Throwable t) {
+        if (LOGGING_MANAGER instanceof BufferManager) {
+            if (logging.flushBufferOnUncaughtError()) {
+                ((BufferManager) LOGGING_MANAGER).flushBuffer();
+            } else {
+                ((BufferManager) LOGGING_MANAGER).clearBuffer();
+            }
+        }
+        if (logging.logError() || POWERTOOLS_LOG_ERROR) {
+            logger(pjp).error(MarkerFactory.getMarker("FATAL"), "Exception in Lambda Handler", t);
+        }
+    }
+
+    private void performCleanup(Logging logging) {
+        if (logging.clearState()) {
+            MDC.clear();
+        }
+        if (LOGGING_MANAGER instanceof BufferManager) {
+            ((BufferManager) LOGGING_MANAGER).clearBuffer();
+        }
+        coldStartDone();
+    }
+
+    private void logResponse(ProceedingJoinPoint pjp, Logging logging, Object lambdaFunctionResponse,
+            boolean isOnRequestHandler, boolean isOnRequestStreamHandler,
+            OutputStream backupOutputStream, Object[] proceedArgs) throws IOException {
+        if (logging.logResponse() || POWERTOOLS_LOG_RESPONSE) {
+            if (isOnRequestHandler) {
+                logRequestHandlerResponse(pjp, lambdaFunctionResponse);
+            } else if (isOnRequestStreamHandler && backupOutputStream != null) {
+                byte[] bytes = ((ByteArrayOutputStream) proceedArgs[1]).toByteArray();
+                logRequestStreamHandlerResponse(pjp, bytes);
+                backupOutputStream.write(bytes);
+            }
         }
     }
 
