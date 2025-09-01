@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="JsonAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder"/>
+    </appender>
+    
+    <!-- We buffer everything to implicitly test buffer flushing -->
+    <appender name="BufferedAppender" class="software.amazon.lambda.powertools.logging.logback.BufferingAppender">
+        <bufferAtVerbosity>INFO</bufferAtVerbosity>
+        <appender-ref ref="JsonAppender"/>
+    </appender>
+    
+    <root level="INFO">
+        <appender-ref ref="BufferedAppender"/>
+    </root>
+</configuration>

@@ -70,7 +70,7 @@ class LoggingE2ET {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "logging" })
+    @ValueSource(strings = { "logging-log4j", "logging-logback" })
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
     void test_logInfoWithAdditionalKeys(String pathToFunction) throws JsonProcessingException {
         setupInfrastructure(pathToFunction);

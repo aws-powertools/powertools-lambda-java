@@ -8,19 +8,14 @@
         <version>2.3.0</version>
     </parent>
 
-    <artifactId>e2e-test-handler-logging</artifactId>
+    <artifactId>e2e-test-handler-logging-logback</artifactId>
     <packaging>jar</packaging>
-    <name>E2E test handler – Logging</name>
+    <name>E2E test handler – Logging Logback</name>
 
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging-log4j</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-layout-template-json</artifactId>
-            <version>2.25.1</version>
+            <artifactId>powertools-logging-logback</artifactId>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
