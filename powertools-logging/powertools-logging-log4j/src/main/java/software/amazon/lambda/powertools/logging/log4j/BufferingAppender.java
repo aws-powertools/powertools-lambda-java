@@ -34,6 +34,7 @@ import org.apache.logging.log4j.core.config.plugins.PluginConfiguration;
 import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.impl.Log4jLogEvent;
+import org.apache.logging.log4j.message.SimpleMessage;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.BufferManager;
@@ -91,6 +92,7 @@ public class BufferingAppender extends AbstractAppender implements BufferManager
     private final boolean flushOnErrorLog;
     private final KeyBuffer<String, LogEvent> buffer;
 
+    @SuppressWarnings("java:S107") // Constructor has too many parameters, which is OK for a Log4j2 plugin
     protected BufferingAppender(String name, Filter filter, Layout<? extends Serializable> layout,
             AppenderRef[] appenderRefs, Configuration configuration, Level bufferAtVerbosity, int maxBytes,
             boolean flushOnErrorLog) {
@@ -99,7 +101,8 @@ public class BufferingAppender extends AbstractAppender implements BufferManager
         this.configuration = configuration;
         this.bufferAtVerbosity = bufferAtVerbosity;
         this.flushOnErrorLog = flushOnErrorLog;
-        this.buffer = new KeyBuffer<>(maxBytes, event -> event.getMessage().getFormattedMessage().length());
+        this.buffer = new KeyBuffer<>(maxBytes, event -> event.getMessage().getFormattedMessage().length(),
+                this::logOverflowWarning);
     }
 
     @Override
@@ -159,6 +162,7 @@ public class BufferingAppender extends AbstractAppender implements BufferManager
     }
 
     @PluginFactory
+    @SuppressWarnings("java:S107") // Method has too many parameters, which is OK for a Log4j2 plugin factory
     public static BufferingAppender createAppender(
             @PluginAttribute("name") String name,
             @PluginElement("Filter") Filter filter,
@@ -181,5 +185,19 @@ public class BufferingAppender extends AbstractAppender implements BufferManager
 
         return new BufferingAppender(name, filter, layout, appenderRefs, configuration, level, maxBytes,
                 flushOnErrorLog);
+    }
+
+    private void logOverflowWarning() {
+        // Create a properly formatted warning event and send directly to child appenders. Used to avoid circular
+        // dependency between KeyBuffer and BufferingAppender.
+        SimpleMessage message = new SimpleMessage(
+                "Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer.");
+        LogEvent warningEvent = Log4jLogEvent.newBuilder()
+                .setLoggerName(BufferingAppender.class.getName())
+                .setLevel(Level.WARN)
+                .setMessage(message)
+                .setTimeMillis(System.currentTimeMillis())
+                .build();
+        callAppenders(warningEvent);
     }
 }

@@ -20,9 +20,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Generic buffer data structure for storing events by key with size-based eviction.
  * 
@@ -56,16 +53,22 @@ import org.slf4j.LoggerFactory;
  */
 public class KeyBuffer<K, T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(KeyBuffer.class);
-
     private final Map<K, Deque<T>> keyBufferCache = new ConcurrentHashMap<>();
     private final Map<K, Boolean> overflowTriggered = new ConcurrentHashMap<>();
     private final int maxBytes;
     private final Function<T, Integer> sizeCalculator;
+    private final Runnable overflowWarningLogger;
 
+    @SuppressWarnings("java:S106") // Using System.err to avoid circular dependency with logging implementation
     public KeyBuffer(int maxBytes, Function<T, Integer> sizeCalculator) {
+        this(maxBytes, sizeCalculator, () -> System.err.println("WARN [" + KeyBuffer.class.getSimpleName()
+                + "] - Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer."));
+    }
+
+    public KeyBuffer(int maxBytes, Function<T, Integer> sizeCalculator, Runnable overflowWarningLogger) {
         this.maxBytes = maxBytes;
         this.sizeCalculator = sizeCalculator;
+        this.overflowWarningLogger = overflowWarningLogger;
     }
 
     public void add(K key, T event) {
@@ -103,8 +106,7 @@ public class KeyBuffer<K, T> {
 
     private void logOverflowWarningIfNeeded(K key) {
         if (Boolean.TRUE.equals(overflowTriggered.remove(key))) {
-            logger.warn(
-                    "Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer.");
+            overflowWarningLogger.run();
         }
     }
 

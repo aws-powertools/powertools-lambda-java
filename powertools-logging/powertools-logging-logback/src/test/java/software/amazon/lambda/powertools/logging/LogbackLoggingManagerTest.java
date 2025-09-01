@@ -15,15 +15,28 @@
 package software.amazon.lambda.powertools.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.contentOf;
 import static org.slf4j.event.Level.DEBUG;
 import static org.slf4j.event.Level.ERROR;
 import static org.slf4j.event.Level.WARN;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.channels.FileChannel;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
+
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.spi.JoranException;
 import software.amazon.lambda.powertools.logging.logback.internal.LogbackLoggingManager;
 
 class LogbackLoggingManagerTest {
@@ -50,5 +63,48 @@ class LogbackLoggingManagerTest {
 
         Level logLevel = manager.getLogLevel(LOG);
         assertThat(logLevel).isEqualTo(ERROR);
+    }
+
+    @Test
+    void shouldDetectMultipleBufferingAppendersRegardlessOfName() throws IOException, JoranException {
+        // Given - configuration with multiple BufferingAppenders with different names
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there in the first run
+        }
+
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+        context.reset();
+
+        JoranConfigurator configurator = new JoranConfigurator();
+        configurator.setContext(context);
+        configurator.doConfigure(getClass().getResourceAsStream("/logback-multiple-buffering.xml"));
+
+        Logger logger = LoggerFactory.getLogger("test.multiple.appenders");
+
+        // When - log messages and flush buffers
+        logger.debug("Test message 1");
+        logger.debug("Test message 2");
+
+        LogbackLoggingManager manager = new LogbackLoggingManager();
+        manager.flushBuffer();
+
+        // Then - both appenders should have flushed their buffers
+        File logFile = new File("target/logfile.json");
+        assertThat(logFile).exists();
+        String content = contentOf(logFile);
+        // Each message should appear twice (once from each BufferingAppender)
+        assertThat(content.split("Test message 1", -1)).hasSize(3); // 2 occurrences = 3 parts
+        assertThat(content.split("Test message 2", -1)).hasSize(3); // 2 occurrences = 3 parts
+    }
+
+    @AfterEach
+    void cleanUp() throws IOException {
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there
+        }
     }
 }

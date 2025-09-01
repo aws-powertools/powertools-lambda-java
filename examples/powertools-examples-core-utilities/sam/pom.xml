@@ -22,7 +22,7 @@
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging-log4j</artifactId>
+            <artifactId>powertools-logging-logback</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -99,19 +99,10 @@
                         </goals>
                         <configuration>
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <transformers>
-                                <transformer implementation="org.apache.logging.log4j.maven.plugins.shade.transformer.Log4j2PluginCacheFileTransformer"/>
-                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.logging.log4j</groupId>
-                        <artifactId>log4j-transform-maven-shade-plugin-extensions</artifactId>
-                        <version>0.2.0</version>
-                    </dependency>
-                </dependencies>
+
             </plugin>
             <!-- Don't deploy the example -->
             <plugin>

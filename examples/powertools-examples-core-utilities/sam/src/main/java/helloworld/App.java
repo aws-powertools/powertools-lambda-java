@@ -58,7 +58,8 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
         log.info("INFO 1");
 
         // Manually flush buffer to show buffered debug logs
-        PowertoolsLogging.flushBuffer();
+        // PowertoolsLogging.flushBuffer();
+        log.error("Some error happened");
 
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);

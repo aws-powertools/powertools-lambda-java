@@ -15,10 +15,10 @@
 package software.amazon.lambda.powertools.logging.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.contentOf;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.nio.channels.FileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -183,7 +183,9 @@ class KeyBufferTest {
 
     @Test
     void shouldLogWarningOnOverflow() {
-        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(10, String::length);
+        StringBuilder warningCapture = new StringBuilder();
+        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(10, String::length,
+                () -> warningCapture.append("Some logs are not displayed because they were evicted from the buffer"));
 
         // Cause overflow
         testBuffer.add("key1", "1234567890"); // 10 bytes
@@ -192,14 +194,15 @@ class KeyBufferTest {
         // Trigger warning by removing
         testBuffer.removeAll("key1");
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile))
+        assertThat(warningCapture.toString())
                 .contains("Some logs are not displayed because they were evicted from the buffer");
     }
 
     @Test
     void shouldLogWarningOnLargeEventRejection() {
-        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(10, String::length);
+        StringBuilder warningCapture = new StringBuilder();
+        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(10, String::length,
+                () -> warningCapture.append("Some logs are not displayed because they were evicted from the buffer"));
 
         // Add large event that gets rejected
         testBuffer.add("key1", "12345678901"); // 11 bytes > 10 max
@@ -207,20 +210,20 @@ class KeyBufferTest {
         // Trigger warning by removing
         testBuffer.removeAll("key1");
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile))
+        assertThat(warningCapture.toString())
                 .contains("Some logs are not displayed because they were evicted from the buffer");
     }
 
     @Test
     void shouldNotLogWarningWhenNoOverflow() {
-        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(20, String::length);
+        StringBuilder warningCapture = new StringBuilder();
+        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(20, String::length,
+                () -> warningCapture.append("Some logs are not displayed because they were evicted from the buffer"));
 
         testBuffer.add("key1", "small");
         testBuffer.removeAll("key1");
 
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile))
+        assertThat(warningCapture.toString())
                 .doesNotContain("Some logs are not displayed because they were evicted from the buffer");
     }
 
@@ -251,9 +254,7 @@ class KeyBufferTest {
         for (int i = 0; i < threadCount; i++) {
             String key = "key" + i;
             Deque<String> events = buffer.removeAll(key);
-            assertThat(events).isNotNull();
-            // Some events might be evicted due to size limits, but should have some
-            assertThat(events).isNotEmpty();
+            assertThat(events).isNotNull().isNotEmpty();
         }
 
         executor.shutdown();
@@ -283,9 +284,7 @@ class KeyBufferTest {
         assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
 
         Deque<String> events = buffer.removeAll("sharedKey");
-        assertThat(events).isNotNull();
-        // Due to size limits, not all events will be present, but buffer should be consistent
-        assertThat(events).isNotEmpty();
+        assertThat(events).isNotNull().isNotEmpty();
 
         executor.shutdown();
     }
@@ -305,5 +304,45 @@ class KeyBufferTest {
 
         Deque<String> events = zeroBuffer.removeAll("key1");
         assertThat(events).containsExactly("event1", "event2");
+    }
+
+    @Test
+    void shouldUseCustomWarningLogger() {
+        StringBuilder customWarning = new StringBuilder();
+        KeyBuffer<String, String> testBuffer = new KeyBuffer<>(5, String::length,
+                () -> customWarning.append("CUSTOM WARNING LOGGED"));
+
+        // Cause overflow
+        testBuffer.add("key1", "12345"); // 5 bytes
+        testBuffer.add("key1", "extra"); // causes overflow
+
+        // Trigger warning
+        testBuffer.removeAll("key1");
+
+        assertThat(customWarning).hasToString("CUSTOM WARNING LOGGED");
+    }
+
+    @Test
+    void shouldUseDefaultWarningLoggerWhenNotProvided() {
+        // Capture System.err output
+        ByteArrayOutputStream errCapture = new ByteArrayOutputStream();
+        PrintStream originalErr = System.err;
+        System.setErr(new PrintStream(errCapture));
+
+        try {
+            KeyBuffer<String, String> defaultBuffer = new KeyBuffer<>(5, String::length);
+
+            // Cause overflow
+            defaultBuffer.add("key1", "12345");
+            defaultBuffer.add("key1", "extra");
+            defaultBuffer.removeAll("key1");
+
+            // Assert System.err received the warning
+            assertThat(errCapture)
+                    .hasToString(
+                            "WARN [KeyBuffer] - Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer.\n");
+        } finally {
+            System.setErr(originalErr);
+        }
     }
 }
