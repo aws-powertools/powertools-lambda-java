@@ -1,5 +1,11 @@
 [
 {
+  "name":"[Ljava.lang.Object;"
+},
+{
+  "name":"[Ljava.lang.String;"
+},
+{
   "name":"[Lorg.apache.logging.log4j.core.Appender;"
 },
 {
@@ -15,16 +21,7 @@
   "name":"[Lorg.apache.logging.log4j.layout.template.json.JsonTemplateLayout$EventTemplateAdditionalField;"
 },
 {
-  "name":"com.amazonaws.services.lambda.runtime.Context",
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"getAwsRequestId","parameterTypes":[] }, {"name":"getClientContext","parameterTypes":[] }, {"name":"getFunctionName","parameterTypes":[] }, {"name":"getFunctionVersion","parameterTypes":[] }, {"name":"getIdentity","parameterTypes":[] }, {"name":"getInvokedFunctionArn","parameterTypes":[] }, {"name":"getLogGroupName","parameterTypes":[] }, {"name":"getLogStreamName","parameterTypes":[] }, {"name":"getLogger","parameterTypes":[] }, {"name":"getMemoryLimitInMB","parameterTypes":[] }, {"name":"getRemainingTimeInMillis","parameterTypes":[] }]
-},
-{
-  "name":"com.amazonaws.services.lambda.runtime.RequestHandler",
-  "allDeclaredClasses":true,
-  "queryAllPublicMethods":true
+  "name":"com.amazonaws.services.lambda.runtime.Context"
 },
 {
   "name":"com.amazonaws.services.lambda.runtime.events.SQSEvent$MessageAttribute",
@@ -61,140 +58,34 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"com.sun.tools.attach.VirtualMachine"
-},
-{
   "name":"jakarta.servlet.Servlet"
 },
 {
   "name":"java.io.Serializable",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.Class",
-  "methods":[{"name":"forName","parameterTypes":["java.lang.String"] }, {"name":"getAnnotatedInterfaces","parameterTypes":[] }, {"name":"getAnnotatedSuperclass","parameterTypes":[] }, {"name":"getDeclaredMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getMethod","parameterTypes":["java.lang.String","java.lang.Class[]"] }, {"name":"getModule","parameterTypes":[] }, {"name":"getNestHost","parameterTypes":[] }, {"name":"getNestMembers","parameterTypes":[] }, {"name":"getPermittedSubclasses","parameterTypes":[] }, {"name":"getRecordComponents","parameterTypes":[] }, {"name":"isNestmateOf","parameterTypes":["java.lang.Class"] }, {"name":"isRecord","parameterTypes":[] }, {"name":"isSealed","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.ClassLoader",
-  "methods":[{"name":"getDefinedPackage","parameterTypes":["java.lang.String"] }, {"name":"getUnnamedModule","parameterTypes":[] }, {"name":"registerAsParallelCapable","parameterTypes":[] }]
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"java.lang.Cloneable",
   "queryAllDeclaredMethods":true
 },
 {
-  "name":"java.lang.Comparable",
-  "allDeclaredClasses":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.Enum",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.Module",
-  "methods":[{"name":"addExports","parameterTypes":["java.lang.String","java.lang.Module"] }, {"name":"addReads","parameterTypes":["java.lang.Module"] }, {"name":"canRead","parameterTypes":["java.lang.Module"] }, {"name":"getClassLoader","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"getPackages","parameterTypes":[] }, {"name":"getResourceAsStream","parameterTypes":["java.lang.String"] }, {"name":"isExported","parameterTypes":["java.lang.String"] }, {"name":"isExported","parameterTypes":["java.lang.String","java.lang.Module"] }, {"name":"isNamed","parameterTypes":[] }, {"name":"isOpen","parameterTypes":["java.lang.String","java.lang.Module"] }]
+  "name":"java.lang.Iterable",
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"java.lang.Object",
-  "allDeclaredFields":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"clone","parameterTypes":[] }, {"name":"getClass","parameterTypes":[] }, {"name":"toString","parameterTypes":[] }]
+  "allDeclaredFields":true
 },
 {
   "name":"java.lang.ProcessEnvironment",
   "fields":[{"name":"theCaseInsensitiveEnvironment"}, {"name":"theEnvironment"}]
 },
 {
-  "name":"java.lang.ProcessHandle",
-  "methods":[{"name":"current","parameterTypes":[] }, {"name":"pid","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.Runtime",
-  "methods":[{"name":"version","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.Runtime$Version",
-  "methods":[{"name":"feature","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.StackWalker"
-},
-{
   "name":"java.lang.String"
-},
-{
-  "name":"java.lang.System",
-  "methods":[{"name":"getSecurityManager","parameterTypes":[] }]
 },
 {
   "name":"java.lang.Thread",
   "fields":[{"name":"threadLocalRandomProbe"}]
-},
-{
-  "name":"java.lang.annotation.Retention",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.annotation.Target",
-  "queryAllDeclaredMethods":true,
-  "queryAllDeclaredConstructors":true
-},
-{
-  "name":"java.lang.constant.Constable",
-  "allDeclaredClasses":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"java.lang.invoke.MethodHandle",
-  "methods":[{"name":"bindTo","parameterTypes":["java.lang.Object"] }, {"name":"invokeWithArguments","parameterTypes":["java.lang.Object[]"] }]
-},
-{
-  "name":"java.lang.invoke.MethodHandles",
-  "methods":[{"name":"lookup","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.invoke.MethodHandles$Lookup",
-  "methods":[{"name":"findVirtual","parameterTypes":["java.lang.Class","java.lang.String","java.lang.invoke.MethodType"] }]
-},
-{
-  "name":"java.lang.invoke.MethodType",
-  "methods":[{"name":"methodType","parameterTypes":["java.lang.Class","java.lang.Class[]"] }]
-},
-{
-  "name":"java.lang.reflect.AccessibleObject",
-  "methods":[{"name":"setAccessible","parameterTypes":["boolean"] }]
-},
-{
-  "name":"java.lang.reflect.AnnotatedArrayType",
-  "methods":[{"name":"getAnnotatedGenericComponentType","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.reflect.AnnotatedType",
-  "methods":[{"name":"getType","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.reflect.Executable",
-  "methods":[{"name":"getAnnotatedExceptionTypes","parameterTypes":[] }, {"name":"getAnnotatedParameterTypes","parameterTypes":[] }, {"name":"getAnnotatedReceiverType","parameterTypes":[] }, {"name":"getParameterCount","parameterTypes":[] }, {"name":"getParameters","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.reflect.Method",
-  "methods":[{"name":"getAnnotatedReturnType","parameterTypes":[] }]
-},
-{
-  "name":"java.lang.reflect.Parameter",
-  "methods":[{"name":"getModifiers","parameterTypes":[] }, {"name":"getName","parameterTypes":[] }, {"name":"isNamePresent","parameterTypes":[] }]
-},
-{
-  "name":"java.security.AccessController",
-  "methods":[{"name":"doPrivileged","parameterTypes":["java.security.PrivilegedAction"] }, {"name":"doPrivileged","parameterTypes":["java.security.PrivilegedExceptionAction"] }]
 },
 {
   "name":"java.sql.Date"
@@ -203,12 +94,51 @@
   "name":"java.sql.Time"
 },
 {
+  "name":"java.util.AbstractCollection",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.AbstractMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Arrays$ArrayList",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
+  "name":"java.util.Collection",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Collections$SingletonMap",
+  "allDeclaredFields":true,
+  "queryAllDeclaredMethods":true,
+  "queryAllDeclaredConstructors":true
+},
+{
   "name":"java.util.Collections$UnmodifiableMap",
   "fields":[{"name":"m"}]
 },
 {
-  "name":"java.util.concurrent.ForkJoinTask",
-  "fields":[{"name":"aux"}, {"name":"status"}]
+  "name":"java.util.List",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.Map",
+  "queryAllDeclaredMethods":true
+},
+{
+  "name":"java.util.RandomAccess",
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"java.util.concurrent.atomic.AtomicBoolean",
@@ -230,10 +160,7 @@
   "name":"javax.servlet.Servlet"
 },
 {
-  "name":"jdk.internal.misc.Unsafe"
-},
-{
-  "name":"kotlin.jvm.JvmInline"
+  "name":"kotlin.Metadata"
 },
 {
   "name":"org.apache.logging.log4j.core.appender.AbstractAppender$Builder",
@@ -494,6 +421,12 @@
   "methods":[{"name":"createLoggers","parameterTypes":["org.apache.logging.log4j.core.config.LoggerConfig[]"] }]
 },
 {
+  "name":"org.apache.logging.log4j.core.config.MonitorResource"
+},
+{
+  "name":"org.apache.logging.log4j.core.config.MonitorResources"
+},
+{
   "name":"org.apache.logging.log4j.core.config.PropertiesPlugin"
 },
 {
@@ -743,7 +676,13 @@
   "name":"org.apache.logging.log4j.core.layout.MessageLayout"
 },
 {
-  "name":"org.apache.logging.log4j.core.layout.PatternLayout"
+  "name":"org.apache.logging.log4j.core.layout.PatternLayout",
+  "queryAllDeclaredMethods":true,
+  "methods":[{"name":"newBuilder","parameterTypes":[] }]
+},
+{
+  "name":"org.apache.logging.log4j.core.layout.PatternLayout$Builder",
+  "allDeclaredFields":true
 },
 {
   "name":"org.apache.logging.log4j.core.layout.PatternMatch"
@@ -878,9 +817,7 @@
   "name":"org.apache.logging.log4j.core.pattern.ClassNamePatternConverter"
 },
 {
-  "name":"org.apache.logging.log4j.core.pattern.DatePatternConverter",
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"newInstance","parameterTypes":["java.lang.String[]"] }]
+  "name":"org.apache.logging.log4j.core.pattern.DatePatternConverter"
 },
 {
   "name":"org.apache.logging.log4j.core.pattern.EncodingPatternConverter"
@@ -913,9 +850,7 @@
   "name":"org.apache.logging.log4j.core.pattern.IntegerPatternConverter"
 },
 {
-  "name":"org.apache.logging.log4j.core.pattern.LevelPatternConverter",
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"newInstance","parameterTypes":["java.lang.String[]"] }]
+  "name":"org.apache.logging.log4j.core.pattern.LevelPatternConverter"
 },
 {
   "name":"org.apache.logging.log4j.core.pattern.LineLocationPatternConverter"
@@ -929,9 +864,7 @@
   "name":"org.apache.logging.log4j.core.pattern.LoggerFqcnPatternConverter"
 },
 {
-  "name":"org.apache.logging.log4j.core.pattern.LoggerPatternConverter",
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"newInstance","parameterTypes":["java.lang.String[]"] }]
+  "name":"org.apache.logging.log4j.core.pattern.LoggerPatternConverter"
 },
 {
   "name":"org.apache.logging.log4j.core.pattern.MapPatternConverter"
@@ -990,9 +923,7 @@
   "name":"org.apache.logging.log4j.core.pattern.ThreadIdPatternConverter"
 },
 {
-  "name":"org.apache.logging.log4j.core.pattern.ThreadNamePatternConverter",
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"newInstance","parameterTypes":["java.lang.String[]"] }]
+  "name":"org.apache.logging.log4j.core.pattern.ThreadNamePatternConverter"
 },
 {
   "name":"org.apache.logging.log4j.core.pattern.ThreadPriorityPatternConverter"
@@ -1106,29 +1037,6 @@
   "methods":[{"name":"getInstance","parameterTypes":[] }]
 },
 {
-  "name":"org.apache.logging.log4j.layout.template.json.resolver.PowerToolsResolverFactoryTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"cleanUp","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"shouldLogInEcsFormat","parameterTypes":[] }, {"name":"shouldLogInJsonFormat","parameterTypes":[] }]
-},
-{
-  "name":"org.apache.logging.log4j.layout.template.json.resolver.PowertoolsResolverArgumentsTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"cleanUp","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"shouldLogArgumentsAsJsonWhenUsingKeyValue","parameterTypes":[] }, {"name":"shouldLogArgumentsAsJsonWhenUsingRawJson","parameterTypes":[] }]
-},
-{
-  "name":"org.apache.logging.log4j.layout.template.json.resolver.PowertoolsResolverFactory",
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"getInstance","parameterTypes":[] }]
-},
-{
   "name":"org.apache.logging.log4j.layout.template.json.resolver.SourceResolverFactory",
   "queryAllDeclaredMethods":true,
   "methods":[{"name":"getInstance","parameterTypes":[] }]
@@ -1162,12 +1070,6 @@
   "queryAllPublicMethods":true
 },
 {
-  "name":"org.aspectj.runtime.internal.AroundClosure",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
   "name":"org.jctools.queues.MpmcArrayQueue"
 },
 {
@@ -1178,48 +1080,8 @@
   "fields":[{"name":"IS_COLD_START"}]
 },
 {
-  "name":"software.amazon.lambda.powertools.logging.internal.Log4jLoggingManagerTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
+  "name":"software.amazon.lambda.powertools.logging.log4j.BufferingAppender",
   "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getLogLevel_shouldReturnConfiguredLogLevel","parameterTypes":[] }, {"name":"resetLogLevel","parameterTypes":[] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "methods":[{"name":"handleRequest","parameterTypes":["com.amazonaws.services.lambda.runtime.events.SQSEvent$SQSMessage","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments$AjcClosure1",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments$ArgumentFormat",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled$AjcClosure1",
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true
-},
-{
-  "name":"sun.reflect.ReflectionFactory",
-  "methods":[{"name":"getReflectionFactory","parameterTypes":[] }, {"name":"newConstructorForSerialization","parameterTypes":["java.lang.Class","java.lang.reflect.Constructor"] }]
+  "methods":[{"name":"createAppender","parameterTypes":["java.lang.String","org.apache.logging.log4j.core.Filter","org.apache.logging.log4j.core.Layout","org.apache.logging.log4j.core.config.AppenderRef[]","org.apache.logging.log4j.core.config.Configuration","java.lang.String","int","boolean"] }]
 }
 ]
