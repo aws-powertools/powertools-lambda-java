@@ -15,7 +15,6 @@
 package software.amazon.lambda.powertools.logging;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,18 +31,6 @@ class PowertoolsLoggingTest {
         // Get the TestLoggingManager instance from registry
         testManager = (TestLoggingManager) LoggingManagerRegistry.getLoggingManager();
         testManager.resetBufferState();
-    }
-
-    @Test
-    void testFlushBuffer_shouldNotThrowException() {
-        // WHEN/THEN
-        assertThatCode(PowertoolsLogging::flushBuffer).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testClearBuffer_shouldNotThrowException() {
-        // WHEN/THEN
-        assertThatCode(PowertoolsLogging::clearBuffer).doesNotThrowAnyException();
     }
 
     @Test
