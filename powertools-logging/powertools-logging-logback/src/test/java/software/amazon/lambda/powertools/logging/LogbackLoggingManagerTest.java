@@ -97,11 +97,6 @@ class LogbackLoggingManagerTest {
         assertThat(content.split("Test message 2", -1)).hasSize(3); // 2 occurrences = 3 parts
     }
 
-    @AfterEach
-    void cleanUp() throws JoranException {
-        resetLogbackConfig("/logback-test.xml");
-    }
-
     private void resetLogbackConfig(String configFileName) throws JoranException {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
         context.reset();
