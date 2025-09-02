@@ -354,7 +354,7 @@
     <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
         <priority>1</priority>
         <properties>
-            <property name="allowCommentedBlocks" value="false" />
+            <property name="allowCommentedBlocks" value="true" />
         </properties>
     </rule>
     <!--     <rule ref="category/java/errorprone.xml/EmptyFinalizer" /> -->
