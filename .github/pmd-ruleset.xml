@@ -1,14 +1,13 @@
 <?xml version="1.0"?>
 <ruleset name="dogfood7"
-    xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 http://pmd.sourceforge.net/ruleset_2_0_0.xsd">
     <description>Rules to check Powertools for Lambda</description>
     <!--
-    Originally copied from:
-    https://github.com/pmd/build-tools/blob/main/src/main/resources/net/sourceforge/pmd/pmd-dogfood-config.xml
+    Originally copied from: https://github.com/pmd/build-tools/blob/main/src/main/resources/net/sourceforge/pmd/pmd-dogfood-config.xml
     -->
-
+    
     <!--
     Note: Eventually, this ruleset should include all rules and exclude those,
     which we know are explicitly decided as not applicable to PMD itself.
@@ -212,10 +211,9 @@
     <!--
     <rule ref="category/java/design.xml/LoosePackageCoupling">
         <properties>
-            <property
-    name="packages"><value>net.sourceforge.pmd.lang,net.sourceforge.pmd.lang.java,net.sourceforge.pmd.lang.jsp,net.sourceforge.pmd.lang.ecmascript,net.sourceforge.pmd.lang.cpp</value></property>
+            <property name="packages"><value>net.sourceforge.pmd.lang,net.sourceforge.pmd.lang.java,net.sourceforge.pmd.lang.jsp,net.sourceforge.pmd.lang.ecmascript,net.sourceforge.pmd.lang.cpp</value></property>
             <property name="classes">
-    <value>net.sourceforge.pmd.lang.Language,net.sourceforge.pmd.lang.LanguageVersion,net.sourceforge.pmd.lang.LanguageVersionDiscoverer,net.sourceforge.pmd.lang.LanguageVersionHandler,net.sourceforge.pmd.lang.Parser,net.sourceforge.pmd.lang.ast.Node</value>
+                <value>net.sourceforge.pmd.lang.Language,net.sourceforge.pmd.lang.LanguageVersion,net.sourceforge.pmd.lang.LanguageVersionDiscoverer,net.sourceforge.pmd.lang.LanguageVersionHandler,net.sourceforge.pmd.lang.Parser,net.sourceforge.pmd.lang.ast.Node</value>
             </property>
         </properties>
     </rule>
@@ -265,7 +263,7 @@
     <rule ref="category/java/errorprone.xml/AssignmentInOperand">
         <priority>1</priority>
         <properties>
-            <property name="allowWhile" value="true" />
+            <property name="allowWhile" value="true"/>
         </properties>
     </rule>
     <rule ref="category/java/errorprone.xml/AssignmentToNonFinalStatic">
@@ -329,8 +327,7 @@
     <rule ref="category/java/errorprone.xml/CompareObjectsWithEquals">
         <priority>1</priority>
         <properties>
-            <property name="typesThatCompareByReference"
-                value="java.lang.Enum,java.lang.Class,net.sourceforge.pmd.lang.ast.Node,net.sourceforge.pmd.lang.ast.GenericToken" />
+            <property name="typesThatCompareByReference" value="java.lang.Enum,java.lang.Class,net.sourceforge.pmd.lang.ast.Node,net.sourceforge.pmd.lang.ast.GenericToken"/>
         </properties>
     </rule>
     <rule ref="category/java/errorprone.xml/ComparisonWithNaN">
@@ -522,10 +519,10 @@
 
     <!-- PMD specific custom rules -->
     <rule name="UseInstanceofToCompareClasses"
-        language="java"
-        since="5.0"
-        message="replace o.getClass().equals(MyClass.class) with o instanceof MyClass"
-        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+          language="java"
+          since="5.0"
+          message="replace o.getClass().equals(MyClass.class) with o instanceof MyClass"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
         <description>replace o.getClass().equals(MyClass.class) with o instanceof MyClass. Make sure MyClass doesn't have descendants</description>
         <priority>1</priority>
         <properties>
@@ -542,10 +539,10 @@
     </rule>
 
     <rule name="ReversedUseInstanceofToCompareClasses"
-        language="java"
-        since="5.0"
-        message="replace MyClass.class.equals(o.getClass()) with o instanceof MyClass"
-        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+          language="java"
+          since="5.0"
+          message="replace MyClass.class.equals(o.getClass()) with o instanceof MyClass"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
         <description>replace MyClass.class.equals(o.getClass()) with o instanceof MyClass. Make sure MyClass doesn't have descendants</description>
         <priority>3</priority>
         <properties>
@@ -562,10 +559,10 @@
     </rule>
 
     <rule name="DontCallSuperVisitWhenUsingRuleChain"
-        language="java"
-        message="Don't call super.visit() when using the rulechain"
-        typeResolution="true"
-        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+          language="java"
+          message="Don't call super.visit() when using the rulechain"
+          typeResolution="true"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
         <description>Calling super.visit breaks the rulechain, by starting a full visitor run from the passed node downwards. Add all needed nodes to the rulechain instead.</description>
         <priority>1</priority>
         <properties>
@@ -589,10 +586,10 @@
     </rule>
 
     <rule name="AlwaysCallSuperWhenNotUsingRuleChain"
-        language="java"
-        message="Always call super.visit() when not using rulechain"
-        typeResolution="true"
-        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+          language="java"
+          message="Always call super.visit() when not using rulechain"
+          typeResolution="true"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
         <description>Just returning without calling super stops visiting of nested nodes like inner classes.</description>
         <priority>3</priority>
         <properties>
@@ -612,10 +609,10 @@
 
     <!-- Idea from https://github.com/pmd/pmd/pull/3609#discussion_r748292071 -->
     <rule name="ReuseInvocationMatcher"
-        language="java"
-        message="Reuse InvocationMatcher"
-        typeResolution="true"
-        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+          language="java"
+          message="Reuse InvocationMatcher"
+          typeResolution="true"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
         <description>Share the invocation matcher and not create a new one every time</description>
         <priority>1</priority>
         <properties>
@@ -631,10 +628,10 @@
     </rule>
 
     <rule name="DoNotUseJavaUtilLogging"
-        language="java"
-        since="7.0.0"
-        message="Use slf4j: LoggerFactory.getLogger(MyClass.class)"
-        class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
+          language="java"
+          since="7.0.0"
+          message="Use slf4j: LoggerFactory.getLogger(MyClass.class)"
+          class="net.sourceforge.pmd.lang.rule.xpath.XPathRule">
         <description>Use slf4j: LoggerFactory.getLogger(MyClass.class)</description>
         <priority>1</priority>
         <properties>
