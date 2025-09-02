@@ -21,35 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 /**
- * Generic buffer data structure for storing events by key with size-based eviction.
+ * Thread-safe buffer that stores events by key with size-based eviction.
  * 
- * <p>This buffer maintains separate event queues for each key, with configurable size limits
- * to prevent memory exhaustion. When buffers exceed their size limit, older events are
- * automatically evicted to make room for newer ones.
+ * <p>Maintains separate queues per key. When buffer size exceeds maxBytes,
+ * oldest events are evicted FIFO. Events larger than maxBytes are rejected.
  * 
- * <h3>Key Features:</h3>
- * <ul>
- *   <li><strong>Per-key buffering:</strong> Each key maintains its own independent buffer</li>
- *   <li><strong>Size-based eviction:</strong> Oldest events are removed when buffer size exceeds limit</li>
- *   <li><strong>Overflow protection:</strong> Events larger than buffer size are rejected entirely</li>
- *   <li><strong>Thread-safe:</strong> Supports concurrent access across different keys</li>
- *   <li><strong>Overflow tracking:</strong> Logs warnings when events are evicted or rejected</li>
- * </ul>
- * 
- * <h3>Eviction Behavior:</h3>
- * <ul>
- *   <li><strong>Buffer overflow:</strong> When adding an event would exceed maxBytes, oldest events are evicted first</li>
- *   <li><strong>Large events:</strong> Events larger than maxBytes are rejected without evicting existing events</li>
- *   <li><strong>FIFO eviction:</strong> Events are removed in first-in-first-out order during overflow</li>
- *   <li><strong>Overflow warnings:</strong> Automatic logging when events are evicted or rejected</li>
- * </ul>
- * 
- * <h3>Thread Safety:</h3>
- * <p>This class is thread-safe for concurrent operations. Different keys can be accessed
- * simultaneously, and operations on the same key are synchronized to prevent data corruption.
- * 
- * @param <K> the type of key used for buffering (e.g., String for trace IDs)
- * @param <T> the type of events to buffer (must be compatible with the size calculator)
+ * @param <K> key type for buffering
+ * @param <T> event type to buffer
  */
 public class KeyBuffer<K, T> {
 
