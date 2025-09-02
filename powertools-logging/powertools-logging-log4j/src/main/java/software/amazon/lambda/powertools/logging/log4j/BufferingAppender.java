@@ -76,7 +76,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  *   <li>During Lambda INIT phase (no trace ID): logs are output directly</li>
  *   <li>During Lambda execution (with trace ID): logs are buffered or output based on level</li>
  *   <li>When buffer overflows: oldest logs are discarded and a warning is logged</li>
- *   <li>On Lambda completion: remaining buffered logs can be flushed via {@link software.amazon.lambda.powertools.logging.PowertoolsLogging}</li>
+ *   <li>On Lambda completion: buffer is auto-cleared when used with {@code @Logging} annotation</li>
  * </ul>
  * 
  * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushBuffer()

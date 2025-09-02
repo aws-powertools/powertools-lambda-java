@@ -39,7 +39,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  * <ul>
  *   <li><strong>Trace-based buffering:</strong> Groups logs by AWS X-Ray trace ID</li>
  *   <li><strong>Selective output:</strong> Only buffers logs at or below configured verbosity level</li>
- *   <li><strong>Auto-flush on errors:</strong> Automatically outputs buffered logs when ERROR events occur</li>
+ *   <li><strong>Auto-flush on errors:</strong> Automatically outputs buffered logs when ERROR/FATAL events occur</li>
  *   <li><strong>Memory management:</strong> Prevents memory leaks with configurable buffer size limits</li>
  *   <li><strong>Overflow protection:</strong> Warns when logs are discarded due to buffer limits</li>
  * </ul>
@@ -58,7 +58,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  * <ul>
  *   <li><strong>bufferAtVerbosity:</strong> Log level to buffer (default: DEBUG). Logs at this level and below are buffered</li>
  *   <li><strong>maxBytes:</strong> Maximum buffer size in bytes per trace ID (default: 20480)</li>
- *   <li><strong>flushOnErrorLog:</strong> Whether to flush buffer on ERROR logs (default: true)</li>
+ *   <li><strong>flushOnErrorLog:</strong> Whether to flush buffer on ERROR/FATAL logs (default: true)</li>
  * </ul>
  * 
  * <h3>Behavior:</h3>
@@ -66,7 +66,7 @@ import software.amazon.lambda.powertools.logging.internal.KeyBuffer;
  *   <li>During Lambda INIT phase (no trace ID): logs are output directly</li>
  *   <li>During Lambda execution (with trace ID): logs are buffered or output based on level</li>
  *   <li>When buffer overflows: oldest logs are discarded and a warning is logged</li>
- *   <li>On Lambda completion: remaining buffered logs can be flushed via {@link software.amazon.lambda.powertools.logging.PowertoolsLogging}</li>
+ *   <li>On Lambda completion: buffer is auto-cleared when used with {@code @Logging} annotation</li>
  * </ul>
  * 
  * @see software.amazon.lambda.powertools.logging.PowertoolsLogging#flushBuffer()
