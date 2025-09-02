@@ -17,6 +17,8 @@ package software.amazon.lambda.powertools.logging.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -110,32 +112,30 @@ class LoggingManagerRegistryTest {
     }
 
     @Test
-    void testGetLoggingManager_shouldBeThreadSafe() throws InterruptedException {
+    void testGetLoggingManager_shouldBeThreadSafe() throws InterruptedException, IOException {
         // GIVEN
         int threadCount = 10;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-        AtomicReference<LoggingManager> sharedInstance = new AtomicReference<>();
+        try (Closeable close = executor::shutdown) {
+            CountDownLatch latch = new CountDownLatch(threadCount);
+            AtomicReference<LoggingManager> sharedInstance = new AtomicReference<>();
 
-        // WHEN
-        for (int i = 0; i < threadCount; i++) {
-            executor.submit(() -> {
-                try {
-                    LoggingManager instance = LoggingManagerRegistry.getLoggingManager();
-                    sharedInstance.compareAndSet(null, instance);
-                    assertThat(instance).isSameAs(sharedInstance.get());
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
+            // WHEN
+            for (int i = 0; i < threadCount; i++) {
+                executor.submit(() -> {
+                    try {
+                        LoggingManager instance = LoggingManagerRegistry.getLoggingManager();
+                        sharedInstance.compareAndSet(null, instance);
+                        assertThat(instance).isSameAs(sharedInstance.get());
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
 
-        // THEN
-        try {
+            // THEN
             latch.await(5, TimeUnit.SECONDS);
             assertThat(sharedInstance.get()).isNotNull();
-        } finally {
-            executor.shutdown();
         }
     }
 }

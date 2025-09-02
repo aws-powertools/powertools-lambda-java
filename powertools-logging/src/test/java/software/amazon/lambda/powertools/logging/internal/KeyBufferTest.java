@@ -17,6 +17,7 @@ package software.amazon.lambda.powertools.logging.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.channels.FileChannel;
@@ -228,12 +229,12 @@ class KeyBufferTest {
     }
 
     @Test
-    void shouldBeThreadSafeForDifferentKeys() throws InterruptedException {
+    void shouldBeThreadSafeForDifferentKeys() throws InterruptedException, IOException {
         int threadCount = 10;
         int eventsPerThread = 100;
         KeyBuffer<String, String> largeBuffer = new KeyBuffer<>(10000, String::length);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        try {
+        try (Closeable close = executor::shutdown) {
             CountDownLatch latch = new CountDownLatch(threadCount);
 
             // Each thread works with different key
@@ -260,18 +261,16 @@ class KeyBufferTest {
                         .isNotNull()
                         .hasSize(eventsPerThread);
             }
-        } finally {
-            executor.shutdown();
         }
     }
 
     @Test
-    void shouldBeThreadSafeForSameKey() throws InterruptedException {
+    void shouldBeThreadSafeForSameKey() throws InterruptedException, IOException {
         int threadCount = 5;
         int eventsPerThread = 20;
         KeyBuffer<String, String> largeBuffer = new KeyBuffer<>(10000, String::length);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        try {
+        try (Closeable close = executor::shutdown) {
             CountDownLatch latch = new CountDownLatch(threadCount);
 
             // All threads work with same key
@@ -294,8 +293,6 @@ class KeyBufferTest {
             assertThat(events)
                     .isNotNull()
                     .hasSize(threadCount * eventsPerThread);
-        } finally {
-            executor.shutdown();
         }
     }
 
