@@ -142,6 +142,7 @@ public final class LambdaLoggingAspect {
                     isOnRequestStreamHandler);
         }
 
+        @SuppressWarnings("PMD.CloseResource") // Lambda-owned stream, not ours to close
         OutputStream backupOutputStream = null;
         if (isOnRequestStreamHandler) {
             // To log the result of a RequestStreamHandler (OutputStream), we need to do the following:
@@ -155,7 +156,7 @@ public final class LambdaLoggingAspect {
         Object lambdaFunctionResponse;
         try {
             lambdaFunctionResponse = pjp.proceed(proceedArgs);
-        } catch (Throwable t) {
+        } catch (Throwable t) { // NOPMD - AspectJ proceed() throws Throwable
             handleException(pjp, logging, t);
             throw t;
         } finally {

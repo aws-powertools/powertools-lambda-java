@@ -334,9 +334,9 @@ class KeyBufferTest {
         // Capture System.err output
         ByteArrayOutputStream errCapture = new ByteArrayOutputStream();
         PrintStream originalErr = System.err;
-        System.setErr(new PrintStream(errCapture));
+        try (PrintStream newErr = new PrintStream(errCapture)) {
+            System.setErr(newErr);
 
-        try {
             KeyBuffer<String, String> defaultBuffer = new KeyBuffer<>(5, String::length);
 
             // Cause overflow
