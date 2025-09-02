@@ -116,7 +116,7 @@ class LoggingManagerRegistryTest {
         // GIVEN
         int threadCount = 10;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        try (Closeable close = executor::shutdown) {
+        try (Closeable ignored = executor::shutdown) {
             CountDownLatch latch = new CountDownLatch(threadCount);
             AtomicReference<LoggingManager> sharedInstance = new AtomicReference<>();
 

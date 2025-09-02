@@ -234,7 +234,7 @@ class KeyBufferTest {
         int eventsPerThread = 100;
         KeyBuffer<String, String> largeBuffer = new KeyBuffer<>(10000, String::length);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        try (Closeable close = executor::shutdown) {
+        try (Closeable ignored = executor::shutdown) {
             CountDownLatch latch = new CountDownLatch(threadCount);
 
             // Each thread works with different key
@@ -270,7 +270,7 @@ class KeyBufferTest {
         int eventsPerThread = 20;
         KeyBuffer<String, String> largeBuffer = new KeyBuffer<>(10000, String::length);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        try (Closeable close = executor::shutdown) {
+        try (Closeable ignored = executor::shutdown) {
             CountDownLatch latch = new CountDownLatch(threadCount);
 
             // All threads work with same key
