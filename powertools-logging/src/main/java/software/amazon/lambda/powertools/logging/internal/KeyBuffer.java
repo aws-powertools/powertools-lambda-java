@@ -51,6 +51,7 @@ public class KeyBuffer<K, T> {
 
     public void add(K key, T event) {
         int eventSize = sizeCalculator.apply(event);
+        // Immediately reject events larger than the whole buffer-size to avoid evicting all elements.
         if (eventSize > maxBytes) {
             overflowTriggered.put(key, true);
             return;
