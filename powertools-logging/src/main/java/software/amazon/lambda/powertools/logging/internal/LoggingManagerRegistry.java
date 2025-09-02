@@ -28,7 +28,7 @@ import java.util.ServiceLoader;
 public final class LoggingManagerRegistry {
 
     // Used with double-checked locking within getLoggingManger()
-    @SuppressWarnings("java:S3077")
+    @SuppressWarnings({ "java:S3077", "PMD.AvoidUsingVolatile" })
     private static volatile LoggingManager instance;
 
     private LoggingManagerRegistry() {

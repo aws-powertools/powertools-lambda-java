@@ -333,6 +333,7 @@ class KeyBufferTest {
     void shouldUseDefaultWarningLoggerWhenNotProvided() {
         // Capture System.err output
         ByteArrayOutputStream errCapture = new ByteArrayOutputStream();
+        @SuppressWarnings("PMD.CloseResource") // System.err is not ours to close
         PrintStream originalErr = System.err;
         try (PrintStream newErr = new PrintStream(errCapture)) {
             System.setErr(newErr);
