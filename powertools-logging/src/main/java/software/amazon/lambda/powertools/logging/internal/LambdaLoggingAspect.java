@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Random;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -99,7 +100,7 @@ public final class LambdaLoggingAspect {
 
     private static Level getLevelFromString(String level) {
         if (Arrays.stream(Level.values()).anyMatch(slf4jLevel -> slf4jLevel.name().equalsIgnoreCase(level))) {
-            return Level.valueOf(level.toUpperCase());
+            return Level.valueOf(level.toUpperCase(Locale.ROOT));
         } else {
             // FATAL does not exist in slf4j
             if ("FATAL".equalsIgnoreCase(level)) {
@@ -117,6 +118,7 @@ public final class LambdaLoggingAspect {
     @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(logging)")
     public void callAt(Logging logging) {
+        // Pointcut method - body intentionally empty
     }
 
     /**

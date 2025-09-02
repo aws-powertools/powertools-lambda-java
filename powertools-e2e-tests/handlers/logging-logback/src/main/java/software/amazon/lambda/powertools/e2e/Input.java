@@ -20,9 +20,6 @@ public class Input {
     private String message;
     private Map<String, String> keys;
 
-    public Input() {
-    }
-
     public String getMessage() {
         return message;
     }

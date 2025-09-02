@@ -23,9 +23,6 @@ public class Input {
 
     private String highResolution;
 
-    public Input() {
-    }
-
     public Map<String, Double> getMetrics() {
         return metrics;
     }
