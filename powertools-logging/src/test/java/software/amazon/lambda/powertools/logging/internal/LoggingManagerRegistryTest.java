@@ -51,7 +51,7 @@ class LoggingManagerRegistryTest {
         assertThat(output)
                 .contains("WARN. Multiple LoggingManagers were found on the classpath")
                 .contains(
-                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies")
+                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback in your dependencies")
                 .contains("WARN. Using the first LoggingManager found on the classpath: [" + list.get(0) + "]");
     }
 

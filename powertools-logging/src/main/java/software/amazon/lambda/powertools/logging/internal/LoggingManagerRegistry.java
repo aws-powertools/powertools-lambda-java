@@ -88,7 +88,7 @@ public final class LoggingManagerRegistry {
                     printStream.println("WARN. Found LoggingManager: [" + manager + "]");
                 }
                 printStream.println(
-                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies");
+                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback in your dependencies");
                 printStream.println("WARN. Using the first LoggingManager found on the classpath: ["
                         + loggingManagerList.get(0) + "]");
             }
