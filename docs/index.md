@@ -3,7 +3,7 @@ title: Homepage
 description: Powertools for AWS Lambda (Java)
 ---
 
-Powertools for AWS Lambda (Java) is a suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+Powertools for AWS Lambda (Java) is a developer toolkit to implement Serverless best practices and increase developer velocity.
 
 ???+ tip
     Powertools for AWS Lambda  is also available for [Python](https://docs.powertools.aws.dev/lambda/python/latest/){target="_blank"}, [TypeScript](https://docs.powertools.aws.dev/lambda/typescript/latest/){target="_blank"}, and [.NET](https://docs.powertools.aws.dev/lambda/dotnet/){target="_blank"}
