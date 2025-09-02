@@ -4,7 +4,7 @@
         <Console name="JsonAppender" target="SYSTEM_OUT">
             <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
         </Console>
-        <BufferingAppender name="BufferedAppender" bufferAtVerbosity="DEBUG" maxBytes="8">
+        <BufferingAppender name="BufferedAppender" bufferAtVerbosity="DEBUG">
             <AppenderRef ref="JsonAppender" />
         </BufferingAppender>
     </Appenders>
