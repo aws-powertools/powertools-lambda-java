@@ -231,31 +231,34 @@ class KeyBufferTest {
     void shouldBeThreadSafeForDifferentKeys() throws InterruptedException {
         int threadCount = 10;
         int eventsPerThread = 100;
+        KeyBuffer<String, String> largeBuffer = new KeyBuffer<>(10000, String::length);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-
-        // Each thread works with different key
-        for (int i = 0; i < threadCount; i++) {
-            final String key = "key" + i;
-            executor.submit(() -> {
-                try {
-                    for (int j = 0; j < eventsPerThread; j++) {
-                        buffer.add(key, "event" + j);
-                    }
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
         try {
+            CountDownLatch latch = new CountDownLatch(threadCount);
+
+            // Each thread works with different key
+            for (int i = 0; i < threadCount; i++) {
+                final String key = "key" + i;
+                executor.submit(() -> {
+                    try {
+                        for (int j = 0; j < eventsPerThread; j++) {
+                            largeBuffer.add(key, "event" + j);
+                        }
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+
             assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
 
             // Verify each key has its events
             for (int i = 0; i < threadCount; i++) {
                 String key = "key" + i;
-                Deque<String> events = buffer.removeAll(key);
-                assertThat(events).isNotNull().isNotEmpty();
+                Deque<String> events = largeBuffer.removeAll(key);
+                assertThat(events)
+                        .isNotNull()
+                        .hasSize(eventsPerThread);
             }
         } finally {
             executor.shutdown();
@@ -266,28 +269,31 @@ class KeyBufferTest {
     void shouldBeThreadSafeForSameKey() throws InterruptedException {
         int threadCount = 5;
         int eventsPerThread = 20;
+        KeyBuffer<String, String> largeBuffer = new KeyBuffer<>(10000, String::length);
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
-        CountDownLatch latch = new CountDownLatch(threadCount);
-
-        // All threads work with same key
-        for (int i = 0; i < threadCount; i++) {
-            final int threadId = i;
-            executor.submit(() -> {
-                try {
-                    for (int j = 0; j < eventsPerThread; j++) {
-                        buffer.add("sharedKey", "t" + threadId + "e" + j);
-                    }
-                } finally {
-                    latch.countDown();
-                }
-            });
-        }
-
         try {
+            CountDownLatch latch = new CountDownLatch(threadCount);
+
+            // All threads work with same key
+            for (int i = 0; i < threadCount; i++) {
+                final int threadId = i;
+                executor.submit(() -> {
+                    try {
+                        for (int j = 0; j < eventsPerThread; j++) {
+                            largeBuffer.add("sharedKey", "t" + threadId + "e" + j);
+                        }
+                    } finally {
+                        latch.countDown();
+                    }
+                });
+            }
+
             assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
 
-            Deque<String> events = buffer.removeAll("sharedKey");
-            assertThat(events).isNotNull().isNotEmpty();
+            Deque<String> events = largeBuffer.removeAll("sharedKey");
+            assertThat(events)
+                    .isNotNull()
+                    .hasSize(threadCount * eventsPerThread);
         } finally {
             executor.shutdown();
         }
