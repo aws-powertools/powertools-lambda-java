@@ -312,8 +312,8 @@ public final class LambdaLoggingAspect {
 
     private byte[] bytesFromInputStreamSafely(final InputStream inputStream) throws IOException {
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-                InputStreamReader reader = new InputStreamReader(inputStream, UTF_8)) {
-            OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8);
+                InputStreamReader reader = new InputStreamReader(inputStream, UTF_8);
+                OutputStreamWriter writer = new OutputStreamWriter(out, UTF_8)) {
             int n;
             char[] buffer = new char[4096];
             while (-1 != (n = reader.read(buffer))) {
@@ -326,7 +326,7 @@ public final class LambdaLoggingAspect {
 
     private OutputStream prepareOutputStreamForLogging(Logging logging,
             Object[] proceedArgs) {
-        if ((logging.logResponse() || POWERTOOLS_LOG_RESPONSE)) {
+        if (logging.logResponse() || POWERTOOLS_LOG_RESPONSE) {
             OutputStream backupOutputStream = (OutputStream) proceedArgs[1];
             proceedArgs[1] = new ByteArrayOutputStream();
             return backupOutputStream;

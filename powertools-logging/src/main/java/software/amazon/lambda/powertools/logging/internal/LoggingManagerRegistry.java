@@ -20,7 +20,6 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Thread-safe singleton registry for LoggingManager instances.
@@ -28,7 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public final class LoggingManagerRegistry {
 
-    private static final AtomicReference<LoggingManager> instance = new AtomicReference<>();
+    // Used with double-checked locking within getLoggingManger()
+    @SuppressWarnings("java:S3077")
+    private static volatile LoggingManager instance;
 
     private LoggingManagerRegistry() {
         // Utility class
@@ -40,13 +41,13 @@ public final class LoggingManagerRegistry {
      * @return the LoggingManager instance
      */
     public static LoggingManager getLoggingManager() {
-        LoggingManager manager = instance.get();
+        LoggingManager manager = instance;
         if (manager == null) {
             synchronized (LoggingManagerRegistry.class) {
-                manager = instance.get();
+                manager = instance;
                 if (manager == null) {
                     manager = loadLoggingManager();
-                    instance.set(manager);
+                    instance = manager;
                 }
             }
         }

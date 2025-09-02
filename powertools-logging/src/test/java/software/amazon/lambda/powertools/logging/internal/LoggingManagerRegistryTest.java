@@ -131,8 +131,11 @@ class LoggingManagerRegistryTest {
         }
 
         // THEN
-        latch.await(5, TimeUnit.SECONDS);
-        executor.shutdown();
-        assertThat(sharedInstance.get()).isNotNull();
+        try {
+            latch.await(5, TimeUnit.SECONDS);
+            assertThat(sharedInstance.get()).isNotNull();
+        } finally {
+            executor.shutdown();
+        }
     }
 }

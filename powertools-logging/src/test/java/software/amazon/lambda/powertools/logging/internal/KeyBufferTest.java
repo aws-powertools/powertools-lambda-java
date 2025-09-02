@@ -248,16 +248,18 @@ class KeyBufferTest {
             });
         }
 
-        assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
+        try {
+            assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
 
-        // Verify each key has its events
-        for (int i = 0; i < threadCount; i++) {
-            String key = "key" + i;
-            Deque<String> events = buffer.removeAll(key);
-            assertThat(events).isNotNull().isNotEmpty();
+            // Verify each key has its events
+            for (int i = 0; i < threadCount; i++) {
+                String key = "key" + i;
+                Deque<String> events = buffer.removeAll(key);
+                assertThat(events).isNotNull().isNotEmpty();
+            }
+        } finally {
+            executor.shutdown();
         }
-
-        executor.shutdown();
     }
 
     @Test
@@ -281,12 +283,14 @@ class KeyBufferTest {
             });
         }
 
-        assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
+        try {
+            assertThat(latch.await(5, TimeUnit.SECONDS)).isTrue();
 
-        Deque<String> events = buffer.removeAll("sharedKey");
-        assertThat(events).isNotNull().isNotEmpty();
-
-        executor.shutdown();
+            Deque<String> events = buffer.removeAll("sharedKey");
+            assertThat(events).isNotNull().isNotEmpty();
+        } finally {
+            executor.shutdown();
+        }
     }
 
     @Test
