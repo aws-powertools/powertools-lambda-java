@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,7 +62,7 @@ class LoggingE2ET {
         functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
-    @AfterAll
+    @AfterEach
     void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
@@ -75,38 +75,29 @@ class LoggingE2ET {
     void test_logInfoWithAdditionalKeys(String pathToFunction) throws JsonProcessingException {
         setupInfrastructure(pathToFunction);
 
-        try {
-            // GIVEN
-            String orderId = UUID.randomUUID().toString();
-            String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId + "\"}}";
+        // GIVEN
+        String orderId = UUID.randomUUID().toString();
+        String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId + "\"}}";
 
-            // WHEN
-            InvocationResult invocationResult1 = invokeFunction(functionName, event);
-            InvocationResult invocationResult2 = invokeFunction(functionName, event);
+        // WHEN
+        InvocationResult invocationResult1 = invokeFunction(functionName, event);
+        InvocationResult invocationResult2 = invokeFunction(functionName, event);
 
-            // THEN
-            String[] functionLogs = invocationResult1.getLogs().getFunctionLogs(INFO);
-            assertThat(functionLogs).hasSize(1);
+        // THEN
+        String[] functionLogs = invocationResult1.getLogs().getFunctionLogs(INFO);
+        assertThat(functionLogs).hasSize(1);
 
-            JsonNode jsonNode = objectMapper.readTree(functionLogs[0]);
-            assertThat(jsonNode.get("message").asText()).isEqualTo("New Order");
-            assertThat(jsonNode.get("orderId").asText()).isEqualTo(orderId);
-            assertThat(jsonNode.get("cold_start").asBoolean()).isTrue();
-            assertThat(jsonNode.get("xray_trace_id").asText()).isNotBlank();
-            assertThat(jsonNode.get("function_request_id").asText()).isEqualTo(invocationResult1.getRequestId());
+        JsonNode jsonNode = objectMapper.readTree(functionLogs[0]);
+        assertThat(jsonNode.get("message").asText()).isEqualTo("New Order");
+        assertThat(jsonNode.get("orderId").asText()).isEqualTo(orderId);
+        assertThat(jsonNode.get("cold_start").asBoolean()).isTrue();
+        assertThat(jsonNode.get("xray_trace_id").asText()).isNotBlank();
+        assertThat(jsonNode.get("function_request_id").asText()).isEqualTo(invocationResult1.getRequestId());
 
-            // second call should not be cold start
-            functionLogs = invocationResult2.getLogs().getFunctionLogs(INFO);
-            assertThat(functionLogs).hasSize(1);
-            jsonNode = objectMapper.readTree(functionLogs[0]);
-            assertThat(jsonNode.get("cold_start").asBoolean()).isFalse();
-
-        } finally {
-            // Clean up infrastructure after each parameter
-            if (infrastructure != null) {
-                infrastructure.destroy();
-                infrastructure = null;
-            }
-        }
+        // second call should not be cold start
+        functionLogs = invocationResult2.getLogs().getFunctionLogs(INFO);
+        assertThat(functionLogs).hasSize(1);
+        jsonNode = objectMapper.readTree(functionLogs[0]);
+        assertThat(jsonNode.get("cold_start").asBoolean()).isFalse();
     }
 }
