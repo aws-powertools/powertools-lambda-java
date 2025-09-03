@@ -29,7 +29,7 @@ class RequestHandlerTest {
     @Mock
     Context lambdaContext;
 
-    private final PrintStream standardOut = System.out;
+    private static final PrintStream STDOUT = System.out;
     private ByteArrayOutputStream outputStreamCaptor;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -41,7 +41,7 @@ class RequestHandlerTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        System.setOut(standardOut);
+        System.setOut(STDOUT);
 
         // Reset the singleton state between tests
         java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
