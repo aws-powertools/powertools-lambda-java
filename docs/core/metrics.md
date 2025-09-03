@@ -575,7 +575,7 @@ Make sure to set a test metrics namespace and service name to run assertions aga
 
 Consider the following example where we redirect the standard output to a custom `PrintStream`. We use the Jackson library to parse the EMF output into a `JsonNode` and run assertions against that.
 
-```java hl_lines="34 39 55-60"
+```java hl_lines="34 40 56-61"
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
