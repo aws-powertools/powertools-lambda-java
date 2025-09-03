@@ -881,12 +881,12 @@ When configuring log buffering, you have options to fine-tune how logs are captu
 | `flushOnErrorLog`     | Automatically flush buffer when `ERROR` or `FATAL` level logs are emitted | `true` (default), `false`    |
 
 !!! warning "Logger Level Configuration"
-    To use log buffering effectively, you must set your logger levels to the most verbose level (`DEBUG`) so that all logs can be captured by the `BufferingAppender`. The `BufferingAppender` then decides which logs to buffer based on the `bufferAtVerbosity` setting.
-    
+    To use log buffering effectively, you must set your logger levels to the same level as `bufferAtVerbosity` or more verbose for the logging framework to capture and forward logs to the `BufferingAppender`. For example, if you want to buffer `DEBUG` level logs and emit `INFO`+ level logs directly, you must:
+
     - Set your logger levels to `DEBUG` in your log4j2.xml or logback.xml configuration
     - Set `POWERTOOLS_LOG_LEVEL=DEBUG` if using the environment variable (see [Log level](#log-level) section for more details)
-    
-    This ensures that all log levels (`DEBUG`, `INFO`, `WARN`) are forwarded to the `BufferingAppender` for it to selectively buffer or emit directly.
+
+    If you want to sample `INFO` and `WARNING` logs but not `DEBUG` logs, set your log level to `INFO` and `bufferAtVerbosity` to `WARNING`. This allows you to define the lower and upper bounds for buffering. All logs with a more severe level than `bufferAtVerbosity` will be emitted directly.
 
 === "log4j2.xml - Buffer at WARNING level"
 
