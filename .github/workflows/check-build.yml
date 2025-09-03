@@ -100,6 +100,7 @@ jobs:
         with:
           files: |
             powertools-*/**
+            pom.xml
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@7f488cf82a3629ee755e4e97342c01d6bed318fa # v1.3.5
         with:
