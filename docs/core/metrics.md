@@ -589,16 +589,17 @@ class MetricsTestExample {
     Context lambdaContext;
 
     private final PrintStream standardOut = System.out;
-    private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
+    private ByteArrayOutputStream outputStreamCaptor;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
+        outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
     }
 
     @AfterEach
-    void tearDown() {
+    void tearDown() throws Exception {
         System.setOut(standardOut);
     }
 
