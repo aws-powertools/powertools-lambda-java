@@ -105,7 +105,7 @@ Before your use this utility, your AWS Lambda function [must have permissions](h
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java8
+            Runtime: java11
     
             Tracing: Active
             Environment:
@@ -191,7 +191,7 @@ different supported `captureMode` to record response, exception or both.
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java8
+            Runtime: java11
     
             Tracing: Active
             Environment:

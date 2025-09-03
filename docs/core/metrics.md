@@ -140,7 +140,7 @@ For most use-cases, we recommend using Environment variables and only overwrite 
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java8
+            Runtime: java11
             Environment:
                 Variables:
                     POWERTOOLS_SERVICE_NAME: payment
