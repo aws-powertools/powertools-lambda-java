@@ -136,8 +136,9 @@ public class LambdaMetricsAspect {
             }
 
             // Add function name
-            coldStartDimensions.addDimension("FunctionName",
-                    funcName != null ? funcName : extractedContext.getFunctionName());
+            if (funcName != null) {
+                coldStartDimensions.addDimension("FunctionName", funcName);
+            }
 
             metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
         }

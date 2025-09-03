@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,9 +36,19 @@ class RequestHandlerTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         outputStreamCaptor = new ByteArrayOutputStream();
         System.setOut(new PrintStream(outputStreamCaptor));
+
+        // Reset LambdaHandlerProcessor's SERVICE_NAME
+        Method resetServiceName = LambdaHandlerProcessor.class.getDeclaredMethod("resetServiceName");
+        resetServiceName.setAccessible(true);
+        resetServiceName.invoke(null);
+
+        // Reset IS_COLD_START
+        java.lang.reflect.Field coldStartField = LambdaHandlerProcessor.class.getDeclaredField("IS_COLD_START");
+        coldStartField.setAccessible(true);
+        coldStartField.set(null, null);
     }
 
     @AfterEach
@@ -54,6 +66,8 @@ class RequestHandlerTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_NAMESPACE", value = "TestNamespace")
+    @SetEnvironmentVariable(key = "POWERTOOLS_SERVICE_NAME", value = "TestService")
     void shouldCaptureMetricsFromAnnotatedHandler() throws Exception {
         // Given
         RequestHandler<Map<String, Object>, String> handler = new HandlerWithMetricsAnnotation();
@@ -64,14 +78,25 @@ class RequestHandlerTest {
 
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
-        JsonNode rootNode = objectMapper.readTree(emfOutput);
+        String[] jsonLines = emfOutput.split("\n");
 
-        assertThat(rootNode.has("test-metric")).isTrue();
-        assertThat(rootNode.get("test-metric").asDouble()).isEqualTo(100.0);
-        assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
-                .isEqualTo("CustomNamespace");
-        assertThat(rootNode.has("Service")).isTrue();
-        assertThat(rootNode.get("Service").asText()).isEqualTo("CustomService");
+        // First JSON object should be the cold start metric
+        JsonNode coldStartNode = objectMapper.readTree(jsonLines[0]);
+        assertThat(coldStartNode.has("ColdStart")).isTrue();
+        assertThat(coldStartNode.get("ColdStart").asDouble()).isEqualTo(1.0);
+        assertThat(coldStartNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
+                .isEqualTo("TestNamespace");
+        assertThat(coldStartNode.has("Service")).isTrue();
+        assertThat(coldStartNode.get("Service").asText()).isEqualTo("TestService");
+
+        // Second JSON object should be the regular metric
+        JsonNode regularNode = objectMapper.readTree(jsonLines[1]);
+        assertThat(regularNode.has("test-metric")).isTrue();
+        assertThat(regularNode.get("test-metric").asDouble()).isEqualTo(100.0);
+        assertThat(regularNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
+                .isEqualTo("TestNamespace");
+        assertThat(regularNode.has("Service")).isTrue();
+        assertThat(regularNode.get("Service").asText()).isEqualTo("TestService");
     }
 
     @SetEnvironmentVariable(key = "POWERTOOLS_METRICS_DISABLED", value = "true")
@@ -91,7 +116,7 @@ class RequestHandlerTest {
 
     static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
-        @FlushMetrics(namespace = "CustomNamespace", service = "CustomService")
+        @FlushMetrics(captureColdStart = true)
         public String handleRequest(Map<String, Object> input, Context context) {
             Metrics metrics = MetricsFactory.getMetricsInstance();
             metrics.addMetric("test-metric", 100, MetricUnit.COUNT);
