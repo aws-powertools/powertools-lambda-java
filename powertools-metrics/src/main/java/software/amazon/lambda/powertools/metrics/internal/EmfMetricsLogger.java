@@ -204,7 +204,7 @@ public class EmfMetricsLogger implements Metrics {
             }
 
             // Add request ID from context if available
-            if (context != null) {
+            if (context != null && context.getAwsRequestId() != null) {
                 coldStartLogger.putProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
             }
 

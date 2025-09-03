@@ -113,7 +113,10 @@ public class LambdaMetricsAspect {
         }
 
         Metrics metricsInstance = MetricsFactory.getMetricsInstance();
-        metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+        // This can be null e.g. during unit tests when mocking the Lambda context
+        if (extractedContext.getAwsRequestId() != null) {
+            metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+        }
 
         // Only capture cold start metrics if enabled on annotation
         if (metrics.captureColdStart()) {
