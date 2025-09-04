@@ -34,7 +34,7 @@ import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 public class PowertoolsArguments implements RequestHandler<SQSEvent.SQSMessage, String> {
-    private final Logger LOG = LoggerFactory.getLogger(PowertoolsArguments.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PowertoolsArguments.class);
     private final ArgumentFormat argumentFormat;
 
     public PowertoolsArguments(ArgumentFormat argumentFormat) {

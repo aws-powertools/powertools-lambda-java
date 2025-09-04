@@ -14,18 +14,29 @@
 
 package software.amazon.lambda.powertools.logging.logback.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.ILoggerFactory;
+import org.slf4j.LoggerFactory;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import java.util.List;
-import org.slf4j.ILoggerFactory;
-import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import software.amazon.lambda.powertools.logging.internal.BufferManager;
 import software.amazon.lambda.powertools.logging.internal.LoggingManager;
+import software.amazon.lambda.powertools.logging.logback.BufferingAppender;
 
 /**
- * LoggingManager for Logback (see {@link LoggingManager}).
+ * LoggingManager for Logback that provides log level management and buffer operations.
+ * Implements both {@link LoggingManager} and {@link BufferManager} interfaces.
  */
-public class LogbackLoggingManager implements LoggingManager {
+public class LogbackLoggingManager implements LoggingManager, BufferManager {
 
     private final LoggerContext loggerContext;
 
@@ -55,5 +66,35 @@ public class LogbackLoggingManager implements LoggingManager {
     @Override
     public org.slf4j.event.Level getLogLevel(org.slf4j.Logger logger) {
         return org.slf4j.event.Level.valueOf(loggerContext.getLogger(logger.getName()).getEffectiveLevel().toString());
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void flushBuffer() {
+        getBufferingAppenders().forEach(BufferingAppender::flushBuffer);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    @Override
+    public void clearBuffer() {
+        getBufferingAppenders().forEach(BufferingAppender::clearBuffer);
+    }
+
+    private Collection<BufferingAppender> getBufferingAppenders() {
+        // Search all buffering appenders to avoid relying on the appender name given by the user
+        return loggerContext.getLoggerList().stream()
+                .flatMap(logger -> {
+                    Iterator<Appender<ILoggingEvent>> iterator = logger.iteratorForAppenders();
+                    List<Appender<ILoggingEvent>> appenders = new ArrayList<>();
+                    iterator.forEachRemaining(appenders::add);
+                    return appenders.stream();
+                })
+                .filter(BufferingAppender.class::isInstance)
+                .map(BufferingAppender.class::cast)
+                .collect(Collectors.toList());
     }
 }

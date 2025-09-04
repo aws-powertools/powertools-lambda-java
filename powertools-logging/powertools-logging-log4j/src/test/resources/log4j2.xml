@@ -10,8 +10,17 @@
         <File name="logFileWithEcs" fileName="target/ecslogfile.json">
             <JsonTemplateLayout eventTemplateUri="classpath:LambdaEcsLayout.json" />
         </File>
+        <BufferingAppender name="BufferingAppender" 
+                          bufferAtVerbosity="DEBUG" 
+                          maxBytes="1024" 
+                          flushOnErrorLog="true">
+            <AppenderRef ref="logFile"/>
+        </BufferingAppender>
     </Appenders>
-    <Loggers>q
+    <Loggers>
+        <Logger name="software.amazon.lambda.powertools.logging.log4j.BufferingAppenderTest" level="DEBUG" additivity="false">
+            <AppenderRef ref="BufferingAppender"/>
+        </Logger>
         <Logger name="software.amazon.lambda.powertools" level="DEBUG" additivity="false">
             <AppenderRef ref="logFileWithEcs"/>
             <AppenderRef ref="logFile"/>

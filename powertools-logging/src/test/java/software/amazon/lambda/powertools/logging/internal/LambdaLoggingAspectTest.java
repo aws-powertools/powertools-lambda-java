@@ -31,8 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
@@ -40,7 +38,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +78,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogDisabledF
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabled;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEnabledForStream;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogError;
+import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogErrorNoFlush;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEvent;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventBridgeCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogEventEnvVar;
@@ -111,6 +109,13 @@ class LambdaLoggingAspectTest {
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", null, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_EVENT", false, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_SAMPLING_RATE", null, true);
+
+        // Reset buffer state for clean test isolation
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            ((TestLoggingManager) loggingManager).resetBufferState();
+        }
+
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         } catch (NoSuchFileException e) {
@@ -721,47 +726,129 @@ class LambdaLoggingAspectTest {
     }
 
     @Test
-    void testMultipleLoggingManagers_shouldWarnAndSelectFirstOne() throws UnsupportedEncodingException {
-        // GIVEN
-        List<LoggingManager> list = new ArrayList<>();
-        list.add(new TestLoggingManager());
-        list.add(new DefautlLoggingManager());
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(outputStream);
-
+    void shouldClearBufferAfterSuccessfulHandlerExecution() {
         // WHEN
-        LambdaLoggingAspect.getLoggingManager(list, stream);
+        requestHandler.handleRequest(new Object(), context);
 
         // THEN
-        String output = outputStream.toString("UTF-8");
-        assertThat(output)
-                .contains("WARN. Multiple LoggingManagers were found on the classpath")
-                .contains(
-                        "WARN. Make sure to have only one of powertools-logging-log4j OR powertools-logging-logback to your dependencies")
-                .contains("WARN. Using the first LoggingManager found on the classpath: [" + list.get(0) + "]");
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+        }
     }
 
     @Test
-    void testNoLoggingManagers_shouldWarnAndCreateDefault() throws UnsupportedEncodingException {
-        // GIVEN
-        List<LoggingManager> list = new ArrayList<>();
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        PrintStream stream = new PrintStream(outputStream);
-
+    void shouldClearBufferAfterSuccessfulStreamHandlerExecution() throws IOException {
         // WHEN
-        LoggingManager loggingManager = LambdaLoggingAspect.getLoggingManager(list, stream);
+        requestStreamHandler.handleRequest(new ByteArrayInputStream(new byte[] {}), new ByteArrayOutputStream(),
+                context);
 
         // THEN
-        String output = outputStream.toString("UTF-8");
-        assertThat(output)
-                .contains("ERROR. No LoggingManager was found on the classpath")
-                .contains("ERROR. Applying default LoggingManager: POWERTOOLS_LOG_LEVEL variable is ignored")
-                .contains(
-                        "ERROR. Make sure to add either powertools-logging-log4j or powertools-logging-logback to your dependencies");
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+        }
+    }
 
-        assertThat(loggingManager).isExactlyInstanceOf(DefautlLoggingManager.class);
+    @Test
+    void shouldClearBufferAfterHandlerExceptionWithLogError() {
+        // GIVEN
+        requestHandler = new PowertoolsLogError();
+
+        // WHEN
+        try {
+            requestHandler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldClearBufferAfterHandlerExceptionWithEnvVarLogError() {
+        try {
+            // GIVEN
+            LoggingConstants.POWERTOOLS_LOG_ERROR = true;
+            requestHandler = new PowertoolsLogEnabled(true);
+
+            // WHEN
+            try {
+                requestHandler.handleRequest("input", context);
+            } catch (Exception e) {
+                // ignore
+            }
+
+            // THEN
+            LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+            if (loggingManager instanceof TestLoggingManager) {
+                assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+            }
+        } finally {
+            LoggingConstants.POWERTOOLS_LOG_ERROR = false;
+        }
+    }
+
+    @Test
+    void shouldFlushBufferOnUncaughtErrorWhenEnabled() {
+        // GIVEN
+        requestHandler = new PowertoolsLogError();
+
+        // WHEN
+        try {
+            requestHandler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferFlushed()).isTrue();
+        }
+    }
+
+    @Test
+    void shouldNotFlushBufferOnUncaughtErrorWhenDisabled() {
+        // GIVEN
+        PowertoolsLogErrorNoFlush handler = new PowertoolsLogErrorNoFlush();
+
+        // WHEN
+        try {
+            handler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferFlushed()).isFalse();
+        }
+    }
+
+    @Test
+    void shouldClearBufferBeforeErrorLoggingWhenFlushBufferOnUncaughtErrorDisabled() {
+        // GIVEN
+        PowertoolsLogErrorNoFlush handler = new PowertoolsLogErrorNoFlush();
+
+        // WHEN
+        try {
+            handler.handleRequest("input", context);
+        } catch (Exception e) {
+            // ignore
+        }
+
+        // THEN - Buffer should be cleared and not flushed
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        if (loggingManager instanceof TestLoggingManager) {
+            assertThat(((TestLoggingManager) loggingManager).isBufferCleared()).isTrue();
+            assertThat(((TestLoggingManager) loggingManager).isBufferFlushed()).isFalse();
+        }
     }
 
     private void resetLogLevel(Level level)

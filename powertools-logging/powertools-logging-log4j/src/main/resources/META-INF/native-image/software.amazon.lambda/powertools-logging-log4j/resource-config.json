@@ -13,8 +13,6 @@
   }, {
     "pattern":"\\QMETA-INF/services/java.net.spi.InetAddressResolverProvider\\E"
   }, {
-    "pattern":"\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
-  }, {
     "pattern":"\\QMETA-INF/services/javax.xml.parsers.DocumentBuilderFactory\\E"
   }, {
     "pattern":"\\QMETA-INF/services/org.apache.logging.log4j.core.util.ContextDataProvider\\E"
@@ -36,60 +34,6 @@
     "pattern":"\\QMETA-INF/services/software.amazon.lambda.powertools.logging.internal.LoggingManager\\E"
   }, {
     "pattern":"\\QStackTraceElementLayout.json\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test.jsn\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test.json\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test.xml\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test.yaml\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test.yml\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test18b4aac2.jsn\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test18b4aac2.json\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test18b4aac2.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test18b4aac2.xml\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test18b4aac2.yaml\\E"
-  }, {
-    "pattern":"\\Qlog4j2-test18b4aac2.yml\\E"
-  }, {
-    "pattern":"\\Qlog4j2.StatusLogger.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j2.component.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j2.jsn\\E"
-  }, {
-    "pattern":"\\Qlog4j2.json\\E"
-  }, {
-    "pattern":"\\Qlog4j2.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j2.system.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j2.xml\\E"
-  }, {
-    "pattern":"\\Qlog4j2.yaml\\E"
-  }, {
-    "pattern":"\\Qlog4j2.yml\\E"
-  }, {
-    "pattern":"\\Qlog4j218b4aac2.jsn\\E"
-  }, {
-    "pattern":"\\Qlog4j218b4aac2.json\\E"
-  }, {
-    "pattern":"\\Qlog4j218b4aac2.properties\\E"
-  }, {
-    "pattern":"\\Qlog4j218b4aac2.xml\\E"
-  }, {
-    "pattern":"\\Qlog4j218b4aac2.yaml\\E"
-  }, {
-    "pattern":"\\Qlog4j218b4aac2.yml\\E"
   }]},
   "bundles":[]
 }
