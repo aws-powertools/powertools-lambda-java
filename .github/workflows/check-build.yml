@@ -101,7 +101,7 @@ jobs:
           files: |
             powertools-*/**
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@7f488cf82a3629ee755e4e97342c01d6bed318fa # v1.3.5
+        uses: graalvm/setup-graalvm@7a1da54cb7fdef4ea19f6ecdfa9ecf59dc5a48fe # v1.3.6
         with:
           java-version: "21"
           distribution: "graalvm"
