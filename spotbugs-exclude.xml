@@ -199,10 +199,6 @@
                 <Method name="beforeCheckpoint"/>
             </And>
             <And>
-                <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
-                <Method name="beforeCheckpoint"/>
-            </And>
-            <And>
                 <Class name="software.amazon.lambda.powertools.utilities.JsonConfig"/>
                 <Method name="beforeCheckpoint"/>
             </And>
