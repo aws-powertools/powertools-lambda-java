@@ -36,9 +36,7 @@ public final class TracingUtils implements Resource {
     private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
 
-    // Singleton instance required for CRaC Resource registration
-    // This pattern is intentional and necessary for CRaC (Coordinated Restore at Checkpoint) functionality
-    // NOSONAR - Singleton pattern is required for CRaC Resource interface registration
+    // Static instance for CRaC Resource registration (same pattern as MetricsFactory)
     private static final TracingUtils INSTANCE = new TracingUtils();
 
     // Static block to ensure CRaC registration happens at class loading time
