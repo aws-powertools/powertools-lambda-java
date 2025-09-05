@@ -235,7 +235,9 @@ public final class TracingUtils implements Resource {
         serviceName();
         
         // Initialize ObjectMapper for JSON serialization
-        objectMapper.writeValueAsString("dummy");
+        if (objectMapper != null) {
+            objectMapper.writeValueAsString("dummy");
+        }
     }
 
     @Override

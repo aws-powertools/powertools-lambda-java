@@ -34,7 +34,9 @@ class TracingUtilsCracTest {
     @Test
     void testTracingUtilsLoadsSuccessfully() {
         // Simply calling TracingUtils.prime() should trigger CRaC registration
-        TracingUtils.prime();
-        // If we get here without exception, the test passes
+        assertThatNoException().isThrownBy(() -> TracingUtils.prime());
+        
+        // Verify that TracingUtils class is loaded and accessible
+        assertThatNoException().isThrownBy(() -> TracingUtils.objectMapper());
     }
 }
