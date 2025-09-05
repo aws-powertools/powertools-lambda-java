@@ -224,9 +224,7 @@ public final class TracingUtils implements Resource {
         ClassPreLoader.preloadClasses();
         
         // Initialize key components
-        if (objectMapper == null) {
-            objectMapper = new ObjectMapper();
-        }
+        initializeObjectMapper();
         
         // Initialize X-Ray components by accessing them
         AWSXRay.getGlobalRecorder();
@@ -237,6 +235,12 @@ public final class TracingUtils implements Resource {
         // Initialize ObjectMapper for JSON serialization
         if (objectMapper != null) {
             objectMapper.writeValueAsString("dummy");
+        }
+    }
+
+    private static synchronized void initializeObjectMapper() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
         }
     }
 
