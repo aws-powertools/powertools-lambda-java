@@ -21,16 +21,31 @@ import com.amazonaws.xray.entities.Entity;
 import com.amazonaws.xray.entities.Subsegment;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.function.Consumer;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 
 /**
  * A class of helper functions to add additional functionality and ease
  * of use.
  */
-public final class TracingUtils {
+public final class TracingUtils implements Resource {
     private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        // Use constructor registration approach like DynamoDBPersistenceStore
+        new TracingUtils();
+    }
+
+    private TracingUtils() {
+        // Register this instance with CRaC (same pattern as DynamoDBPersistenceStore)
+        Core.getGlobalContext().register(this);
+    }
 
     /**
      * Put an annotation to the current subsegment with a String value.
@@ -191,5 +206,45 @@ public final class TracingUtils {
 
     public static ObjectMapper objectMapper() {
         return objectMapper;
+    }
+
+    /**
+     * Prime TracingUtils for AWS Lambda SnapStart.
+     * This method has no side-effects and can be safely called to trigger SnapStart priming.
+     */
+    public static void prime() {
+        // This method intentionally does nothing but ensures TracingUtils is loaded
+        // The actual priming happens in the beforeCheckpoint() method via CRaC hooks
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Preload classes first to ensure this always runs
+        ClassPreLoader.preloadClasses();
+        
+        // Initialize key components
+        initializeObjectMapper();
+        
+        // Initialize X-Ray components by accessing them
+        AWSXRay.getGlobalRecorder();
+        
+        // Warm up tracing utilities by calling key methods
+        serviceName();
+        
+        // Initialize ObjectMapper for JSON serialization
+        if (objectMapper != null) {
+            objectMapper.writeValueAsString("dummy");
+        }
+    }
+
+    private static synchronized void initializeObjectMapper() {
+        if (objectMapper == null) {
+            objectMapper = new ObjectMapper();
+        }
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }
