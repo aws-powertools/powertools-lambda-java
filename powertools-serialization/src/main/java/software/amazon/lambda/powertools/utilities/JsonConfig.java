@@ -80,20 +80,23 @@ public final class JsonConfig implements Resource {
 
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
-    // Static instance for CRaC Resource registration (same pattern as MetricsFactory)
-    // Singleton pattern is required for CRaC Resource interface - excluded in sonarcloud.properties
-    private static final JsonConfig INSTANCE = new JsonConfig();
-
     // Static block to ensure CRaC registration happens at class loading time
     static {
-        Core.getGlobalContext().register(INSTANCE);
+        // Use constructor registration approach like DynamoDBPersistenceStore
+        new JsonConfig();
     }
 
     private JsonConfig() {
+        // Register this instance with CRaC (same pattern as DynamoDBPersistenceStore)
+        Core.getGlobalContext().register(this);
     }
 
     public static JsonConfig get() {
-        return INSTANCE;
+        return ConfigHolder.instance;
+    }
+
+    private static class ConfigHolder {
+        private static final JsonConfig instance = new JsonConfig();
     }
 
     /**
