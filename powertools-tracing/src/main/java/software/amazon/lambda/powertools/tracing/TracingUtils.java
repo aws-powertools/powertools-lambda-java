@@ -37,6 +37,7 @@ public final class TracingUtils implements Resource {
     private static ObjectMapper objectMapper;
 
     // Static instance for CRaC Resource registration (same pattern as MetricsFactory)
+    // Singleton pattern is required for CRaC Resource interface - excluded in sonarcloud.properties
     private static final TracingUtils INSTANCE = new TracingUtils();
 
     // Static block to ensure CRaC registration happens at class loading time
