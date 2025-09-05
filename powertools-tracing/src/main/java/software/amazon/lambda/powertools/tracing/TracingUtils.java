@@ -36,17 +36,15 @@ public final class TracingUtils implements Resource {
     private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
 
-    // Static instance for CRaC Resource registration (same pattern as MetricsFactory)
-    // Singleton pattern is required for CRaC Resource interface - excluded in sonarcloud.properties
-    private static final TracingUtils INSTANCE = new TracingUtils();
-
     // Static block to ensure CRaC registration happens at class loading time
     static {
-        Core.getGlobalContext().register(INSTANCE);
+        // Use constructor registration approach like DynamoDBPersistenceStore
+        new TracingUtils();
     }
 
     private TracingUtils() {
-        // Private constructor for singleton pattern
+        // Register this instance with CRaC (same pattern as DynamoDBPersistenceStore)
+        Core.getGlobalContext().register(this);
     }
 
     /**
