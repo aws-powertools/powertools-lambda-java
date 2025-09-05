@@ -81,6 +81,7 @@ public final class JsonConfig implements Resource {
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
     // Static instance for CRaC Resource registration (same pattern as MetricsFactory)
+    // Singleton pattern is required for CRaC Resource interface - excluded in sonarcloud.properties
     private static final JsonConfig INSTANCE = new JsonConfig();
 
     // Static block to ensure CRaC registration happens at class loading time
