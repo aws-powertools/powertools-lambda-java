@@ -81,6 +81,7 @@ public final class JsonConfig implements Resource {
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
     // Static block to ensure CRaC registration happens at class loading time
+    // NOSONAR - Singleton pattern is required for CRaC Resource interface registration
     static {
         Core.getGlobalContext().register(get());
     }
@@ -159,11 +160,15 @@ public final class JsonConfig implements Resource {
         // No action needed after restore
     }
 
-    private void primeEventType(ObjectMapper mapper, Class<?> eventClass, String sampleJson) throws Exception {
-        // Deserialize sample JSON to the event class
-        Object event = mapper.readValue(sampleJson, eventClass);
-        // Serialize back to JSON to warm up both directions
-        mapper.writeValueAsString(event);
+    private void primeEventType(ObjectMapper mapper, Class<?> eventClass, String sampleJson) throws JsonPrimingException {
+        try {
+            // Deserialize sample JSON to the event class
+            Object event = mapper.readValue(sampleJson, eventClass);
+            // Serialize back to JSON to warm up both directions
+            mapper.writeValueAsString(event);
+        } catch (Exception e) {
+            throw new JsonPrimingException("Failed to prime event type " + eventClass.getSimpleName(), e);
+        }
     }
 
     private static class ConfigHolder {
