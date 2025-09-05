@@ -91,12 +91,13 @@ public final class JsonConfig implements Resource {
         Core.getGlobalContext().register(this);
     }
 
-    public static JsonConfig get() {
-        return ConfigHolder.instance;
-    }
+    private static JsonConfig instance;
 
-    private static class ConfigHolder {
-        private static final JsonConfig instance = new JsonConfig();
+    public static JsonConfig get() {
+        if (instance == null) {
+            instance = new JsonConfig();
+        }
+        return instance;
     }
 
     /**
