@@ -50,6 +50,9 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 import software.amazon.lambda.powertools.utilities.jmespath.JsonFunction;
 
+/**
+ * Factory for accessing the singleton JsonConfig instance
+ */
 public final class JsonConfig implements Resource {
 
     private static final Supplier<ObjectMapper> objectMapperSupplier = () -> JsonMapper.builder()
@@ -80,24 +83,21 @@ public final class JsonConfig implements Resource {
 
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
+    // Dummy instance to register JsonConfig with CRaC
+    private static final JsonConfig INSTANCE = new JsonConfig();
+
     // Static block to ensure CRaC registration happens at class loading time
     static {
-        // Use constructor registration approach like DynamoDBPersistenceStore
-        new JsonConfig();
+        Core.getGlobalContext().register(INSTANCE);
     }
 
-    private JsonConfig() {
-        // Register this instance with CRaC (same pattern as DynamoDBPersistenceStore)
-        Core.getGlobalContext().register(this);
-    }
-
-    private static JsonConfig instance;
-
+    /**
+     * Get the singleton instance of the JsonConfig
+     *
+     * @return the singleton JsonConfig instance
+     */
     public static JsonConfig get() {
-        if (instance == null) {
-            instance = new JsonConfig();
-        }
-        return instance;
+        return INSTANCE;
     }
 
     /**
@@ -135,6 +135,16 @@ public final class JsonConfig implements Resource {
         jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
     }
 
+    /**
+     * Prime JsonConfig for AWS Lambda SnapStart.
+     * This method has no side-effects and can be safely called to trigger SnapStart priming.
+     */
+    public static void prime() {
+        // This method intentionally does nothing but ensures JsonConfig is loaded
+        // The actual priming happens in the beforeCheckpoint() method via CRaC hooks
+        JsonConfig.get();
+    }
+
     @Override
     public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
         // Preload classes first to ensure this always runs
@@ -144,7 +154,7 @@ public final class JsonConfig implements Resource {
         ObjectMapper mapper = getObjectMapper();
         getJmesPath();
         
-        // Prime common AWS Lambda event types with realistic events
+        // Prime common AWS Lambda event types with realistic events (invoke priming)
         primeEventType(mapper, APIGatewayProxyRequestEvent.class, 
             "{\"httpMethod\":\"GET\",\"path\":\"/test\",\"headers\":{\"Content-Type\":\"application/json\"},\"requestContext\":{\"accountId\":\"123456789012\"}}");
         primeEventType(mapper, APIGatewayV2HTTPEvent.class, 
@@ -177,5 +187,4 @@ public final class JsonConfig implements Resource {
             throw new JsonPrimingException("Failed to prime event type " + eventClass.getSimpleName(), e);
         }
     }
-
 }
