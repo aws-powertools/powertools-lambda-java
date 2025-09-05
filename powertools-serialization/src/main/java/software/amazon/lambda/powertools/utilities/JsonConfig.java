@@ -80,17 +80,19 @@ public final class JsonConfig implements Resource {
 
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
+    // Static instance for CRaC Resource registration (same pattern as MetricsFactory)
+    private static final JsonConfig INSTANCE = new JsonConfig();
+
     // Static block to ensure CRaC registration happens at class loading time
-    // NOSONAR - Singleton pattern is required for CRaC Resource interface registration
     static {
-        Core.getGlobalContext().register(get());
+        Core.getGlobalContext().register(INSTANCE);
     }
 
     private JsonConfig() {
     }
 
     public static JsonConfig get() {
-        return ConfigHolder.instance;
+        return INSTANCE;
     }
 
     /**
@@ -171,8 +173,4 @@ public final class JsonConfig implements Resource {
         }
     }
 
-    private static class ConfigHolder {
-        // NOSONAR - Singleton pattern is required for CRaC Resource interface registration
-        private static final JsonConfig instance = new JsonConfig();
-    }
 }
