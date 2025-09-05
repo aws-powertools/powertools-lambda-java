@@ -172,6 +172,7 @@ public final class JsonConfig implements Resource {
     }
 
     private static class ConfigHolder {
+        // NOSONAR - Singleton pattern is required for CRaC Resource interface registration
         private static final JsonConfig instance = new JsonConfig();
     }
 }
