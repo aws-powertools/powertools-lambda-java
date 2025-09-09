@@ -128,7 +128,7 @@ extra_javascript:
 
 extra:
   powertools:
-    version: 2.3.0
+    version: 2.4.0
   version:
     provider: mike
     default: latest
