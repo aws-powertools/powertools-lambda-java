@@ -88,7 +88,10 @@ public final class LambdaHandlerProcessor {
     }
 
     public static boolean isColdStart() {
-        return IS_COLD_START == null;
+        // If this is not the first invocation, it's definitely not a cold start
+        // Check if this execution environment was pre-warmed via provisioned concurrency
+        // Traditional cold start detection - first invocation without provisioned concurrency
+        return IS_COLD_START == null && !LambdaConstants.PROVISIONED_CONCURRENCY.equals(getenv(LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE));
     }
 
     public static void coldStartDone() {
