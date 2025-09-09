@@ -27,11 +27,33 @@ import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionRegistry;
 import io.burt.jmespath.jackson.JacksonRuntime;
 import java.util.function.Supplier;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
+import com.amazonaws.services.lambda.runtime.events.ActiveMQEvent;
+import com.amazonaws.services.lambda.runtime.events.ApplicationLoadBalancerRequestEvent;
+import com.amazonaws.services.lambda.runtime.events.CloudFormationCustomResourceEvent;
+import com.amazonaws.services.lambda.runtime.events.CloudWatchLogsEvent;
+import com.amazonaws.services.lambda.runtime.events.KafkaEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsFirehoseInputPreprocessingEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisAnalyticsStreamsInputPreprocessingEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
+import com.amazonaws.services.lambda.runtime.events.KinesisFirehoseEvent;
+import com.amazonaws.services.lambda.runtime.events.RabbitMQEvent;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 import software.amazon.lambda.powertools.utilities.jmespath.JsonFunction;
 
-public final class JsonConfig {
+/**
+ * Factory for accessing the singleton JsonConfig instance
+ */
+public final class JsonConfig implements Resource {
 
     private static final Supplier<ObjectMapper> objectMapperSupplier = () -> JsonMapper.builder()
             // Don't throw an exception when json has extra fields you are not serializing on.
@@ -61,11 +83,21 @@ public final class JsonConfig {
 
     private JmesPath<JsonNode> jmesPath = new JacksonRuntime(configuration, getObjectMapper());
 
-    private JsonConfig() {
+    // Dummy instance to register JsonConfig with CRaC
+    private static final JsonConfig INSTANCE = new JsonConfig();
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(INSTANCE);
     }
 
+    /**
+     * Get the singleton instance of the JsonConfig
+     *
+     * @return the singleton JsonConfig instance
+     */
     public static JsonConfig get() {
-        return ConfigHolder.instance;
+        return INSTANCE;
     }
 
     /**
@@ -103,7 +135,56 @@ public final class JsonConfig {
         jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
     }
 
-    private static class ConfigHolder {
-        private static final JsonConfig instance = new JsonConfig();
+    /**
+     * Prime JsonConfig for AWS Lambda SnapStart.
+     * This method has no side-effects and can be safely called to trigger SnapStart priming.
+     */
+    public static void prime() {
+        // This method intentionally does nothing but ensures JsonConfig is loaded
+        // The actual priming happens in the beforeCheckpoint() method via CRaC hooks
+        JsonConfig.get();
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        // Preload classes first to ensure this always runs
+        ClassPreLoader.preloadClasses();
+        
+        // Initialize key components
+        ObjectMapper mapper = getObjectMapper();
+        getJmesPath();
+        
+        // Prime common AWS Lambda event types with realistic events (invoke priming)
+        primeEventType(mapper, APIGatewayProxyRequestEvent.class, 
+            "{\"httpMethod\":\"GET\",\"path\":\"/test\",\"headers\":{\"Content-Type\":\"application/json\"},\"requestContext\":{\"accountId\":\"123456789012\"}}");
+        primeEventType(mapper, APIGatewayV2HTTPEvent.class, 
+            "{\"version\":\"2.0\",\"routeKey\":\"GET /test\",\"requestContext\":{\"http\":{\"method\":\"GET\"},\"accountId\":\"123456789012\"}}");
+        primeEventType(mapper, SQSEvent.class, 
+            "{\"Records\":[{\"messageId\":\"test-id\",\"body\":\"test message\",\"eventSource\":\"aws:sqs\"}]}");
+        primeEventType(mapper, SNSEvent.class, 
+            "{\"Records\":[{\"Sns\":{\"Message\":\"test message\",\"TopicArn\":\"arn:aws:sns:us-east-1:123456789012:test\"}}]}");
+        primeEventType(mapper, KinesisEvent.class, 
+            "{\"Records\":[{\"kinesis\":{\"data\":\"dGVzdA==\",\"partitionKey\":\"test\"},\"eventSource\":\"aws:kinesis\"}]}");
+        primeEventType(mapper, ScheduledEvent.class, 
+            "{\"source\":\"aws.events\",\"detail-type\":\"Scheduled Event\",\"detail\":{}}");
+        
+        // Warm up JMESPath function registry
+        getJmesPath().compile("@").search(mapper.readTree("{\"test\":\"value\"}"));
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
+    }
+
+    private void primeEventType(ObjectMapper mapper, Class<?> eventClass, String sampleJson) throws JsonPrimingException {
+        try {
+            // Deserialize sample JSON to the event class
+            Object event = mapper.readValue(sampleJson, eventClass);
+            // Serialize back to JSON to warm up both directions
+            mapper.writeValueAsString(event);
+        } catch (Exception e) {
+            throw new JsonPrimingException("Failed to prime event type " + eventClass.getSimpleName(), e);
+        }
     }
 }
