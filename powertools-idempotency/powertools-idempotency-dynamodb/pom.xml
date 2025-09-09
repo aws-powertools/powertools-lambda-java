@@ -186,6 +186,9 @@
                         <configuration>
                             <includeScope>test</includeScope>
                             <excludeTransitive>false</excludeTransitive>
+                            <!-- MDEP-187: Avoids Maven phase circular dependency by not trying to copy unpacked reactor
+                            artifacts (powertools-idempotency-core)  -->
+                            <excludeGroupIds>software.amazon.lambda</excludeGroupIds>
                             <outputDirectory>${project.build.directory}/dynamodb-local</outputDirectory>
                         </configuration>
                     </execution>
