@@ -15,7 +15,7 @@ Run the following in your shell:
 ```bash
 cd infra/sam
 sam build
-sam deploy --guided --parameter-overrides BucketNameParam=my-unique-bucket-2.3.0718
+sam deploy --guided --parameter-overrides BucketNameParam=my-unique-bucket-2.4.0718
 ```
 
 ### Deploy with CDK
@@ -32,5 +32,5 @@ To build and deploy this application for the first time, run the following in yo
 cd infra/cdk
 mvn package
 cdk synth
-cdk deploy -c BucketNameParam=my-unique-bucket-2.3.0718
+cdk deploy -c BucketNameParam=my-unique-bucket-2.4.0718
 ```
