@@ -13,7 +13,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-
         <lambda.java.core>1.3.0</lambda.java.core>
         <lambda.java.serialization>1.1.6</lambda.java.serialization>
         <lambda.java.events>3.16.1</lambda.java.events>
@@ -22,6 +21,7 @@
         <maven.compiler.version>3.14.0</maven.compiler.version>
         <aws.sdk.version>2.33.2</aws.sdk.version>
         <aspectj.version>1.9.20.1</aspectj.version>
+        <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
 
     <modules>
