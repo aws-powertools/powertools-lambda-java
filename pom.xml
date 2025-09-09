@@ -536,6 +536,12 @@
     <profiles>
         <profile>
             <id>release</id>
+            <!-- TODO: Revert once 5.19.1 is stable released. -->
+            <!-- https://github.com/aws-powertools/powertools-lambda-java/issues/2079 -->
+            <properties>
+                <mockito.version>5.19.0</mockito.version>
+                <mockito-junit-jupiter.version>5.19.0</mockito-junit-jupiter.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -637,6 +643,7 @@
                 </plugins>
             </build>
         </profile>
+
     </profiles>
 
 </project>
