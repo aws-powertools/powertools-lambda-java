@@ -13,7 +13,9 @@
 package software.amazon.lambda.powertools.kafka;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static software.amazon.lambda.powertools.kafka.testutils.TestUtils.createConsumerRecordsType;
 import static software.amazon.lambda.powertools.kafka.testutils.TestUtils.serializeAvro;
 
@@ -30,6 +32,8 @@ import java.util.stream.Stream;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.TopicPartition;
+import org.crac.Context;
+import org.crac.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -413,5 +417,19 @@ class PowertoolsSerializerTest {
 
     private enum InputType {
         INPUT_STREAM, STRING
+    }
+
+    @Test
+    void testBeforeCheckpointDoesNotThrowException() {
+        PowertoolsSerializer serializer = new PowertoolsSerializer();
+        Context<Resource> context = mock(Context.class);
+        assertThatNoException().isThrownBy(() -> serializer.beforeCheckpoint(context));
+    }
+
+    @Test
+    void testAfterRestoreDoesNotThrowException() {
+        PowertoolsSerializer serializer = new PowertoolsSerializer();
+        Context<Resource> context = mock(Context.class);
+        assertThatNoException().isThrownBy(() -> serializer.afterRestore(context));
     }
 }
