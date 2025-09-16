@@ -14,12 +14,20 @@ package software.amazon.lambda.powertools.kafka;
 
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.CustomPojoSerializer;
 import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory;
+import com.amazonaws.services.lambda.runtime.events.KafkaEvent;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.kafka.internal.DeserializationUtils;
 import software.amazon.lambda.powertools.kafka.serializers.KafkaAvroDeserializer;
 import software.amazon.lambda.powertools.kafka.serializers.KafkaJsonDeserializer;
@@ -30,11 +38,11 @@ import software.amazon.lambda.powertools.kafka.serializers.PowertoolsDeserialize
 /**
  * Custom Lambda serializer supporting Kafka events. It delegates to the appropriate deserializer based on the
  * deserialization type specified by {@link software.amazon.lambda.powertools.kafka.Deserialization} annotation.
- * 
+ *
  * Kafka serializers need to be specified explicitly, otherwise, the default Lambda serializer from
  * {@link com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory} will be used.
  */
-public class PowertoolsSerializer implements CustomPojoSerializer {
+public class PowertoolsSerializer implements CustomPojoSerializer, Resource {
     private static final Map<DeserializationType, PowertoolsDeserializer> DESERIALIZERS = Map.of(
             DeserializationType.KAFKA_JSON, new KafkaJsonDeserializer(),
             DeserializationType.KAFKA_AVRO, new KafkaAvroDeserializer(),
@@ -42,6 +50,13 @@ public class PowertoolsSerializer implements CustomPojoSerializer {
             DeserializationType.LAMBDA_DEFAULT, new LambdaDefaultDeserializer());
 
     private final PowertoolsDeserializer deserializer;
+
+    private static final PowertoolsSerializer INSTANCE = new PowertoolsSerializer();
+
+    // CRaC registration happens at class loading time
+    static{
+        Core.getGlobalContext().register(INSTANCE);
+    }
 
     public PowertoolsSerializer() {
         this.deserializer = DESERIALIZERS.getOrDefault(
@@ -63,5 +78,51 @@ public class PowertoolsSerializer implements CustomPojoSerializer {
     public <T> void toJson(T value, OutputStream output, Type type) {
         // This is the Lambda default Output serialization
         JacksonFactory.getInstance().getSerializer(type).toJson(value, output);
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        JacksonFactory.getInstance().getSerializer(KafkaEvent.class);
+        JacksonFactory.getInstance().getSerializer(ConsumerRecord.class);
+        JacksonFactory.getInstance().getSerializer(String.class);
+
+        DeserializationUtils.determineDeserializationType();
+
+        String kafkaJson = "{\n" +
+                "  \"eventSource\": \"aws:kafka\",\n" +
+                "  \"records\": {\n" +
+                "    \"test-topic-1\": [\n" +
+                "      {\n" +
+                "        \"topic\": \"test-topic-1\",\n" +
+                "        \"partition\": 0,\n" +
+                "        \"offset\": 0,\n" +
+                "        \"timestamp\": 1545084650987,\n" +
+                "        \"timestampType\": \"CREATE_TIME\",\n" +
+                "        \"key\": null,\n" +
+                "        \"value\": null,\n" +
+                "        \"headers\": []\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+
+        Type consumerRecords = new ParameterizedType() {
+            @Override
+            public Type[] getActualTypeArguments() { return new Type[] { String.class, String.class }; }
+            @Override
+            public Type getRawType() { return ConsumerRecords.class; }
+            @Override
+            public Type getOwnerType() { return null; }
+        };
+
+        PowertoolsDeserializer deserializers = DESERIALIZERS.get(DeserializationType.KAFKA_JSON);
+        deserializers.fromJson(kafkaJson, consumerRecords);
+
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }
