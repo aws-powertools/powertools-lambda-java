@@ -20,7 +20,7 @@
 
     <groupId>software.amazon.lambda</groupId>
     <artifactId>powertools-parent</artifactId>
-    <version>2.3.0</version>
+    <version>2.4.0</version>
     <packaging>pom</packaging>
 
     <name>Powertools for AWS Lambda (Java) - Parent</name>
@@ -84,8 +84,8 @@
         <maven.deploy.plugin.version>3.1.2</maven.deploy.plugin.version>
         <log4j.version>2.25.1</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
-        <jackson.version>2.19.2</jackson.version>
-        <aws.sdk.version>2.32.31</aws.sdk.version>
+        <jackson.version>2.20.0</jackson.version>
+        <aws.sdk.version>2.33.2</aws.sdk.version>
         <aws.xray.recorder.version>2.19.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -114,8 +114,8 @@
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
         <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
         <elastic.version>1.7.0</elastic.version>
-        <mockito.version>5.19.1-SNAPSHOT</mockito.version>
-        <mockito-junit-jupiter.version>5.19.1-SNAPSHOT</mockito-junit-jupiter.version>
+        <mockito.version>5.19.0</mockito.version>
+        <mockito-junit-jupiter.version>5.19.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
 
@@ -231,24 +231,11 @@
                 <version>${aspectj.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
                 <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jsr310</artifactId>
-                <version>${jackson.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -549,6 +536,12 @@
     <profiles>
         <profile>
             <id>release</id>
+            <!-- TODO: Revert once 5.19.1 is stable released. -->
+            <!-- https://github.com/aws-powertools/powertools-lambda-java/issues/2079 -->
+            <properties>
+                <mockito.version>5.19.0</mockito.version>
+                <mockito-junit-jupiter.version>5.19.0</mockito-junit-jupiter.version>
+            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -611,7 +604,7 @@
                     <plugin>
                         <groupId>com.github.spotbugs</groupId>
                         <artifactId>spotbugs-maven-plugin</artifactId>
-                        <version>4.9.4.0</version>
+                        <version>4.9.4.2</version>
                         <executions>
                             <execution>
                                 <id>test</id>
@@ -650,6 +643,21 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>generate-graalvm-files</id>
+            <properties>
+                <mockito.version>5.19.1-SNAPSHOT</mockito.version>
+                <mockito-junit-jupiter.version>5.19.1-SNAPSHOT</mockito-junit-jupiter.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>graalvm-native</id>
+            <properties>
+                <mockito.version>5.19.1-SNAPSHOT</mockito.version>
+                <mockito-junit-jupiter.version>5.19.1-SNAPSHOT</mockito-junit-jupiter.version>
+            </properties>
+        </profile>
+        
     </profiles>
 
 </project>

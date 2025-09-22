@@ -12,6 +12,7 @@ Logging provides an opinionated logger with output structured as JSON.
 * Optionally logs Lambda request
 * Optionally logs Lambda response
 * Optionally supports log sampling by including a configurable percentage of DEBUG logs in logging output
+* Optionally supports buffering lower level logs and flushing them on error or manually
 * Allows additional keys to be appended to the structured log at any point in time
 * GraalVM support
 
@@ -311,9 +312,8 @@ We prioritise log level settings in this order:
 
 If you set `POWERTOOLS_LOG_LEVEL` lower than ALC, we will emit a warning informing you that your messages will be discarded by Lambda.
 
-> **NOTE**
->
-> With ALC enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level){target="_blank"} for more details.
+!!! note
+    With ALC enabled, we are unable to increase the minimum log level below the `AWS_LAMBDA_LOG_LEVEL` environment variable value, see [AWS Lambda service documentation](https://docs.aws.amazon.com/lambda/latest/dg/monitoring-cloudwatchlogs.html#monitoring-cloudwatchlogs-log-level){target="_blank"} for more details.
 
 ## Basic Usage
 
@@ -787,7 +787,377 @@ with `logError` param or via `POWERTOOLS_LOGGER_LOG_ERROR` env var.
     }
     ```
 
-# Advanced
+## Advanced
+
+### Buffering logs
+
+Log buffering enables you to buffer logs for a specific request or invocation. Enable log buffering by configuring the `BufferingAppender` in your logging configuration. You can buffer logs at the `WARNING`, `INFO` or `DEBUG` level, and flush them automatically on error or manually as needed.
+
+!!! tip "This is useful when you want to reduce the number of log messages emitted while still having detailed logs when needed, such as when troubleshooting issues."
+
+=== "log4j2.xml"
+
+    ```xml hl_lines="7-12 16 19"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration>
+        <Appenders>
+            <Console name="JsonAppender" target="SYSTEM_OUT">
+                <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+            </Console>
+            <BufferingAppender name="BufferedJsonAppender" 
+                               maxBytes="20480" 
+                               bufferAtVerbosity="DEBUG" 
+                               flushOnErrorLog="true">
+                <AppenderRef ref="JsonAppender"/>
+            </BufferingAppender>
+        </Appenders>
+        <Loggers>
+            <Logger name="com.example" level="debug" additivity="false">
+                <AppenderRef ref="BufferedJsonAppender"/>
+            </Logger>
+            <Root level="debug">
+                <AppenderRef ref="BufferedJsonAppender"/>
+            </Root>
+        </Loggers>
+    </Configuration>
+    ```
+
+=== "logback.xml"
+
+    ```xml hl_lines="6-11 13 16"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <configuration>
+        <appender name="JsonAppender" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder" />
+        </appender>
+        <appender name="BufferedJsonAppender" class="software.amazon.lambda.powertools.logging.logback.BufferingAppender">
+            <maxBytes>20480</maxBytes>
+            <bufferAtVerbosity>DEBUG</bufferAtVerbosity>
+            <flushOnErrorLog>true</flushOnErrorLog>
+            <appender-ref ref="JsonAppender" />
+        </appender>
+        <logger name="com.example" level="DEBUG" additivity="false">
+            <appender-ref ref="BufferedJsonAppender" />
+        </logger>
+        <root level="DEBUG">
+            <appender-ref ref="BufferedJsonAppender" />
+        </root>
+    </configuration>
+    ```
+
+=== "PaymentFunction.java"
+
+    ```java hl_lines="8 12"
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import software.amazon.lambda.powertools.logging.Logging;
+    // ... other imports
+
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            LOGGER.debug("a debug log");  // this is buffered
+            LOGGER.info("an info log");   // this is not buffered
+            
+            // do stuff
+            
+            // Buffer is automatically cleared at the end of the method by @Logging annotation
+            return new APIGatewayProxyResponseEvent().withStatusCode(200);
+        }
+    }
+    ```
+
+#### Configuring the buffer
+
+When configuring log buffering, you have options to fine-tune how logs are captured, stored, and emitted. You can configure the following parameters in the `BufferingAppender` configuration:
+
+| Parameter             | Description                                     | Configuration                |
+| --------------------- | ----------------------------------------------- | ---------------------------- |
+| `maxBytes`            | Maximum size of the log buffer in bytes        | `int` (default: 20480 bytes) |
+| `bufferAtVerbosity`   | Minimum log level to buffer                    | `DEBUG` (default), `INFO`, `WARNING` |
+| `flushOnErrorLog`     | Automatically flush buffer when `ERROR` or `FATAL` level logs are emitted | `true` (default), `false`    |
+
+!!! warning "Logger Level Configuration"
+    To use log buffering effectively, you must set your logger levels to the same level as `bufferAtVerbosity` or more verbose for the logging framework to capture and forward logs to the `BufferingAppender`. For example, if you want to buffer `DEBUG` level logs and emit `INFO`+ level logs directly, you must:
+
+    - Set your logger levels to `DEBUG` in your log4j2.xml or logback.xml configuration
+    - Set `POWERTOOLS_LOG_LEVEL=DEBUG` if using the environment variable (see [Log level](#log-level) section for more details)
+
+    If you want to sample `INFO` and `WARNING` logs but not `DEBUG` logs, set your log level to `INFO` and `bufferAtVerbosity` to `WARNING`. This allows you to define the lower and upper bounds for buffering. All logs with a more severe level than `bufferAtVerbosity` will be emitted directly.
+
+=== "log4j2.xml - Buffer at WARNING level"
+
+    ```xml hl_lines="9 14-15 18"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration>
+        <Appenders>
+            <Console name="JsonAppender" target="SYSTEM_OUT">
+                <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+            </Console>
+            <BufferingAppender name="BufferedJsonAppender" 
+                               maxBytes="20480" 
+                               bufferAtVerbosity="WARNING">
+                <AppenderRef ref="JsonAppender"/>
+            </BufferingAppender>
+        </Appenders>
+        <Loggers>
+            <!-- Intentionally set to DEBUG to forward all logs to BufferingAppender -->
+            <Logger name="com.example" level="debug" additivity="false">
+                <AppenderRef ref="BufferedJsonAppender"/>
+            </Logger>
+            <Root level="debug">
+                <AppenderRef ref="BufferedJsonAppender"/>
+            </Root>
+        </Loggers>
+    </Configuration>
+    ```
+
+=== "PaymentFunction.java - Buffer at WARNING level"
+
+    ```java hl_lines="7-9 13"
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            LOGGER.warn("a warning log");  // this is buffered
+            LOGGER.info("an info log");    // this is buffered
+            LOGGER.debug("a debug log");   // this is buffered
+            
+            // do stuff
+            
+            // Buffer is automatically cleared at the end of the method by @Logging annotation
+            return new APIGatewayProxyResponseEvent().withStatusCode(200);
+        }
+    }
+    ```
+
+=== "log4j2.xml - Disable flush on error"
+
+    ```xml hl_lines="9"
+    <?xml version="1.0" encoding="UTF-8"?>
+    <Configuration>
+        <Appenders>
+            <Console name="JsonAppender" target="SYSTEM_OUT">
+                <JsonTemplateLayout eventTemplateUri="classpath:LambdaJsonLayout.json" />
+            </Console>
+            <BufferingAppender name="BufferedJsonAppender" 
+                               maxBytes="20480" 
+                               flushOnErrorLog="false">
+                <AppenderRef ref="JsonAppender"/>
+            </BufferingAppender>
+        </Appenders>
+        <Loggers>
+            <Logger name="com.example" level="debug" additivity="false">
+                <AppenderRef ref="BufferedJsonAppender"/>
+            </Logger>
+            <Root level="debug">
+                <AppenderRef ref="BufferedJsonAppender"/>
+            </Root>
+        </Loggers>
+    </Configuration>
+    ```
+
+=== "PaymentFunction.java - Manual flush required"
+
+    ```java hl_lines="1 16 19-20"
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+    
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            LOGGER.debug("a debug log");  // this is buffered
+            
+            // do stuff
+            
+            try {
+                throw new RuntimeException("Something went wrong");
+            } catch (RuntimeException error) {
+                LOGGER.error("An error occurred", error);  // Logs won't be flushed here
+            }
+            
+            // Manually flush buffered logs
+            PowertoolsLogging.flushBuffer();
+            
+            return new APIGatewayProxyResponseEvent().withStatusCode(200);
+        }
+    }
+    ```
+
+!!! note "Disabling `flushOnErrorLog` will not flush the buffer when logging an error. This is useful when you want to control when the buffer is flushed by calling the flush method manually."
+
+#### Manual buffer control
+
+You can manually control the log buffer using the `PowertoolsLogging` utility class, which provides a backend-independent API that works with both Log4j2 and Logback:
+
+=== "Manual flush"
+
+    ```java hl_lines="1 12-13"
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+    
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            LOGGER.debug("Processing payment");  // this is buffered
+            LOGGER.info("Payment validation complete");  // this is buffered
+            
+            // Manually flush all buffered logs
+            PowertoolsLogging.flushBuffer();
+            
+            return new APIGatewayProxyResponseEvent().withStatusCode(200);
+        }
+    }
+    ```
+
+=== "Manual clear"
+
+    ```java hl_lines="1 12-13"
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+    
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            LOGGER.debug("Processing payment");  // this is buffered
+            LOGGER.info("Payment validation complete");  // this is buffered
+            
+            // Manually clear buffered logs without outputting them
+            PowertoolsLogging.clearBuffer();
+            
+            return new APIGatewayProxyResponseEvent().withStatusCode(200);
+        }
+    }
+    ```
+
+**Available methods:**
+
+- `#!java PowertoolsLogging.flushBuffer()` - Outputs all buffered logs and clears the buffer
+- `#!java PowertoolsLogging.clearBuffer()` - Discards all buffered logs without outputting them
+
+#### Flushing on exceptions
+
+Use the `@Logging` annotation to automatically flush buffered logs when an uncaught exception is raised in your Lambda function. This is enabled by default (`flushBufferOnUncaughtError = true`), but you can explicitly configure it if needed.
+
+=== "PaymentFunction.java"
+
+    ```java hl_lines="5 11"
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        @Logging(flushBufferOnUncaughtError = true)
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            LOGGER.debug("a debug log");  // this is buffered
+            
+            // do stuff
+            
+            throw new RuntimeException("Something went wrong");  // Logs will be flushed here
+        }
+    }
+    ```
+
+#### Buffering workflows
+
+##### Manual flush
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Initialize with DEBUG level buffering
+    Logger-->>Lambda: Logger buffer ready
+    Lambda->>Logger: logger.debug("First debug log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.info("Info log")
+    Logger->>CloudWatch: Directly log info message
+    Lambda->>Logger: logger.debug("Second debug log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Logger: Manual flush call
+    Logger->>CloudWatch: Emit buffered logs to stdout
+    Lambda->>Client: Return execution result
+```
+<i>Flushing buffer manually</i>
+</center>
+
+##### Flushing when logging an error
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Initialize with DEBUG level buffering
+    Logger-->>Lambda: Logger buffer ready
+    Lambda->>Logger: logger.debug("First log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.debug("Second log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Logger: logger.debug("Third log")
+    Logger-->>Logger: Buffer third debug log
+    Lambda->>Lambda: Exception occurs
+    Lambda->>Logger: logger.error("Error details")
+    Logger->>CloudWatch: Emit error log
+    Logger->>CloudWatch: Emit buffered debug logs
+    Lambda->>Client: Raise exception
+```
+<i>Flushing buffer when an error happens</i>
+</center>
+
+##### Flushing on exception
+
+This works when using the `@Logging` annotation which automatically clears the buffer at the end of method execution.
+
+<center>
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Lambda
+    participant Logger
+    participant CloudWatch
+    Client->>Lambda: Invoke Lambda
+    Lambda->>Logger: Using @Logging annotation
+    Logger-->>Lambda: Logger context injected
+    Lambda->>Logger: logger.debug("First log")
+    Logger-->>Logger: Buffer first debug log
+    Lambda->>Logger: logger.debug("Second log")
+    Logger-->>Logger: Buffer second debug log
+    Lambda->>Lambda: Uncaught Exception
+    Lambda->>CloudWatch: Automatically emit buffered debug logs
+    Lambda->>Client: Raise uncaught exception
+```
+<i>Flushing buffer when an uncaught exception happens</i>
+</center>
+
+#### Buffering FAQs
+
+1. **Does the buffer persist across Lambda invocations?** No, each Lambda invocation has its own buffer. The buffer is initialized when the Lambda function is invoked and is cleared after the function execution completes or when flushed manually.
+2. **Are my logs buffered during cold starts (INIT phase)?** No, we never buffer logs during cold starts. This is because we want to ensure that logs emitted during this phase are always available for debugging and monitoring purposes. The buffer is only used during the execution of the Lambda function.
+3. **How can I prevent log buffering from consuming excessive memory?** You can limit the size of the buffer by setting the `maxBytes` option in the `BufferingAppender` configuration. This will ensure that the buffer does not grow indefinitely.
+4. **What happens if the log buffer reaches its maximum size?** Older logs are removed from the buffer to make room for new logs. This means that if the buffer is full, you may lose some logs if they are not flushed before the buffer reaches its maximum size. When this happens, we emit a warning when flushing the buffer to indicate that some logs have been dropped.
+5. **How is the log size of a log line calculated?** The log size is calculated based on the size of the log line in bytes. This includes the size of the log message, any exception (if present), the log line location, additional keys, and the timestamp.
+6. **What timestamp is used when I flush the logs?** The timestamp is the original time when the log record was created. If you create a log record at 11:00:10 and flush it at 11:00:25, the log line will retain its original timestamp of 11:00:10.
+7. **What happens if I try to add a log line that is bigger than max buffer size?** The log will be emitted directly to standard output and not buffered. When this happens, we emit a warning to indicate that the log line was too big to be buffered.
+8. **What happens if Lambda times out without flushing the buffer?** Logs that are still in the buffer will be lost.
+9. **How does the `BufferingAppender` work with different appenders?** The `BufferingAppender` is designed to wrap arbitrary appenders, providing maximum flexibility. You can wrap console appenders, file appenders, or any custom appenders with buffering functionality.
 
 ## Sampling debug logs
 

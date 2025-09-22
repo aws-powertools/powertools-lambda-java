@@ -72,7 +72,7 @@ public @interface Logging {
 
     /**
      * Set to true if you want to log the response sent by the Lambda function handler.<br/>
-     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_RESPONE' environment variable
+     * Can also be configured with the 'POWERTOOLS_LOGGER_LOG_RESPONSE' environment variable
      */
     boolean logResponse() default false;
 
@@ -102,4 +102,10 @@ public @interface Logging {
      * Set this attribute to true if you want all custom keys to be deleted on each request.
      */
     boolean clearState() default false;
+
+    /**
+     * Set to true if you want to flush the log buffer when an uncaught exception occurs.
+     * This ensures that buffered logs are output when errors happen.
+     */
+    boolean flushBufferOnUncaughtError() default true;
 }

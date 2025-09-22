@@ -25,10 +25,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,20 +38,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LoggingE2ET {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static Infrastructure infrastructure;
-    private static String functionName;
+    private Infrastructure infrastructure;
+    private String functionName;
 
-    @BeforeAll
-    @Timeout(value = 10, unit = TimeUnit.MINUTES)
-    static void setup() {
+    private void setupInfrastructure(String pathToFunction) {
         infrastructure = Infrastructure.builder()
-                .testName(LoggingE2ET.class.getSimpleName())
+                .testName(LoggingE2ET.class.getSimpleName() + "-" + pathToFunction)
                 .tracing(true)
-                .pathToFunction("logging")
+                .pathToFunction(pathToFunction)
                 .environmentVariables(
                         Stream.of(new String[][] {
                                 { "POWERTOOLS_LOG_LEVEL", "INFO" },
@@ -62,15 +62,19 @@ class LoggingE2ET {
         functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
-    @AfterAll
-    static void tearDown() {
+    @AfterEach
+    void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
-    @Test
-    void test_logInfoWithAdditionalKeys() throws JsonProcessingException {
+    @ParameterizedTest
+    @ValueSource(strings = { "logging-log4j", "logging-logback" })
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
+    void test_logInfoWithAdditionalKeys(String pathToFunction) throws JsonProcessingException {
+        setupInfrastructure(pathToFunction);
+
         // GIVEN
         String orderId = UUID.randomUUID().toString();
         String event = "{\"message\":\"New Order\", \"keys\":{\"orderId\":\"" + orderId + "\"}}";

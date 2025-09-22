@@ -14,15 +14,17 @@
 
 package software.amazon.lambda.powertools.logging.internal.handler;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+
 import software.amazon.lambda.powertools.logging.Logging;
 
 public class PowertoolsLogEnabled implements RequestHandler<Object, Object> {
-    private final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PowertoolsLogEnabled.class);
 
     @Override
     @Logging(clearState = true)

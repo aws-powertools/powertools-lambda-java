@@ -14,41 +14,45 @@
 
 package helloworld;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.metrics.FlushMetrics;
 
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-
 public class AppStream implements RequestStreamHandler {
     private static final ObjectMapper mapper = new ObjectMapper();
-    private final static Logger log = LogManager.getLogger(AppStream.class);
+    private static final Logger log = LoggerFactory.getLogger(AppStream.class);
 
     @Override
     @Logging(logEvent = true)
     @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
-    // RequestStreamHandler can be used instead of RequestHandler for cases when you'd like to deserialize request body or serialize response body yourself, instead of allowing that to happen automatically
-    // Note that you still need to return a proper JSON for API Gateway to handle 
-    // See Lambda Response format for examples: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
+    // RequestStreamHandler can be used instead of RequestHandler for cases when you'd like to deserialize request body
+    // or serialize response body yourself, instead of allowing that to happen automatically
+    // Note that you still need to return a proper JSON for API Gateway to handle
+    // See Lambda Response format for examples:
+    // https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
     public void handleRequest(InputStream input, OutputStream output, Context context) {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(input, StandardCharsets.UTF_8));
-             PrintWriter writer = new PrintWriter(new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8)))) {
+                PrintWriter writer = new PrintWriter(
+                        new BufferedWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8)))) {
 
-            log.info("Received: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(reader)));
+            log.info(
+                    "Received: " + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mapper.readTree(reader)));
 
             writer.write("{\"body\": \"" + System.currentTimeMillis() + "\"} ");
         } catch (IOException e) {
@@ -56,4 +60,3 @@ public class AppStream implements RequestStreamHandler {
         }
     }
 }
-

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="testFile" class="ch.qos.logback.core.FileAppender">
+        <file>target/logfile.json</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FirstBufferingAppender" class="software.amazon.lambda.powertools.logging.logback.BufferingAppender">
+        <bufferAtVerbosity>DEBUG</bufferAtVerbosity>
+        <maxBytes>1024</maxBytes>
+        <flushOnErrorLog>true</flushOnErrorLog>
+        <appender-ref ref="testFile" />
+    </appender>
+
+    <appender name="SecondBufferingAppender" class="software.amazon.lambda.powertools.logging.logback.BufferingAppender">
+        <bufferAtVerbosity>DEBUG</bufferAtVerbosity>
+        <maxBytes>1024</maxBytes>
+        <flushOnErrorLog>true</flushOnErrorLog>
+        <appender-ref ref="testFile" />
+    </appender>
+
+    <logger name="test.multiple.appenders" level="DEBUG" additivity="false">
+        <appender-ref ref="FirstBufferingAppender" />
+        <appender-ref ref="SecondBufferingAppender" />
+    </logger>
+</configuration>

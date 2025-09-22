@@ -1,5 +1,16 @@
 [
 {
+  "name":"[Ljava.lang.Object;"
+},
+{
+  "name":"[Ljava.lang.String;"
+},
+{
+  "name":"ch.qos.logback.classic.encoder.PatternLayoutEncoder",
+  "queryAllPublicMethods":true,
+  "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
   "name":"ch.qos.logback.classic.joran.SerializedModelConfigurator",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -18,6 +29,18 @@
 },
 {
   "name":"ch.qos.logback.core.encoder.Encoder",
+  "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"ch.qos.logback.core.encoder.LayoutWrappingEncoder",
+  "methods":[{"name":"setParent","parameterTypes":["ch.qos.logback.core.spi.ContextAware"] }]
+},
+{
+  "name":"ch.qos.logback.core.pattern.PatternLayoutEncoderBase",
+  "methods":[{"name":"setPattern","parameterTypes":["java.lang.String"] }]
+},
+{
+  "name":"ch.qos.logback.core.spi.ContextAware",
   "methods":[{"name":"valueOf","parameterTypes":["java.lang.String"] }]
 },
 {
@@ -70,6 +93,10 @@
   "name":"java.lang.Object"
 },
 {
+  "name":"java.lang.ProcessEnvironment",
+  "fields":[{"name":"theCaseInsensitiveEnvironment"}, {"name":"theEnvironment"}]
+},
+{
   "name":"java.lang.String"
 },
 {
@@ -104,6 +131,10 @@
   "queryAllDeclaredConstructors":true
 },
 {
+  "name":"java.util.Collections$UnmodifiableMap",
+  "fields":[{"name":"m"}]
+},
+{
   "name":"java.util.List",
   "queryAllDeclaredMethods":true
 },
@@ -135,59 +166,9 @@
   "fields":[{"name":"IS_COLD_START"}]
 },
 {
-  "name":"software.amazon.lambda.powertools.logging.LogbackLoggingManagerTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
+  "name":"software.amazon.lambda.powertools.logging.logback.BufferingAppender",
   "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"getLogLevel_shouldReturnConfiguredLogLevel","parameterTypes":[] }, {"name":"resetLogLevel","parameterTypes":[] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.LambdaEcsEncoderTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"cleanUp","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"shouldLogException","parameterTypes":[] }, {"name":"shouldLogInEcsFormat","parameterTypes":[] }, {"name":"shouldNotLogCloudInfo","parameterTypes":[] }, {"name":"shouldNotLogFunctionInfo","parameterTypes":[] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.LambdaJsonEncoderTest",
-  "allDeclaredFields":true,
-  "allDeclaredClasses":true,
-  "queryAllDeclaredMethods":true,
-  "queryAllPublicMethods":true,
-  "queryAllDeclaredConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"cleanUp","parameterTypes":[] }, {"name":"setUp","parameterTypes":[] }, {"name":"shouldLogArgumentsAsJsonWhenUsingKeyValue","parameterTypes":[] }, {"name":"shouldLogArgumentsAsJsonWhenUsingRawJson","parameterTypes":[] }, {"name":"shouldLogEventAsStringForStreamHandler","parameterTypes":[] }, {"name":"shouldLogEventForHandlerWhenEnvVariableSetToTrue","parameterTypes":[] }, {"name":"shouldLogEventForHandlerWithLogEventAnnotation","parameterTypes":[] }, {"name":"shouldLogException","parameterTypes":[] }, {"name":"shouldLogInJsonFormat","parameterTypes":[] }, {"name":"shouldLogResponseForHandlerWhenEnvVariableSetToTrue","parameterTypes":[] }, {"name":"shouldLogResponseForHandlerWithLogResponseAnnotation","parameterTypes":[] }, {"name":"shouldLogResponseForStreamHandler","parameterTypes":[] }, {"name":"shouldLogStructuredArgumentsAsNewEntries","parameterTypes":[] }, {"name":"shouldLogThreadInfo","parameterTypes":[] }, {"name":"shouldLogTimestampDifferently","parameterTypes":[] }, {"name":"shouldNotLogEventForHandlerWhenEnvVariableSetToFalse","parameterTypes":[] }, {"name":"shouldNotLogPowertoolsInfo","parameterTypes":[] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments",
-  "methods":[{"name":"handleRequest","parameterTypes":["com.amazonaws.services.lambda.runtime.events.SQSEvent$SQSMessage","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled",
-  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEvent",
-  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEventDisabled",
-  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEventForStream",
-  "methods":[{"name":"handleRequest","parameterTypes":["java.io.InputStream","java.io.OutputStream","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogResponse",
-  "methods":[{"name":"handleRequest","parameterTypes":["java.lang.Object","com.amazonaws.services.lambda.runtime.Context"] }]
-},
-{
-  "name":"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogResponseForStream",
-  "methods":[{"name":"handleRequest","parameterTypes":["java.io.InputStream","java.io.OutputStream","com.amazonaws.services.lambda.runtime.Context"] }]
+  "methods":[{"name":"<init>","parameterTypes":[] }, {"name":"setBufferAtVerbosity","parameterTypes":["java.lang.String"] }, {"name":"setFlushOnErrorLog","parameterTypes":["boolean"] }, {"name":"setMaxBytes","parameterTypes":["int"] }]
 },
 {
   "name":"software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder",
