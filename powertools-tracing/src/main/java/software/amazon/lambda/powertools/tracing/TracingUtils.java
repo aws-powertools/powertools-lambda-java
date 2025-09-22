@@ -44,7 +44,13 @@ public final class TracingUtils implements Resource {
 
     private TracingUtils() {
         // Register this instance with CRaC (same pattern as DynamoDBPersistenceStore)
-        Core.getGlobalContext().register(this);
+        // Wrap in try-catch for GraalVM compatibility
+        try {
+            Core.getGlobalContext().register(this);
+        } catch (Exception e) {
+            // CRaC registration failed - likely in GraalVM native image or unsupported environment
+            LOG.debug("CRaC registration failed, CRaC priming will be disabled: {}", e.getMessage());
+        }
     }
 
     /**
@@ -219,21 +225,26 @@ public final class TracingUtils implements Resource {
 
     @Override
     public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
-        // Preload classes first to ensure this always runs
-        ClassPreLoader.preloadClasses();
-        
-        // Initialize key components
-        initializeObjectMapper();
-        
-        // Initialize X-Ray components by accessing them
-        AWSXRay.getGlobalRecorder();
-        
-        // Warm up tracing utilities by calling key methods
-        serviceName();
-        
-        // Initialize ObjectMapper for JSON serialization
-        if (objectMapper != null) {
-            objectMapper.writeValueAsString("dummy");
+        try {
+            // Preload classes first to ensure this always runs
+            ClassPreLoader.preloadClasses();
+            
+            // Initialize key components
+            initializeObjectMapper();
+            
+            // Initialize X-Ray components by accessing them
+            AWSXRay.getGlobalRecorder();
+            
+            // Warm up tracing utilities by calling key methods
+            serviceName();
+            
+            // Initialize ObjectMapper for JSON serialization
+            if (objectMapper != null) {
+                objectMapper.writeValueAsString("dummy");
+            }
+        } catch (Exception e) {
+            // Log but don't fail - GraalVM environments may not support all priming operations
+            LOG.debug("CRaC beforeCheckpoint priming encountered an issue: {}", e.getMessage());
         }
     }
 
@@ -245,6 +256,10 @@ public final class TracingUtils implements Resource {
 
     @Override
     public void afterRestore(Context<? extends Resource> context) throws Exception {
-        // No action needed after restore
+        try {
+            // No action needed after restore for now, but wrapped for safety
+        } catch (Exception e) {
+            LOG.debug("CRaC afterRestore encountered an issue: {}", e.getMessage());
+        }
     }
 }
