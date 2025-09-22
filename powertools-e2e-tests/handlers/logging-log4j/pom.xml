@@ -5,7 +5,7 @@
     <parent>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>e2e-test-handlers-parent</artifactId>
-        <version>2.3.0</version>
+        <version>2.4.0</version>
     </parent>
 
     <artifactId>e2e-test-handler-logging-log4j</artifactId>
