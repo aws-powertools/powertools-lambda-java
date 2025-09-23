@@ -102,7 +102,7 @@ jobs:
             powertools-*/**
             pom.xml
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@7a1da54cb7fdef4ea19f6ecdfa9ecf59dc5a48fe # v1.3.6
+        uses: graalvm/setup-graalvm@e140024fdc2d95d3c7e10a636887a91090d29990 # v1.4.0
         with:
           java-version: "21"
           distribution: "graalvm"
