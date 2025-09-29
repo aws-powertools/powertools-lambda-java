@@ -90,6 +90,10 @@
             <And>
                 <Class name="software.amazon.lambda.powertools.logging.internal.JsonSerializer"/>
             </And>
+            <And>
+                <Class name="software.amazon.lambda.powertools.metrics.internal.EmfMetricsLogger"/>
+                <Field name="metricsContext"/>
+            </And>
         </Or>
     </Match>
     <!-- Internals of Log event for apache log4j-->
