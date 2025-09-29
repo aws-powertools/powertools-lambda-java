@@ -112,7 +112,7 @@
         <aws-embedded-metrics.version>4.1.2</aws-embedded-metrics.version>
         <jmespath.version>0.6.0</jmespath.version>
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
-        <versions-maven-plugin.version>2.18.0</versions-maven-plugin.version>
+        <versions-maven-plugin.version>2.19.1</versions-maven-plugin.version>
         <elastic.version>1.7.0</elastic.version>
         <mockito.version>5.19.0</mockito.version>
         <mockito-junit-jupiter.version>5.19.0</mockito-junit-jupiter.version>
