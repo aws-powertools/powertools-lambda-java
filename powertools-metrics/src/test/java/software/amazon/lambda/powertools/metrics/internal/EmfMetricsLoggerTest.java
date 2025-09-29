@@ -246,7 +246,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldThrowExceptionWhenDimensionSetIsNull() {
         // When/Then
-        assertThatThrownBy(() -> metrics.addDimension((DimensionSet) null))
+        assertThatThrownBy(() -> metrics.addDimension(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("DimensionSet cannot be null");
     }
@@ -304,7 +304,7 @@ class EmfMetricsLoggerTest {
     @Test
     void shouldThrowExceptionWhenDefaultDimensionSetIsNull() {
         // When/Then
-        assertThatThrownBy(() -> metrics.setDefaultDimensions((DimensionSet) null))
+        assertThatThrownBy(() -> metrics.setDefaultDimensions(null))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("DimensionSet cannot be null");
     }
@@ -346,7 +346,7 @@ class EmfMetricsLoggerTest {
 
         // Then
         // Read the log file and check for the warning
-        String logContent = new String(Files.readAllBytes(logFile.toPath()), StandardCharsets.UTF_8);
+        String logContent = Files.readString(logFile.toPath(), StandardCharsets.UTF_8);
         assertThat(logContent).contains("No metrics were emitted");
         // No EMF output should be generated
         assertThat(outputStreamCaptor.toString().trim()).isEmpty();
@@ -444,6 +444,35 @@ class EmfMetricsLoggerTest {
         assertThat(rootNode.get("function_request_id").asText()).isEqualTo(testContext.getAwsRequestId());
         assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
                 .isEqualTo(customNamespace);
+    }
+
+    @Test
+    void shouldFlushMetrics() throws Exception {
+        // Given
+        metrics.setNamespace("MainNamespace");
+        metrics.setDefaultDimensions(DimensionSet.of("CustomDim", "CustomValue"));
+        metrics.addMetadata("CustomMetadata", "MetadataValue");
+
+        // When
+        metrics.flushMetrics(m -> {
+            m.addMetric("metric-one", 200, MetricUnit.COUNT);
+            m.addMetric("metric-two", 100, MetricUnit.COUNT);
+        });
+
+        // Then
+        String emfOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
+
+        assertThat(rootNode.has("metric-one")).isTrue();
+        assertThat(rootNode.get("metric-one").asDouble()).isEqualTo(200.0);
+        assertThat(rootNode.has("metric-two")).isTrue();
+        assertThat(rootNode.get("metric-two").asDouble()).isEqualTo(100);
+        assertThat(rootNode.has("CustomDim")).isTrue();
+        assertThat(rootNode.get("CustomDim").asText()).isEqualTo("CustomValue");
+        assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
+                .isEqualTo("MainNamespace");
+        assertThat(rootNode.get("_aws").has("CustomMetadata")).isTrue();
+        assertThat(rootNode.get("_aws").get("CustomMetadata").asText()).isEqualTo("MetadataValue");
     }
 
     @Test
