@@ -92,7 +92,7 @@ public class LambdaMetricsAspect {
 
             // Add trace ID metadata if available
             LambdaHandlerProcessor.getXrayTraceId()
-                    .ifPresent(traceId -> metricsInstance.addMetadata(TRACE_ID_PROPERTY, traceId));
+                    .ifPresent(traceId -> metricsInstance.addProperty(TRACE_ID_PROPERTY, traceId));
 
             captureColdStartMetricIfEnabled(extractContext(pjp), metrics);
 
@@ -115,7 +115,7 @@ public class LambdaMetricsAspect {
         Metrics metricsInstance = MetricsFactory.getMetricsInstance();
         // This can be null e.g. during unit tests when mocking the Lambda context
         if (extractedContext.getAwsRequestId() != null) {
-            metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+            metricsInstance.addProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
         }
 
         // Only capture cold start metrics if enabled on annotation

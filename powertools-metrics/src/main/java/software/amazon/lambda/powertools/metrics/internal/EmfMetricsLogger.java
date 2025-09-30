@@ -54,7 +54,7 @@ public class EmfMetricsLogger implements Metrics {
     private final AtomicBoolean raiseOnEmptyMetrics = new AtomicBoolean(false);
     private String namespace;
     private Map<String, String> defaultDimensions = new HashMap<>();
-    private final Map<String, Object> metadata = new HashMap<>();
+    private final Map<String, Object> properties = new HashMap<>();
     private final AtomicBoolean hasMetrics = new AtomicBoolean(false);
 
     public EmfMetricsLogger(EnvironmentProvider environmentProvider, MetricsContext metricsContext) {
@@ -92,7 +92,12 @@ public class EmfMetricsLogger implements Metrics {
     @Override
     public void addMetadata(String key, Object value) {
         emfLogger.putMetadata(key, value);
-        metadata.put(key, value);
+    }
+
+    @Override
+    public void addProperty(String key, Object value) {
+        emfLogger.putProperty(key, value);
+        properties.put(key, value);
     }
 
     @Override
@@ -235,7 +240,7 @@ public class EmfMetricsLogger implements Metrics {
         if (!defaultDimensions.isEmpty()) {
             metrics.setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions));
         }
-        metadata.forEach(metrics::addMetadata);
+        properties.forEach(metrics::addProperty);
 
         metricsConsumer.accept(metrics);
 
