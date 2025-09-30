@@ -34,8 +34,6 @@ import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 @Aspect
 public class LambdaMetricsAspect {
-    public static final String TRACE_ID_PROPERTY = "xray_trace_id";
-    public static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String SERVICE_DIMENSION = "Service";
     private static final String FUNCTION_NAME_ENV_VAR = "POWERTOOLS_METRICS_FUNCTION_NAME";
 
@@ -90,11 +88,10 @@ public class LambdaMetricsAspect {
 
             metricsInstance.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
 
-            // Add trace ID metadata if available
-            LambdaHandlerProcessor.getXrayTraceId()
-                    .ifPresent(traceId -> metricsInstance.addProperty(TRACE_ID_PROPERTY, traceId));
+            Context extractedContext = extractContext(pjp);
+            MetricsUtils.addRequestIdAndXrayTraceIdIfAvailable(extractedContext, metricsInstance);
 
-            captureColdStartMetricIfEnabled(extractContext(pjp), metrics);
+            captureColdStartMetricIfEnabled(extractedContext, metrics);
 
             try {
                 return pjp.proceed(proceedArgs);
@@ -113,10 +110,6 @@ public class LambdaMetricsAspect {
         }
 
         Metrics metrics = MetricsFactory.getMetricsInstance();
-        // This can be null e.g. during unit tests when mocking the Lambda context
-        if (extractedContext.getAwsRequestId() != null) {
-            metrics.addProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
-        }
 
         // Only capture cold start metrics if enabled on annotation
         if (flushMetrics.captureColdStart()) {

@@ -94,14 +94,6 @@ public interface Metrics {
     void addMetadata(String key, Object value);
 
     /**
-     * Add property
-     *
-     * @param key   the name of the property
-     * @param value the value of the property
-     */
-    void addProperty(String key, Object value);
-
-    /**
      * Set default dimensions
      *
      * @param dimensionSet the dimension set to use as default dimensions

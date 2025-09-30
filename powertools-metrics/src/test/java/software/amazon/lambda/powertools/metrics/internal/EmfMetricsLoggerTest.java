@@ -263,8 +263,8 @@ class EmfMetricsLoggerTest {
         JsonNode rootNode = objectMapper.readTree(emfOutput);
 
         // The metadata is added to the _aws section in the EMF output
-        assertThat(rootNode.get("_aws").has("CustomMetadata")).isTrue();
-        assertThat(rootNode.get("_aws").get("CustomMetadata").asText()).isEqualTo("MetadataValue");
+        assertThat(rootNode.has("CustomMetadata")).isTrue();
+        assertThat(rootNode.get("CustomMetadata").asText()).isEqualTo("MetadataValue");
     }
 
     @Test
@@ -453,7 +453,6 @@ class EmfMetricsLoggerTest {
         metrics.setDefaultDimensions(DimensionSet.of("CustomDim", "CustomValue"));
         metrics.addDimension(DimensionSet.of("CustomDim2", "CustomValue2"));
         metrics.addMetadata("CustomMetadata", "MetadataValue");
-        metrics.addProperty("CustomProperty", "PropertyValue");
 
         // When
         metrics.flushMetrics(m -> {
@@ -474,9 +473,8 @@ class EmfMetricsLoggerTest {
         assertThat(rootNode.get("CustomDim2")).isNull();
         assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
                 .isEqualTo("MainNamespace");
-        assertThat(rootNode.get("_aws").has("CustomMetadata")).isFalse();
-        assertThat(rootNode.has("CustomProperty")).isTrue();
-        assertThat(rootNode.get("CustomProperty").asText()).isEqualTo("PropertyValue");
+        assertThat(rootNode.has("CustomMetadata")).isTrue();
+        assertThat(rootNode.get("CustomMetadata").asText()).isEqualTo("MetadataValue");
     }
 
     @Test

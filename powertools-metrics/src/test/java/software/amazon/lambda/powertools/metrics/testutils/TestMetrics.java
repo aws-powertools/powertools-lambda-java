@@ -38,11 +38,6 @@ public class TestMetrics implements Metrics {
     }
 
     @Override
-    public void addProperty(String key, Object value) {
-        // Test placeholder
-    }
-
-    @Override
     public void setDefaultDimensions(DimensionSet dimensionSet) {
         // Test placeholder
     }

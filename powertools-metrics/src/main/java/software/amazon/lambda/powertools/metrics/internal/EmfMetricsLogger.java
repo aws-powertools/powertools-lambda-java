@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.metrics.internal;
 
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
 
 import java.time.Instant;
@@ -44,8 +43,6 @@ import software.amazon.lambda.powertools.metrics.model.MetricUnit;
  */
 public class EmfMetricsLogger implements Metrics {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmfMetricsLogger.class);
-    private static final String TRACE_ID_PROPERTY = "xray_trace_id";
-    private static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String COLD_START_METRIC = "ColdStart";
     private static final String METRICS_DISABLED_ENV_VAR = "POWERTOOLS_METRICS_DISABLED";
 
@@ -91,11 +88,6 @@ public class EmfMetricsLogger implements Metrics {
 
     @Override
     public void addMetadata(String key, Object value) {
-        emfLogger.putMetadata(key, value);
-    }
-
-    @Override
-    public void addProperty(String key, Object value) {
         emfLogger.putProperty(key, value);
         properties.put(key, value);
     }
@@ -180,10 +172,7 @@ public class EmfMetricsLogger implements Metrics {
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
         if (isColdStart()) {
             flushMetrics(metrics -> {
-                if (context != null && context.getAwsRequestId() != null) {
-                    metrics.addProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
-                }
-                getXrayTraceId().ifPresent(traceId -> metrics.addProperty(TRACE_ID_PROPERTY, traceId));
+                MetricsUtils.addRequestIdAndXrayTraceIdIfAvailable(context, metrics);
                 if (dimensions != null) {
                     metrics.setDefaultDimensions(dimensions);
                 }
@@ -211,7 +200,7 @@ public class EmfMetricsLogger implements Metrics {
         if (!defaultDimensions.isEmpty()) {
             metrics.setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions));
         }
-        properties.forEach(metrics::addProperty);
+        properties.forEach(metrics::addMetadata);
 
         metricsConsumer.accept(metrics);
 
