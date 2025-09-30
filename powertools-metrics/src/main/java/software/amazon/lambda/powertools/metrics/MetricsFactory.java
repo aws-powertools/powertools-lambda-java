@@ -17,6 +17,9 @@ package software.amazon.lambda.powertools.metrics;
 import org.crac.Core;
 import org.crac.Resource;
 import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
@@ -43,6 +46,18 @@ public final class MetricsFactory implements Resource {
     public static synchronized Metrics getMetricsInstance() {
         if (metrics == null) {
             metrics = provider.getMetricsInstance();
+
+            // Apply default configuration from environment variables
+            String envNamespace = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
+            if (envNamespace != null) {
+                metrics.setNamespace(envNamespace);
+            }
+
+            // Only set Service dimension if it's not the default undefined value
+            String serviceName = LambdaHandlerProcessor.serviceName();
+            if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
+                metrics.setDefaultDimensions(DimensionSet.of("Service", serviceName));
+            }
         }
 
         return metrics;

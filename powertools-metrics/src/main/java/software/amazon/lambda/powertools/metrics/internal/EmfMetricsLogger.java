@@ -34,8 +34,6 @@ import software.amazon.cloudwatchlogs.emf.model.DimensionSet;
 import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.StorageResolution;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
-import software.amazon.lambda.powertools.common.internal.LambdaConstants;
-import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
@@ -53,7 +51,6 @@ public class EmfMetricsLogger implements Metrics {
 
     private final software.amazon.cloudwatchlogs.emf.logger.MetricsLogger emfLogger;
     private final EnvironmentProvider environmentProvider;
-    private final MetricsContext metricsContext;
     private final AtomicBoolean raiseOnEmptyMetrics = new AtomicBoolean(false);
     private String namespace;
     private Map<String, String> defaultDimensions = new HashMap<>();
@@ -64,19 +61,6 @@ public class EmfMetricsLogger implements Metrics {
         this.emfLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger(environmentProvider,
                 metricsContext);
         this.environmentProvider = environmentProvider;
-        this.metricsContext = metricsContext;
-
-        // Apply default configuration from environment variables
-        String envNamespace = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
-        if (envNamespace != null) {
-            setNamespace(envNamespace);
-        }
-
-        // Only set Service dimension if it's not the default undefined value
-        String serviceName = LambdaHandlerProcessor.serviceName();
-        if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
-            setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet.of("Service", serviceName));
-        }
     }
 
     @Override
@@ -246,7 +230,7 @@ public class EmfMetricsLogger implements Metrics {
             return;
         }
         // Create a new instance, inheriting namespace/dimensions state
-        EmfMetricsLogger metrics = new EmfMetricsLogger(environmentProvider, metricsContext);
+        EmfMetricsLogger metrics = new EmfMetricsLogger(environmentProvider, new MetricsContext());
         if (namespace != null) {
             metrics.setNamespace(this.namespace);
         }
