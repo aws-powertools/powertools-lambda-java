@@ -107,40 +107,40 @@ public class LambdaMetricsAspect {
         return pjp.proceed(proceedArgs);
     }
 
-    private void captureColdStartMetricIfEnabled(Context extractedContext, FlushMetrics metrics) {
+    private void captureColdStartMetricIfEnabled(Context extractedContext, FlushMetrics flushMetrics) {
         if (extractedContext == null) {
             return;
         }
 
-        Metrics metricsInstance = MetricsFactory.getMetricsInstance();
+        Metrics metrics = MetricsFactory.getMetricsInstance();
         // This can be null e.g. during unit tests when mocking the Lambda context
         if (extractedContext.getAwsRequestId() != null) {
-            metricsInstance.addProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
+            metrics.addProperty(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
         }
 
         // Only capture cold start metrics if enabled on annotation
-        if (metrics.captureColdStart()) {
+        if (flushMetrics.captureColdStart()) {
             // Get function name from annotation or context
-            String funcName = functionName(metrics, extractedContext);
+            String funcName = functionName(flushMetrics, extractedContext);
 
-            DimensionSet coldStartDimensions = new DimensionSet();
+            DimensionSet dimensionSet = new DimensionSet();
 
             // Get service name from metrics instance default dimensions or fallback
-            String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(
+            String serviceName = metrics.getDefaultDimensions().getDimensions().getOrDefault(
                     SERVICE_DIMENSION,
-                    serviceNameWithFallback(metrics));
+                    serviceNameWithFallback(flushMetrics));
 
             // Only add service if it is not undefined
             if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
-                coldStartDimensions.addDimension(SERVICE_DIMENSION, serviceName);
+                dimensionSet.addDimension(SERVICE_DIMENSION, serviceName);
             }
 
             // Add function name
             if (funcName != null) {
-                coldStartDimensions.addDimension("FunctionName", funcName);
+                dimensionSet.addDimension("FunctionName", funcName);
             }
 
-            metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
+            metrics.captureColdStartMetric(extractedContext, dimensionSet);
         }
     }
 }

@@ -179,45 +179,16 @@ public class EmfMetricsLogger implements Metrics {
     public void captureColdStartMetric(Context context,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
         if (isColdStart()) {
-            if (isMetricsDisabled()) {
-                LOGGER.debug("Metrics are disabled, skipping cold start metric capture");
-                return;
-            }
-
-            Validator.validateNamespace(namespace);
-
-            software.amazon.cloudwatchlogs.emf.logger.MetricsLogger coldStartLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger();
-
-            try {
-                coldStartLogger.setNamespace(namespace);
-            } catch (Exception e) {
-                LOGGER.error("Namespace cannot be set for cold start metrics due to an error in EMF", e);
-            }
-
-            coldStartLogger.putMetric(COLD_START_METRIC, 1, Unit.COUNT);
-
-            // Set dimensions if provided
-            if (dimensions != null) {
-                DimensionSet emfDimensionSet = new DimensionSet();
-                dimensions.getDimensions().forEach((key, val) -> {
-                    try {
-                        emfDimensionSet.addDimension(key, val);
-                    } catch (Exception e) {
-                        // Ignore dimension errors
-                    }
-                });
-                coldStartLogger.setDimensions(emfDimensionSet);
-            }
-
-            // Add request ID from context if available
-            if (context != null && context.getAwsRequestId() != null) {
-                coldStartLogger.putProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
-            }
-
-            // Add trace ID using the standard logic
-            getXrayTraceId().ifPresent(traceId -> coldStartLogger.putProperty(TRACE_ID_PROPERTY, traceId));
-
-            coldStartLogger.flush();
+            flushMetrics(metrics -> {
+                if (context != null && context.getAwsRequestId() != null) {
+                    metrics.addProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
+                }
+                getXrayTraceId().ifPresent(traceId -> metrics.addProperty(TRACE_ID_PROPERTY, traceId));
+                if (dimensions != null) {
+                    metrics.setDefaultDimensions(dimensions);
+                }
+                metrics.addMetric(COLD_START_METRIC, 1, MetricUnit.COUNT);
+            });
         }
     }
 
