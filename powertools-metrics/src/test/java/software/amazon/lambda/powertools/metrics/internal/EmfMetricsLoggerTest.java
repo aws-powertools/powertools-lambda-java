@@ -451,6 +451,7 @@ class EmfMetricsLoggerTest {
         // Given
         metrics.setNamespace("MainNamespace");
         metrics.setDefaultDimensions(DimensionSet.of("CustomDim", "CustomValue"));
+        metrics.addDimension(DimensionSet.of("CustomDim2", "CustomValue2"));
         metrics.addMetadata("CustomMetadata", "MetadataValue");
 
         // When
@@ -469,6 +470,7 @@ class EmfMetricsLoggerTest {
         assertThat(rootNode.get("metric-two").asDouble()).isEqualTo(100);
         assertThat(rootNode.has("CustomDim")).isTrue();
         assertThat(rootNode.get("CustomDim").asText()).isEqualTo("CustomValue");
+        assertThat(rootNode.get("CustomDim2")).isNull();
         assertThat(rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Namespace").asText())
                 .isEqualTo("MainNamespace");
         assertThat(rootNode.get("_aws").has("CustomMetadata")).isTrue();

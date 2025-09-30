@@ -81,8 +81,6 @@ public class EmfMetricsLogger implements Metrics {
         dimensionSet.getDimensions().forEach((key, val) -> {
             try {
                 emfDimensionSet.addDimension(key, val);
-                // Update our local copy of default dimensions
-                defaultDimensions.put(key, val);
             } catch (Exception e) {
                 // Ignore dimension errors
             }
@@ -234,7 +232,9 @@ public class EmfMetricsLogger implements Metrics {
         if (namespace != null) {
             metrics.setNamespace(this.namespace);
         }
-        defaultDimensions.forEach(metrics::addDimension);
+        if (!defaultDimensions.isEmpty()) {
+            metrics.setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions));
+        }
         metadata.forEach(metrics::addMetadata);
 
         metricsConsumer.accept(metrics);
