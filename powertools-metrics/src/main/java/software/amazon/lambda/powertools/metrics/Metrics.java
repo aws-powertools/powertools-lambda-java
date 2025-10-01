@@ -163,10 +163,10 @@ public interface Metrics {
     }
 
     /**
-     * Flush a separate metrics context that inherits the namespace, dimensions and metadata. This creates a separate metrics context
+     * Flush a separate metrics context that inherits the namespace, default dimensions, and metadata. This creates a separate metrics context
      * that doesn't affect the default metrics context.
      *
-     * @param metricsConsumer the consumer to use to edit the metrics instance (e.g. add metrics, override namespace) before flushing
+     * @param metricsConsumer the consumer to use to edit the metrics instance (e.g. add metrics, override namespace, set or add custom dimensions) before flushing
      */
     void flushMetrics(Consumer<Metrics> metricsConsumer);
 

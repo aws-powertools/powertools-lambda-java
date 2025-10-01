@@ -192,7 +192,7 @@ public class EmfMetricsLogger implements Metrics {
             LOGGER.debug("Metrics are disabled, skipping single metric flush");
             return;
         }
-        // Create a new instance, inheriting namespace/dimensions state
+        // Create a new instance, inheriting namespace, default dimensions, and metadata
         EmfMetricsLogger metrics = new EmfMetricsLogger(environmentProvider, new MetricsContext());
         if (namespace != null) {
             metrics.setNamespace(this.namespace);

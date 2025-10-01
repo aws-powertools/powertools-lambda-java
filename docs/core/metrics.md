@@ -462,9 +462,9 @@ If you wish to set custom default dimensions, it can be done via `#!java metrics
     Overwriting the default dimensions will also overwrite the default `Service` dimension. If you wish to keep `Service` in your default dimensions, you need to add it manually.
 <!-- prettier-ignore-end -->
 
-### Creating a single metric with different configuration
+### Creating metrics with different configuration
 
-You can create a single metric with its own namespace and dimensions using `flushSingleMetric`:
+You can create metrics with different configurations e.g. different namespace and/or dimensions using `flushMetrics()`:
 
 === "App.java"
 
@@ -480,13 +480,15 @@ You can create a single metric with its own namespace and dimensions using `flus
         @Override
         @FlushMetrics(namespace = "ServerlessAirline", service = "payment")
         public Object handleRequest(Object input, Context context) {
-            metrics.flushSingleMetric(
-                "CustomMetric",
-                1,
-                MetricUnit.COUNT,
-                "CustomNamespace",
-                DimensionSet.of("CustomDimension", "value")  // Dimensions are optional
-            );
+            metrics.flushMetrics((customMetrics) -> {
+                customMetrics.addMetric("CustomMetric", 1, MetricUnit.COUNT);
+                // To optionally set a different namespace
+                customMetrics.setNamespace("CustomNamespace");
+                // To optionally set different dimensions
+                customMetrics.setDefaultDimensions(DimensionSet.of("CustomDimension", "value"));
+                // To optionally add metadata
+                customMetrics.addMetadata("CustomMetadata", "value"));
+            });
         }
     }
     ```
@@ -516,7 +518,7 @@ The following example shows how to configure a custom `Metrics` Singleton using 
 
     public class App implements RequestHandler<Object, Object> {
         // Create and configure a Metrics singleton without annotation
-        private static final Metrics customMetrics = MetricsBuilder.builder()
+        private static final Metrics metrics = MetricsBuilder.builder()
             .withNamespace("ServerlessAirline")
             .withRaiseOnEmptyMetrics(true)
             .withService("payment")
@@ -527,11 +529,11 @@ The following example shows how to configure a custom `Metrics` Singleton using 
             // You can manually capture the cold start metric
             // Lambda context is an optional argument if not available in your environment
             // Dimensions are also optional.
-            customMetrics.captureColdStartMetric(context, DimensionSet.of("FunctionName", "MyFunction", "Service", "payment"));
+            metrics.captureColdStartMetric(context, DimensionSet.of("FunctionName", "MyFunction", "Service", "payment"));
 
             // Add metrics to the custom metrics singleton
-            customMetrics.addMetric("CustomMetric", 1, MetricUnit.COUNT);
-            customMetrics.flush();
+            metrics.addMetric("CustomMetric", 1, MetricUnit.COUNT);
+            metrics.flush();
         }
     }
     ```

@@ -5,9 +5,13 @@ import software.amazon.lambda.powertools.metrics.Metrics;
 
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 
-class MetricsUtils {
+final class MetricsUtils {
     private static final String TRACE_ID_PROPERTY = "xray_trace_id";
     private static final String REQUEST_ID_PROPERTY = "function_request_id";
+
+    private MetricsUtils() {
+        // Utility class
+    }
 
     static void addRequestIdAndXrayTraceIdIfAvailable(Context context, Metrics metrics) {
         if (context != null && context.getAwsRequestId() != null) {
