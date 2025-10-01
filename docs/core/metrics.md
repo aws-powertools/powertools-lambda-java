@@ -484,8 +484,10 @@ You can create metrics with different configurations e.g. different namespace an
                 customMetrics.addMetric("CustomMetric", 1, MetricUnit.COUNT);
                 // To optionally set a different namespace
                 customMetrics.setNamespace("CustomNamespace");
-                // To optionally set different dimensions
-                customMetrics.setDefaultDimensions(DimensionSet.of("CustomDimension", "value"));
+                // To optionally set different default dimensions
+                customMetrics.setDefaultDimensions(DimensionSet.of("CustomDefaultDimension", "value"));
+                // To optionally append additional dimensions to default dimensions
+                customMetrics.addDimension(DimensionSet.of("CustomDimension", "value"));
                 // To optionally add metadata
                 customMetrics.addMetadata("CustomMetadata", "value"));
             });
