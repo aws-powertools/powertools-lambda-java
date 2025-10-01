@@ -181,7 +181,7 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"software.amazon.lambda.powertools.logging.logback.internal.LoggingLogbackUserAgentInterceptor",
+  "name":"software.amazon.lambda.powertools.logging.logback.internal.LogbackUserAgentInterceptor",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

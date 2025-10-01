@@ -1085,7 +1085,7 @@
   "methods":[{"name":"createAppender","parameterTypes":["java.lang.String","org.apache.logging.log4j.core.Filter","org.apache.logging.log4j.core.Layout","org.apache.logging.log4j.core.config.AppenderRef[]","org.apache.logging.log4j.core.config.Configuration","java.lang.String","int","boolean"] }]
 },
 {
-  "name":"software.amazon.lambda.powertools.logging.log4j.internal.LoggingLog4jUserAgentInterceptor",
+  "name":"software.amazon.lambda.powertools.logging.log4j.internal.Log4jUserAgentInterceptor",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]
