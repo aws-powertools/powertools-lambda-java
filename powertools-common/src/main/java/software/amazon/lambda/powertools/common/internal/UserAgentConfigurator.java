@@ -27,7 +27,6 @@ import org.slf4j.LoggerFactory;
  * Can be used to create a string that can server as a User-Agent suffix in requests made with the AWS SDK clients
  */
 public final class UserAgentConfigurator {
-
     public static final String NA = "NA";
     public static final String VERSION_KEY = "powertools.version";
     public static final String PT_FEATURE_VARIABLE = "${PT_FEATURE}";
@@ -63,7 +62,6 @@ public final class UserAgentConfigurator {
      * @return the version of the project as configured in the given properties file
      */
     static String getVersionFromProperties(String propertyFileName, String versionKey) {
-
         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFileName);
 
         if (is != null) {
@@ -103,7 +101,6 @@ public final class UserAgentConfigurator {
      * @return the user agent string
      */
     public static String getUserAgent(String ptFeature) {
-
         String awsExecutionEnv = getenv(AWS_EXECUTION_ENV);
         String ptExecEnv = awsExecutionEnv != null ? awsExecutionEnv : NA;
         String userAgent = USER_AGENT_PATTERN.replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
