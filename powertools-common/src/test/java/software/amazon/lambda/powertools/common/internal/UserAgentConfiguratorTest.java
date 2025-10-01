@@ -123,6 +123,25 @@ class UserAgentConfiguratorTest {
 
     @Test
     void testConfigureUserAgent() {
+        System.clearProperty("sdk.ua.appId");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_WithExistingValue() {
+        System.setProperty("sdk.ua.appId", "UserValueABC123");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("UserValueABC123/PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_WithEmptyExistingValue() {
+        System.setProperty("sdk.ua.appId", "");
         UserAgentConfigurator.configureUserAgent("test-feature");
 
         assertThat(System.getProperty("sdk.ua.appId"))
