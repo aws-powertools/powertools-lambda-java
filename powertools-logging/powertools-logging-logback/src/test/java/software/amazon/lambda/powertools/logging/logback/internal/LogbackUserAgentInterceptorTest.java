@@ -14,6 +14,7 @@
 package software.amazon.lambda.powertools.logging.logback.internal;
 
 import org.junit.jupiter.api.Test;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +25,7 @@ class LogbackUserAgentInterceptorTest {
     void shouldConfigureUserAgentWhenCreatingAwsSdkClient() {
         // WHEN creating an AWS SDK client, the interceptor should be loaded
         // We use S3 client but it can be any arbitrary AWS SDK client
-        S3Client.builder().build();
+        S3Client.builder().region(Region.US_EAST_1).build();
         
         // THEN the user agent system property should be set
         String userAgent = System.getProperty("sdk.ua.appId");
