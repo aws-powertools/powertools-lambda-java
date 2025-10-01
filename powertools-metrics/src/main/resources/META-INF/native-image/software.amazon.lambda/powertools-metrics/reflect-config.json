@@ -148,5 +148,9 @@
     "name": "software.amazon.lambda.powertools.metrics.provider.MetricsProvider",
     "allDeclaredClasses": true,
     "queryAllPublicMethods": true
+  },
+  {
+    "name": "software.amazon.lambda.powertools.metrics.internal.MetricsUserAgentInterceptor",
+    "methods": [{ "name": "<init>", "parameterTypes": [] }]
   }
 ]

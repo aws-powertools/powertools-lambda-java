@@ -361,5 +361,9 @@
 {
   "name":"sun.security.provider.SHA",
   "methods":[{"name":"<init>","parameterTypes":[] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.tracing.internal.TracingUserAgentInterceptor",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]

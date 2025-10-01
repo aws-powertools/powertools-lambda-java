@@ -322,5 +322,9 @@
 {
   "name":"sun.security.x509.SubjectKeyIdentifierExtension",
   "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
+},
+{
+  "name":"software.amazon.lambda.powertools.parameters.dynamodb.internal.ParametersDynamodbUserAgentInterceptor",
+  "methods":[{"name":"<init>","parameterTypes":[] }]
 }
 ]
