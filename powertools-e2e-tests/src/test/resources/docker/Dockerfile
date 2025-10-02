@@ -1,5 +1,5 @@
 # Use the official AWS SAM base image for Java 21
-FROM public.ecr.aws/sam/build-java21@sha256:853ac90b359be42f95fe913fde43517ed5f3ed086aa93a6c0bd4b2d8fe07df9d
+FROM public.ecr.aws/sam/build-java21@sha256:fd3b44561b51626c15ae4437630afcfdc84ad883edca64d2cdb87aad755eb7ac
 
 # Install GraalVM dependencies
 RUN curl -4 -L https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz | tar -xvz

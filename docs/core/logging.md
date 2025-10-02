@@ -209,9 +209,9 @@ There are some other environment variables which can be set to modify Logging's 
 | Environment variable            | Type     | Description                                                                                                             |  
 |---------------------------------|----------|-------------------------------------------------------------------------------------------------------------------------|  
 | `POWERTOOLS_LOGGER_SAMPLE_RATE` | float    | Configure the sampling rate at which `DEBUG` logs should be included. See [sampling rate](#sampling-debug-logs)                  |  
-| `POWERTOOLS_LOG_EVENT`          | boolean  | Specify if the incoming Lambda event should be logged. See [Logging event](#logging-incoming-event)                     |  
-| `POWERTOOLS_LOG_RESPONSE`       | boolean  | Specify if the Lambda response should be logged. See [logging response](#logging-handler-response)                      |  
-| `POWERTOOLS_LOG_ERROR`          | boolean  | Specify if a Lambda uncaught exception should be logged. See [logging exception](#logging-handler-uncaught-exception  ) |  
+| `POWERTOOLS_LOGGER_LOG_EVENT`          | boolean  | Specify if the incoming Lambda event should be logged. See [Logging event](#logging-incoming-event)                     |  
+| `POWERTOOLS_LOGGER_LOG_RESPONSE`       | boolean  | Specify if the Lambda response should be logged. See [logging response](#logging-handler-response)                      |  
+| `POWERTOOLS_LOGGER_LOG_ERROR`          | boolean  | Specify if a Lambda uncaught exception should be logged. See [logging exception](#logging-handler-uncaught-exception  ) |  
 
 #### Logging configuration
 
