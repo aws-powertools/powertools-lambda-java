@@ -2,6 +2,7 @@ package software.amazon.lambda.powertools.metrics.testutils;
 
 import java.time.Instant;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
@@ -74,6 +75,11 @@ public class TestMetrics implements Metrics {
 
     @Override
     public void captureColdStartMetric(DimensionSet dimensions) {
+        // Test placeholder
+    }
+
+    @Override
+    public void flushMetrics(Consumer<Metrics> metricsConsumer) {
         // Test placeholder
     }
 

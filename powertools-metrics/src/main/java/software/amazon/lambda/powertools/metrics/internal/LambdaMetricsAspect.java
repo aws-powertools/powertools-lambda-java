@@ -34,8 +34,6 @@ import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 
 @Aspect
 public class LambdaMetricsAspect {
-    public static final String TRACE_ID_PROPERTY = "xray_trace_id";
-    public static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String SERVICE_DIMENSION = "Service";
     private static final String FUNCTION_NAME_ENV_VAR = "POWERTOOLS_METRICS_FUNCTION_NAME";
 
@@ -90,11 +88,10 @@ public class LambdaMetricsAspect {
 
             metricsInstance.setRaiseOnEmptyMetrics(metrics.raiseOnEmptyMetrics());
 
-            // Add trace ID metadata if available
-            LambdaHandlerProcessor.getXrayTraceId()
-                    .ifPresent(traceId -> metricsInstance.addMetadata(TRACE_ID_PROPERTY, traceId));
+            Context extractedContext = extractContext(pjp);
+            MetricsUtils.addRequestIdAndXrayTraceIdIfAvailable(extractedContext, metricsInstance);
 
-            captureColdStartMetricIfEnabled(extractContext(pjp), metrics);
+            captureColdStartMetricIfEnabled(extractedContext, metrics);
 
             try {
                 return pjp.proceed(proceedArgs);
@@ -107,40 +104,36 @@ public class LambdaMetricsAspect {
         return pjp.proceed(proceedArgs);
     }
 
-    private void captureColdStartMetricIfEnabled(Context extractedContext, FlushMetrics metrics) {
+    private void captureColdStartMetricIfEnabled(Context extractedContext, FlushMetrics flushMetrics) {
         if (extractedContext == null) {
             return;
         }
 
-        Metrics metricsInstance = MetricsFactory.getMetricsInstance();
-        // This can be null e.g. during unit tests when mocking the Lambda context
-        if (extractedContext.getAwsRequestId() != null) {
-            metricsInstance.addMetadata(REQUEST_ID_PROPERTY, extractedContext.getAwsRequestId());
-        }
+        Metrics metrics = MetricsFactory.getMetricsInstance();
 
         // Only capture cold start metrics if enabled on annotation
-        if (metrics.captureColdStart()) {
+        if (flushMetrics.captureColdStart()) {
             // Get function name from annotation or context
-            String funcName = functionName(metrics, extractedContext);
+            String funcName = functionName(flushMetrics, extractedContext);
 
-            DimensionSet coldStartDimensions = new DimensionSet();
+            DimensionSet dimensionSet = new DimensionSet();
 
             // Get service name from metrics instance default dimensions or fallback
-            String serviceName = metricsInstance.getDefaultDimensions().getDimensions().getOrDefault(
+            String serviceName = metrics.getDefaultDimensions().getDimensions().getOrDefault(
                     SERVICE_DIMENSION,
-                    serviceNameWithFallback(metrics));
+                    serviceNameWithFallback(flushMetrics));
 
             // Only add service if it is not undefined
             if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
-                coldStartDimensions.addDimension(SERVICE_DIMENSION, serviceName);
+                dimensionSet.addDimension(SERVICE_DIMENSION, serviceName);
             }
 
             // Add function name
             if (funcName != null) {
-                coldStartDimensions.addDimension("FunctionName", funcName);
+                dimensionSet.addDimension("FunctionName", funcName);
             }
 
-            metricsInstance.captureColdStartMetric(extractedContext, coldStartDimensions);
+            metrics.captureColdStartMetric(extractedContext, dimensionSet);
         }
     }
 }

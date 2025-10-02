@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.metrics.internal;
 
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.getXrayTraceId;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
 
 import java.time.Instant;
@@ -22,6 +21,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,16 +43,15 @@ import software.amazon.lambda.powertools.metrics.model.MetricUnit;
  */
 public class EmfMetricsLogger implements Metrics {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmfMetricsLogger.class);
-    private static final String TRACE_ID_PROPERTY = "xray_trace_id";
-    private static final String REQUEST_ID_PROPERTY = "function_request_id";
     private static final String COLD_START_METRIC = "ColdStart";
     private static final String METRICS_DISABLED_ENV_VAR = "POWERTOOLS_METRICS_DISABLED";
 
     private final software.amazon.cloudwatchlogs.emf.logger.MetricsLogger emfLogger;
     private final EnvironmentProvider environmentProvider;
-    private AtomicBoolean raiseOnEmptyMetrics = new AtomicBoolean(false);
+    private final AtomicBoolean raiseOnEmptyMetrics = new AtomicBoolean(false);
     private String namespace;
     private Map<String, String> defaultDimensions = new HashMap<>();
+    private final Map<String, Object> properties = new HashMap<>();
     private final AtomicBoolean hasMetrics = new AtomicBoolean(false);
 
     public EmfMetricsLogger(EnvironmentProvider environmentProvider, MetricsContext metricsContext) {
@@ -79,8 +78,6 @@ public class EmfMetricsLogger implements Metrics {
         dimensionSet.getDimensions().forEach((key, val) -> {
             try {
                 emfDimensionSet.addDimension(key, val);
-                // Update our local copy of default dimensions
-                defaultDimensions.put(key, val);
             } catch (Exception e) {
                 // Ignore dimension errors
             }
@@ -91,7 +88,8 @@ public class EmfMetricsLogger implements Metrics {
 
     @Override
     public void addMetadata(String key, Object value) {
-        emfLogger.putMetadata(key, value);
+        emfLogger.putProperty(key, value);
+        properties.put(key, value);
     }
 
     @Override
@@ -173,45 +171,13 @@ public class EmfMetricsLogger implements Metrics {
     public void captureColdStartMetric(Context context,
             software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
         if (isColdStart()) {
-            if (isMetricsDisabled()) {
-                LOGGER.debug("Metrics are disabled, skipping cold start metric capture");
-                return;
-            }
-
-            Validator.validateNamespace(namespace);
-
-            software.amazon.cloudwatchlogs.emf.logger.MetricsLogger coldStartLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger();
-
-            try {
-                coldStartLogger.setNamespace(namespace);
-            } catch (Exception e) {
-                LOGGER.error("Namespace cannot be set for cold start metrics due to an error in EMF", e);
-            }
-
-            coldStartLogger.putMetric(COLD_START_METRIC, 1, Unit.COUNT);
-
-            // Set dimensions if provided
-            if (dimensions != null) {
-                DimensionSet emfDimensionSet = new DimensionSet();
-                dimensions.getDimensions().forEach((key, val) -> {
-                    try {
-                        emfDimensionSet.addDimension(key, val);
-                    } catch (Exception e) {
-                        // Ignore dimension errors
-                    }
-                });
-                coldStartLogger.setDimensions(emfDimensionSet);
-            }
-
-            // Add request ID from context if available
-            if (context != null && context.getAwsRequestId() != null) {
-                coldStartLogger.putProperty(REQUEST_ID_PROPERTY, context.getAwsRequestId());
-            }
-
-            // Add trace ID using the standard logic
-            getXrayTraceId().ifPresent(traceId -> coldStartLogger.putProperty(TRACE_ID_PROPERTY, traceId));
-
-            coldStartLogger.flush();
+            flushMetrics(metrics -> {
+                MetricsUtils.addRequestIdAndXrayTraceIdIfAvailable(context, metrics);
+                if (dimensions != null) {
+                    metrics.setDefaultDimensions(dimensions);
+                }
+                metrics.addMetric(COLD_START_METRIC, 1, MetricUnit.COUNT);
+            });
         }
     }
 
@@ -221,43 +187,24 @@ public class EmfMetricsLogger implements Metrics {
     }
 
     @Override
-    public void flushSingleMetric(String name, double value, MetricUnit unit, String namespace,
-            software.amazon.lambda.powertools.metrics.model.DimensionSet dimensions) {
+    public void flushMetrics(Consumer<Metrics> metricsConsumer) {
         if (isMetricsDisabled()) {
             LOGGER.debug("Metrics are disabled, skipping single metric flush");
             return;
         }
-
-        Validator.validateNamespace(namespace);
-
-        // Create a new logger for this single metric
-        software.amazon.cloudwatchlogs.emf.logger.MetricsLogger singleMetricLogger = new software.amazon.cloudwatchlogs.emf.logger.MetricsLogger(
-                environmentProvider);
-
-        try {
-            singleMetricLogger.setNamespace(namespace);
-        } catch (Exception e) {
-            LOGGER.error("Namespace cannot be set for single metric due to an error in EMF", e);
+        // Create a new instance, inheriting namespace, default dimensions, and metadata
+        EmfMetricsLogger metrics = new EmfMetricsLogger(environmentProvider, new MetricsContext());
+        if (namespace != null) {
+            metrics.setNamespace(this.namespace);
         }
-
-        // Add the metric
-        singleMetricLogger.putMetric(name, value, convertUnit(unit));
-
-        // Set dimensions if provided
-        if (dimensions != null) {
-            DimensionSet emfDimensionSet = new DimensionSet();
-            dimensions.getDimensions().forEach((key, val) -> {
-                try {
-                    emfDimensionSet.addDimension(key, val);
-                } catch (Exception e) {
-                    // Ignore dimension errors
-                }
-            });
-            singleMetricLogger.setDimensions(emfDimensionSet);
+        if (!defaultDimensions.isEmpty()) {
+            metrics.setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions));
         }
+        properties.forEach(metrics::addMetadata);
 
-        // Flush the metric
-        singleMetricLogger.flush();
+        metricsConsumer.accept(metrics);
+
+        metrics.flush();
     }
 
     private boolean isMetricsDisabled() {
