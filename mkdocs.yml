@@ -1,7 +1,7 @@
 site_name: Powertools for AWS Lambda (Java)
 site_description: Powertools for AWS Lambda (Java)
 site_author: Amazon Web Services
-site_url: https://docs.powertools.aws.dev/lambda/java/
+site_url: https://docs.powertools.aws.dev/lambda/java/latest/
 nav:
   - Homepage: index.md
   - Changelog: changelog.md
@@ -122,9 +122,8 @@ plugins:
 extra_css:
   - stylesheets/extra.css
 extra_javascript:
-  - javascript/aws-amplify.min.js
-  - javascript/extra.js
   - https://docs.powertools.aws.dev/shared/mermaid.min.js
+  - https://docs.aws.amazon.com/assets/js/awsdocs-boot.js
 
 extra:
   powertools:
