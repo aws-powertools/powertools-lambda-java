@@ -58,6 +58,10 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sdk-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.crac</groupId>
             <artifactId>crac</artifactId>
         </dependency>
@@ -92,6 +96,11 @@
             <!-- >2.2.0 is not compatible with Java 11 anymore -->
             <!-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocalHistory.html -->
             <version>2.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

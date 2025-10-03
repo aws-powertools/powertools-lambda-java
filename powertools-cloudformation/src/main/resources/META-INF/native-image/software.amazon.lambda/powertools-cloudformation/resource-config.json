@@ -30,6 +30,8 @@
     "pattern":"\\Qorg/eclipse/jetty/version/build.properties\\E"
   }, {
     "pattern":"\\Qorg/publicsuffix/list/effective_tld_names.dat\\E"
+  }, {
+    "pattern":"\\Qsoftware/amazon/awssdk/global/handlers/execution.interceptors\\E"
   }]},
   "bundles":[{
     "name":"jakarta.servlet.LocalStrings",

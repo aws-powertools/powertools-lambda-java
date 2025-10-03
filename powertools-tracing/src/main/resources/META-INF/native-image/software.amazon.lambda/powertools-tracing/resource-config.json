@@ -26,6 +26,8 @@
     "pattern":"\\Qcommons-logging.properties\\E"
   }, {
     "pattern":"\\Qorg/slf4j/impl/StaticLoggerBinder.class\\E"
+  }, {
+    "pattern":"\\Qsoftware/amazon/awssdk/global/handlers/execution.interceptors\\E"
   }]},
   "bundles":[]
 }

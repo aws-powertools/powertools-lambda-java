@@ -6,6 +6,9 @@
       },
       {
         "pattern": "\\QMETA-INF/services/java.time.zone.ZoneRulesProvider\\E"
+      },
+      {
+        "pattern": "\\Qsoftware/amazon/awssdk/global/handlers/execution.interceptors\\E"
       }
     ]
   },
