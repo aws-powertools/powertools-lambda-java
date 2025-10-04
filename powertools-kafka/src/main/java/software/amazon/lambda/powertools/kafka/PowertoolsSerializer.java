@@ -12,14 +12,32 @@
  */
 package software.amazon.lambda.powertools.kafka;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Base64;
 import java.util.Map;
 
 import com.amazonaws.services.lambda.runtime.CustomPojoSerializer;
 import com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory;
+import com.amazonaws.services.lambda.runtime.events.KafkaEvent;
 
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericDatumWriter;
+import org.apache.avro.generic.GenericRecord;
+import org.apache.avro.io.BinaryEncoder;
+import org.apache.avro.io.DatumWriter;
+import org.apache.avro.io.EncoderFactory;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.kafka.internal.DeserializationUtils;
 import software.amazon.lambda.powertools.kafka.serializers.KafkaAvroDeserializer;
 import software.amazon.lambda.powertools.kafka.serializers.KafkaJsonDeserializer;
@@ -30,11 +48,11 @@ import software.amazon.lambda.powertools.kafka.serializers.PowertoolsDeserialize
 /**
  * Custom Lambda serializer supporting Kafka events. It delegates to the appropriate deserializer based on the
  * deserialization type specified by {@link software.amazon.lambda.powertools.kafka.Deserialization} annotation.
- * 
+ *
  * Kafka serializers need to be specified explicitly, otherwise, the default Lambda serializer from
  * {@link com.amazonaws.services.lambda.runtime.serialization.factories.JacksonFactory} will be used.
  */
-public class PowertoolsSerializer implements CustomPojoSerializer {
+public class PowertoolsSerializer implements CustomPojoSerializer, Resource {
     private static final Map<DeserializationType, PowertoolsDeserializer> DESERIALIZERS = Map.of(
             DeserializationType.KAFKA_JSON, new KafkaJsonDeserializer(),
             DeserializationType.KAFKA_AVRO, new KafkaAvroDeserializer(),
@@ -42,6 +60,13 @@ public class PowertoolsSerializer implements CustomPojoSerializer {
             DeserializationType.LAMBDA_DEFAULT, new LambdaDefaultDeserializer());
 
     private final PowertoolsDeserializer deserializer;
+
+    private static final PowertoolsSerializer INSTANCE = new PowertoolsSerializer();
+
+    // CRaC registration happens at class loading time
+    static{
+        Core.getGlobalContext().register(INSTANCE);
+    }
 
     public PowertoolsSerializer() {
         this.deserializer = DESERIALIZERS.getOrDefault(
@@ -63,5 +88,120 @@ public class PowertoolsSerializer implements CustomPojoSerializer {
     public <T> void toJson(T value, OutputStream output, Type type) {
         // This is the Lambda default Output serialization
         JacksonFactory.getInstance().getSerializer(type).toJson(value, output);
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        JacksonFactory.getInstance().getSerializer(KafkaEvent.class);
+        JacksonFactory.getInstance().getSerializer(ConsumerRecord.class);
+        JacksonFactory.getInstance().getSerializer(String.class);
+
+        DeserializationUtils.determineDeserializationType();
+
+        jsonPriming();
+        try {
+            avroPriming();
+        } catch (Exception e) {
+            // Continue without any interruption if avro priming fails
+        }
+
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
+    }
+
+    private void jsonPriming(){
+        String kafkaJson = "{\n" +
+                "  \"eventSource\": \"aws:kafka\",\n" +
+                "  \"records\": {\n" +
+                "    \"prime-topic-1\": [\n" +
+                "      {\n" +
+                "        \"topic\": \"prime-topic-1\",\n" +
+                "        \"partition\": 0,\n" +
+                "        \"offset\": 0,\n" +
+                "        \"timestamp\": 1545084650987,\n" +
+                "        \"timestampType\": \"CREATE_TIME\",\n" +
+                "        \"key\": null,\n" +
+                "        \"value\": null,\n" +
+                "        \"headers\": []\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+        Type consumerRecords = createConsumerRecordsType(String.class, String.class);
+        PowertoolsDeserializer deserializers = DESERIALIZERS.get(DeserializationType.KAFKA_JSON);
+        deserializers.fromJson(kafkaJson, consumerRecords);
+    }
+
+    private void avroPriming() throws IOException {
+        String avroSchema = "{\n" +
+                "  \"type\": \"record\",\n" +
+                "  \"name\": \"SimpleProduct\",\n" +
+                "  \"namespace\": \"software.amazon.lambda.powertools.kafka.test\",\n" +
+                "  \"fields\": [\n" +
+                "    {\"name\": \"id\", \"type\": \"string\"},\n" +
+                "    {\"name\": \"name\", \"type\": \"string\"},\n" +
+                "    {\"name\": \"price\", \"type\": [\"null\", \"double\"], \"default\": null}\n" +
+                "  ]\n" +
+                "}";
+        Schema schema = new Schema.Parser().parse(avroSchema);
+
+        // Create a GenericRecord
+        GenericRecord avroRecord = new GenericData.Record(schema);
+        avroRecord.put("id", "prime-topic-1");
+        avroRecord.put("name", "Prime Product");
+        avroRecord.put("price", 0.0);
+
+        // Create Kafka event JSON with avro data
+        DatumWriter<GenericRecord> datumWriter = new GenericDatumWriter<>(schema);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        BinaryEncoder encoder = EncoderFactory.get().binaryEncoder(outputStream, null);
+        datumWriter.write(avroRecord, encoder);
+        byte[] avroBytes = outputStream.toByteArray();
+        String base64Value = Base64.getEncoder().encodeToString(avroBytes);
+
+        String kafkaAvroJson = "{\n" +
+                "  \"eventSource\": \"aws:kafka\",\n" +
+                "  \"records\": {\n" +
+                "    \"prime-topic-1\": [\n" +
+                "      {\n" +
+                "        \"topic\": \"prime-topic-1\",\n" +
+                "        \"partition\": 0,\n" +
+                "        \"offset\": 0,\n" +
+                "        \"timestamp\": 1545084650987,\n" +
+                "        \"timestampType\": \"CREATE_TIME\",\n" +
+                "        \"key\": null,\n" +
+                "        \"value\": \"" + base64Value + "\",\n" +
+                "        \"headers\": []\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "}";
+
+        Type records = createConsumerRecordsType(String.class, GenericRecord.class);
+        PowertoolsDeserializer deserializers = DESERIALIZERS.get(DeserializationType.KAFKA_AVRO);
+        deserializers.fromJson(kafkaAvroJson, records);
+    }
+
+    private Type createConsumerRecordsType(Class<?> keyClass, Class<?> valueClass) {
+        return new ParameterizedType() {
+            @Override
+            public Type[] getActualTypeArguments() {
+                return new Type[] { keyClass, valueClass };
+            }
+
+            @Override
+            public Type getRawType() {
+                return ConsumerRecords.class;
+            }
+
+            @Override
+            public Type getOwnerType() {
+                return null;
+            }
+        };
     }
 }
