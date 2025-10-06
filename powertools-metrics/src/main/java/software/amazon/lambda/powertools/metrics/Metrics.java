@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.metrics;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import java.time.Instant;
+import java.util.function.Consumer;
 
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
@@ -162,7 +163,15 @@ public interface Metrics {
     }
 
     /**
-     * Flush a single metric with custom dimensions. This creates a separate metrics context
+     * Flush a separate metrics context that inherits the namespace, default dimensions, and metadata. This creates a separate metrics context
+     * that doesn't affect the default metrics context.
+     *
+     * @param metricsConsumer the consumer to use to edit the metrics instance (e.g. add metrics, override namespace, set or add custom dimensions) before flushing
+     */
+    void flushMetrics(Consumer<Metrics> metricsConsumer);
+
+    /**
+     * Flush a single metric with custom namespace and dimensions. This creates a separate metrics context
      * that doesn't affect the default metrics context.
      *
      * @param name       the name of the metric
@@ -171,10 +180,17 @@ public interface Metrics {
      * @param namespace  the namespace for the metric
      * @param dimensions custom dimensions for this metric (optional)
      */
-    void flushSingleMetric(String name, double value, MetricUnit unit, String namespace, DimensionSet dimensions);
+    default void flushSingleMetric(String name, double value, MetricUnit unit, String namespace, DimensionSet dimensions) {
+        flushMetrics(metrics -> {
+            metrics.setNamespace(namespace);
+            metrics.setDefaultDimensions(dimensions);
+            metrics.addMetric(name, value, unit);
+        });
+
+    }
 
     /**
-     * Flush a single metric with custom dimensions. This creates a separate metrics context
+     * Flush a single metric with custom namespace. This creates a separate metrics context
      * that doesn't affect the default metrics context.
      *
      * @param name       the name of the metric
@@ -183,6 +199,9 @@ public interface Metrics {
      * @param namespace  the namespace for the metric
      */
     default void flushSingleMetric(String name, double value, MetricUnit unit, String namespace) {
-        flushSingleMetric(name, value, unit, namespace, null);
+        flushMetrics(metrics -> {
+            metrics.setNamespace(namespace);
+            metrics.addMetric(name, value, unit);
+        });
     }
 }
