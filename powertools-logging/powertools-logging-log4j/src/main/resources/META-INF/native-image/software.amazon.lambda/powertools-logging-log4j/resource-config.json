@@ -34,6 +34,8 @@
     "pattern":"\\QMETA-INF/services/software.amazon.lambda.powertools.logging.internal.LoggingManager\\E"
   }, {
     "pattern":"\\QStackTraceElementLayout.json\\E"
+  }, {
+    "pattern":"\\Qsoftware/amazon/awssdk/global/handlers/execution.interceptors\\E"
   }]},
   "bundles":[]
 }

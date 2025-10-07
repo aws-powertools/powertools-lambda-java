@@ -18,26 +18,27 @@ import static software.amazon.lambda.powertools.common.internal.SystemWrapper.ge
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Properties;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * Can be used to create a string that can server as a User-Agent suffix in requests made with the AWS SDK clients
  */
-public class UserAgentConfigurator {
-
+public final class UserAgentConfigurator {
     public static final String NA = "NA";
     public static final String VERSION_KEY = "powertools.version";
     public static final String PT_FEATURE_VARIABLE = "${PT_FEATURE}";
     public static final String PT_EXEC_ENV_VARIABLE = "${PT_EXEC_ENV}";
     public static final String VERSION_PROPERTIES_FILENAME = "version.properties";
     public static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
+    private static final String SDK_USER_AGENT_APP_ID = "sdk.ua.appId";
     private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurator.class);
     private static final String NO_OP = "no-op";
     private static final String POWERTOOLS_VERSION = getProjectVersion();
-    private static final String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + POWERTOOLS_VERSION + " PTEnv/"
+    private static final String USER_AGENT_PATTERN = "PT/" + PT_FEATURE_VARIABLE + "/" + POWERTOOLS_VERSION + " PTENV/"
             + PT_EXEC_ENV_VARIABLE;
 
     private UserAgentConfigurator() {
@@ -53,7 +54,6 @@ public class UserAgentConfigurator {
         return getVersionFromProperties(VERSION_PROPERTIES_FILENAME, VERSION_KEY);
     }
 
-
     /**
      * Retrieves the project version from a properties file.
      * The file should be in the resources folder.
@@ -64,28 +64,46 @@ public class UserAgentConfigurator {
      * @return the version of the project as configured in the given properties file
      */
     static String getVersionFromProperties(String propertyFileName, String versionKey) {
-
-        InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFileName);
-
-        if (is != null) {
-            try {
+        try (InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propertyFileName)) {
+            if (is != null) {
                 Properties properties = new Properties();
                 properties.load(is);
                 String version = properties.getProperty(versionKey);
                 if (version != null && !version.isEmpty()) {
                     return version;
                 }
-            } catch (IOException e) {
-                LOG.warn("Unable to read {} file. Using default version.", propertyFileName);
-                LOG.debug("Exception:", e);
             }
+        } catch (IOException e) {
+            LOG.warn("Unable to read {} file. Using default version.", propertyFileName);
+            LOG.debug("Exception:", e);
         }
         return NA;
     }
 
     /**
+     * Configures the AWS SDK to use Powertools user agent by setting the sdk.ua.appId system property.
+     * If the property is already set and not empty, appends the Powertools user agent with a "/" separator.
+     * This should be called during library initialization to ensure the user agent is properly configured.
+     */
+    public static void configureUserAgent(String ptFeature) {
+        try {
+            String existingValue = System.getProperty(SDK_USER_AGENT_APP_ID);
+            String powertoolsUserAgent = getUserAgent(ptFeature);
+
+            if (existingValue != null && !existingValue.isEmpty()) {
+                System.setProperty(SDK_USER_AGENT_APP_ID, existingValue + "/" + powertoolsUserAgent);
+            } else {
+                System.setProperty(SDK_USER_AGENT_APP_ID, powertoolsUserAgent);
+            }
+        } catch (Exception e) {
+            // We don't re-raise since we don't want to break the user if something in this logic doesn't work
+            LOG.warn("Unable to configure user agent system property", e);
+        }
+    }
+
+    /**
      * Retrieves the user agent string for the Powertools for AWS Lambda.
-     * It follows the pattern PT/{PT_FEATURE}/{PT_VERSION} PTEnv/{PT_EXEC_ENV}
+     * It follows the pattern PT/{PT_FEATURE}/{PT_VERSION} PTENV/{PT_EXEC_ENV}
      * The version of the project is automatically retrieved.
      * The PT_EXEC_ENV is automatically retrieved from the AWS_EXECUTION_ENV environment variable.
      * If it AWS_EXECUTION_ENV is not set, PT_EXEC_ENV defaults to "NA"
@@ -96,7 +114,6 @@ public class UserAgentConfigurator {
      * @return the user agent string
      */
     public static String getUserAgent(String ptFeature) {
-
         String awsExecutionEnv = getenv(AWS_EXECUTION_ENV);
         String ptExecEnv = awsExecutionEnv != null ? awsExecutionEnv : NA;
         String userAgent = USER_AGENT_PATTERN.replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
@@ -105,7 +122,7 @@ public class UserAgentConfigurator {
             ptFeature = NO_OP;
         }
         return userAgent
-                .replace(PT_FEATURE_VARIABLE, ptFeature)
+                .replace(PT_FEATURE_VARIABLE, ptFeature.toUpperCase(Locale.ROOT))
                 .replace(PT_EXEC_ENV_VARIABLE, ptExecEnv);
     }
 }

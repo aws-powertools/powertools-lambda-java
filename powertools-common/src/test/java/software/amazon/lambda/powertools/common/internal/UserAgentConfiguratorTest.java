@@ -31,10 +31,8 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 class UserAgentConfiguratorTest {
 
-    private static final String SEM_VER_PATTERN =
-            "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
+    private static final String SEM_VER_PATTERN = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
     private static final String VERSION = UserAgentConfigurator.getProjectVersion();
-
 
     @Test
     void testGetVersion() {
@@ -91,7 +89,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/NA");
+                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
 
     }
 
@@ -101,7 +99,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/no-op/" + VERSION + " PTEnv/NA");
+                .isEqualTo("PT/NO-OP/" + VERSION + " PTENV/NA");
     }
 
     @Test
@@ -110,7 +108,7 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/no-op/" + VERSION + " PTEnv/NA");
+                .isEqualTo("PT/NO-OP/" + VERSION + " PTENV/NA");
     }
 
     @Test
@@ -120,7 +118,34 @@ class UserAgentConfiguratorTest {
 
         assertThat(userAgent)
                 .isNotNull()
-                .isEqualTo("PT/test-feature/" + VERSION + " PTEnv/AWS_Lambda_java8");
+                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/AWS_Lambda_java8");
+    }
+
+    @Test
+    void testConfigureUserAgent() {
+        System.clearProperty("sdk.ua.appId");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_WithExistingValue() {
+        System.setProperty("sdk.ua.appId", "UserValueABC123");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("UserValueABC123/PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_WithEmptyExistingValue() {
+        System.setProperty("sdk.ua.appId", "");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
     }
 
 }
