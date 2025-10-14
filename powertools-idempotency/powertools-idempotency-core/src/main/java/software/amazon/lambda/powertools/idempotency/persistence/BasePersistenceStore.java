@@ -404,7 +404,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
     private static boolean isEqual(String dataRecordPayload, String dataHash) {
         if (dataHash != null && dataRecordPayload != null) {
-            return dataHash.length() != dataRecordPayload.length() ? false : dataHash.equals(dataRecordPayload);
+            return dataHash.length() == dataRecordPayload.length() && dataHash.equals(dataRecordPayload);
         } else {
             return false;
         }
