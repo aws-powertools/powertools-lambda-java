@@ -25,17 +25,25 @@ import java.util.Optional;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junitpioneer.jupiter.ClearEnvironmentVariable;
+import org.junitpioneer.jupiter.ClearSystemProperty;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
+import software.amazon.awssdk.utilslite.SdkInternalThreadLocal;
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 class LambdaHandlerProcessorTest {
+
+    @AfterEach
+    void cleanup() {
+        SdkInternalThreadLocal.clear();
+    }
 
     @Test
     void isHandlerMethod_shouldRecognizeRequestHandler() {
@@ -157,6 +165,24 @@ class LambdaHandlerProcessorTest {
         boolean isXRayTraceIdPresent = LambdaHandlerProcessor.getXrayTraceId().isPresent();
 
         assertThat(isXRayTraceIdPresent).isFalse();
+    }
+
+    @Test
+    @ClearEnvironmentVariable(key = LambdaConstants.X_AMZN_TRACE_ID)
+    @ClearSystemProperty(key = LambdaConstants.XRAY_TRACE_HEADER)
+    void getXrayTraceId_fromSdkInternalThreadLocal() {
+        // Verify no trace ID initially
+        assertThat(LambdaHandlerProcessor.getXrayTraceId()).isEmpty();
+
+        // Set trace ID in SdkInternalThreadLocal
+        String expectedTraceId = "1-5759e988-bd862e3fe1be46a994272793";
+        SdkInternalThreadLocal.put(LambdaConstants.AWS_LAMBDA_X_TRACE_ID,
+                "Root=" + expectedTraceId + ";Parent=53995c3f42cd8ad8;Sampled=1");
+
+        // Verify trace ID is now present
+        Optional<String> traceId = LambdaHandlerProcessor.getXrayTraceId();
+        assertThat(traceId).isPresent();
+        assertThat(traceId.get()).isEqualTo(expectedTraceId);
     }
 
     @Test

@@ -73,7 +73,7 @@ class LambdaJsonEncoderTest {
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
         MDC.clear();
-        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
         context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
         try {

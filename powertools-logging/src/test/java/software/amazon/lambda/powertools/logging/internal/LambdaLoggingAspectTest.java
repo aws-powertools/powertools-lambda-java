@@ -100,7 +100,7 @@ class LambdaLoggingAspectTest {
     @BeforeEach
     void setUp() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException {
         MDC.clear();
-        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
         context = new TestLambdaContext();
         requestHandler = new PowertoolsLogEnabled();
         requestStreamHandler = new PowertoolsLogEnabledForStream();
@@ -418,7 +418,7 @@ class LambdaLoggingAspectTest {
     @Test
     void shouldLogServiceNameWhenEnvVarSet() throws IllegalAccessException {
         // GIVEN
-        writeStaticField(LambdaHandlerProcessor.class, "SERVICE_NAME", "testService", true);
+        writeStaticField(LambdaHandlerProcessor.class, "serviceName", "testService", true);
 
         // WHEN
         requestHandler.handleRequest(new Object(), context);

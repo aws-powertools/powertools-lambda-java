@@ -48,13 +48,13 @@ class MetricsFactoryTest {
     void setUp() throws Exception {
         System.setOut(new PrintStream(outputStreamCaptor));
 
-        // Reset LambdaHandlerProcessor's SERVICE_NAME
+        // Reset LambdaHandlerProcessor's serviceName
         Method resetServiceName = LambdaHandlerProcessor.class.getDeclaredMethod("resetServiceName");
         resetServiceName.setAccessible(true);
         resetServiceName.invoke(null);
 
-        // Reset IS_COLD_START
-        java.lang.reflect.Field coldStartField = LambdaHandlerProcessor.class.getDeclaredField("IS_COLD_START");
+        // Reset isColdStart
+        java.lang.reflect.Field coldStartField = LambdaHandlerProcessor.class.getDeclaredField("isColdStart");
         coldStartField.setAccessible(true);
         coldStartField.set(null, null);
     }

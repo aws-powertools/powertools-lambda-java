@@ -59,7 +59,7 @@ class LambdaTracingAspectTest {
 
     @BeforeEach
     void setUp() throws IllegalAccessException {
-        writeStaticField(LambdaHandlerProcessor.class, "IS_COLD_START", null, true);
+        writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
         context = new TestLambdaContext();
         requestHandler = new PowerTracerToolEnabled();
         streamHandler = new PowerTracerToolEnabledForStream();

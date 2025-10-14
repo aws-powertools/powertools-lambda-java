@@ -44,6 +44,10 @@
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-lambda-java-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>utils-lite</artifactId>
+        </dependency>
 
         <!-- Test dependencies -->
         <dependency>
