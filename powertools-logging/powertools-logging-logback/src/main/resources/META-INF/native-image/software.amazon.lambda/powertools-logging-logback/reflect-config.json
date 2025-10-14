@@ -163,7 +163,7 @@
 },
 {
   "name":"software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor",
-  "fields":[{"name":"IS_COLD_START"}]
+  "fields":[{"name":"isColdStart"}]
 },
 {
   "name":"software.amazon.lambda.powertools.logging.logback.BufferingAppender",

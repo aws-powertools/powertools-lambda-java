@@ -229,7 +229,7 @@
 },
 {
   "name":"software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor",
-  "fields":[{"name":"IS_COLD_START"}, {"name":"SERVICE_NAME"}]
+  "fields":[{"name":"isColdStart"}, {"name":"serviceName"}]
 },
 {
   "name":"software.amazon.lambda.powertools.logging.argument.StructuredArgumentsTest",

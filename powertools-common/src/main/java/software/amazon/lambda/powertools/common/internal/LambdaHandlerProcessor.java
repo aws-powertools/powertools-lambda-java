@@ -19,20 +19,24 @@ import static java.util.Optional.of;
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getProperty;
 import static software.amazon.lambda.powertools.common.internal.SystemWrapper.getenv;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Optional;
+
 import org.aspectj.lang.ProceedingJoinPoint;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
+
+import software.amazon.awssdk.utilslite.SdkInternalThreadLocal;
 
 public final class LambdaHandlerProcessor {
 
-    // SERVICE_NAME cannot be final for testing purposes
-    private static String SERVICE_NAME = calculateServiceName();
+    // serviceName cannot be final for testing purposes
+    private static String serviceName = calculateServiceName();
 
-    private static Boolean IS_COLD_START = null;
+    private static Boolean isColdStart = null;
 
     private LambdaHandlerProcessor() {
         // Hide default constructor
@@ -40,7 +44,8 @@ public final class LambdaHandlerProcessor {
 
     private static String calculateServiceName() {
         return null != getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME)
-                ? getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME) : LambdaConstants.SERVICE_UNDEFINED;
+                ? getenv(LambdaConstants.POWERTOOLS_SERVICE_NAME)
+                : LambdaConstants.SERVICE_UNDEFINED;
     }
 
     public static boolean isHandlerMethod(final ProceedingJoinPoint pjp) {
@@ -79,20 +84,20 @@ public final class LambdaHandlerProcessor {
     }
 
     public static String serviceName() {
-        return SERVICE_NAME;
+        return serviceName;
     }
 
     // Method used for testing purposes
     protected static void resetServiceName() {
-        SERVICE_NAME = calculateServiceName();
+        serviceName = calculateServiceName();
     }
 
     public static boolean isColdStart() {
-        return IS_COLD_START == null;
+        return isColdStart == null;
     }
 
     public static void coldStartDone() {
-        IS_COLD_START = false;
+        isColdStart = false;
     }
 
     public static boolean isSamLocal() {
@@ -100,14 +105,21 @@ public final class LambdaHandlerProcessor {
     }
 
     public static Optional<String> getXrayTraceId() {
-        String X_AMZN_TRACE_ID = getenv(LambdaConstants.X_AMZN_TRACE_ID);
-        // For the Java Lambda 17+ runtime, the Trace ID is set as a System Property
-        if (X_AMZN_TRACE_ID == null) {
-            X_AMZN_TRACE_ID = getProperty(LambdaConstants.XRAY_TRACE_HEADER);
+        // Try SdkInternalThreadLocal first (for concurrent Lambda environments)
+        String traceId = SdkInternalThreadLocal.get(LambdaConstants.AWS_LAMBDA_X_TRACE_ID);
+
+        // Fallback to environment variable
+        if (traceId == null) {
+            traceId = getenv(LambdaConstants.X_AMZN_TRACE_ID);
         }
 
-        if (X_AMZN_TRACE_ID != null) {
-            return of(X_AMZN_TRACE_ID.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, ""));
+        // For the Java Lambda 17+ runtime, the Trace ID is set as a System Property
+        if (traceId == null) {
+            traceId = getProperty(LambdaConstants.XRAY_TRACE_HEADER);
+        }
+
+        if (traceId != null) {
+            return of(traceId.split(";")[0].replace(LambdaConstants.ROOT_EQUALS, ""));
         }
         return empty();
     }
