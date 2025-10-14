@@ -105,14 +105,13 @@ public final class LambdaHandlerProcessor {
     }
 
     public static Optional<String> getXrayTraceId() {
-        // Try SdkInternalThreadLocal first (for concurrent Lambda environments)
+        // Try SdkInternalThreadLocal first
         String traceId = SdkInternalThreadLocal.get(LambdaConstants.AWS_LAMBDA_X_TRACE_ID);
 
-        // Fallback to environment variable
+        // Fallback to environment based approach
         if (traceId == null) {
             traceId = getenv(LambdaConstants.X_AMZN_TRACE_ID);
         }
-
         // For the Java Lambda 17+ runtime, the Trace ID is set as a System Property
         if (traceId == null) {
             traceId = getProperty(LambdaConstants.XRAY_TRACE_HEADER);
