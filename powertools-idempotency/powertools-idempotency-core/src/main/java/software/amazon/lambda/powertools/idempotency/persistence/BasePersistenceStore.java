@@ -132,7 +132,6 @@ public abstract class BasePersistenceStore implements PersistenceStore {
             updateRecord(dataRecord);
             saveToCache(dataRecord);
         } catch (JsonProcessingException e) {
-            // TODO : throw ?
             throw new RuntimeException("Error while serializing the response", e);
         }
     }

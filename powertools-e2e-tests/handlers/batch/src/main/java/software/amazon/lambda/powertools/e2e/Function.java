@@ -69,7 +69,6 @@ public class Function implements RequestHandler<InputStream, Object> {
     private void processProductMessage(Product p, Context c) {
         LOGGER.info("Processing product " + p);
 
-        // TODO - write product details to output table
         ddbClient = DynamoDbClient.builder()
                 .build();
         Map<String, AttributeValue> results = new HashMap<>();
