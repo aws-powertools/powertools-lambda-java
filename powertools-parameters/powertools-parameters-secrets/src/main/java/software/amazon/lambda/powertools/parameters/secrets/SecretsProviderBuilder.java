@@ -52,7 +52,6 @@ public class SecretsProviderBuilder {
      */
     public SecretsProvider build() {
         if (cacheManager == null) {
-            // TODO - what should we do with this
             cacheManager = new CacheManager();
         }
         SecretsProvider provider;

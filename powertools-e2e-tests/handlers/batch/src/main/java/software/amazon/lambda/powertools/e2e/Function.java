@@ -14,6 +14,17 @@
 
 package software.amazon.lambda.powertools.e2e;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
@@ -23,22 +34,13 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.serialization.PojoSerializer;
 import com.amazonaws.services.lambda.runtime.serialization.events.LambdaEventSerializers;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.lambda.powertools.batch.BatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.e2e.model.Product;
-
 
 public class Function implements RequestHandler<InputStream, Object> {
 
@@ -48,7 +50,6 @@ public class Function implements RequestHandler<InputStream, Object> {
     private final BatchMessageHandler<KinesisEvent, StreamsEventResponse> kinesisHandler;
     private final BatchMessageHandler<DynamodbEvent, StreamsEventResponse> ddbHandler;
     private final String ddbOutputTable;
-    private DynamoDbClient ddbClient;
 
     public Function() {
         sqsHandler = new BatchMessageHandlerBuilder()
@@ -69,8 +70,7 @@ public class Function implements RequestHandler<InputStream, Object> {
     private void processProductMessage(Product p, Context c) {
         LOGGER.info("Processing product " + p);
 
-        // TODO - write product details to output table
-        ddbClient = DynamoDbClient.builder()
+        DynamoDbClient ddbClient = DynamoDbClient.builder()
                 .build();
         Map<String, AttributeValue> results = new HashMap<>();
         results.put("functionName", AttributeValue.builder()
@@ -94,7 +94,7 @@ public class Function implements RequestHandler<InputStream, Object> {
     private void processDdbMessage(DynamodbEvent.DynamodbStreamRecord dynamodbStreamRecord, Context context) {
         LOGGER.info("Processing DynamoDB Stream Record" + dynamodbStreamRecord);
 
-        ddbClient = DynamoDbClient.builder()
+        DynamoDbClient ddbClient = DynamoDbClient.builder()
                 .build();
 
         String id = dynamodbStreamRecord.getDynamodb().getKeys().get("id").getS();
@@ -118,26 +118,25 @@ public class Function implements RequestHandler<InputStream, Object> {
 
         LOGGER.info(input);
 
-        PojoSerializer<SQSEvent> serializer =
-                LambdaEventSerializers.serializerFor(SQSEvent.class, this.getClass().getClassLoader());
+        PojoSerializer<SQSEvent> serializer = LambdaEventSerializers.serializerFor(SQSEvent.class,
+                this.getClass().getClassLoader());
         SQSEvent event = serializer.fromJson(input);
-        if (event.getRecords().get(0).getEventSource().equals("aws:sqs")) {
+        if ("aws:sqs".equals(event.getRecords().get(0).getEventSource())) {
             LOGGER.info("Running for SQS");
-            LOGGER.info(event.toString());
             return sqsHandler.processBatch(event, context);
         }
 
-        PojoSerializer<KinesisEvent> kinesisSerializer =
-                LambdaEventSerializers.serializerFor(KinesisEvent.class, this.getClass().getClassLoader());
+        PojoSerializer<KinesisEvent> kinesisSerializer = LambdaEventSerializers.serializerFor(KinesisEvent.class,
+                this.getClass().getClassLoader());
         KinesisEvent kinesisEvent = kinesisSerializer.fromJson(input);
-        if (kinesisEvent.getRecords().get(0).getEventSource().equals("aws:kinesis")) {
+        if ("aws:kinesis".equals(kinesisEvent.getRecords().get(0).getEventSource())) {
             LOGGER.info("Running for Kinesis");
             return kinesisHandler.processBatch(kinesisEvent, context);
         }
 
         // Well, let's try dynamo
-        PojoSerializer<DynamodbEvent> ddbSerializer =
-                LambdaEventSerializers.serializerFor(DynamodbEvent.class, this.getClass().getClassLoader());
+        PojoSerializer<DynamodbEvent> ddbSerializer = LambdaEventSerializers.serializerFor(DynamodbEvent.class,
+                this.getClass().getClassLoader());
         LOGGER.info("Running for DynamoDB");
         DynamodbEvent ddbEvent = ddbSerializer.fromJson(input);
         return ddbHandler.processBatch(ddbEvent, context);
@@ -148,8 +147,8 @@ public class Function implements RequestHandler<InputStream, Object> {
 
         String input = new BufferedReader(
                 new InputStreamReader(inputStream, StandardCharsets.UTF_8))
-                .lines()
-                .collect(Collectors.joining("\n"));
+                        .lines()
+                        .collect(Collectors.joining("\n"));
 
         return createResult(input, context);
     }
