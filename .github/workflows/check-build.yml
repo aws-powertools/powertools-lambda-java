@@ -23,6 +23,7 @@ on:
       - 'powertools-large-messages/**'
       - 'powertools-logging/**'
       - 'powertools-metrics/**'
+      - 'powertools-kafka/**'
       - 'powertools-parameters/**'
       - 'powertools-serialization/**'
       - 'powertools-sqs/**'
