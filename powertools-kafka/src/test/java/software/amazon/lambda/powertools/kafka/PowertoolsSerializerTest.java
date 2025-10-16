@@ -140,15 +140,11 @@ class PowertoolsSerializerTest {
 
         // Then
         String testInput = "This is a test string";
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(testInput.getBytes())) {
-            // This should return the input stream directly
-            InputStream result = serializer.fromJson(inputStream, InputStream.class);
-
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(testInput.getBytes());
+             InputStream result = serializer.fromJson(inputStream, InputStream.class)) {
             // Read the content to verify it's the same
-            try (result) {
-                String resultString = new String(result.readAllBytes());
-                assertThat(resultString).isEqualTo(testInput);
-            }
+            String resultString = new String(result.readAllBytes());
+            assertThat(resultString).isEqualTo(testInput);
         }
     }
 
