@@ -54,7 +54,7 @@ public class PowertoolsSerializer implements CustomPojoSerializer, Resource {
     private static final PowertoolsSerializer INSTANCE = new PowertoolsSerializer();
 
     // CRaC registration happens at class loading time
-    static{
+    static {
         Core.getGlobalContext().register(INSTANCE);
     }
 
@@ -98,7 +98,7 @@ public class PowertoolsSerializer implements CustomPojoSerializer, Resource {
         // No action needed after restore
     }
 
-    private void jsonPriming(){
+    private void jsonPriming() {
         String kafkaJson = "{\n" +
                 "  \"eventSource\": \"aws:kafka\",\n" +
                 "  \"records\": {\n" +
