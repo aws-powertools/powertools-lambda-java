@@ -170,7 +170,7 @@ class PowertoolsSerializerTest {
         LambdaDefaultDeserializer deserializer = new LambdaDefaultDeserializer();
 
         // Create a problematic InputStream that throws IOException when read
-        InputStream problematicStream = new InputStream() {
+        try (InputStream problematicStream = new InputStream() {
             @Override
             public int read() throws IOException {
                 throw new IOException("Simulated IO error");
@@ -180,12 +180,14 @@ class PowertoolsSerializerTest {
             public byte[] readAllBytes() throws IOException {
                 throw new IOException("Simulated IO error");
             }
-        };
-
-        // Then
-        assertThatThrownBy(() -> deserializer.fromJson(problematicStream, String.class))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("Failed to read input stream as String");
+        }) {
+            // Then
+            assertThatThrownBy(() -> deserializer.fromJson(problematicStream, String.class))
+                    .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("Failed to read input stream as String");
+        } catch (IOException e) {
+            // Expected for this test case
+        }
     }
 
     @Test
