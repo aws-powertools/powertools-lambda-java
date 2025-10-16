@@ -35,6 +35,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 
 @Order(1)
@@ -45,7 +46,10 @@ class PowerToolsResolverFactoryTest {
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
         MDC.clear();
+        // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+
         context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
         try {

@@ -31,8 +31,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
@@ -49,8 +47,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junitpioneer.jupiter.ClearEnvironmentVariable;
 import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import org.junitpioneer.jupiter.SetSystemProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
 import org.slf4j.test.TestLogger;
@@ -67,6 +63,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogAlbCorrelationId;
 import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogApiGatewayHttpApiCorrelationId;
@@ -90,7 +87,6 @@ import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogSamplingE
 
 class LambdaLoggingAspectTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(LambdaLoggingAspectTest.class);
     private static final int EXPECTED_CONTEXT_SIZE = 8;
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
@@ -98,13 +94,16 @@ class LambdaLoggingAspectTest {
     private Context context;
 
     @BeforeEach
-    void setUp() throws IllegalAccessException, NoSuchMethodException, InvocationTargetException, IOException {
+    void setUp() throws IllegalAccessException, IOException {
         MDC.clear();
+
+        // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+
         context = new TestLambdaContext();
         requestHandler = new PowertoolsLogEnabled();
         requestStreamHandler = new PowertoolsLogEnabledForStream();
-        resetLogLevel(Level.INFO);
         writeStaticField(LoggingConstants.class, "LAMBDA_LOG_LEVEL", null, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", null, true);
         writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_EVENT", false, true);
@@ -127,139 +126,10 @@ class LambdaLoggingAspectTest {
     void cleanUp() throws IOException {
         // Make sure file is cleaned up before running full stack logging regression
         FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-    }
 
-    @Test
-    void shouldLogDebugWhenPowertoolsLevelEnvVarIsDebug() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "DEBUG", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isTrue();
-    }
-
-    @Test
-    void shouldLogInfoWhenPowertoolsLevelEnvVarIsInfo() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "INFO", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isTrue();
-    }
-
-    @Test
-    void shouldLogInfoWhenPowertoolsLevelEnvVarIsInvalid() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "INVALID", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isTrue();
-    }
-
-    @Test
-    void shouldLogWarnWhenPowertoolsLevelEnvVarIsWarn() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "WARN", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isFalse();
-        assertThat(LOG.isWarnEnabled()).isTrue();
-    }
-
-    @Test
-    void shouldLogErrorWhenPowertoolsLevelEnvVarIsError() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "ERROR", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isFalse();
-        assertThat(LOG.isWarnEnabled()).isFalse();
-        assertThat(LOG.isErrorEnabled()).isTrue();
-    }
-
-    @Test
-    void shouldLogErrorWhenPowertoolsLevelEnvVarIsFatal() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "FATAL", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isFalse();
-        assertThat(LOG.isWarnEnabled()).isFalse();
-        assertThat(LOG.isErrorEnabled()).isTrue();
-    }
-
-    @Test
-    void shouldLogWarnWhenPowertoolsLevelEnvVarIsWarnAndLambdaLevelVarIsInfo() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "WARN", true);
-        writeStaticField(LoggingConstants.class, "LAMBDA_LOG_LEVEL", "INFO", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isFalse();
-        assertThat(LOG.isWarnEnabled()).isTrue();
-        File logFile = new File("target/logfile.json");
-        assertThat(contentOf(logFile))
-                .doesNotContain(" does not match AWS Lambda Advanced Logging Controls minimum log level");
-    }
-
-    @Test
-    void shouldLogInfoWhenPowertoolsLevelEnvVarIsInfoAndLambdaLevelVarIsWarn() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "INFO", true);
-        writeStaticField(LoggingConstants.class, "LAMBDA_LOG_LEVEL", "WARN", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isTrue();
-        File logFile = new File("target/logfile.json");
-        // should log a warning as powertools level is lower than lambda level
-        assertThat(contentOf(logFile)).contains(
-                "Current log level (INFO) does not match AWS Lambda Advanced Logging Controls minimum log level (WARN). This can lead to data loss, consider adjusting them.");
-    }
-
-    @Test
-    void shouldLogWarnWhenPowertoolsLevelEnvVarINotSetAndLambdaLevelVarIsWarn() throws IllegalAccessException {
-        // GIVEN
-        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", null, true);
-        writeStaticField(LoggingConstants.class, "LAMBDA_LOG_LEVEL", "WARN", true);
-
-        // WHEN
-        LambdaLoggingAspect.setLogLevel();
-
-        // THEN
-        assertThat(LOG.isDebugEnabled()).isFalse();
-        assertThat(LOG.isInfoEnabled()).isFalse();
-        assertThat(LOG.isWarnEnabled()).isTrue();
+        // Reset log level to INFO to ensure test isolation
+        LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
+        loggingManager.setLogLevel(Level.INFO);
     }
 
     @Test
@@ -851,11 +721,4 @@ class LambdaLoggingAspectTest {
         }
     }
 
-    private void resetLogLevel(Level level)
-            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method setLogLevels = LambdaLoggingAspect.class.getDeclaredMethod("setLogLevels", Level.class);
-        setLogLevels.setAccessible(true);
-        setLogLevels.invoke(null, level);
-        writeStaticField(LambdaLoggingAspect.class, "LEVEL_AT_INITIALISATION", level, true);
-    }
 }

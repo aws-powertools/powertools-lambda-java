@@ -14,12 +14,12 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
-class LoggingConstants {
-    static String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL"); /* not final for test purpose */
+public class LoggingConstants {
+    public static String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL"); /* not final for test purpose */
 
-    static String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL"); /* not final for test purpose */
+    public static String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL"); /* not final for test purpose */
 
-    static String POWERTOOLS_SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
+    public static String POWERTOOLS_SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
 
     static boolean POWERTOOLS_LOG_EVENT = "true".equals(System.getenv("POWERTOOLS_LOGGER_LOG_EVENT")); /* not final for test purpose */
 

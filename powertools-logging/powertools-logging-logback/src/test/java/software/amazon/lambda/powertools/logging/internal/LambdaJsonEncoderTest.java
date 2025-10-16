@@ -52,6 +52,7 @@ import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 import software.amazon.lambda.powertools.logging.argument.StructuredArgument;
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsArguments;
@@ -73,7 +74,10 @@ class LambdaJsonEncoderTest {
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
         MDC.clear();
+        // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+
         context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
         try {
