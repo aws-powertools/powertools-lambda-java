@@ -66,7 +66,7 @@ class PowertoolsSerializerTest {
     @ParameterizedTest
     @MethodSource("inputTypes")
     @SetEnvironmentVariable(key = "_HANDLER", value = "")
-    void shouldUseDefaultDeserializerWhenHandlerNotFound(InputType inputType) throws JsonProcessingException {
+    void shouldUseDefaultDeserializerWhenHandlerNotFound(InputType inputType) throws JsonProcessingException, IOException {
         // When
         PowertoolsSerializer serializer = new PowertoolsSerializer();
 
@@ -77,8 +77,9 @@ class PowertoolsSerializerTest {
         // This will use the Lambda default deserializer (no Kafka logic)
         TestProductPojo result;
         if (inputType == InputType.INPUT_STREAM) {
-            ByteArrayInputStream input = new ByteArrayInputStream(json.getBytes());
-            result = serializer.fromJson(input, TestProductPojo.class);
+            try (ByteArrayInputStream input = new ByteArrayInputStream(json.getBytes())) {
+                result = serializer.fromJson(input, TestProductPojo.class);
+            }
         } else {
             result = serializer.fromJson(json, TestProductPojo.class);
         }
@@ -92,7 +93,7 @@ class PowertoolsSerializerTest {
     @ParameterizedTest
     @MethodSource("inputTypes")
     @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.DefaultHandler::handleRequest")
-    void shouldUseLambdaDefaultDeserializer(InputType inputType) throws JsonProcessingException {
+    void shouldUseLambdaDefaultDeserializer(InputType inputType) throws JsonProcessingException, IOException {
         // When
         PowertoolsSerializer serializer = new PowertoolsSerializer();
 
@@ -103,8 +104,9 @@ class PowertoolsSerializerTest {
         // This will use the Lambda default deserializer (no Kafka logic)
         TestProductPojo result;
         if (inputType == InputType.INPUT_STREAM) {
-            ByteArrayInputStream input = new ByteArrayInputStream(json.getBytes());
-            result = serializer.fromJson(input, TestProductPojo.class);
+            try (ByteArrayInputStream input = new ByteArrayInputStream(json.getBytes())) {
+                result = serializer.fromJson(input, TestProductPojo.class);
+            }
         } else {
             result = serializer.fromJson(json, TestProductPojo.class);
         }
@@ -138,30 +140,32 @@ class PowertoolsSerializerTest {
 
         // Then
         String testInput = "This is a test string";
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(testInput.getBytes());
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(testInput.getBytes())) {
+            // This should return the input stream directly
+            InputStream result = serializer.fromJson(inputStream, InputStream.class);
 
-        // This should return the input stream directly
-        InputStream result = serializer.fromJson(inputStream, InputStream.class);
-
-        // Read the content to verify it's the same
-        String resultString = new String(result.readAllBytes());
-        assertThat(resultString).isEqualTo(testInput);
+            // Read the content to verify it's the same
+            try (result) {
+                String resultString = new String(result.readAllBytes());
+                assertThat(resultString).isEqualTo(testInput);
+            }
+        }
     }
 
     @Test
-    void shouldConvertInputStreamToString() {
+    void shouldConvertInputStreamToString() throws IOException {
         // When
         LambdaDefaultDeserializer deserializer = new LambdaDefaultDeserializer();
 
         // Then
         String expected = "This is a test string";
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(expected.getBytes());
+        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(expected.getBytes())) {
+            // Convert InputStream to String
+            String result = deserializer.fromJson(inputStream, String.class);
 
-        // Convert InputStream to String
-        String result = deserializer.fromJson(inputStream, String.class);
-
-        // Verify the result
-        assertThat(result).isEqualTo(expected);
+            // Verify the result
+            assertThat(result).isEqualTo(expected);
+        }
     }
 
     @Test
@@ -207,7 +211,7 @@ class PowertoolsSerializerTest {
     @ParameterizedTest
     @MethodSource("inputTypes")
     @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.JsonHandler::handleRequest")
-    void shouldUseKafkaJsonDeserializer(InputType inputType) throws JsonProcessingException {
+    void shouldUseKafkaJsonDeserializer(InputType inputType) throws IOException {
         // When
         PowertoolsSerializer serializer = new PowertoolsSerializer();
 
@@ -241,8 +245,9 @@ class PowertoolsSerializerTest {
         ConsumerRecords<String, TestProductPojo> records;
 
         if (inputType == InputType.INPUT_STREAM) {
-            ByteArrayInputStream input = new ByteArrayInputStream(kafkaJson.getBytes());
-            records = serializer.fromJson(input, type);
+            try (ByteArrayInputStream input = new ByteArrayInputStream(kafkaJson.getBytes())) {
+                records = serializer.fromJson(input, type);
+            }
         } else {
             records = serializer.fromJson(kafkaJson, type);
         }
@@ -302,8 +307,9 @@ class PowertoolsSerializerTest {
         ConsumerRecords<String, software.amazon.lambda.powertools.kafka.serializers.test.avro.TestProduct> records;
 
         if (inputType == InputType.INPUT_STREAM) {
-            ByteArrayInputStream input = new ByteArrayInputStream(kafkaJson.getBytes());
-            records = serializer.fromJson(input, type);
+            try (ByteArrayInputStream input = new ByteArrayInputStream(kafkaJson.getBytes())) {
+                records = serializer.fromJson(input, type);
+            }
         } else {
             records = serializer.fromJson(kafkaJson, type);
         }
@@ -330,7 +336,7 @@ class PowertoolsSerializerTest {
     @ParameterizedTest
     @MethodSource("inputTypes")
     @SetEnvironmentVariable(key = "_HANDLER", value = "software.amazon.lambda.powertools.kafka.testutils.ProtobufHandler::handleRequest")
-    void shouldUseKafkaProtobufDeserializer(InputType inputType) {
+    void shouldUseKafkaProtobufDeserializer(InputType inputType) throws IOException {
         // When
         PowertoolsSerializer serializer = new PowertoolsSerializer();
 
@@ -369,8 +375,9 @@ class PowertoolsSerializerTest {
         ConsumerRecords<String, software.amazon.lambda.powertools.kafka.serializers.test.protobuf.TestProduct> records;
 
         if (inputType == InputType.INPUT_STREAM) {
-            ByteArrayInputStream input = new ByteArrayInputStream(kafkaJson.getBytes());
-            records = serializer.fromJson(input, type);
+            try (ByteArrayInputStream input = new ByteArrayInputStream(kafkaJson.getBytes())) {
+                records = serializer.fromJson(input, type);
+            }
         } else {
             records = serializer.fromJson(kafkaJson, type);
         }
