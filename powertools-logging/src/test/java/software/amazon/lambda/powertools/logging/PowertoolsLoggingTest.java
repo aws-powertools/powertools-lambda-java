@@ -245,7 +245,7 @@ class PowertoolsLoggingTest {
                 .containsEntry(PowertoolsLoggedFields.FUNCTION_NAME.getName(), "test-function")
                 .containsEntry(PowertoolsLoggedFields.FUNCTION_VERSION.getName(), "1")
                 .containsEntry(PowertoolsLoggedFields.FUNCTION_COLD_START.getName(), "true")
-                .containsEntry(PowertoolsLoggedFields.SERVICE.getName(), "service_undefined");
+                .containsEntry(PowertoolsLoggedFields.SERVICE.getName(), "testService");
     }
 
     @Test
