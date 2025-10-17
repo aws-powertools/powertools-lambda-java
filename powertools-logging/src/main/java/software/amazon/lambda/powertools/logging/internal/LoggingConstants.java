@@ -15,10 +15,13 @@
 package software.amazon.lambda.powertools.logging.internal;
 
 public final class LoggingConstants {
+    @SuppressWarnings({"java:S1104", "java:S1444"})
     public static String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL"); /* not final for test purpose */
 
+    @SuppressWarnings({"java:S1104", "java:S1444"})
     public static String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL"); /* not final for test purpose */
 
+    @SuppressWarnings({"java:S1104", "java:S1444"})
     public static String POWERTOOLS_SAMPLING_RATE = System.getenv("POWERTOOLS_LOGGER_SAMPLE_RATE"); /* not final for test purpose */
 
     static boolean POWERTOOLS_LOG_EVENT = "true".equals(System.getenv("POWERTOOLS_LOGGER_LOG_EVENT")); /* not final for test purpose */
