@@ -243,7 +243,7 @@ jobs:
         name: Create branch and update change log
         run: |
           git checkout -b ci-${{ github.run_id }}
-          docker run -v "${PWD}":/workdir quay.io/git-chglog/git-chglog:0.15.1 > CHANGELOG.md
+          docker run -v "${PWD}":/workdir quay.io/git-chglog/git-chglog:sha256:c791b1e8264387690cce4ce32e18b4f59ca3ffd8d55cb4093dc6de74529493f4 > CHANGELOG.md
           git commit -am "chore(ci): bump version to ${{ inputs.version }}"
           git push origin ci-${{ github.run_id }}
       - id: create_pr
