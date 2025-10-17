@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.logging.internal;
 
-public class LoggingConstants {
+public final class LoggingConstants {
     public static String LAMBDA_LOG_LEVEL = System.getenv("AWS_LAMBDA_LOG_LEVEL"); /* not final for test purpose */
 
     public static String POWERTOOLS_LOG_LEVEL = System.getenv("POWERTOOLS_LOG_LEVEL"); /* not final for test purpose */
