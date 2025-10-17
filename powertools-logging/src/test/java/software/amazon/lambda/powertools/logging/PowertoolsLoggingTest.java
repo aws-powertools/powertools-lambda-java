@@ -365,6 +365,57 @@ class PowertoolsLoggingTest {
         assertThat(testManager.isBufferCleared()).isTrue();
     }
 
+    @Test
+    void initializeLogging_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+        // GIVEN
+        int threadCount = 10;
+        Thread[] threads = new Thread[threadCount];
+        String[] samplingRates = new String[threadCount];
+        boolean[] success = new boolean[threadCount];
+
+        // WHEN - Multiple threads call initializeLogging with alternating sampling rates
+        for (int i = 0; i < threadCount; i++) {
+            final int threadIndex = i;
+            final double samplingRate = (i % 2 == 0) ? 1.0 : 0.0; // Alternate between 1.0 and 0.0
+            
+            threads[i] = new Thread(() -> {
+                try {
+                    PowertoolsLogging.initializeLogging(context, samplingRate);
+                    
+                    // Capture the sampling rate set in MDC (thread-local)
+                    samplingRates[threadIndex] = MDC.get(PowertoolsLoggedFields.SAMPLING_RATE.getName());
+                    success[threadIndex] = true;
+                    
+                    // Clean up thread-local state
+                    PowertoolsLogging.clearState(true);
+                } catch (Exception e) {
+                    success[threadIndex] = false;
+                }
+            });
+        }
+
+        // Start all threads
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        // Wait for all threads to complete
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        // THEN - All threads should complete successfully
+        for (boolean result : success) {
+            assertThat(result).isTrue();
+        }
+        
+        // THEN - Each thread should have its own sampling rate in MDC
+        for (int i = 0; i < threadCount; i++) {
+            String expectedRate = (i % 2 == 0) ? "1.0" : "0.0";
+            assertThat(samplingRates[i]).as("Thread %d should have sampling rate %s", i, expectedRate).isEqualTo(expectedRate);
+        }
+    }
+
     private void reinitializeLogLevel() {
         try {
             Method initializeLogLevel = PowertoolsLogging.class.getDeclaredMethod("initializeLogLevel");

@@ -64,8 +64,8 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  */
 public final class PowertoolsLogging {
     private static final Logger LOG = LoggerFactory.getLogger(PowertoolsLogging.class);
-    private static final Random SAMPLER = new Random();
-    private static boolean hasBeenInitialized = false;
+    private static final ThreadLocal<Random> SAMPLER = ThreadLocal.withInitial(Random::new);
+    private static volatile boolean hasBeenInitialized = false;
 
     static {
         initializeLogLevel();
@@ -186,7 +186,7 @@ public final class PowertoolsLogging {
             coldStartDone();
         }
         hasBeenInitialized = true;
-        
+
         addLambdaContextToLoggingContext(context);
         setLogLevelBasedOnSamplingRate(samplingRate);
         getXrayTraceId().ifPresent(xRayTraceId -> MDC.put(FUNCTION_TRACE_ID.getName(), xRayTraceId));
@@ -219,7 +219,7 @@ public final class PowertoolsLogging {
             return;
         }
 
-        float sample = SAMPLER.nextFloat();
+        float sample = SAMPLER.get().nextFloat();
         if (effectiveSamplingRate > sample) {
             LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
             loggingManager.setLogLevel(Level.DEBUG);
@@ -272,5 +272,6 @@ public final class PowertoolsLogging {
             MDC.clear();
         }
         clearBuffer();
+        SAMPLER.remove();
     }
 }
