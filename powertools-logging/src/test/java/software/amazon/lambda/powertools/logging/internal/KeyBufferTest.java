@@ -21,6 +21,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.channels.FileChannel;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Deque;
@@ -44,7 +45,7 @@ class KeyBufferTest {
         // Clean up log file before each test
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-        } catch (IOException e) {
+        } catch (NoSuchFileException e) {
             // may not be there in the first run
         }
     }
