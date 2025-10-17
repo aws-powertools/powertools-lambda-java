@@ -240,9 +240,10 @@ jobs:
           git config pull.rebase true
           git config remote.origin.url >&-
       - id: branch
-        name: Create branch
+        name: Create branch and update change log
         run: |
           git checkout -b ci-${{ github.run_id }}
+          docker run -v "${PWD}":/workdir quay.io/git-chglog/git-chglog:0.15.1 > CHANGELOG.md
           git commit -am "chore(ci): bump version to ${{ inputs.version }}"
           git push origin ci-${{ github.run_id }}
       - id: create_pr
