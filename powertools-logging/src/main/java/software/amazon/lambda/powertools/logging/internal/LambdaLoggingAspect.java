@@ -78,22 +78,8 @@ public final class LambdaLoggingAspect {
         Object[] proceedArgs = pjp.getArgs();
 
         if (isHandlerMethod(pjp) && context != null) {
-            Object event = null;
-            if (!logging.correlationIdPath().isEmpty()) {
-                if (isOnRequestHandler && proceedArgs.length > 0) {
-                    event = proceedArgs[0];
-                } else if (isOnRequestStreamHandler && proceedArgs.length > 0) {
-                    try {
-                        byte[] bytes = bytesFromInputStreamSafely((InputStream) proceedArgs[0]);
-                        // Parse JSON string to Object for correlation ID extraction
-                        event = JsonConfig.get().getObjectMapper().readTree(bytes);
-                        proceedArgs[0] = new ByteArrayInputStream(bytes); // Restore stream
-                    } catch (IOException e) {
-                        LOG.warn("Failed to read event from input stream for correlation ID extraction.", e);
-                    }
-                }
-            }
-
+            Object event = extractEventForCorrelationId(logging, isOnRequestHandler, isOnRequestStreamHandler,
+                    proceedArgs);
             PowertoolsLogging.initializeLogging(context, logging.samplingRate(),
                     logging.correlationIdPath().isEmpty() ? null : logging.correlationIdPath(), event);
         }
@@ -228,6 +214,28 @@ public final class LambdaLoggingAspect {
                 backupOutputStream.write(bytes);
             }
         }
+    }
+
+    private Object extractEventForCorrelationId(Logging logging, boolean isOnRequestHandler,
+            boolean isOnRequestStreamHandler, Object[] proceedArgs) {
+        if (logging.correlationIdPath().isEmpty()) {
+            return null;
+        }
+
+        if (isOnRequestHandler && proceedArgs.length > 0) {
+            return proceedArgs[0];
+        } else if (isOnRequestStreamHandler && proceedArgs.length > 0) {
+            try {
+                byte[] bytes = bytesFromInputStreamSafely((InputStream) proceedArgs[0]);
+                // Parse JSON string to Object for correlation ID extraction
+                Object event = JsonConfig.get().getObjectMapper().readTree(bytes);
+                proceedArgs[0] = new ByteArrayInputStream(bytes); // Restore stream
+                return event;
+            } catch (IOException e) {
+                LOG.warn("Failed to read event from input stream for correlation ID extraction.", e);
+            }
+        }
+        return null;
     }
 
     private Logger logger(final ProceedingJoinPoint pjp) {
