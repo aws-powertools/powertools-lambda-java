@@ -53,7 +53,11 @@ class KeyBufferTest {
     @AfterEach
     void cleanUp() throws IOException {
         // Make sure file is cleaned up after each test
-        FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there in the first run
+        }
     }
 
     @Test
