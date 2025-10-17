@@ -36,7 +36,11 @@ class BufferingAppenderTest {
 
     @AfterEach
     void cleanUp() throws IOException {
-        FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // may not be there in the first run
+        }
     }
 
     @Test

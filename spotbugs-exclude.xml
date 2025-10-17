@@ -201,8 +201,7 @@
         <Bug pattern="MS_SHOULD_BE_FINAL"/>
         <Or>
             <And>
-                <Class name="software.amazon.lambda.powertools.logging.internal.LambdaLoggingAspect"/>
-                <Field name="SAMPLING_RATE"/>
+                <Class name="software.amazon.lambda.powertools.logging.internal.LoggingConstants"/>
             </And>
         </Or>
     </Match>

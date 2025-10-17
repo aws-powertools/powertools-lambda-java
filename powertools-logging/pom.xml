@@ -186,6 +186,7 @@
                 <configuration>
                     <environmentVariables>
                         <AWS_LAMBDA_LOG_FORMAT>JSON</AWS_LAMBDA_LOG_FORMAT>
+                        <POWERTOOLS_SERVICE_NAME>testService</POWERTOOLS_SERVICE_NAME>
                     </environmentVariables>
                 </configuration>
             </plugin>

@@ -47,7 +47,7 @@ public enum PowertoolsLoggedFields {
         return Stream.of(values()).map(PowertoolsLoggedFields::getName).collect(Collectors.toList());
     }
 
-    static Map<String, String> setValuesFromLambdaContext(Context context) {
+    public static Map<String, String> setValuesFromLambdaContext(Context context) {
         Map<String, String> hashMap = new HashMap<>();
 
         hashMap.put(FUNCTION_NAME.name, context.getFunctionName());

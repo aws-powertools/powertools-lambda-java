@@ -18,11 +18,6 @@ import static org.apache.commons.lang3.reflect.FieldUtils.writeStaticField;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.pattern.RootCauseFirstThrowableProxyConverter;
-import ch.qos.logback.classic.spi.LoggingEvent;
-import com.amazonaws.services.lambda.runtime.Context;
 import java.io.File;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -30,16 +25,25 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+
+import com.amazonaws.services.lambda.runtime.Context;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.pattern.RootCauseFirstThrowableProxyConverter;
+import ch.qos.logback.classic.spi.LoggingEvent;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
+import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
+import software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder;
 
 @Order(3)
 class LambdaEcsEncoderTest {
@@ -51,7 +55,10 @@ class LambdaEcsEncoderTest {
     @BeforeEach
     void setUp() throws IllegalAccessException, IOException {
         MDC.clear();
+        // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+
         context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
         try {
