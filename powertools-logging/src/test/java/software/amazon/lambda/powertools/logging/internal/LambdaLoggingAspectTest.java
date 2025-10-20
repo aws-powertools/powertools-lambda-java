@@ -39,6 +39,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,7 +100,7 @@ class LambdaLoggingAspectTest {
 
         // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
-        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", new AtomicBoolean(false), true);
 
         context = new TestLambdaContext();
         requestHandler = new PowertoolsLogEnabled();

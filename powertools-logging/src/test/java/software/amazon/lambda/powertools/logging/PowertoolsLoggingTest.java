@@ -27,6 +27,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -68,7 +69,7 @@ class PowertoolsLoggingTest {
 
         // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
-        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", new AtomicBoolean(false), true);
 
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
@@ -313,7 +314,7 @@ class PowertoolsLoggingTest {
     @Test
     void initializeLogging_calledTwice_shouldMarkColdStartDoneOnSecondCall() throws IllegalAccessException {
         // GIVEN
-        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", new AtomicBoolean(false), true);
 
         // WHEN - First call
         PowertoolsLogging.initializeLogging(context);
@@ -371,21 +372,24 @@ class PowertoolsLoggingTest {
         int threadCount = 10;
         Thread[] threads = new Thread[threadCount];
         String[] samplingRates = new String[threadCount];
+        boolean[] coldStarts = new boolean[threadCount];
         boolean[] success = new boolean[threadCount];
 
         // WHEN - Multiple threads call initializeLogging with alternating sampling rates
         for (int i = 0; i < threadCount; i++) {
             final int threadIndex = i;
             final double samplingRate = (i % 2 == 0) ? 1.0 : 0.0; // Alternate between 1.0 and 0.0
-            
+
             threads[i] = new Thread(() -> {
                 try {
                     PowertoolsLogging.initializeLogging(context, samplingRate);
-                    
-                    // Capture the sampling rate set in MDC (thread-local)
+
+                    // Capture the sampling rate and cold start values set in MDC (thread-local)
                     samplingRates[threadIndex] = MDC.get(PowertoolsLoggedFields.SAMPLING_RATE.getName());
+                    coldStarts[threadIndex] = Boolean
+                            .parseBoolean(MDC.get(PowertoolsLoggedFields.FUNCTION_COLD_START.getName()));
                     success[threadIndex] = true;
-                    
+
                     // Clean up thread-local state
                     PowertoolsLogging.clearState(true);
                 } catch (Exception e) {
@@ -408,12 +412,17 @@ class PowertoolsLoggingTest {
         for (boolean result : success) {
             assertThat(result).isTrue();
         }
-        
-        // THEN - Each thread should have its own sampling rate in MDC
+
+        // THEN - Each thread should have its own sampling rate in MDC and exactly one invocation was a cold start
+        int coldStartCount = 0;
         for (int i = 0; i < threadCount; i++) {
-            String expectedRate = (i % 2 == 0) ? "1.0" : "0.0";
-            assertThat(samplingRates[i]).as("Thread %d should have sampling rate %s", i, expectedRate).isEqualTo(expectedRate);
+            String expectedSamplingRate = (i % 2 == 0) ? "1.0" : "0.0";
+            assertThat(samplingRates[i]).as("Thread %d should have sampling rate %s", i, expectedSamplingRate)
+                    .isEqualTo(expectedSamplingRate);
+
+            coldStartCount += coldStarts[i] ? 1 : 0;
         }
+        assertThat(coldStartCount).isEqualTo(1);
     }
 
     private void reinitializeLogLevel() {

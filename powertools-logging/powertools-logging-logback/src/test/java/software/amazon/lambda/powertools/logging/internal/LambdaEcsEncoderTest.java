@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +58,7 @@ class LambdaEcsEncoderTest {
         MDC.clear();
         // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
-        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", new AtomicBoolean(false), true);
 
         context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests

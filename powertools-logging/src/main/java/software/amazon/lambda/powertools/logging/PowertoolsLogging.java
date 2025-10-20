@@ -29,6 +29,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,7 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
 public final class PowertoolsLogging {
     private static final Logger LOG = LoggerFactory.getLogger(PowertoolsLogging.class);
     private static final ThreadLocal<Random> SAMPLER = ThreadLocal.withInitial(Random::new);
-    private static volatile boolean hasBeenInitialized = false;
+    private static AtomicBoolean hasBeenInitialized = new AtomicBoolean(false);
 
     static {
         initializeLogLevel();
@@ -176,16 +177,14 @@ public final class PowertoolsLogging {
      * configures sampling rate for DEBUG logging, and optionally extracts
      * correlation ID from the event.
      * 
+     * This method is tread-safe.
+     * 
      * @param context the Lambda context provided by AWS Lambda runtime
      * @param samplingRate sampling rate for DEBUG logging (0.0 to 1.0)
      * @param correlationIdPath JSON path to extract correlation ID from event (can be null)
      * @param event the Lambda event object (required if correlationIdPath is provided)
      */
     public static void initializeLogging(Context context, double samplingRate, String correlationIdPath, Object event) {
-        if (hasBeenInitialized) {
-            coldStartDone();
-        }
-        hasBeenInitialized = true;
 
         addLambdaContextToLoggingContext(context);
         setLogLevelBasedOnSamplingRate(samplingRate);
@@ -196,12 +195,17 @@ public final class PowertoolsLogging {
         }
     }
 
-    private static void addLambdaContextToLoggingContext(Context context) {
+    // Synchronized since isColdStart() is a globally managed constant in LambdaHandlerProcessor
+    private static synchronized void addLambdaContextToLoggingContext(Context context) {
         if (context != null) {
             PowertoolsLoggedFields.setValuesFromLambdaContext(context).forEach(MDC::put);
-            MDC.put(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
-            MDC.put(SERVICE.getName(), serviceName());
         }
+
+        MDC.put(FUNCTION_COLD_START.getName(), isColdStart() ? "true" : "false");
+        if (hasBeenInitialized.compareAndSet(false, true)) {
+            coldStartDone();
+        }
+        MDC.put(SERVICE.getName(), serviceName());
     }
 
     private static void setLogLevelBasedOnSamplingRate(double samplingRate) {

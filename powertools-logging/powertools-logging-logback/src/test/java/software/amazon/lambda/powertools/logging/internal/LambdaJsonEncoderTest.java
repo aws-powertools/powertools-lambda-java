@@ -43,6 +43,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +78,7 @@ class LambdaJsonEncoderTest {
         MDC.clear();
         // Reset cold start state
         writeStaticField(LambdaHandlerProcessor.class, "isColdStart", null, true);
-        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", false, true);
+        writeStaticField(PowertoolsLogging.class, "hasBeenInitialized", new AtomicBoolean(false), true);
 
         context = new TestLambdaContext();
         // Make sure file is cleaned up before running tests
