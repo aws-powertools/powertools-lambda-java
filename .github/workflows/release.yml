@@ -239,6 +239,11 @@ jobs:
           git config user.email "151832416+aws-powertools-bot@users.noreply.github.com"
           git config pull.rebase true
           git config remote.origin.url >&-
+      - id: tag
+        name: Create tag
+        run: |
+          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
+          git push origin v${{ inputs.version }}
       - id: branch
         name: Create branch and update change log
         run: |
@@ -254,11 +259,6 @@ jobs:
             --body "This is an automated PR created from the following workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - id: tag
-        name: Create tag
-        run: |
-          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
-          git push origin v${{ inputs.version }}
 
   docs:
     runs-on: ubuntu-latest
