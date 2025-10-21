@@ -58,8 +58,12 @@ class PowerToolsResolverFactoryTest {
 
     @AfterEach
     void cleanUp() throws IOException {
-        FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
-        FileChannel.open(Paths.get("target/ecslogfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        try {
+            FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+            FileChannel.open(Paths.get("target/ecslogfile.json"), StandardOpenOption.WRITE).truncate(0).close();
+        } catch (NoSuchFileException e) {
+            // file may not exist on the first launch
+        }
     }
 
     @Test
