@@ -36,7 +36,7 @@
     <properties>
         <kafka-clients.version>4.1.0</kafka-clients.version>
         <avro.version>1.12.0</avro.version>
-        <protobuf.version>4.32.1</protobuf.version>
+        <protobuf.version>4.33.0</protobuf.version>
         <lambda-serialization.version>1.1.6</lambda-serialization.version>
     </properties>
 
