@@ -239,10 +239,16 @@ jobs:
           git config user.email "151832416+aws-powertools-bot@users.noreply.github.com"
           git config pull.rebase true
           git config remote.origin.url >&-
+      - id: tag
+        name: Create tag
+        run: |
+          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
+          git push origin v${{ inputs.version }}
       - id: branch
-        name: Create branch
+        name: Create branch and update change log
         run: |
           git checkout -b ci-${{ github.run_id }}
+          docker run -v "${PWD}":/workdir quay.io/git-chglog/git-chglog@sha256:c791b1e8264387690cce4ce32e18b4f59ca3ffd8d55cb4093dc6de74529493f4 > CHANGELOG.md
           git commit -am "chore(ci): bump version to ${{ inputs.version }}"
           git push origin ci-${{ github.run_id }}
       - id: create_pr
@@ -253,11 +259,6 @@ jobs:
             --body "This is an automated PR created from the following workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - id: tag
-        name: Create tag
-        run: |
-          git tag -a v${{ inputs.version }} -m "Release v${{ inputs.version }}"
-          git push origin v${{ inputs.version }}
 
   docs:
     runs-on: ubuntu-latest

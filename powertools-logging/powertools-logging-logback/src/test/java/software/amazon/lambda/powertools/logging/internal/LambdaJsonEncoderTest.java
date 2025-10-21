@@ -91,7 +91,6 @@ class LambdaJsonEncoderTest {
 
     @AfterEach
     void cleanUp() throws IOException {
-
         try {
             FileChannel.open(Paths.get("target/logfile.json"), StandardOpenOption.WRITE).truncate(0).close();
         } catch (NoSuchFileException e) {
