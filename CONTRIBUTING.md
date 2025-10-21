@@ -21,6 +21,9 @@
 Thank you for your interest in contributing to our project. Whether it's a [bug report](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=bug%2C+triage&projects=&template=bug_report.md&title=Bug%3A+TITLE), [new feature](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=feature-request%2C+triage&projects=&template=feature_request.md&title=Feature+request%3A+TITLE) or [additional documentation](https://github.com/aws-powertools/powertools-lambda-java/issues/new?assignees=&labels=documentation%2Ctriage&projects=&template=documentation_improvements.yml&title=Docs%3A+TITLE), we greatly value feedback and contributions from our community.
 <!-- markdownlint-enable MD013 -->
 
+We encourage contributions from the community and we will work with contributors to merge their pull requests.
+Rarely, we may close pull requests that do not meet our guidelines specified in CONTRIBUTING.md, or will require unreasonable effort to meet our quality bar.
+
 Please read through this document before submitting any issues or pull requests to ensure we have all the necessary
 information to effectively respond to your bug report or contribution.
 
