@@ -30,6 +30,7 @@
         <module>largemessage_idempotent</module>
         <module>logging-log4j</module>
         <module>logging-logback</module>
+        <module>logging-functional</module>
         <module>tracing</module>
         <module>metrics</module>
         <module>idempotency</module>
@@ -60,6 +61,11 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-logging-logback</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-logging</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
