@@ -14,7 +14,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <lambda.core.version>1.4.0</lambda.core.version>
         <lambda.events.version>3.16.1</lambda.events.version>
-        <aws.sdk.version>2.35.10</aws.sdk.version>
+        <aws.sdk.version>2.36.1</aws.sdk.version>
         <aspectj.version>1.9.20.1</aspectj.version>
 
     </properties>
@@ -116,7 +116,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.6.1</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -159,7 +159,7 @@
                     <plugin>
                         <groupId>org.graalvm.buildtools</groupId>
                         <artifactId>native-maven-plugin</artifactId>
-                        <version>0.11.0</version>
+                        <version>0.11.2</version>
                         <extensions>true</extensions>
                         <executions>
                             <execution>
