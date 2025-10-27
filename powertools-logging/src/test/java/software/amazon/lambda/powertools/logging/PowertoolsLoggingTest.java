@@ -425,6 +425,86 @@ class PowertoolsLoggingTest {
         assertThat(coldStartCount).isEqualTo(1);
     }
 
+    @Test
+    void withLogging_basicUsage_shouldInitializeAndCleanup() {
+        // WHEN
+        String result = PowertoolsLogging.withLogging(context, () -> {
+            assertThat(MDC.get(PowertoolsLoggedFields.FUNCTION_NAME.getName())).isEqualTo("test-function");
+            return "test-result";
+        });
+
+        // THEN
+        assertThat(result).isEqualTo("test-result");
+        assertThat(MDC.getCopyOfContextMap()).isNull();
+        assertThat(testManager.isBufferCleared()).isTrue();
+    }
+
+    @Test
+    void withLogging_withSamplingRate_shouldSetSamplingRateAndCleanup() {
+        // WHEN
+        String result = PowertoolsLogging.withLogging(context, 0.5, () -> {
+            assertThat(MDC.get(PowertoolsLoggedFields.SAMPLING_RATE.getName())).isEqualTo("0.5");
+            return "sampled-result";
+        });
+
+        // THEN
+        assertThat(result).isEqualTo("sampled-result");
+        assertThat(MDC.getCopyOfContextMap()).isNull();
+    }
+
+    @Test
+    void withLogging_withCorrelationId_shouldExtractCorrelationIdAndCleanup() {
+        // GIVEN
+        Map<String, Object> event = Map.of("requestId", "correlation-123");
+
+        // WHEN
+        Integer result = PowertoolsLogging.withLogging(context, "requestId", event, () -> {
+            assertThat(MDC.get(PowertoolsLoggedFields.CORRELATION_ID.getName())).isEqualTo("correlation-123");
+            return 42;
+        });
+
+        // THEN
+        assertThat(result).isEqualTo(42);
+        assertThat(MDC.getCopyOfContextMap()).isNull();
+    }
+
+    @Test
+    void withLogging_withFullConfiguration_shouldSetAllFieldsAndCleanup() {
+        // GIVEN
+        Map<String, Object> event = Map.of("id", "full-correlation");
+
+        // WHEN
+        Boolean result = PowertoolsLogging.withLogging(context, 0.8, "id", event, () -> {
+            Map<String, String> mdcMap = MDC.getCopyOfContextMap();
+            assertThat(mdcMap)
+                    .containsEntry(PowertoolsLoggedFields.FUNCTION_NAME.getName(), "test-function")
+                    .containsEntry(PowertoolsLoggedFields.CORRELATION_ID.getName(), "full-correlation")
+                    .containsEntry(PowertoolsLoggedFields.SAMPLING_RATE.getName(), "0.8");
+            return true;
+        });
+
+        // THEN
+        assertThat(result).isTrue();
+        assertThat(MDC.getCopyOfContextMap()).isNull();
+    }
+
+    @Test
+    void withLogging_whenSupplierThrowsException_shouldStillCleanup() {
+        // WHEN & THEN
+        try {
+            PowertoolsLogging.withLogging(context, () -> {
+                assertThat(MDC.get(PowertoolsLoggedFields.FUNCTION_NAME.getName())).isEqualTo("test-function");
+                throw new RuntimeException("test exception");
+            });
+        } catch (RuntimeException e) {
+            assertThat(e.getMessage()).isEqualTo("test exception");
+        }
+
+        // THEN - cleanup should still happen
+        assertThat(MDC.getCopyOfContextMap()).isNull();
+        assertThat(testManager.isBufferCleared()).isTrue();
+    }
+
     private void reinitializeLogLevel() {
         try {
             Method initializeLogLevel = PowertoolsLogging.class.getDeclaredMethod("initializeLogLevel");

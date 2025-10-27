@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -140,6 +141,9 @@ public final class PowertoolsLogging {
      * This method should be called at the beginning of your Lambda handler to set up
      * logging context with Lambda function information, trace ID, and service name.
      * 
+     * <p>Important: Call {@link #clearState(boolean)} at the end of your handler or use
+     * {@link #withLogging(Context, Supplier)} to handle cleanup automatically.</p>
+     * 
      * @param context the Lambda context provided by AWS Lambda runtime
      */
     public static void initializeLogging(Context context) {
@@ -150,6 +154,9 @@ public final class PowertoolsLogging {
      * Initializes Lambda logging context with sampling rate configuration.
      * This method sets up logging context and optionally enables DEBUG logging
      * based on the provided sampling rate.
+     * 
+     * <p>Important: Call {@link #clearState(boolean)} at the end of your handler or use
+     * {@link #withLogging(Context, double, Supplier)} to handle cleanup automatically.</p>
      * 
      * @param context the Lambda context provided by AWS Lambda runtime
      * @param samplingRate sampling rate for DEBUG logging (0.0 to 1.0)
@@ -162,6 +169,9 @@ public final class PowertoolsLogging {
      * Initializes Lambda logging context with correlation ID extraction.
      * This method sets up logging context and extracts correlation ID from the event
      * using the provided JSON path.
+     * 
+     * <p>Important: Call {@link #clearState(boolean)} at the end of your handler or use
+     * {@link #withLogging(Context, String, Object, Supplier)} to handle cleanup automatically.</p>
      * 
      * @param context the Lambda context provided by AWS Lambda runtime
      * @param correlationIdPath JSON path to extract correlation ID from event
@@ -177,7 +187,10 @@ public final class PowertoolsLogging {
      * configures sampling rate for DEBUG logging, and optionally extracts
      * correlation ID from the event.
      * 
-     * This method is tread-safe.
+     * <p>Important: Call {@link #clearState(boolean)} at the end of your handler or use
+     * {@link #withLogging(Context, double, String, Object, Supplier)} to handle cleanup automatically.</p>
+     * 
+     * <p>This method is thread-safe.</p>
      * 
      * @param context the Lambda context provided by AWS Lambda runtime
      * @param samplingRate sampling rate for DEBUG logging (0.0 to 1.0)
@@ -277,5 +290,80 @@ public final class PowertoolsLogging {
         }
         clearBuffer();
         SAMPLER.remove();
+    }
+
+    /**
+     * Executes code with logging context initialized and automatically clears state.
+     * 
+     * @param context the Lambda context provided by AWS Lambda runtime
+     * @param supplier the code to execute with logging context
+     * @param <T> the return type
+     * @return the result of the supplier execution
+     */
+    public static <T> T withLogging(Context context, Supplier<T> supplier) {
+        initializeLogging(context);
+        try {
+            return supplier.get();
+        } finally {
+            clearState(true);
+        }
+    }
+
+    /**
+     * Executes code with logging context initialized with sampling rate and automatically clears state.
+     * 
+     * @param context the Lambda context provided by AWS Lambda runtime
+     * @param samplingRate sampling rate for DEBUG logging (0.0 to 1.0)
+     * @param supplier the code to execute with logging context
+     * @param <T> the return type
+     * @return the result of the supplier execution
+     */
+    public static <T> T withLogging(Context context, double samplingRate, Supplier<T> supplier) {
+        initializeLogging(context, samplingRate);
+        try {
+            return supplier.get();
+        } finally {
+            clearState(true);
+        }
+    }
+
+    /**
+     * Executes code with logging context initialized with correlation ID extraction and automatically clears state.
+     * 
+     * @param context the Lambda context provided by AWS Lambda runtime
+     * @param correlationIdPath JSON path to extract correlation ID from event
+     * @param event the Lambda event object
+     * @param supplier the code to execute with logging context
+     * @param <T> the return type
+     * @return the result of the supplier execution
+     */
+    public static <T> T withLogging(Context context, String correlationIdPath, Object event, Supplier<T> supplier) {
+        initializeLogging(context, correlationIdPath, event);
+        try {
+            return supplier.get();
+        } finally {
+            clearState(true);
+        }
+    }
+
+    /**
+     * Executes code with logging context initialized with full configuration and automatically clears state.
+     * 
+     * @param context the Lambda context provided by AWS Lambda runtime
+     * @param samplingRate sampling rate for DEBUG logging (0.0 to 1.0)
+     * @param correlationIdPath JSON path to extract correlation ID from event (can be null)
+     * @param event the Lambda event object (required if correlationIdPath is provided)
+     * @param supplier the code to execute with logging context
+     * @param <T> the return type
+     * @return the result of the supplier execution
+     */
+    public static <T> T withLogging(Context context, double samplingRate, String correlationIdPath, Object event,
+            Supplier<T> supplier) {
+        initializeLogging(context, samplingRate, correlationIdPath, event);
+        try {
+            return supplier.get();
+        } finally {
+            clearState(true);
+        }
     }
 }

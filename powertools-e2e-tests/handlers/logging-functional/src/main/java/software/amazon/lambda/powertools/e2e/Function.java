@@ -21,21 +21,20 @@ import org.slf4j.MDC;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
-import software.amazon.lambda.powertools.logging.Logging;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 
 public class Function implements RequestHandler<Input, String> {
     private static final Logger LOG = LoggerFactory.getLogger(Function.class);
 
     public String handleRequest(Input input, Context context) {
-        PowertoolsLogging.initializeLogging(context);
+        return PowertoolsLogging.withLogging(context, () -> {
+            input.getKeys().forEach(MDC::put);
+            LOG.info(input.getMessage());
 
-        input.getKeys().forEach(MDC::put);
-        LOG.info(input.getMessage());
+            // Flush buffer manually since we buffer at INFO level to test log buffering
+            PowertoolsLogging.flushBuffer();
 
-        // Flush buffer manually since we buffer at INFO level to test log buffering
-        PowertoolsLogging.flushBuffer();
-
-        return "OK";
+            return "OK";
+        });
     }
 }
