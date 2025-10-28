@@ -145,8 +145,9 @@ public final class PowertoolsIdempotency {
      * 
      * <p>For functions with more than one parameter, use {@link #makeIdempotent(Object, Supplier, Class)} instead.</p>
      * 
-     * <p><strong>Note:</strong> If you need to call different functions with the same argument,
-     * use {@link #makeIdempotent(String, Object, Supplier, Class)} to specify distinct function names.</p>
+     * <p><strong>Note:</strong> If you need to call different functions with the same payload,
+     * use {@link #makeIdempotent(String, Object, Supplier, Class)} to specify distinct function names.
+     * This ensures each function has its own idempotency scope.</p>
      * 
      * @param function the function to make idempotent (method reference)
      * @param arg the argument to pass to the function (also used as idempotency key)
