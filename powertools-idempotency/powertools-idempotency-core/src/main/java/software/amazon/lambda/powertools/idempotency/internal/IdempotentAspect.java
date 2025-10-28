@@ -76,7 +76,12 @@ public class IdempotentAspect {
             lambdaContext = Idempotency.getInstance().getConfig().getLambdaContext();
         }
 
-        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(pjp, method.getName(), payload, lambdaContext);
+        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(
+                () -> pjp.proceed(pjp.getArgs()),
+                method.getReturnType(),
+                method.getName(),
+                payload,
+                lambdaContext);
         return idempotencyHandler.handle();
     }
 

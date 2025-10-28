@@ -21,8 +21,6 @@ import java.time.Instant;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,13 +48,16 @@ public class IdempotencyHandler {
     private static final Logger LOG = LoggerFactory.getLogger(IdempotencyHandler.class);
     private static final int MAX_RETRIES = 2;
 
-    private final ProceedingJoinPoint pjp;
+    private final IdempotentFunction<?> function;
+    private final Class<?> returnType;
     private final JsonNode data;
     private final BasePersistenceStore persistenceStore;
     private final Context lambdaContext;
 
-    public IdempotencyHandler(ProceedingJoinPoint pjp, String functionName, JsonNode payload, Context lambdaContext) {
-        this.pjp = pjp;
+    public IdempotencyHandler(IdempotentFunction<?> function, Class<?> returnType, String functionName,
+            JsonNode payload, Context lambdaContext) {
+        this.function = function;
+        this.returnType = returnType;
         this.data = payload;
         this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
@@ -171,7 +172,6 @@ public class IdempotencyHandler {
                     "Execution already in progress with idempotency key: " + record.getIdempotencyKey());
         }
 
-        Class<?> returnType = ((MethodSignature) pjp.getSignature()).getReturnType();
         try {
             LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function",
                     record.getIdempotencyKey());
@@ -203,7 +203,7 @@ public class IdempotencyHandler {
     private Object getFunctionResponse() throws Throwable {
         Object response;
         try {
-            response = pjp.proceed(pjp.getArgs());
+            response = function.execute();
         } catch (Throwable handlerException) {
             // We need these nested blocks to preserve function's exception in case the persistence store operation
             // also raises an exception
