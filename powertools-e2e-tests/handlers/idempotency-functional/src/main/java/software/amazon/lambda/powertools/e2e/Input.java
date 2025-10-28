@@ -17,13 +17,6 @@ package software.amazon.lambda.powertools.e2e;
 public class Input {
     private String message;
 
-    public Input(String message) {
-        this.message = message;
-    }
-
-    public Input() {
-    }
-
     public String getMessage() {
         return message;
     }
