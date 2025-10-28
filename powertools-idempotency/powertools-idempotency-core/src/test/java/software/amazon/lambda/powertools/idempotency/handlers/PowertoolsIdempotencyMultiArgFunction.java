@@ -42,7 +42,8 @@ public class PowertoolsIdempotencyMultiArgFunction implements RequestHandler<Pro
     public Basket handleRequest(Product input, Context context) {
         Idempotency.registerLambdaContext(context);
         try {
-            return PowertoolsIdempotency.makeIdempotent(input.getId(), () -> process(input, "extra-data"));
+            return PowertoolsIdempotency.makeIdempotent(input.getId(), () -> process(input, "extra-data"),
+                    Basket.class);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

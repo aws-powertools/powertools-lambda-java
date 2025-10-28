@@ -19,6 +19,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.OptionalInt;
 
 import org.junit.jupiter.api.Test;
@@ -31,11 +34,14 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.handlers.PowertoolsIdempotencyFunction;
 import software.amazon.lambda.powertools.idempotency.handlers.PowertoolsIdempotencyMultiArgFunction;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
+import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 
 @ExtendWith(MockitoExtension.class)
 class PowertoolsIdempotencyTest {
@@ -83,7 +89,8 @@ class PowertoolsIdempotencyTest {
                 .configure();
         Idempotency.registerLambdaContext(context);
 
-        String result = PowertoolsIdempotency.makeIdempotent("myFunction", "test-key", () -> "test-result");
+        String result = PowertoolsIdempotency.makeIdempotent("myFunction", "test-key", () -> "test-result",
+                String.class);
 
         assertThat(result).isEqualTo("test-result");
 
@@ -100,7 +107,7 @@ class PowertoolsIdempotencyTest {
                 .configure();
         Idempotency.registerLambdaContext(context);
 
-        String result = PowertoolsIdempotency.makeIdempotent("test-key", this::helperMethod);
+        String result = PowertoolsIdempotency.makeIdempotent("test-key", this::helperMethod, String.class);
 
         assertThat(result).isEqualTo("helper-result");
 
@@ -122,7 +129,7 @@ class PowertoolsIdempotencyTest {
         Idempotency.registerLambdaContext(context);
 
         Product p = new Product(42, "test product", 10);
-        Basket result = PowertoolsIdempotency.makeIdempotent(this::processProduct, p);
+        Basket result = PowertoolsIdempotency.makeIdempotent(this::processProduct, p, Basket.class);
 
         assertThat(result.getProducts()).hasSize(1);
         assertThat(result.getProducts().get(0)).isEqualTo(p);
@@ -164,6 +171,66 @@ class PowertoolsIdempotencyTest {
         ArgumentCaptor<Basket> resultCaptor = ArgumentCaptor.forClass(Basket.class);
         verify(store).saveSuccess(any(), resultCaptor.capture(), any());
         assertThat(resultCaptor.getValue()).isEqualTo(basket);
+    }
+
+    @Test
+    void secondCall_shouldRetrieveFromCacheAndDeserialize() throws Throwable {
+        // Use in-memory persistence store to test actual serialization/deserialization
+        Map<String, DataRecord> data = new HashMap<>();
+        BasePersistenceStore inMemoryStore = new BasePersistenceStore() {
+            @Override
+            public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
+                DataRecord dr = data.get(idempotencyKey);
+                if (dr == null) {
+                    throw new IdempotencyItemNotFoundException(idempotencyKey);
+                }
+                return dr;
+            }
+
+            @Override
+            public void putRecord(DataRecord dr, Instant now) throws IdempotencyItemAlreadyExistsException {
+                if (data.containsKey(dr.getIdempotencyKey())) {
+                    throw new IdempotencyItemAlreadyExistsException();
+                }
+                data.put(dr.getIdempotencyKey(), dr);
+            }
+
+            @Override
+            public void updateRecord(DataRecord dr) {
+                data.put(dr.getIdempotencyKey(), dr);
+            }
+
+            @Override
+            public void deleteRecord(String idempotencyKey) {
+                data.remove(idempotencyKey);
+            }
+        };
+
+        Idempotency.config()
+                .withPersistenceStore(inMemoryStore)
+                .configure();
+        Idempotency.registerLambdaContext(context);
+
+        Product p = new Product(42, "test product", 10);
+        int[] callCount = { 0 };
+
+        // First call - executes function and stores result
+        Basket result1 = PowertoolsIdempotency.makeIdempotent(p, () -> {
+            callCount[0]++;
+            return processProduct(p);
+        }, Basket.class);
+        assertThat(result1.getProducts()).hasSize(1);
+        assertThat(callCount[0]).isEqualTo(1);
+
+        // Second call - should retrieve from cache, deserialize, and NOT execute function
+        Basket result2 = PowertoolsIdempotency.makeIdempotent(p, () -> {
+            callCount[0]++;
+            return processProduct(p);
+        }, Basket.class);
+        assertThat(result2.getProducts()).hasSize(1);
+        assertThat(result2.getProducts().get(0).getId()).isEqualTo(42);
+        assertThat(result2.getProducts().get(0).getName()).isEqualTo("test product");
+        assertThat(callCount[0]).isEqualTo(1); // Function should NOT be called again
     }
 
     @Test

@@ -37,7 +37,7 @@ public class PowertoolsIdempotencyFunction implements RequestHandler<Product, Ba
     public Basket handleRequest(Product input, Context context) {
         Idempotency.registerLambdaContext(context);
         try {
-            return PowertoolsIdempotency.makeIdempotent(this::process, input);
+            return PowertoolsIdempotency.makeIdempotent(this::process, input, Basket.class);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
