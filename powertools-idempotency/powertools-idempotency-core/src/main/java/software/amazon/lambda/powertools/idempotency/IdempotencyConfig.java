@@ -34,7 +34,7 @@ public class IdempotencyConfig {
     private final boolean throwOnNoIdempotencyKey;
     private final String hashFunction;
     private final BiFunction<Object, DataRecord, Object> responseHook;
-    private Context lambdaContext;
+    private final InheritableThreadLocal<Context> lambdaContext = new InheritableThreadLocal<>();
 
     private IdempotencyConfig(String eventKeyJMESPath, String payloadValidationJMESPath,
             boolean throwOnNoIdempotencyKey, boolean useLocalCache, int localCacheMaxItems,
@@ -87,11 +87,11 @@ public class IdempotencyConfig {
     }
 
     public Context getLambdaContext() {
-        return lambdaContext;
+        return lambdaContext.get();
     }
 
     public void setLambdaContext(Context lambdaContext) {
-        this.lambdaContext = lambdaContext;
+        this.lambdaContext.set(lambdaContext);
     }
 
     public BiFunction<Object, DataRecord, Object> getResponseHook() {
