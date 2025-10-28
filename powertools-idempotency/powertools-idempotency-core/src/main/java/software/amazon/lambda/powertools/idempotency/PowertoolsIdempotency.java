@@ -20,6 +20,7 @@ import java.util.function.Supplier;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 
+import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.idempotency.internal.IdempotencyHandler;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
@@ -134,11 +135,10 @@ public final class PowertoolsIdempotency {
 
             Object result = handler.handle();
             return (T) result;
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Throwable e) {
-            if (e instanceof RuntimeException) {
-                throw (RuntimeException) e;
-            }
-            throw new RuntimeException("Idempotency operation failed", e);
+            throw new IdempotencyConfigurationException("Idempotency operation failed: " + e.getMessage());
         }
     }
 
