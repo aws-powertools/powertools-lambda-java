@@ -25,7 +25,7 @@ import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
 /**
  * Configuration of the idempotency feature. Use the {@link Builder} to create an instance.
  */
-public class IdempotencyConfig {
+public final class IdempotencyConfig {
     private final int localCacheMaxItems;
     private final boolean useLocalCache;
     private final long expirationInSeconds;
