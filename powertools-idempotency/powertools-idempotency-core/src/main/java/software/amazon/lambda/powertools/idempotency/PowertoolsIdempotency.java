@@ -100,10 +100,8 @@ public final class PowertoolsIdempotency {
      * @param returnType the class of the return type for deserialization
      * @param <T> the return type of the function
      * @return the result of the function execution (either fresh or cached)
-     * @throws Throwable if the function execution fails
      */
-    public static <T> T makeIdempotent(Object idempotencyKey, Supplier<T> function, Class<T> returnType)
-            throws Throwable {
+    public static <T> T makeIdempotent(Object idempotencyKey, Supplier<T> function, Class<T> returnType) {
         return makeIdempotent(DEFAULT_FUNCTION_NAME, idempotencyKey, function, returnType);
     }
 
@@ -119,24 +117,29 @@ public final class PowertoolsIdempotency {
      * @param returnType the class of the return type for deserialization
      * @param <T> the return type of the function
      * @return the result of the function execution (either fresh or cached)
-     * @throws Throwable if the function execution fails
      */
     @SuppressWarnings("unchecked")
     public static <T> T makeIdempotent(String functionName, Object idempotencyKey, Supplier<T> function,
-            Class<T> returnType)
-            throws Throwable {
-        JsonNode payload = JsonConfig.get().getObjectMapper().valueToTree(idempotencyKey);
-        Context lambdaContext = Idempotency.getInstance().getConfig().getLambdaContext();
+            Class<T> returnType) {
+        try {
+            JsonNode payload = JsonConfig.get().getObjectMapper().valueToTree(idempotencyKey);
+            Context lambdaContext = Idempotency.getInstance().getConfig().getLambdaContext();
 
-        IdempotencyHandler handler = new IdempotencyHandler(
-                function::get,
-                returnType,
-                functionName,
-                payload,
-                lambdaContext);
+            IdempotencyHandler handler = new IdempotencyHandler(
+                    function::get,
+                    returnType,
+                    functionName,
+                    payload,
+                    lambdaContext);
 
-        Object result = handler.handle();
-        return (T) result;
+            Object result = handler.handle();
+            return (T) result;
+        } catch (Throwable e) {
+            if (e instanceof RuntimeException) {
+                throw (RuntimeException) e;
+            }
+            throw new RuntimeException("Idempotency operation failed", e);
+        }
     }
 
     /**
@@ -155,9 +158,8 @@ public final class PowertoolsIdempotency {
      * @param <T> the argument type
      * @param <R> the return type
      * @return the result of the function execution (either fresh or cached)
-     * @throws Throwable if the function execution fails
      */
-    public static <T, R> R makeIdempotent(Function<T, R> function, T arg, Class<R> returnType) throws Throwable {
+    public static <T, R> R makeIdempotent(Function<T, R> function, T arg, Class<R> returnType) {
         return makeIdempotent(DEFAULT_FUNCTION_NAME, arg, () -> function.apply(arg), returnType);
     }
 
