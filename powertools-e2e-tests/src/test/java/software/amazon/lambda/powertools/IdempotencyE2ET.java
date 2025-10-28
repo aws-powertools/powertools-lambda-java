@@ -23,40 +23,43 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.lambda.InvocationResult;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class IdempotencyE2ET {
-    private static Infrastructure infrastructure;
-    private static String functionName;
+    private Infrastructure infrastructure;
+    private String functionName;
 
-    @BeforeAll
-    @Timeout(value = 15, unit = TimeUnit.MINUTES)
-    static void setup() {
+    private void setupInfrastructure(String pathToFunction) {
         String random = UUID.randomUUID().toString().substring(0, 6);
         infrastructure = Infrastructure.builder()
-                .testName(IdempotencyE2ET.class.getSimpleName())
-                .pathToFunction("idempotency")
+                .testName(IdempotencyE2ET.class.getSimpleName() + "-" + pathToFunction)
+                .pathToFunction(pathToFunction)
                 .idempotencyTable("idempo" + random)
                 .build();
         Map<String, String> outputs = infrastructure.deploy();
         functionName = outputs.get(FUNCTION_NAME_OUTPUT);
     }
 
-    @AfterAll
-    static void tearDown() {
+    @AfterEach
+    void tearDown() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
-    @Test
-    void test_ttlNotExpired_sameResult_ttlExpired_differentResult() throws InterruptedException {
+    @ParameterizedTest
+    @ValueSource(strings = { "idempotency", "idempotency-functional" })
+    @Timeout(value = 15, unit = TimeUnit.MINUTES)
+    void test_ttlNotExpired_sameResult_ttlExpired_differentResult(String pathToFunction) throws InterruptedException {
+        setupInfrastructure(pathToFunction);
         // GIVEN
         String event = "{\"message\":\"TTL 10sec\"}";
 
