@@ -143,7 +143,7 @@ public final class Idempotency {
         this.persistenceStore = persistenceStore;
     }
 
-    private static class Holder {
+    private static final class Holder {
         private static final Idempotency instance = new Idempotency();
     }
 
