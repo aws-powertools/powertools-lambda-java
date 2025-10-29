@@ -123,7 +123,7 @@ public final class JsonConfig {
         jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
     }
 
-    private static class ConfigHolder {
+    private final static class ConfigHolder {
         private static final JsonConfig instance = new JsonConfig();
     }
 }
