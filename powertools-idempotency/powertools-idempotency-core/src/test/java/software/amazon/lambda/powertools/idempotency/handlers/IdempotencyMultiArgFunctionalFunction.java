@@ -18,30 +18,35 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 import software.amazon.lambda.powertools.idempotency.Idempotency;
-import software.amazon.lambda.powertools.idempotency.PowertoolsIdempotency;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 
 /**
- * Lambda function using PowertoolsIdempotency without AspectJ annotations
+ * Lambda function using Idempotency functional API with explicit idempotency key
  */
-public class PowertoolsIdempotencyFunction implements RequestHandler<Product, Basket> {
+public class IdempotencyMultiArgFunctionalFunction implements RequestHandler<Product, Basket> {
 
     private boolean processCalled = false;
+    private String extraData;
 
     public boolean processCalled() {
         return processCalled;
+    }
+
+    public String getExtraData() {
+        return extraData;
     }
 
     @Override
     public Basket handleRequest(Product input, Context context) {
         Idempotency.registerLambdaContext(context);
 
-        return PowertoolsIdempotency.makeIdempotent(this::process, input, Basket.class);
+        return Idempotency.makeIdempotent(input.getId(), () -> process(input, "extra-data"), Basket.class);
     }
 
-    private Basket process(Product input) {
+    private Basket process(Product input, String extraData) {
         processCalled = true;
+        this.extraData = extraData;
         Basket b = new Basket();
         b.add(input);
         return b;

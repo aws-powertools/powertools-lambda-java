@@ -34,15 +34,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
-import software.amazon.lambda.powertools.idempotency.handlers.PowertoolsIdempotencyFunction;
-import software.amazon.lambda.powertools.idempotency.handlers.PowertoolsIdempotencyMultiArgFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyFunctionalFunction;
+import software.amazon.lambda.powertools.idempotency.handlers.IdempotencyMultiArgFunctionalFunction;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.testutils.InMemoryPersistenceStore;
 
 @ExtendWith(MockitoExtension.class)
-class PowertoolsIdempotencyTest {
+class IdempotencyTest {
 
     private Context context = new TestLambdaContext();
 
@@ -58,7 +58,7 @@ class PowertoolsIdempotencyTest {
                         .build())
                 .configure();
 
-        PowertoolsIdempotencyFunction function = new PowertoolsIdempotencyFunction();
+        IdempotencyFunctionalFunction function = new IdempotencyFunctionalFunction();
 
         Product p = new Product(42, "fake product", 12);
         Basket basket = function.handleRequest(p, context);
@@ -87,7 +87,7 @@ class PowertoolsIdempotencyTest {
                 .configure();
         Idempotency.registerLambdaContext(context);
 
-        String result = PowertoolsIdempotency.makeIdempotent("myFunction", "test-key", () -> "test-result",
+        String result = Idempotency.makeIdempotent("myFunction", "test-key", () -> "test-result",
                 String.class);
 
         assertThat(result).isEqualTo("test-result");
@@ -105,7 +105,7 @@ class PowertoolsIdempotencyTest {
                 .configure();
         Idempotency.registerLambdaContext(context);
 
-        String result = PowertoolsIdempotency.makeIdempotent("test-key", this::helperMethod, String.class);
+        String result = Idempotency.makeIdempotent("test-key", this::helperMethod, String.class);
 
         assertThat(result).isEqualTo("helper-result");
 
@@ -127,7 +127,7 @@ class PowertoolsIdempotencyTest {
         Idempotency.registerLambdaContext(context);
 
         Product p = new Product(42, "test product", 10);
-        Basket result = PowertoolsIdempotency.makeIdempotent(this::processProduct, p, Basket.class);
+        Basket result = Idempotency.makeIdempotent(this::processProduct, p, Basket.class);
 
         assertThat(result.getProducts()).hasSize(1);
         assertThat(result.getProducts().get(0)).isEqualTo(p);
@@ -153,7 +153,7 @@ class PowertoolsIdempotencyTest {
                 .withPersistenceStore(store)
                 .configure();
 
-        PowertoolsIdempotencyMultiArgFunction function = new PowertoolsIdempotencyMultiArgFunction();
+        IdempotencyMultiArgFunctionalFunction function = new IdempotencyMultiArgFunctionalFunction();
 
         Product p = new Product(42, "fake product", 12);
         Basket basket = function.handleRequest(p, context);
@@ -184,7 +184,7 @@ class PowertoolsIdempotencyTest {
         int[] callCount = { 0 };
 
         // First call - executes function and stores result
-        Basket result1 = PowertoolsIdempotency.makeIdempotent(p, () -> {
+        Basket result1 = Idempotency.makeIdempotent(p, () -> {
             callCount[0]++;
             return processProduct(p);
         }, Basket.class);
@@ -192,7 +192,7 @@ class PowertoolsIdempotencyTest {
         assertThat(callCount[0]).isEqualTo(1);
 
         // Second call - should retrieve from cache, deserialize, and NOT execute function
-        Basket result2 = PowertoolsIdempotency.makeIdempotent(p, () -> {
+        Basket result2 = Idempotency.makeIdempotent(p, () -> {
             callCount[0]++;
             return processProduct(p);
         }, Basket.class);
@@ -208,7 +208,7 @@ class PowertoolsIdempotencyTest {
                 .withPersistenceStore(store)
                 .configure();
 
-        PowertoolsIdempotencyMultiArgFunction function = new PowertoolsIdempotencyMultiArgFunction();
+        IdempotencyMultiArgFunctionalFunction function = new IdempotencyMultiArgFunctionalFunction();
 
         // GIVEN
         int threadCount = 10;
@@ -282,7 +282,7 @@ class PowertoolsIdempotencyTest {
         int[] callCount = { 0 };
 
         // First call - executes function and stores result
-        Map<String, Basket> result1 = PowertoolsIdempotency.makeIdempotent("test-key", () -> {
+        Map<String, Basket> result1 = Idempotency.makeIdempotent("test-key", () -> {
             callCount[0]++;
             Map<String, Basket> map = new HashMap<>();
             Basket basket = new Basket();
@@ -297,7 +297,7 @@ class PowertoolsIdempotencyTest {
         assertThat(callCount[0]).isEqualTo(1);
 
         // Second call - should retrieve from cache and deserialize correctly
-        Map<String, Basket> result2 = PowertoolsIdempotency.makeIdempotent("test-key", () -> {
+        Map<String, Basket> result2 = Idempotency.makeIdempotent("test-key", () -> {
             callCount[0]++;
             return new HashMap<>();
         }, new TypeReference<Map<String, Basket>>() {

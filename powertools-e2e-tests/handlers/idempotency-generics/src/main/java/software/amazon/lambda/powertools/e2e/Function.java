@@ -31,7 +31,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.PowertoolsIdempotency;
 import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
 
 public class Function implements RequestHandler<Input, String> {
@@ -62,7 +61,7 @@ public class Function implements RequestHandler<Input, String> {
 
         // This is just to test the generic type support using TypeReference.
         // We return the same String to run the same assertions as other idempotency E2E handlers.
-        Map<String, String> result = PowertoolsIdempotency.makeIdempotent(
+        Map<String, String> result = Idempotency.makeIdempotent(
             this::processRequest, 
             input,
             new TypeReference<Map<String, String>>() {});

@@ -28,7 +28,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
-import software.amazon.lambda.powertools.idempotency.PowertoolsIdempotency;
 import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
 
 public class Function implements RequestHandler<Input, String> {
@@ -57,7 +56,7 @@ public class Function implements RequestHandler<Input, String> {
     public String handleRequest(Input input, Context context) {
         Idempotency.registerLambdaContext(context);
 
-        return PowertoolsIdempotency.makeIdempotent(this::processRequest, input, String.class);
+        return Idempotency.makeIdempotent(this::processRequest, input, String.class);
     }
 
     private String processRequest(Input input) {
