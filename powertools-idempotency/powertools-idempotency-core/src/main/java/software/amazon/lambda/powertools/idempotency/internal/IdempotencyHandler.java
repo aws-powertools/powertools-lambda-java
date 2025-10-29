@@ -21,12 +21,11 @@ import java.time.Instant;
 import java.util.OptionalInt;
 import java.util.function.BiFunction;
 
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import software.amazon.lambda.powertools.idempotency.Idempotency;
@@ -50,13 +49,21 @@ public class IdempotencyHandler {
     private static final Logger LOG = LoggerFactory.getLogger(IdempotencyHandler.class);
     private static final int MAX_RETRIES = 2;
 
-    private final ProceedingJoinPoint pjp;
+    private final IdempotentFunction<?> function;
+    private final TypeReference<?> returnTypeRef;
     private final JsonNode data;
     private final BasePersistenceStore persistenceStore;
     private final Context lambdaContext;
 
-    public IdempotencyHandler(ProceedingJoinPoint pjp, String functionName, JsonNode payload, Context lambdaContext) {
-        this.pjp = pjp;
+    public IdempotencyHandler(IdempotentFunction<?> function, Class<?> returnType, String functionName,
+            JsonNode payload, Context lambdaContext) {
+        this(function, JsonConfig.toTypeReference(returnType), functionName, payload, lambdaContext);
+    }
+
+    public IdempotencyHandler(IdempotentFunction<?> function, TypeReference<?> returnTypeRef, String functionName,
+            JsonNode payload, Context lambdaContext) {
+        this.function = function;
+        this.returnTypeRef = returnTypeRef;
         this.data = payload;
         this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
@@ -171,7 +178,6 @@ public class IdempotencyHandler {
                     "Execution already in progress with idempotency key: " + record.getIdempotencyKey());
         }
 
-        Class<?> returnType = ((MethodSignature) pjp.getSignature()).getReturnType();
         try {
             LOG.debug("Response for key '{}' retrieved from idempotency store, skipping the function",
                     record.getIdempotencyKey());
@@ -180,12 +186,12 @@ public class IdempotencyHandler {
                     .getResponseHook();
             final Object responseData;
 
-            if (returnType.equals(String.class)) {
+            if (String.class.equals(returnTypeRef.getType())) {
                 // Primitive String data will be returned raw and not de-serialized from JSON.
                 responseData = record.getResponseData();
             } else {
-                responseData = JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(),
-                        returnType);
+                responseData = JsonConfig.get().getObjectMapper().readValue(record.getResponseData(),
+                        returnTypeRef);
             }
 
             if (responseHook != null) {
@@ -196,14 +202,14 @@ public class IdempotencyHandler {
             return responseData;
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException(
-                    "Unable to get function response as " + returnType.getSimpleName(), e);
+                    "Unable to get function response as " + returnTypeRef.getType().getTypeName(), e);
         }
     }
 
     private Object getFunctionResponse() throws Throwable {
         Object response;
         try {
-            response = pjp.proceed(pjp.getArgs());
+            response = function.execute();
         } catch (Throwable handlerException) {
             // We need these nested blocks to preserve function's exception in case the persistence store operation
             // also raises an exception

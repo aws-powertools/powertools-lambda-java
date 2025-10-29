@@ -14,25 +14,27 @@
 
 package software.amazon.lambda.powertools.idempotency.internal;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.databind.JsonNode;
+import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.DeclarePrecedence;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyKey;
 import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 
 /**
  * Aspect that handles the {@link Idempotent} annotation.
@@ -42,14 +44,15 @@ import static software.amazon.lambda.powertools.common.internal.LambdaHandlerPro
 // Idempotency annotation should come first before large message
 @DeclarePrecedence("software.amazon.lambda.powertools.idempotency.internal.IdempotentAspect, *")
 public class IdempotentAspect {
-    @SuppressWarnings({"EmptyMethod"})
+    @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(idempotent)")
     public void callAt(Idempotent idempotent) {
+        // Pointcut method - body intentionally empty
     }
 
     @Around(value = "callAt(idempotent) && execution(@Idempotent * *.*(..))", argNames = "pjp,idempotent")
     public Object around(ProceedingJoinPoint pjp,
-                         Idempotent idempotent) throws Throwable {
+            Idempotent idempotent) throws Throwable {
 
         String idempotencyDisabledEnv = System.getenv().get(Constants.IDEMPOTENCY_DISABLED_ENV);
         if (idempotencyDisabledEnv != null && !"false".equalsIgnoreCase(idempotencyDisabledEnv)) {
@@ -76,7 +79,12 @@ public class IdempotentAspect {
             lambdaContext = Idempotency.getInstance().getConfig().getLambdaContext();
         }
 
-        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(pjp, method.getName(), payload, lambdaContext);
+        IdempotencyHandler idempotencyHandler = new IdempotencyHandler(
+                () -> pjp.proceed(pjp.getArgs()),
+                method.getReturnType(),
+                method.getName(),
+                payload,
+                lambdaContext);
         return idempotencyHandler.handle();
     }
 

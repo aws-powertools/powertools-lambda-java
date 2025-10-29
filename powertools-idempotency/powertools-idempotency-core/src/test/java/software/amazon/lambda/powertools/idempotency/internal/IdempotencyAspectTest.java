@@ -194,7 +194,7 @@ class IdempotencyAspectTest {
                 "Test message",
                 new RuntimeException("Test Cause"),
                 dr))
-                .when(store).saveInProgress(any(), any(), any());
+                        .when(store).saveInProgress(any(), any(), any());
 
         // WHEN
         IdempotencyEnabledFunction function = new IdempotencyEnabledFunction();
@@ -536,6 +536,75 @@ class IdempotencyAspectTest {
         // THEN
         assertThatThrownBy(() -> function.handleRequest(p, context)).isInstanceOf(
                 IdempotencyConfigurationException.class);
+    }
+
+    @Test
+    void concurrentInvocations_shouldNotLeakContext() throws Exception {
+        Idempotency.config()
+                .withPersistenceStore(store)
+                .configure();
+
+        // Use IdempotencyInternalFunction which calls registerLambdaContext
+        IdempotencyInternalFunction function = new IdempotencyInternalFunction(true);
+
+        // GIVEN
+        int threadCount = 10;
+        Thread[] threads = new Thread[threadCount];
+        Context[] capturedContexts = new Context[threadCount];
+        int[] capturedRemainingTimes = new int[threadCount];
+        boolean[] success = new boolean[threadCount];
+
+        // WHEN - Multiple threads call handleRequest with different contexts
+        for (int i = 0; i < threadCount; i++) {
+            final int threadIndex = i;
+            final int expectedTime = (i + 1) * 1000; // 1000, 2000, 3000, ..., 10000
+
+            final Context threadContext = new TestLambdaContext() {
+                @Override
+                public int getRemainingTimeInMillis() {
+                    return expectedTime;
+                }
+            };
+
+            threads[i] = new Thread(() -> {
+                try {
+                    Product p = new Product(threadIndex, "product" + threadIndex, 10);
+                    function.handleRequest(p, threadContext);
+
+                    // Capture the context that was actually stored in ThreadLocal by this thread
+                    Context captured = Idempotency.getInstance().getConfig().getLambdaContext();
+                    capturedContexts[threadIndex] = captured;
+                    capturedRemainingTimes[threadIndex] = captured != null ? captured.getRemainingTimeInMillis() : -1;
+                    success[threadIndex] = true;
+                } catch (Exception e) {
+                    success[threadIndex] = false;
+                }
+            });
+        }
+
+        // Start all threads
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        // Wait for all threads to complete
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        // THEN - All threads should complete successfully
+        for (boolean result : success) {
+            assertThat(result).isTrue();
+        }
+
+        // THEN - Each thread should have captured its own context (no leakage)
+        for (int i = 0; i < threadCount; i++) {
+            int expectedTime = (i + 1) * 1000;
+            assertThat(capturedRemainingTimes[i])
+                    .as("Thread %d should have remaining time %d", i, expectedTime)
+                    .isEqualTo(expectedTime);
+            assertThat(capturedContexts[i]).as("Thread %d should have non-null context", i).isNotNull();
+        }
     }
 
 }

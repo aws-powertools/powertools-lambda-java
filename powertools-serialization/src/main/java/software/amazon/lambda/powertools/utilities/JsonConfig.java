@@ -14,19 +14,23 @@
 
 package software.amazon.lambda.powertools.utilities;
 
+import java.lang.reflect.Type;
+import java.util.function.Supplier;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.RuntimeConfiguration;
 import io.burt.jmespath.function.BaseFunction;
 import io.burt.jmespath.function.FunctionRegistry;
 import io.burt.jmespath.jackson.JacksonRuntime;
-import java.util.function.Supplier;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64Function;
 import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
 import software.amazon.lambda.powertools.utilities.jmespath.JsonFunction;
@@ -51,8 +55,7 @@ public final class JsonConfig {
     private final FunctionRegistry customFunctions = defaultFunctions.extend(
             new Base64Function(),
             new Base64GZipFunction(),
-            new JsonFunction()
-    );
+            new JsonFunction());
 
     private final RuntimeConfiguration configuration = new RuntimeConfiguration.Builder()
             .withSilentTypeErrors(true)
@@ -75,6 +78,23 @@ public final class JsonConfig {
      */
     public ObjectMapper getObjectMapper() {
         return om.get();
+    }
+
+    /**
+     * Creates a TypeReference from a Class for use with Jackson deserialization.
+     * This is useful when you need to convert a Class to a TypeReference for generic type handling.
+     *
+     * @param clazz the class to convert to TypeReference
+     * @param <T> the type parameter
+     * @return a TypeReference wrapping the provided class
+     */
+    public static <T> TypeReference<T> toTypeReference(Class<T> clazz) {
+        return new TypeReference<T>() {
+            @Override
+            public Type getType() {
+                return clazz;
+            }
+        };
     }
 
     /**
@@ -103,7 +123,7 @@ public final class JsonConfig {
         jmesPath = new JacksonRuntime(updatedConfig, getObjectMapper());
     }
 
-    private static class ConfigHolder {
+    private static final class ConfigHolder {
         private static final JsonConfig instance = new JsonConfig();
     }
 }
