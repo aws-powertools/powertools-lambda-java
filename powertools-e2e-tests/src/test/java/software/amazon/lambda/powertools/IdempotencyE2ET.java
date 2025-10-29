@@ -56,7 +56,7 @@ class IdempotencyE2ET {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "idempotency", "idempotency-functional" })
+    @ValueSource(strings = { "idempotency", "idempotency-functional", "idempotency-generics" })
     @Timeout(value = 15, unit = TimeUnit.MINUTES)
     void test_ttlNotExpired_sameResult_ttlExpired_differentResult(String pathToFunction) throws InterruptedException {
         setupInfrastructure(pathToFunction);

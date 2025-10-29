@@ -19,7 +19,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.OptionalInt;
@@ -31,17 +30,16 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
-import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
 import software.amazon.lambda.powertools.idempotency.handlers.PowertoolsIdempotencyFunction;
 import software.amazon.lambda.powertools.idempotency.handlers.PowertoolsIdempotencyMultiArgFunction;
 import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
-import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
+import software.amazon.lambda.powertools.idempotency.testutils.InMemoryPersistenceStore;
 
 @ExtendWith(MockitoExtension.class)
 class PowertoolsIdempotencyTest {
@@ -175,36 +173,7 @@ class PowertoolsIdempotencyTest {
 
     @Test
     void secondCall_shouldRetrieveFromCacheAndDeserialize() throws Throwable {
-        // Use in-memory persistence store to test actual serialization/deserialization
-        Map<String, DataRecord> data = new HashMap<>();
-        BasePersistenceStore inMemoryStore = new BasePersistenceStore() {
-            @Override
-            public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
-                DataRecord dr = data.get(idempotencyKey);
-                if (dr == null) {
-                    throw new IdempotencyItemNotFoundException(idempotencyKey);
-                }
-                return dr;
-            }
-
-            @Override
-            public void putRecord(DataRecord dr, Instant now) throws IdempotencyItemAlreadyExistsException {
-                if (data.containsKey(dr.getIdempotencyKey())) {
-                    throw new IdempotencyItemAlreadyExistsException();
-                }
-                data.put(dr.getIdempotencyKey(), dr);
-            }
-
-            @Override
-            public void updateRecord(DataRecord dr) {
-                data.put(dr.getIdempotencyKey(), dr);
-            }
-
-            @Override
-            public void deleteRecord(String idempotencyKey) {
-                data.remove(idempotencyKey);
-            }
-        };
+        InMemoryPersistenceStore inMemoryStore = new InMemoryPersistenceStore();
 
         Idempotency.config()
                 .withPersistenceStore(inMemoryStore)
@@ -299,5 +268,44 @@ class PowertoolsIdempotencyTest {
                     .isEqualTo(expectedTime);
             assertThat(capturedContexts[i]).as("Thread %d should have non-null context", i).isNotNull();
         }
+    }
+
+    @Test
+    void testMakeIdempotentWithGenericType() throws Throwable {
+        InMemoryPersistenceStore inMemoryStore = new InMemoryPersistenceStore();
+
+        Idempotency.config()
+                .withPersistenceStore(inMemoryStore)
+                .configure();
+        Idempotency.registerLambdaContext(context);
+
+        int[] callCount = { 0 };
+
+        // First call - executes function and stores result
+        Map<String, Basket> result1 = PowertoolsIdempotency.makeIdempotent("test-key", () -> {
+            callCount[0]++;
+            Map<String, Basket> map = new HashMap<>();
+            Basket basket = new Basket();
+            basket.add(new Product(1, "product1", 10));
+            map.put("basket1", basket);
+            return map;
+        }, new TypeReference<Map<String, Basket>>() {
+        });
+
+        assertThat(result1).hasSize(1);
+        assertThat(result1.get("basket1").getProducts()).hasSize(1);
+        assertThat(callCount[0]).isEqualTo(1);
+
+        // Second call - should retrieve from cache and deserialize correctly
+        Map<String, Basket> result2 = PowertoolsIdempotency.makeIdempotent("test-key", () -> {
+            callCount[0]++;
+            return new HashMap<>();
+        }, new TypeReference<Map<String, Basket>>() {
+        });
+
+        assertThat(result2).hasSize(1);
+        assertThat(result2.get("basket1").getProducts()).hasSize(1);
+        assertThat(result2.get("basket1").getProducts().get(0).getName()).isEqualTo("product1");
+        assertThat(callCount[0]).isEqualTo(1); // Function should NOT be called again
     }
 }

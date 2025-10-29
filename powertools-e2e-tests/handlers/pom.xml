@@ -35,6 +35,7 @@
         <module>metrics</module>
         <module>idempotency</module>
         <module>idempotency-functional</module>
+        <module>idempotency-generics</module>
         <module>parameters</module>
         <module>validation-alb-event</module>
         <module>validation-apigw-event</module>

@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import software.amazon.lambda.powertools.idempotency.Idempotency;
@@ -49,15 +50,20 @@ public class IdempotencyHandler {
     private static final int MAX_RETRIES = 2;
 
     private final IdempotentFunction<?> function;
-    private final Class<?> returnType;
+    private final TypeReference<?> returnTypeRef;
     private final JsonNode data;
     private final BasePersistenceStore persistenceStore;
     private final Context lambdaContext;
 
     public IdempotencyHandler(IdempotentFunction<?> function, Class<?> returnType, String functionName,
             JsonNode payload, Context lambdaContext) {
+        this(function, JsonConfig.toTypeReference(returnType), functionName, payload, lambdaContext);
+    }
+
+    public IdempotencyHandler(IdempotentFunction<?> function, TypeReference<?> returnTypeRef, String functionName,
+            JsonNode payload, Context lambdaContext) {
         this.function = function;
-        this.returnType = returnType;
+        this.returnTypeRef = returnTypeRef;
         this.data = payload;
         this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
@@ -180,12 +186,12 @@ public class IdempotencyHandler {
                     .getResponseHook();
             final Object responseData;
 
-            if (returnType.equals(String.class)) {
+            if (String.class.equals(returnTypeRef.getType())) {
                 // Primitive String data will be returned raw and not de-serialized from JSON.
                 responseData = record.getResponseData();
             } else {
-                responseData = JsonConfig.get().getObjectMapper().reader().readValue(record.getResponseData(),
-                        returnType);
+                responseData = JsonConfig.get().getObjectMapper().readValue(record.getResponseData(),
+                        returnTypeRef);
             }
 
             if (responseHook != null) {
@@ -196,7 +202,7 @@ public class IdempotencyHandler {
             return responseData;
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException(
-                    "Unable to get function response as " + returnType.getSimpleName(), e);
+                    "Unable to get function response as " + returnTypeRef.getType().getTypeName(), e);
         }
     }
 
