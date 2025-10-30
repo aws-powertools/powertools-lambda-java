@@ -14,14 +14,15 @@
 
 package software.amazon.lambda.powertools.largemessages.internal;
 
-import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import java.util.Optional;
 
-class LargeMessageProcessorFactory {
+import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+
+public final class LargeMessageProcessorFactory {
 
     private LargeMessageProcessorFactory() {
-        // not intended to be instantiated
+        // Utility class
     }
 
     public static Optional<LargeMessageProcessor<?>> get(Object message) {

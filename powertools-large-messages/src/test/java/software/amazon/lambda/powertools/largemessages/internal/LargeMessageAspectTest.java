@@ -22,17 +22,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
 import static software.amazon.lambda.powertools.largemessages.internal.LargeSQSMessageProcessor.calculateMessageAttributesMd5;
 import static software.amazon.lambda.powertools.largemessages.internal.LargeSQSMessageProcessor.calculateMessageBodyMd5;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.KinesisEvent.KinesisEventRecord;
-import com.amazonaws.services.lambda.runtime.events.SNSEvent;
-import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNS;
-import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent.MessageAttribute;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
 import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
@@ -41,11 +33,22 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import com.amazonaws.services.lambda.runtime.events.KinesisEvent.KinesisEventRecord;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNS;
+import com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.MessageAttribute;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
+
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.http.AbortableInputStream;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -53,11 +56,13 @@ import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.services.s3.model.S3Exception;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.largemessages.LargeMessage;
 import software.amazon.lambda.powertools.largemessages.LargeMessageConfig;
 import software.amazon.lambda.powertools.largemessages.LargeMessageProcessingException;
 
-public class LargeMessageAspectTest {
+@ExtendWith(MockitoExtension.class)
+class LargeMessageAspectTest {
 
     private static final String BIG_MSG = "A biiiiiiiig message";
     private static final String BIG_MSG_MD5 = "919ebd392d8cb7161f95cb612a903d42";
@@ -65,19 +70,17 @@ public class LargeMessageAspectTest {
     private static final String BUCKET_NAME = "bucketname";
     private static final String BUCKET_KEY = "c71eb2ae-37e0-4265-8909-32f4153faddf";
 
-    private static final String BIG_MESSAGE_BODY =
-            "[\"software.amazon.payloadoffloading.PayloadS3Pointer\", {\"s3BucketName\":\"" + BUCKET_NAME +
-                    "\", \"s3Key\":\"" + BUCKET_KEY + "\"}]";
+    private static final String BIG_MESSAGE_BODY = "[\"software.amazon.payloadoffloading.PayloadS3Pointer\", {\"s3BucketName\":\""
+            + BUCKET_NAME +
+            "\", \"s3Key\":\"" + BUCKET_KEY + "\"}]";
 
     @Mock
     private S3Client s3Client;
-    @Mock
-    private Context context;
+
+    private final TestLambdaContext context = new TestLambdaContext();
 
     @BeforeEach
-    public void init() throws NoSuchFieldException, IllegalAccessException {
-        openMocks(this);
-        setupContext();
+    void init() throws NoSuchFieldException, IllegalAccessException {
         // need to clean the s3Client with introspection (singleton)
         Field client = LargeMessageConfig.class.getDeclaredField("s3Client");
         client.setAccessible(true);
@@ -86,13 +89,13 @@ public class LargeMessageAspectTest {
     }
 
     @LargeMessage
-    private String processSQSMessage(SQSMessage sqsMessage, Context context) {
+    private String processSQSMessage(SQSMessage sqsMessage, TestLambdaContext context) {
         return sqsMessage.getBody();
     }
 
     @LargeMessage
     private String processSQSMessageWithMd5Checks(SQSMessage transformedMessage, String initialBodyMD5,
-                                                  String initialAttributesMD5) {
+            String initialAttributesMD5) {
         assertThat(transformedMessage.getMd5OfBody()).isNotEqualTo(initialBodyMD5);
         assertThat(transformedMessage.getMd5OfBody()).isEqualTo(BIG_MSG_MD5);
 
@@ -108,7 +111,7 @@ public class LargeMessageAspectTest {
     }
 
     @LargeMessage(deleteS3Object = false)
-    private String processSQSMessageNoDelete(SQSMessage sqsMessage, Context context) {
+    private String processSQSMessageNoDelete(SQSMessage sqsMessage, TestLambdaContext context) {
         return sqsMessage.getBody();
     }
 
@@ -122,8 +125,15 @@ public class LargeMessageAspectTest {
         return "Hello World";
     }
 
+    @LargeMessage
+    private void verifyMessageObjectIsModified(SQSMessage sqsMessage) {
+        // This test verifies the message object itself is modified, not a copy
+        assertThat(sqsMessage.getBody()).isEqualTo(BIG_MSG);
+        assertThat(sqsMessage.getMd5OfBody()).isEqualTo(BIG_MSG_MD5);
+    }
+
     @Test
-    public void testLargeSQSMessageWithDefaultDeletion() {
+    void testLargeSQSMessageWithDefaultDeletion() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
         SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
@@ -136,8 +146,7 @@ public class LargeMessageAspectTest {
         ArgumentCaptor<DeleteObjectRequest> delete = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(s3Client).deleteObject(delete.capture());
         Assertions.assertThat(delete.getValue())
-                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
-                {
+                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest -> {
                     assertThat(deleteObjectRequest.bucket())
                             .isEqualTo(BUCKET_NAME);
 
@@ -147,7 +156,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testLargeSQSMessage_shouldChangeMd5OfBodyAndAttributes() {
+    void testLargeSQSMessage_shouldChangeMd5OfBodyAndAttributes() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
 
@@ -179,12 +188,12 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testLargeSNSMessageWithDefaultDeletion() {
+    void testLargeSNSMessageWithDefaultDeletion() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
         SNSRecord snsRecord = snsRecordWithMessage(BIG_MESSAGE_BODY, true);
 
-        //when
+        // when
         String message = processSNSMessageWithoutContext(snsRecord);
 
         // then
@@ -192,8 +201,7 @@ public class LargeMessageAspectTest {
         ArgumentCaptor<DeleteObjectRequest> delete = ArgumentCaptor.forClass(DeleteObjectRequest.class);
         verify(s3Client).deleteObject(delete.capture());
         Assertions.assertThat(delete.getValue())
-                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest ->
-                {
+                .satisfies((Consumer<DeleteObjectRequest>) deleteObjectRequest -> {
                     assertThat(deleteObjectRequest.bucket())
                             .isEqualTo(BUCKET_NAME);
 
@@ -203,7 +211,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testLargeSQSMessageWithNoDeletion_shouldNotDelete() {
+    void testLargeSQSMessageWithNoDeletion_shouldNotDelete() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
         SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
@@ -217,7 +225,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testKinesisMessage_shouldProceedWithoutS3() {
+    void testKinesisMessage_shouldProceedWithoutS3() {
         // given
         KinesisEventRecord kinesisEventRecord = new KinesisEventRecord();
         kinesisEventRecord.setEventID("kinesis_id1234567890");
@@ -231,7 +239,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testNoMessage_shouldProceedWithoutS3() {
+    void testNoMessage_shouldProceedWithoutS3() {
         // when
         String message = processNoMessage();
 
@@ -241,7 +249,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testSmallMessage_shouldProceedWithoutS3() {
+    void testSmallMessage_shouldProceedWithoutS3() {
         // given
         SQSMessage sqsMessage = sqsMessageWithBody("This is small message", false);
 
@@ -255,7 +263,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testNullMessage_shouldProceedWithoutS3() {
+    void testNullMessage_shouldProceedWithoutS3() {
         // given
         SQSMessage sqsMessage = sqsMessageWithBody(null, true);
 
@@ -268,7 +276,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testGetS3ObjectException_shouldThrowLargeMessageProcessingException() {
+    void testGetS3ObjectException_shouldThrowLargeMessageProcessingException() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenThrow(S3Exception.create("Permission denied",
                 new Exception("User is not allowed to access bucket " + BUCKET_NAME)));
@@ -281,7 +289,7 @@ public class LargeMessageAspectTest {
     }
 
     @Test
-    public void testDeleteS3ObjectException_shouldThrowLargeMessageProcessingException() {
+    void testDeleteS3ObjectException_shouldThrowLargeMessageProcessingException() {
         // given
         when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
         when(s3Client.deleteObject(any(DeleteObjectRequest.class))).thenThrow(S3Exception.create("Permission denied",
@@ -294,6 +302,22 @@ public class LargeMessageAspectTest {
                 .hasMessage(format("Failed deleting S3 record [%s]", BIG_MESSAGE_BODY));
     }
 
+    @Test
+    void testMessageObjectIsModifiedInPlace() {
+        // given
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
+        String originalBody = sqsMessage.getBody();
+
+        // when
+        verifyMessageObjectIsModified(sqsMessage);
+
+        // then - verify the original message object was modified
+        assertThat(sqsMessage.getBody()).isEqualTo(BIG_MSG);
+        assertThat(sqsMessage.getBody()).isNotEqualTo(originalBody);
+        assertThat(sqsMessage.getMd5OfBody()).isEqualTo(BIG_MSG_MD5);
+    }
+
     private ResponseInputStream<GetObjectResponse> s3ObjectWithLargeMessage() {
         return new ResponseInputStream<>(GetObjectResponse.builder().build(),
                 AbortableInputStream.create(new ByteArrayInputStream(BIG_MSG.getBytes())));
@@ -304,7 +328,7 @@ public class LargeMessageAspectTest {
     }
 
     private SQSMessage sqsMessageWithBody(String messageBody, boolean largeMessage,
-                                          Map<String, MessageAttribute> optionalAttributes) {
+            Map<String, MessageAttribute> optionalAttributes) {
         SQSMessage sqsMessage = new SQSMessage();
         sqsMessage.setBody(messageBody);
         if (messageBody != null) {
@@ -338,10 +362,4 @@ public class LargeMessageAspectTest {
         return new SNSRecord().withSns(sns);
     }
 
-    private void setupContext() {
-        when(context.getFunctionName()).thenReturn("testFunction");
-        when(context.getInvokedFunctionArn()).thenReturn("testArn");
-        when(context.getFunctionVersion()).thenReturn("1");
-        when(context.getMemoryLimitInMB()).thenReturn(1024);
-    }
 }
