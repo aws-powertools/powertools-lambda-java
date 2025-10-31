@@ -113,7 +113,7 @@ final class PowertoolsResolver implements EventResolver {
             final String samplingRate =
                     logEvent.getContextData().getValue(PowertoolsLoggedFields.SAMPLING_RATE.getName());
             try {
-                return (null != samplingRate && Float.parseFloat(samplingRate) > 0.f);
+                return null != samplingRate && Float.parseFloat(samplingRate) > 0.f;
             } catch (NumberFormatException nfe) {
                 return false;
             }
