@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.RuntimeConfiguration;
@@ -41,11 +42,13 @@ public final class JsonConfig {
             // Don't throw an exception when json has extra fields you are not serializing on.
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             // Ignore null values when writing json.
-            .serializationInclusion(JsonInclude.Include.NON_NULL)
+            .defaultPropertyInclusion(
+                    JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.USE_DEFAULTS))
             // Write times as a String instead of a Long so its human-readable.
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             // Sort fields in alphabetical order
             .configure(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY, true)
+            .addModule(new JodaModule())
             .build();
 
     private static final ThreadLocal<ObjectMapper> om = ThreadLocal.withInitial(objectMapperSupplier);

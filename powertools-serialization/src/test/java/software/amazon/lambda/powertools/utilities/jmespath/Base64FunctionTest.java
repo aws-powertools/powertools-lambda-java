@@ -16,21 +16,24 @@ package software.amazon.lambda.powertools.utilities.jmespath;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+
 import io.burt.jmespath.Expression;
-import java.io.IOException;
-import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-public class Base64FunctionTest {
+class Base64FunctionTest {
 
     @Test
-    public void testPowertoolsBase64() throws IOException {
-        JsonNode event =
-                JsonConfig.get().getObjectMapper().readTree(this.getClass().getResourceAsStream("/custom_event.json"));
-        Expression<JsonNode> expression =
-                JsonConfig.get().getJmesPath().compile("basket.powertools_base64(hiddenProduct)");
+    void testPowertoolsBase64() throws IOException {
+        JsonNode event = JsonConfig.get().getObjectMapper()
+                .readTree(this.getClass().getResourceAsStream("/custom_event.json"));
+        Expression<JsonNode> expression = JsonConfig.get().getJmesPath()
+                .compile("basket.powertools_base64(hiddenProduct)");
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(result.asText()).isEqualTo("{\n" +

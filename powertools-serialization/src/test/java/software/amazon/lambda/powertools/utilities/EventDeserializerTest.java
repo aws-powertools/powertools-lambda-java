@@ -18,6 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.ActiveMQEvent;
@@ -34,41 +41,37 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import software.amazon.lambda.powertools.utilities.model.Order;
 import software.amazon.lambda.powertools.utilities.model.Product;
 
-public class EventDeserializerTest {
+class EventDeserializerTest {
 
     @Test
-    public void testDeserializeStringAsString_shouldReturnString() {
+    void testDeserializeStringAsString_shouldReturnString() {
         String stringEvent = "Hello World";
         String result = extractDataFrom(stringEvent).as(String.class);
         assertThat(result).isEqualTo(stringEvent);
     }
 
     @Test
-    public void testDeserializeStringAsObject_shouldReturnObject() {
+    void testDeserializeStringAsObject_shouldReturnObject() {
         String productStr = "{\"id\":1234, \"name\":\"product\", \"price\":42}";
         Product product = extractDataFrom(productStr).as(Product.class);
         assertProduct(product);
     }
 
     @Test
-    public void testDeserializeStringArrayAsList_shouldReturnList() {
-        String productStr =
-                "[{\"id\":1234, \"name\":\"product\", \"price\":42}, {\"id\":2345, \"name\":\"product2\", \"price\":43}]";
+    void testDeserializeStringArrayAsList_shouldReturnList() {
+        String productStr = "[{\"id\":1234, \"name\":\"product\", \"price\":42}, {\"id\":2345, \"name\":\"product2\", \"price\":43}]";
         List<Product> products = extractDataFrom(productStr).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
     }
 
     @Test
-    public void testDeserializeStringAsList_shouldThrowException() {
+    void testDeserializeStringAsList_shouldThrowException() {
         String productStr = "{\"id\":1234, \"name\":\"product\", \"price\":42}";
         assertThatThrownBy(() -> extractDataFrom(productStr).asListOf(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
@@ -76,7 +79,7 @@ public class EventDeserializerTest {
     }
 
     @Test
-    public void testDeserializeMapAsObject_shouldReturnObject() {
+    void testDeserializeMapAsObject_shouldReturnObject() {
         Map<String, Object> map = new HashMap<>();
         map.put("id", 1234);
         map.put("name", "product");
@@ -87,21 +90,21 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
-    public void testDeserializeAPIGWEventBodyAsObject_shouldReturnObject(APIGatewayProxyRequestEvent event) {
+    void testDeserializeAPIGWEventBodyAsObject_shouldReturnObject(APIGatewayProxyRequestEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "sns_event.json", type = SNSEvent.class)
-    public void testDeserializeSNSEventMessageAsObject_shouldReturnObject(SNSEvent event) {
+    void testDeserializeSNSEventMessageAsObject_shouldReturnObject(SNSEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
-    public void testDeserializeSQSEventMessageAsList_shouldReturnList(SQSEvent event) {
+    void testDeserializeSQSEventMessageAsList_shouldReturnList(SQSEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
@@ -109,7 +112,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kinesis_event.json", type = KinesisEvent.class)
-    public void testDeserializeKinesisEventMessageAsList_shouldReturnList(KinesisEvent event) {
+    void testDeserializeKinesisEventMessageAsList_shouldReturnList(KinesisEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
@@ -117,7 +120,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kafka_event.json", type = KafkaEvent.class)
-    public void testDeserializeKafkaEventMessageAsList_shouldReturnList(KafkaEvent event) {
+    void testDeserializeKafkaEventMessageAsList_shouldReturnList(KafkaEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(2);
         assertProduct(products.get(0));
@@ -125,7 +128,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "sqs_event.json", type = SQSEvent.class)
-    public void testDeserializeSQSEventMessageAsObject_shouldThrowException(SQSEvent event) {
+    void testDeserializeSQSEventMessageAsObject_shouldThrowException(SQSEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessageContaining("consider using 'asListOf' instead");
@@ -133,7 +136,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
-    public void testDeserializeAPIGatewayEventAsList_shouldThrowException(APIGatewayProxyRequestEvent event) {
+    void testDeserializeAPIGatewayEventAsList_shouldThrowException(APIGatewayProxyRequestEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).asListOf(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessageContaining("consider using 'as' instead")
@@ -142,14 +145,14 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "custom_event_map.json", type = HashMap.class)
-    public void testDeserializeAPIGatewayMapEventAsList_shouldThrowException(Map<String, Order> event) {
+    void testDeserializeAPIGatewayMapEventAsList_shouldThrowException(Map<String, Order> event) {
         assertThatThrownBy(() -> extractDataFrom(event).asListOf(Order.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessage("The content of this event is not a list, consider using 'as' instead");
     }
 
     @Test
-    public void testDeserializeEmptyEventAsList_shouldThrowException() {
+    void testDeserializeEmptyEventAsList_shouldThrowException() {
         assertThatThrownBy(() -> extractDataFrom(null).asListOf(Product.class))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Event content is null: the event may be malformed (missing fields)");
@@ -157,14 +160,14 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "apigw_event_no_body.json", type = APIGatewayProxyRequestEvent.class)
-    public void testDeserializeAPIGatewayNoBody_shouldThrowException(APIGatewayProxyRequestEvent event) {
+    void testDeserializeAPIGatewayNoBody_shouldThrowException(APIGatewayProxyRequestEvent event) {
         assertThatThrownBy(() -> extractDataFrom(event).as(Product.class))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("Event content is null: the event may be malformed (missing fields)");
     }
 
     @Test
-    public void testDeserializeAPIGatewayNoBodyAsList_shouldThrowException() {
+    void testDeserializeAPIGatewayNoBodyAsList_shouldThrowException() {
         assertThatThrownBy(() -> extractDataFrom(new Object()).asListOf(Product.class))
                 .isInstanceOf(EventDeserializationException.class)
                 .hasMessage("The content of this event is not a list, consider using 'as' instead");
@@ -172,18 +175,17 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "sqs_event_no_body.json", type = SQSEvent.class)
-    public void testDeserializeSQSEventNoBody_shouldThrowException(SQSEvent event) {
+    void testDeserializeSQSEventNoBody_shouldThrowException(SQSEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products.get(0)).isNull();
     }
 
     @Test
-    public void testDeserializeProductAsProduct_shouldReturnProduct() {
+    void testDeserializeProductAsProduct_shouldReturnProduct() {
         Product myProduct = new Product(1234, "product", 42);
         Product product = extractDataFrom(myProduct).as(Product.class);
         assertProduct(product);
     }
-
 
     private void assertProduct(Product product) {
         assertThat(product)
@@ -193,28 +195,28 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "scheduled_event.json", type = ScheduledEvent.class)
-    public void testDeserializeScheduledEventMessageAsObject_shouldReturnObject(ScheduledEvent event) {
+    void testDeserializeScheduledEventMessageAsObject_shouldReturnObject(ScheduledEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "alb_event.json", type = ApplicationLoadBalancerRequestEvent.class)
-    public void testDeserializeALBEventMessageAsObjectShouldReturnObject(ApplicationLoadBalancerRequestEvent event) {
+    void testDeserializeALBEventMessageAsObjectShouldReturnObject(ApplicationLoadBalancerRequestEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "cwl_event.json", type = CloudWatchLogsEvent.class)
-    public void testDeserializeCWLEventMessageAsObjectShouldReturnObject(CloudWatchLogsEvent event) {
+    void testDeserializeCWLEventMessageAsObjectShouldReturnObject(CloudWatchLogsEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "kf_event.json", type = KinesisFirehoseEvent.class)
-    public void testDeserializeKFEventMessageAsListShouldReturnList(KinesisFirehoseEvent event) {
+    void testDeserializeKFEventMessageAsListShouldReturnList(KinesisFirehoseEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
         assertProduct(products.get(0));
@@ -222,7 +224,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "amq_event.json", type = ActiveMQEvent.class)
-    public void testDeserializeAMQEventMessageAsListShouldReturnList(ActiveMQEvent event) {
+    void testDeserializeAMQEventMessageAsListShouldReturnList(ActiveMQEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
         assertProduct(products.get(0));
@@ -230,7 +232,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "rabbitmq_event.json", type = RabbitMQEvent.class)
-    public void testDeserializeRabbitMQEventMessageAsListShouldReturnList(RabbitMQEvent event) {
+    void testDeserializeRabbitMQEventMessageAsListShouldReturnList(RabbitMQEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
         assertProduct(products.get(0));
@@ -238,7 +240,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kasip_event.json", type = KinesisAnalyticsStreamsInputPreprocessingEvent.class)
-    public void testDeserializeKasipEventMessageAsListShouldReturnList(
+    void testDeserializeKasipEventMessageAsListShouldReturnList(
             KinesisAnalyticsStreamsInputPreprocessingEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
@@ -247,7 +249,7 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "kafip_event.json", type = KinesisAnalyticsFirehoseInputPreprocessingEvent.class)
-    public void testDeserializeKafipEventMessageAsListShouldReturnList(
+    void testDeserializeKafipEventMessageAsListShouldReturnList(
             KinesisAnalyticsFirehoseInputPreprocessingEvent event) {
         List<Product> products = extractDataFrom(event).asListOf(Product.class);
         assertThat(products).hasSize(1);
@@ -256,16 +258,138 @@ public class EventDeserializerTest {
 
     @ParameterizedTest
     @Event(value = "apigwv2_event.json", type = APIGatewayV2HTTPEvent.class)
-    public void testDeserializeApiGWV2EventMessageAsObjectShouldReturnObject(APIGatewayV2HTTPEvent event) {
+    void testDeserializeApiGWV2EventMessageAsObjectShouldReturnObject(APIGatewayV2HTTPEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
     }
 
     @ParameterizedTest
     @Event(value = "cfcr_event.json", type = CloudFormationCustomResourceEvent.class)
-    public void testDeserializeCfcrEventMessageAsObjectShouldReturnObject(CloudFormationCustomResourceEvent event) {
+    void testDeserializeCfcrEventMessageAsObjectShouldReturnObject(CloudFormationCustomResourceEvent event) {
         Product product = extractDataFrom(event).as(Product.class);
         assertProduct(product);
+    }
+
+    @ParameterizedTest
+    @Event(value = "scheduled_event.json", type = ScheduledEvent.class)
+    void testSerializeScheduledEvent_shouldReturnValidJson(ScheduledEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("detail")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "apigw_event.json", type = APIGatewayProxyRequestEvent.class)
+    void testSerializeAPIGatewayEvent_shouldReturnValidJson(APIGatewayProxyRequestEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("body")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "sqs_event.json", type = SQSEvent.class)
+    void testSerializeSQSEvent_shouldReturnValidJson(SQSEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "sns_event.json", type = SNSEvent.class)
+    void testSerializeSNSEvent_shouldReturnValidJson(SNSEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "kinesis_event.json", type = KinesisEvent.class)
+    void testSerializeKinesisEvent_shouldReturnValidJson(KinesisEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "kafka_event.json", type = KafkaEvent.class)
+    void testSerializeKafkaEvent_shouldReturnValidJson(KafkaEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "alb_event.json", type = ApplicationLoadBalancerRequestEvent.class)
+    void testSerializeALBEvent_shouldReturnValidJson(ApplicationLoadBalancerRequestEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("body")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "cwl_event.json", type = CloudWatchLogsEvent.class)
+    void testSerializeCWLEvent_shouldReturnValidJson(CloudWatchLogsEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("awsLogs")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "kf_event.json", type = KinesisFirehoseEvent.class)
+    void testSerializeKFEvent_shouldReturnValidJson(KinesisFirehoseEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "amq_event.json", type = ActiveMQEvent.class)
+    void testSerializeAMQEvent_shouldReturnValidJson(ActiveMQEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("messages")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "rabbitmq_event.json", type = RabbitMQEvent.class)
+    void testSerializeRabbitMQEvent_shouldReturnValidJson(RabbitMQEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("rmqMessagesByQueue")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "kasip_event.json", type = KinesisAnalyticsStreamsInputPreprocessingEvent.class)
+    void testSerializeKasipEvent_shouldReturnValidJson(KinesisAnalyticsStreamsInputPreprocessingEvent event)
+            throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "kafip_event.json", type = KinesisAnalyticsFirehoseInputPreprocessingEvent.class)
+    void testSerializeKafipEvent_shouldReturnValidJson(KinesisAnalyticsFirehoseInputPreprocessingEvent event)
+            throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("records")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "apigwv2_event.json", type = APIGatewayV2HTTPEvent.class)
+    void testSerializeApiGWV2Event_shouldReturnValidJson(APIGatewayV2HTTPEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("body")).isTrue();
+    }
+
+    @ParameterizedTest
+    @Event(value = "cfcr_event.json", type = CloudFormationCustomResourceEvent.class)
+    void testSerializeCfcrEvent_shouldReturnValidJson(CloudFormationCustomResourceEvent event) throws Exception {
+        String json = JsonConfig.get().getObjectMapper().valueToTree(event).toString();
+        JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
+        assertThat(parsed.has("resourceProperties")).isTrue();
     }
 
 }

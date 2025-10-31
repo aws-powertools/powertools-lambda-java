@@ -16,18 +16,21 @@ package software.amazon.lambda.powertools.utilities.jmespath;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+
+import org.junit.jupiter.api.Test;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
+
 import io.burt.jmespath.Expression;
 import io.burt.jmespath.JmesPathType;
-import java.io.IOException;
-import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
-public class Base64GZipFunctionTest {
+class Base64GZipFunctionTest {
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         Base64GZipFunction base64GZipFunction = new Base64GZipFunction();
         assertThat(base64GZipFunction.name()).isEqualTo("powertools_base64_gzip");
         assertThat(base64GZipFunction.argumentConstraints().expectedType().toLowerCase()).isEqualTo(
@@ -38,18 +41,18 @@ public class Base64GZipFunctionTest {
     }
 
     @Test
-    public void testPowertoolsGzip() throws IOException {
+    void testPowertoolsGzip() throws IOException {
         JsonNode event = JsonConfig.get().getObjectMapper()
                 .readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
-        Expression<JsonNode> expression =
-                JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(hiddenProduct)");
+        Expression<JsonNode> expression = JsonConfig.get().getJmesPath()
+                .compile("basket.powertools_base64_gzip(hiddenProduct)");
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(result.asText()).isEqualTo("{  \"id\": 43242,  \"name\": \"FooBar XY\",  \"price\": 258}");
     }
 
     @Test
-    public void testPowertoolsGzipEmptyJsonAttribute() throws IOException {
+    void testPowertoolsGzipEmptyJsonAttribute() throws IOException {
         JsonNode event = JsonConfig.get().getObjectMapper()
                 .readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
         Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip('')");
@@ -58,7 +61,7 @@ public class Base64GZipFunctionTest {
     }
 
     @Test
-    public void testPowertoolsGzipWrongArgumentType() throws IOException {
+    void testPowertoolsGzipWrongArgumentType() throws IOException {
         JsonNode event = JsonConfig.get().getObjectMapper()
                 .readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
         Expression<JsonNode> expression = JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(null)");
@@ -68,21 +71,20 @@ public class Base64GZipFunctionTest {
     }
 
     @Test
-    public void testBase64GzipDecompressNull() {
+    void testBase64GzipDecompressNull() {
         String result = Base64GZipFunction.decompress(null);
         assertThat(result).isNull();
     }
 
     @Test
-    public void testPowertoolsGzipNotCompressedJsonAttribute() throws IOException {
+    void testPowertoolsGzipNotCompressedJsonAttribute() throws IOException {
         JsonNode event = JsonConfig.get().getObjectMapper()
                 .readTree(this.getClass().getResourceAsStream("/custom_event_gzip.json"));
-        Expression<JsonNode> expression =
-                JsonConfig.get().getJmesPath().compile("basket.powertools_base64_gzip(encodedString)");
+        Expression<JsonNode> expression = JsonConfig.get().getJmesPath()
+                .compile("basket.powertools_base64_gzip(encodedString)");
         JsonNode result = expression.search(event);
         assertThat(result.getNodeType()).isEqualTo(JsonNodeType.STRING);
         assertThat(result.asText()).isEqualTo("test");
     }
-
 
 }
