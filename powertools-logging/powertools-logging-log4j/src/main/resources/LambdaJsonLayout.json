@@ -65,6 +65,10 @@
     "$resolver": "powertools",
     "field": "xray_trace_id"
   },
+  "correlation_id": {
+    "$resolver": "powertools",
+    "field": "correlation_id"
+  },
   "": {
     "$resolver": "powertools"
   }

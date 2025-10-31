@@ -15,6 +15,7 @@
 package org.apache.logging.log4j.layout.template.json.resolver;
 
 import static java.util.Arrays.stream;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -112,7 +113,7 @@ final class PowertoolsResolver implements EventResolver {
             final String samplingRate =
                     logEvent.getContextData().getValue(PowertoolsLoggedFields.SAMPLING_RATE.getName());
             try {
-                return (null != samplingRate && Float.parseFloat(samplingRate) > 0.f);
+                return null != samplingRate && Float.parseFloat(samplingRate) > 0.f;
             } catch (NumberFormatException nfe) {
                 return false;
             }
@@ -139,6 +140,22 @@ final class PowertoolsResolver implements EventResolver {
             final String traceId =
                     logEvent.getContextData().getValue(PowertoolsLoggedFields.FUNCTION_TRACE_ID.getName());
             jsonWriter.writeString(traceId);
+        }
+    };
+
+    private static final EventResolver CORRELATION_ID_RESOLVER = new EventResolver() {
+        @Override
+        public boolean isResolvable(LogEvent logEvent) {
+            final String correlationId =
+                    logEvent.getContextData().getValue(PowertoolsLoggedFields.CORRELATION_ID.getName());
+            return null != correlationId;
+        }
+
+        @Override
+        public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
+            final String correlationId =
+                    logEvent.getContextData().getValue(PowertoolsLoggedFields.CORRELATION_ID.getName());
+            jsonWriter.writeString(correlationId);
         }
     };
 
@@ -214,6 +231,7 @@ final class PowertoolsResolver implements EventResolver {
                     { FUNCTION_REQUEST_ID.getName(), FUNCTION_REQ_RESOLVER },
                     { FUNCTION_COLD_START.getName(), COLD_START_RESOLVER },
                     { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
+                    { CORRELATION_ID.getName(), CORRELATION_ID_RESOLVER },
                     { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
                     { "region", REGION_RESOLVER },
                     { "account_id", ACCOUNT_ID_RESOLVER }
