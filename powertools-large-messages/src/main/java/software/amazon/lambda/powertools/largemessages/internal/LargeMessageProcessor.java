@@ -17,9 +17,10 @@ package software.amazon.lambda.powertools.largemessages.internal;
 import static java.lang.String.format;
 
 import java.nio.charset.StandardCharsets;
-import org.aspectj.lang.ProceedingJoinPoint;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.lambda.powertools.largemessages.LargeMessageConfig;
@@ -28,33 +29,44 @@ import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 
 /**
- * Abstract processor for Large Messages. Handle the download from S3 and replace the actual S3 pointer with the content
- * of the S3 Object leveraging the payloadoffloading library.
+ * Abstract processor for Large Messages.
+ * <p>
+ * Handles the download from S3 and replaces the S3 pointer with the actual content
+ * of the S3 Object, leveraging the payloadoffloading library.
  *
- * @param <T> any message type that support Large Messages with S3 pointers
- *            ({@link com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage} and {@link com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord} at the moment)
+ * @param <T> any message type that supports Large Messages with S3 pointers
+ *            ({@link com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage}
+ *            and {@link com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord})
  */
-abstract class LargeMessageProcessor<T> {
+public abstract class LargeMessageProcessor<T> {
     protected static final String RESERVED_ATTRIBUTE_NAME = "ExtendedPayloadSize";
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageProcessor.class);
 
     private final S3Client s3Client = LargeMessageConfig.get().getS3Client();
     private final S3BackedPayloadStore payloadStore = new S3BackedPayloadStore(new S3Dao(s3Client), "DUMMY");
 
-    public Object process(ProceedingJoinPoint pjp, boolean deleteS3Object) throws Throwable {
-        Object[] proceedArgs = pjp.getArgs();
-        T message = (T) proceedArgs[0];
-
+    /**
+     * Process a large message using a functional interface.
+     *
+     * @param message the message to process
+     * @param function the function to execute with the processed message
+     * @param deleteS3Object whether to delete the S3 object after processing
+     * @param <R> the return type of the wrapped function
+     * @return the result of the function execution
+     * @throws Throwable if an error occurs during processing
+     */
+    public <R> R process(T message, LargeMessageFunction<T, R> function, boolean deleteS3Object) throws Throwable {
         if (!isLargeMessage(message)) {
             LOG.warn("Not a large message, proceeding");
-            return pjp.proceed(proceedArgs);
+            return function.apply(message);
         }
 
         String payloadPointer = getMessageContent(message);
         if (payloadPointer == null) {
             LOG.warn("No content in the message, proceeding");
-            return pjp.proceed(proceedArgs);
+            return function.apply(message);
         }
+
         // legacy attribute (sqs only)
         payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer",
                 "software.amazon.payloadoffloading.PayloadS3Pointer");
@@ -73,7 +85,7 @@ abstract class LargeMessageProcessor<T> {
         updateMessageContent(message, s3ObjectContent);
         removeLargeMessageAttributes(message);
 
-        Object response = pjp.proceed(proceedArgs);
+        R result = function.apply(message);
 
         if (deleteS3Object) {
             if (LOG.isInfoEnabled()) {
@@ -82,45 +94,45 @@ abstract class LargeMessageProcessor<T> {
             deleteS3Object(payloadPointer);
         }
 
-        return response;
+        return result;
     }
 
     /**
-     * Retrieve the message id
+     * Retrieve the message ID.
      *
-     * @param message the message itself
-     * @return the id of the message (String format)
+     * @param message the message
+     * @return the message ID
      */
     protected abstract String getMessageId(T message);
 
     /**
-     * Retrieve the content of the message (ex: body of an SQSMessage)
+     * Retrieve the content of the message (e.g., body of an SQSMessage).
      *
-     * @param message the message itself
-     * @return the content of the message (String format)
+     * @param message the message
+     * @return the message content
      */
     protected abstract String getMessageContent(T message);
 
     /**
-     * Update the message content of the message (ex: body of an SQSMessage)
+     * Update the message content (e.g., body of an SQSMessage).
      *
-     * @param message        the message itself
-     * @param messageContent the new content of the message (String format)
+     * @param message        the message
+     * @param messageContent the new message content
      */
     protected abstract void updateMessageContent(T message, String messageContent);
 
     /**
-     * Check if the message is actually a large message (indicator in message attributes)
+     * Check if the message is a large message (based on message attributes).
      *
-     * @param message the message itself
-     * @return true if the message is a large message
+     * @param message the message
+     * @return true if the message is a large message, false otherwise
      */
     protected abstract boolean isLargeMessage(T message);
 
     /**
-     * Remove the large message indicator (in message attributes)
+     * Remove the large message indicator from message attributes.
      *
-     * @param message the message itself
+     * @param message the message
      */
     protected abstract void removeLargeMessageAttributes(T message);
 

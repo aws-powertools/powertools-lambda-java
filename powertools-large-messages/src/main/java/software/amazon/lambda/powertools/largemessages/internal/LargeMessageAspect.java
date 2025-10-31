@@ -15,12 +15,14 @@
 package software.amazon.lambda.powertools.largemessages.internal;
 
 import java.util.Optional;
+
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import software.amazon.lambda.powertools.largemessages.LargeMessage;
 
 /**
@@ -31,17 +33,17 @@ public class LargeMessageAspect {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageAspect.class);
 
-    @SuppressWarnings({"EmptyMethod"})
+    @SuppressWarnings({ "EmptyMethod" })
     @Pointcut("@annotation(largeMessage)")
     public void callAt(LargeMessage largeMessage) {
+        // Pointcut method - body intentionally empty
     }
 
+    @SuppressWarnings("unchecked")
     @Around(value = "callAt(largeMessage) && execution(@LargeMessage * *.*(..))", argNames = "pjp,largeMessage")
-    public Object around(ProceedingJoinPoint pjp,
-                         LargeMessage largeMessage) throws Throwable {
+    public Object around(ProceedingJoinPoint pjp, LargeMessage largeMessage) throws Throwable {
         Object[] proceedArgs = pjp.getArgs();
 
-        // we need a message to process
         if (proceedArgs.length == 0) {
             LOG.warn("@LargeMessage annotation is placed on a method without any message to process, proceeding");
             return pjp.proceed(proceedArgs);
@@ -56,7 +58,8 @@ public class LargeMessageAspect {
             return pjp.proceed(proceedArgs);
         }
 
-        return largeMessageProcessor.get().process(pjp, largeMessage.deleteS3Object());
+        return ((LargeMessageProcessor<Object>) largeMessageProcessor.get()).process(message,
+                msg -> pjp.proceed(proceedArgs), largeMessage.deleteS3Object());
     }
 
 }
