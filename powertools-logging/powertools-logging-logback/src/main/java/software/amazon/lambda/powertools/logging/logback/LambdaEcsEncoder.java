@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools.logging.logback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.CORRELATION_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_ARN;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_COLD_START;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_MEMORY_SIZE;
@@ -72,6 +73,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
     protected static final String FUNCTION_VERSION_ATTR_NAME = "faas.version";
     protected static final String FUNCTION_MEMORY_ATTR_NAME = "faas.memory";
     protected static final String FUNCTION_TRACE_ID_ATTR_NAME = "trace.id";
+    protected static final String CORRELATION_ID_ATTR_NAME = "correlation.id";
 
     protected static final String ECS_VERSION = "1.2.0";
     protected static final String CLOUD_PROVIDER = "aws";
@@ -156,6 +158,11 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
             serializer.writeStringField(FUNCTION_COLD_START_ATTR_NAME, mdcPropertyMap.get(FUNCTION_COLD_START.getName()));
             serializer.writeRaw(',');
             serializer.writeStringField(FUNCTION_TRACE_ID_ATTR_NAME, mdcPropertyMap.get(FUNCTION_TRACE_ID.getName()));
+            String correlationId = mdcPropertyMap.get(CORRELATION_ID.getName());
+            if (correlationId != null) {
+                serializer.writeRaw(',');
+                serializer.writeStringField(CORRELATION_ID_ATTR_NAME, correlationId);
+            }
         }
     }
 
