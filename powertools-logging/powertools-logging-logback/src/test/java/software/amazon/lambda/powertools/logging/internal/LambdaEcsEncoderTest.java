@@ -102,7 +102,8 @@ class LambdaEcsEncoderTest {
 
         // THEN
         assertThat(result).contains(
-                "\"faas.id\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"faas.name\":\"test-function\",\"faas.version\":\"1\",\"faas.memory\":\"128\",\"faas.execution\":\"test-request-id\",\"faas.coldstart\":\"false\"");
+                "\"faas.id\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"faas.name\":\"test-function\",\"faas.version\":\"1\",\"faas.memory\":\"128\",\"faas.execution\":\"test-request-id\",\"faas.coldstart\":\"false\"")
+                .contains("\"correlation.id\":\"test-correlation-id\"");
 
         // WHEN (includeFaasInfo = false)
         encoder.setIncludeFaasInfo(false);
@@ -175,6 +176,7 @@ class LambdaEcsEncoderTest {
         MDC.put(PowertoolsLoggedFields.FUNCTION_COLD_START.getName(), "false");
         MDC.put(PowertoolsLoggedFields.SAMPLING_RATE.getName(), "0.2");
         MDC.put(PowertoolsLoggedFields.SERVICE.getName(), "Service");
+        MDC.put(PowertoolsLoggedFields.CORRELATION_ID.getName(), "test-correlation-id");
     }
 
 }

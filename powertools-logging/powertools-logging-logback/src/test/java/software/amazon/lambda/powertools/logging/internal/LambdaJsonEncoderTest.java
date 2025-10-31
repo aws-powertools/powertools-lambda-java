@@ -135,7 +135,8 @@ class LambdaJsonEncoderTest {
                         "\"input\":{\"awsRegion\":\"eu-central-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 // Should auto-escape double quotes around id
-                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"")
+                .contains("\"correlation_id\":\"1212abcd\"");
         // Reserved keys should be ignored
         PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
             assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
@@ -168,7 +169,8 @@ class LambdaJsonEncoderTest {
                         "\"input\":{\"awsRegion\":\"eu-central-1\",\"body\":\"plop\",\"eventSource\":\"eb\",\"messageAttributes\":{\"keyAttribute\":{\"stringListValues\":[\"val1\",\"val2\",\"val3\"]}},\"messageId\":\"1212abcd\"}")
                 .contains("\"message\":\"1212abcd\"")
                 // Should auto-escape double quotes around id
-                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"");
+                .contains("\"message\":\"Message body = plop and id = \\\"1212abcd\\\"\"")
+                .contains("\"correlation_id\":\"1212abcd\"");
         // Reserved keys should be ignored
         PowertoolsLoggedFields.stringValues().stream().forEach(reservedKey -> {
             assertThat(contentOf(logFile)).doesNotContain("\"" + reservedKey + "\":\"shouldBeIgnored\"");
