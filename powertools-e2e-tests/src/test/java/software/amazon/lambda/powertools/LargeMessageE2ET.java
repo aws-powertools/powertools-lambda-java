@@ -94,7 +94,7 @@ class LargeMessageE2ET {
         tableName = outputs.get("TableNameForAsyncTests");
         currentPathToFunction = pathToFunction;
 
-        LOG.info("Testing '" + LargeMessageE2ET.class.getSimpleName() + "' with " + pathToFunction);
+        LOG.info("Testing '{}' with {}", LargeMessageE2ET.class.getSimpleName(), pathToFunction);
     }
 
     @AfterAll
