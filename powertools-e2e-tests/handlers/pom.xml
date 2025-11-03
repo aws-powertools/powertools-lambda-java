@@ -27,6 +27,7 @@
     <modules>
         <module>batch</module>
         <module>largemessage</module>
+        <module>largemessage-functional</module>
         <module>largemessage_idempotent</module>
         <module>logging-log4j</module>
         <module>logging-logback</module>

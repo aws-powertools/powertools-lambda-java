@@ -16,9 +16,10 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ import software.amazon.lambda.powertools.testutils.DataNotReadyException;
 import software.amazon.lambda.powertools.testutils.Infrastructure;
 import software.amazon.lambda.powertools.testutils.RetryUtils;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LargeMessageE2ET {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessageE2ET.class);
@@ -55,25 +57,34 @@ class LargeMessageE2ET {
             .region(region)
             .build();
 
-    private static Infrastructure infrastructure;
-    private static String functionName;
-    private static String bucketName;
-    private static String queueUrl;
-    private static String tableName;
+    private Infrastructure infrastructure;
+    private String functionName;
+    private String bucketName;
+    private String queueUrl;
+    private String tableName;
     private String messageId;
+    private String currentPathToFunction;
 
-    @BeforeAll
-    @Timeout(value = 5, unit = TimeUnit.MINUTES)
-    static void setup() {
+    private void setupInfrastructure(String pathToFunction) {
+        // Do not re-deploy the same function
+        if (pathToFunction.equals(currentPathToFunction)) {
+            return;
+        }
+
+        // Destroy any existing infrastructure before re-deploying
+        if (infrastructure != null) {
+            infrastructure.destroy();
+        }
+
         String random = UUID.randomUUID().toString().substring(0, 6);
         bucketName = "largemessagebucket" + random;
         String queueName = "largemessagequeue" + random;
 
         infrastructure = Infrastructure.builder()
-                .testName(LargeMessageE2ET.class.getSimpleName())
+                .testName(LargeMessageE2ET.class.getSimpleName() + "-" + pathToFunction)
                 .queue(queueName)
                 .largeMessagesBucket(bucketName)
-                .pathToFunction("largemessage")
+                .pathToFunction(pathToFunction)
                 .timeoutInSeconds(60)
                 .build();
 
@@ -81,19 +92,24 @@ class LargeMessageE2ET {
         functionName = outputs.get(FUNCTION_NAME_OUTPUT);
         queueUrl = outputs.get("QueueURL");
         tableName = outputs.get("TableNameForAsyncTests");
+        currentPathToFunction = pathToFunction;
 
-        LOG.info("Testing '" + LargeMessageE2ET.class.getSimpleName() + "'");
+        LOG.info("Testing '" + LargeMessageE2ET.class.getSimpleName() + "' with " + pathToFunction);
     }
 
     @AfterAll
-    static void tearDown() {
+    void cleanup() {
         if (infrastructure != null) {
             infrastructure.destroy();
         }
     }
 
     @AfterEach
-    void reset() {
+    void tearDown() {
+        reset();
+    }
+
+    private void reset() {
         if (messageId != null) {
             Map<String, AttributeValue> itemToDelete = new HashMap<>();
             itemToDelete.put("functionName", AttributeValue.builder().s(functionName).build());
@@ -103,8 +119,12 @@ class LargeMessageE2ET {
         }
     }
 
-    @Test
-    void bigSQSMessageOffloadedToS3_shouldLoadFromS3() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = { "largemessage", "largemessage-functional" })
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    void bigSQSMessageOffloadedToS3_shouldLoadFromS3(String pathToFunction) throws IOException {
+        setupInfrastructure(pathToFunction);
+
         // GIVEN
         final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
                 .withPayloadSupportEnabled(s3Client, bucketName);
@@ -146,8 +166,12 @@ class LargeMessageE2ET {
         assertThat(items.get(0).get("bodyMD5").s()).isEqualTo("22bde5e7b05fa80bc7be45bdd4bc6c75");
     }
 
-    @Test
-    void smallSQSMessage_shouldNotReadFromS3() {
+    @ParameterizedTest
+    @ValueSource(strings = { "largemessage", "largemessage-functional" })
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    void smallSQSMessage_shouldNotReadFromS3(String pathToFunction) {
+        setupInfrastructure(pathToFunction);
+
         // GIVEN
         final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
                 .withPayloadSupportEnabled(s3Client, bucketName);

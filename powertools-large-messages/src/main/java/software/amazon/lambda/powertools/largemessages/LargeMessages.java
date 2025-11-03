@@ -93,7 +93,7 @@ public final class LargeMessages {
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessages.class);
 
     private LargeMessages() {
-        // utility class
+        // Utility class
     }
 
     /**
