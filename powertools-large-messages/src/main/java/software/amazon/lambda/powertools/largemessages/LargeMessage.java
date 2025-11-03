@@ -20,15 +20,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * <p>Use this annotation to handle large messages (> 256 KB) from SQS or SNS.
+ * <p>Use this annotation to handle large messages (> 1 MB) from SQS or SNS.
  * When large messages are sent to an SQS Queue or SNS Topic, they are offloaded to S3 and only a reference is passed in the message/record.</p>
  *
  * <p>{@code @LargeMessage} automatically retrieves and deletes messages
  * which have been offloaded to S3 using the {@code amazon-sqs-java-extended-client-lib} or {@code amazon-sns-java-extended-client-lib}
  * client libraries.</p>
  *
- * <p>This version of the {@code @LargeMessage} is compatible with version
- * 1.1.0+ of {@code amazon-sqs-java-extended-client-lib} / {@code amazon-sns-java-extended-client-lib}.</p>
+ * <p>This version of the {@code @LargeMessage} is compatible with version 1.1.0+ and 2.0.0+
+ * of {@code amazon-sqs-java-extended-client-lib} / {@code amazon-sns-java-extended-client-lib}.</p>
  * <br/>
  * <p>Put this annotation on a method where the first parameter is either a {@link com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage} or {@link com.amazonaws.services.lambda.runtime.events.SNSEvent.SNSRecord}.
  * <br/>
@@ -54,9 +54,11 @@ import java.lang.annotation.Target;
  * </pre>
  * </p>
  *
- * <p><b>Note 1</b>: Retrieving payloads and deleting objects from S3 will increase the duration of the
+ * <p><b>Note 1</b>: The message object (SQSMessage or SNSRecord) is modified in-place to avoid duplicating
+ * the large blob in memory. The message body will be replaced with the S3 object content.</p>
+ * <p><b>Note 2</b>: Retrieving payloads and deleting objects from S3 will increase the duration of the
  * Lambda function.</p>
- * <p><b>Note 2</b>: Make sure to configure your function with enough memory to be able to retrieve S3 objects.</p>
+ * <p><b>Note 3</b>: Make sure to configure your function with enough memory to be able to retrieve S3 objects.</p>
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
