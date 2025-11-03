@@ -28,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.tests.EventLoader;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.DoubleNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
@@ -145,8 +146,8 @@ class BasePersistenceStoreTest {
         assertThatThrownBy(
                 () -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
                         OptionalInt.empty()))
-                .isInstanceOf(IdempotencyKeyException.class)
-                .hasMessageContaining("No data found to create a hashed idempotency key");
+                                .isInstanceOf(IdempotencyKeyException.class)
+                                .hasMessageContaining("No data found to create a hashed idempotency key");
         assertThat(status).isEqualTo(-1);
     }
 
@@ -181,7 +182,7 @@ class BasePersistenceStoreTest {
         assertThatThrownBy(
                 () -> persistenceStore.saveInProgress(JsonConfig.get().getObjectMapper().valueToTree(event), now,
                         OptionalInt.empty()))
-                .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+                                .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
         assertThat(status).isEqualTo(-1);
     }
 
@@ -243,7 +244,8 @@ class BasePersistenceStoreTest {
         DataRecord cachedDr = cache.get("testFunction#8d6a8f173b46479eff55e0997864a514");
         assertThat(cachedDr.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
         assertThat(cachedDr.getExpiryTimestamp()).isEqualTo(now.plus(3600, ChronoUnit.SECONDS).getEpochSecond());
-        assertThat(cachedDr.getResponseData()).isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
+        assertThat(cachedDr.getResponseData())
+                .isEqualTo(JsonConfig.get().getObjectMapper().writeValueAsString(product));
         assertThat(cachedDr.getIdempotencyKey()).isEqualTo("testFunction#8d6a8f173b46479eff55e0997864a514");
         assertThat(cachedDr.getPayloadHash()).isEmpty();
     }
@@ -325,6 +327,52 @@ class BasePersistenceStoreTest {
 
         assertThatThrownBy(
                 () -> persistenceStore.getRecord(JsonConfig.get().getObjectMapper().valueToTree(event), Instant.now()))
+                        .isInstanceOf(IdempotencyValidationException.class);
+    }
+
+    @Test
+    void saveInProgress_invalidPayload_shouldThrowValidationException() {
+        APIGatewayProxyRequestEvent event = EventLoader.loadApiGatewayRestEvent("apigw_event.json");
+        persistenceStore = new BasePersistenceStore() {
+            @Override
+            public DataRecord getRecord(String idempotencyKey) throws IdempotencyItemNotFoundException {
+                return new DataRecord(idempotencyKey, DataRecord.Status.INPROGRESS,
+                        Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond(), "Response", "different hash");
+            }
+
+            @Override
+            public void putRecord(DataRecord dataRecord, Instant now) throws IdempotencyItemAlreadyExistsException {
+                DataRecord existingRecord = new DataRecord(
+                        dataRecord.getIdempotencyKey(),
+                        DataRecord.Status.INPROGRESS,
+                        Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond(),
+                        null,
+                        "different hash");
+                throw new IdempotencyItemAlreadyExistsException("Item already exists", new Exception(), existingRecord);
+            }
+
+            @Override
+            public void updateRecord(DataRecord dataRecord) {
+                // Not needed for this test.
+            }
+
+            @Override
+            public void deleteRecord(String idempotencyKey) {
+                // Not needed for this test.
+
+            }
+        };
+
+        persistenceStore.configure(IdempotencyConfig.builder()
+                .withEventKeyJMESPath("powertools_json(body).id")
+                .withPayloadValidationJMESPath("powertools_json(body).message")
+                .build(),
+                "myfunc");
+
+        Instant now = Instant.now();
+        OptionalInt remainingTime = OptionalInt.empty();
+        JsonNode eventJson = JsonConfig.get().getObjectMapper().valueToTree(event);
+        assertThatThrownBy(() -> persistenceStore.saveInProgress(eventJson, now, remainingTime))
                 .isInstanceOf(IdempotencyValidationException.class);
     }
 

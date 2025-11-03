@@ -16,10 +16,6 @@ package software.amazon.lambda.powertools.idempotency.persistence;
 
 import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import io.burt.jmespath.Expression;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -33,8 +29,15 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
+import io.burt.jmespath.Expression;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemNotFoundException;
@@ -125,8 +128,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                     DataRecord.Status.COMPLETED,
                     getExpiryEpochSecond(now),
                     responseJson,
-                    getHashedPayload(data)
-            );
+                    getHashedPayload(data));
             LOG.debug("Function successfully executed. Saving record to persistence store with idempotency key: {}",
                     dataRecord.getIdempotencyKey());
             updateRecord(dataRecord);
@@ -157,8 +159,8 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
         OptionalLong inProgressExpirationMsTimestamp = OptionalLong.empty();
         if (remainingTimeInMs.isPresent()) {
-            inProgressExpirationMsTimestamp =
-                    OptionalLong.of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
+            inProgressExpirationMsTimestamp = OptionalLong
+                    .of(now.plus(remainingTimeInMs.getAsInt(), ChronoUnit.MILLIS).toEpochMilli());
         }
 
         DataRecord dataRecord = new DataRecord(
@@ -167,10 +169,23 @@ public abstract class BasePersistenceStore implements PersistenceStore {
                 getExpiryEpochSecond(now),
                 null,
                 getHashedPayload(data),
-                inProgressExpirationMsTimestamp
-        );
+                inProgressExpirationMsTimestamp);
         LOG.debug("saving in progress record for idempotency key: {}", dataRecord.getIdempotencyKey());
-        putRecord(dataRecord, now);
+
+        try {
+            putRecord(dataRecord, now);
+        } catch (IdempotencyItemAlreadyExistsException iaee) {
+            // Similar to getRecord, we need to call validatePayload before returning a data record.
+            // PR https://github.com/aws-powertools/powertools-lambda-java/pull/1821 introduced returning a data record
+            // through IdempotencyItemAlreadyExistsException to save DynamoDB calls when using DDB as store.
+            Optional<DataRecord> dr = iaee.getDataRecord();
+            if (dr.isPresent()) {
+                // throws IdempotencyValidationException if payload validation is enabled and failing
+                validatePayload(data, dr.get());
+            }
+
+            throw iaee;
+        }
     }
 
     /**
@@ -188,7 +203,7 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
         String idemPotencyKey = hashedIdempotencyKey.get();
         LOG.debug("Function raised an exception {}. " +
-                        "Clearing in progress record in persistence store for idempotency key: {}",
+                "Clearing in progress record in persistence store for idempotency key: {}",
                 throwable.getClass(),
                 idemPotencyKey);
 
@@ -255,9 +270,9 @@ public abstract class BasePersistenceStore implements PersistenceStore {
 
     private boolean isMissingIdemPotencyKey(JsonNode data) {
         if (data.isContainerNode()) {
-            Stream<JsonNode> stream =
-                    StreamSupport.stream(Spliterators.spliteratorUnknownSize(data.elements(), Spliterator.ORDERED),
-                            false);
+            Stream<JsonNode> stream = StreamSupport.stream(
+                    Spliterators.spliteratorUnknownSize(data.elements(), Spliterator.ORDERED),
+                    false);
             return stream.allMatch(JsonNode::isNull);
         }
         return data.isNull();
