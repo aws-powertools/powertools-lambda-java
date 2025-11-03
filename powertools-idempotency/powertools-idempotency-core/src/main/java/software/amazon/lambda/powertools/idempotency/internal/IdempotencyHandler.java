@@ -109,6 +109,8 @@ public class IdempotencyHandler {
             }
         } catch (IdempotencyKeyException ike) {
             throw ike;
+        } catch (IdempotencyValidationException ive) {
+            throw ive;
         } catch (Exception e) {
             throw new IdempotencyPersistenceLayerException(
                     "Failed to save in progress record to idempotency store. If you believe this is a Powertools for AWS Lambda (Java) bug, please open an issue.",
