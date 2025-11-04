@@ -131,12 +131,70 @@ class UserAgentConfiguratorTest {
     }
 
     @Test
-    void testConfigureUserAgent_WithExistingValue() {
+    void testConfigureUserAgent_WithExistingUserValue() {
         System.setProperty("sdk.ua.appId", "UserValueABC123");
         UserAgentConfigurator.configureUserAgent("test-feature");
 
         assertThat(System.getProperty("sdk.ua.appId"))
                 .isEqualTo("UserValueABC123/PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_ReplacePowertoolsUserAgent() {
+        System.setProperty("sdk.ua.appId", "PT/BATCH/" + VERSION + " PTENV/NA");
+        UserAgentConfigurator.configureUserAgent("logging-log4j");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/LOGGING-LOG4J/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_PreserveUserValueAndReplacePowertools() {
+        System.setProperty("sdk.ua.appId", "UserValue/PT/BATCH/" + VERSION + " PTENV/NA");
+        UserAgentConfigurator.configureUserAgent("tracing");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("UserValue/PT/TRACING/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    void testConfigureUserAgent_ExceedsLimit() {
+        System.setProperty("sdk.ua.appId", "VeryLongUserValueThatExceedsTheLimitWhenCombined");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        // Should not update if it would exceed 50 characters
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("VeryLongUserValueThatExceedsTheLimitWhenCombined");
+    }
+
+    @Test
+    void testExtractUserValue_NoUserValue() {
+        String result = UserAgentConfigurator.extractUserValue("PT/BATCH/" + VERSION + " PTENV/NA");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testExtractUserValue_WithUserValue() {
+        String result = UserAgentConfigurator.extractUserValue("UserValue/PT/BATCH/" + VERSION + " PTENV/NA");
+        assertThat(result).isEqualTo("UserValue");
+    }
+
+    @Test
+    void testExtractUserValue_EmptyString() {
+        String result = UserAgentConfigurator.extractUserValue("");
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testExtractUserValue_NullString() {
+        String result = UserAgentConfigurator.extractUserValue(null);
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testExtractUserValue_OnlyUserValue() {
+        String result = UserAgentConfigurator.extractUserValue("MyCustomValue");
+        assertThat(result).isEqualTo("MyCustomValue");
     }
 
     @Test
@@ -146,6 +204,27 @@ class UserAgentConfiguratorTest {
 
         assertThat(System.getProperty("sdk.ua.appId"))
                 .isEqualTo("PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = AWS_EXECUTION_ENV, value = "AWS_Lambda_java11")
+    void testConfigureUserAgent_MultipleUtilities() {
+        System.clearProperty("sdk.ua.appId");
+
+        // First utility
+        UserAgentConfigurator.configureUserAgent("batch");
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/BATCH/" + VERSION + " PTENV/AWS_Lambda_java11");
+
+        // Second utility - should replace, not append
+        UserAgentConfigurator.configureUserAgent("logging-log4j");
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/LOGGING-LOG4J/" + VERSION + " PTENV/AWS_Lambda_java11");
+
+        // Third utility - should replace again
+        UserAgentConfigurator.configureUserAgent("tracing");
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("PT/TRACING/" + VERSION + " PTENV/AWS_Lambda_java11");
     }
 
 }
