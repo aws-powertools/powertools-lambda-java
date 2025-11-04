@@ -82,23 +82,50 @@ public final class UserAgentConfigurator {
 
     /**
      * Configures the AWS SDK to use Powertools user agent by setting the sdk.ua.appId system property.
-     * If the property is already set and not empty, appends the Powertools user agent with a "/" separator.
+     * Preserves any user-provided value and replaces any existing Powertools user agent.
+     * Enforces a 50 character limit to comply with AWS SDK recommendations.
      * This should be called during library initialization to ensure the user agent is properly configured.
      */
     public static void configureUserAgent(String ptFeature) {
         try {
             String existingValue = System.getProperty(SDK_USER_AGENT_APP_ID);
             String powertoolsUserAgent = getUserAgent(ptFeature);
+            String newValue;
 
-            if (existingValue != null && !existingValue.isEmpty()) {
-                System.setProperty(SDK_USER_AGENT_APP_ID, existingValue + "/" + powertoolsUserAgent);
+            if (existingValue == null || existingValue.isEmpty()) {
+                newValue = powertoolsUserAgent;
             } else {
-                System.setProperty(SDK_USER_AGENT_APP_ID, powertoolsUserAgent);
+                String userValue = extractUserValue(existingValue);
+                if (userValue.isEmpty()) {
+                    newValue = powertoolsUserAgent;
+                } else {
+                    newValue = userValue + "/" + powertoolsUserAgent;
+                }
+            }
+
+            if (newValue.length() <= 50) {
+                System.setProperty(SDK_USER_AGENT_APP_ID, newValue);
             }
         } catch (Exception e) {
             // We don't re-raise since we don't want to break the user if something in this logic doesn't work
             LOG.warn("Unable to configure user agent system property", e);
         }
+    }
+
+    /**
+     * Extracts the user-provided value from the existing user agent string by removing any Powertools user agent.
+     * A Powertools user agent follows the pattern "PT/{FEATURE}/{VERSION} PTENV/{ENV}".
+     *
+     * @param existingValue the existing user agent string
+     * @return the user-provided value without Powertools user agent, or empty string if none exists
+     */
+    static String extractUserValue(String existingValue) {
+        if (existingValue == null || existingValue.isEmpty()) {
+            return "";
+        }
+        // Remove Powertools user agent pattern: PT/{FEATURE}/{VERSION} PTENV/{ENV}
+        String result = existingValue.replaceAll("/?PT/[^/]+/[^ ]+ PTENV/[^ ]+", "");
+        return result.trim();
     }
 
     /**
