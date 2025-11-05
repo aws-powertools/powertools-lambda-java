@@ -29,8 +29,8 @@ dependencies {
     implementation 'com.amazonaws:aws-lambda-java-events:3.16.0'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.2'
     implementation 'org.aspectj:aspectjrt:1.9.20.1'
-    aspect 'software.amazon.lambda:powertools-tracing:2.5.0'
-    aspect 'software.amazon.lambda:powertools-logging-log4j:2.5.0'
-    aspect 'software.amazon.lambda:powertools-metrics:2.5.0'
+    aspect 'software.amazon.lambda:powertools-tracing:2.6.0'
+    aspect 'software.amazon.lambda:powertools-logging-log4j:2.6.0'
+    aspect 'software.amazon.lambda:powertools-metrics:2.6.0'
 }
 
