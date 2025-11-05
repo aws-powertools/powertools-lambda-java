@@ -40,7 +40,7 @@ sam build
 ## Deploy the sample application
 
 ```shell
-sam deploy --guided --parameter-overrides BucketNameParam=my-unique-bucket-2.5.0718
+sam deploy --guided --parameter-overrides BucketNameParam=my-unique-bucket-2.6.0718
 ```
 
 This sample is based on Serverless Application Model (SAM). To deploy it, check out the instructions for getting started with SAM in [the examples directory](../../../README.md)
