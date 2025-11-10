@@ -30,7 +30,7 @@
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
-        <constructs.version>10.4.2</constructs.version>
+        <constructs.version>10.4.3</constructs.version>
         <cdk.version>2.222.0</cdk.version>
     </properties>
 
