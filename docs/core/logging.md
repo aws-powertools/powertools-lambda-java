@@ -23,13 +23,12 @@ Logging provides an opinionated logger with output structured as JSON.
     You can find complete examples in the [project repository](https://github.com/aws-powertools/powertools-lambda-java/tree/v2/examples/powertools-examples-core-utilities){target="_blank"}.
 
 ### Installation
-Depending on preference, you must choose to use either _log4j2_ or _logback_ as your log provider. In both cases you need to configure _aspectj_
-to weave the code and make sure the annotation is processed.
+Depending on preference, you must choose to use either _log4j2_ or _logback_ as your log provider. If you use the AspectJ annotation approach, you need to configure _aspectj_ to weave the code and make sure the annotation is processed. If you prefer the [functional approach](../usage-patterns.md#functional-approach), AspectJ configuration is not required.
 
 #### Maven
 === "log4j2"
 
-    ```xml hl_lines="3-7 24-27"
+    ```xml hl_lines="3-12 30-33"
     <dependencies>
         ...
         <dependency>
@@ -37,10 +36,16 @@ to weave the code and make sure the annotation is processed.
             <artifactId>powertools-logging-log4j</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
         ...
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
     <build>
         <plugins>
             ...
@@ -82,7 +87,7 @@ to weave the code and make sure the annotation is processed.
 
 === "logback"
 
-    ```xml hl_lines="3-7 24-27"
+    ```xml hl_lines="3-12 30-33"
     <dependencies>
         ...
         <dependency>
@@ -90,10 +95,16 @@ to weave the code and make sure the annotation is processed.
             <artifactId>powertools-logging-logback</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
+        <dependency>
+            <groupId>software.amazon.lambda</groupId>
+            <artifactId>powertools-logging</artifactId>
+            <version>{{ powertools.version }}</version>
+        </dependency>
         ...
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
     <build>
         <plugins>
             ...
@@ -137,10 +148,10 @@ to weave the code and make sure the annotation is processed.
 
 === "log4j2"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11-12"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach
         }
         
         repositories {
@@ -148,7 +159,8 @@ to weave the code and make sure the annotation is processed.
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-logging-log4j:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}' // Not needed when using the functional approach
+            implementation 'software.amazon.lambda:powertools-logging-log4j:{{ powertools.version }}'
         }
         
         sourceCompatibility = 11
@@ -157,10 +169,10 @@ to weave the code and make sure the annotation is processed.
 
 === "logback"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11-12"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach
         }
         
         repositories {
@@ -168,7 +180,8 @@ to weave the code and make sure the annotation is processed.
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-logging-logback:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}' // Not needed when using the functional approach
+            implementation 'software.amazon.lambda:powertools-logging-logback:{{ powertools.version }}'
         }
         
         sourceCompatibility = 11
@@ -317,9 +330,9 @@ If you set `POWERTOOLS_LOG_LEVEL` lower than ALC, we will emit a warning informi
 
 ## Basic Usage
 
-To use Lambda Powertools for AWS Lambda Logging, use the `@Logging` annotation in your code and the standard _SLF4J_ logger:
+You can use Powertools for AWS Lambda Logging with either the `@Logging` annotation or the functional API:
 
-=== "PaymentFunction.java"
+=== "@Logging annotation"
 
     ```java hl_lines="8 10 12 14"
     import org.slf4j.Logger;
@@ -337,6 +350,30 @@ To use Lambda Powertools for AWS Lambda Logging, use the `@Logging` annotation i
             // ...
             LOGGER.debug("order={}, amount={}", order.getId(), order.getAmount());
             // ...
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="8 11 12 14 17"
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+    // ... other imports
+
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, () -> {
+                LOGGER.info("Collecting payment");
+                // ...
+                LOGGER.debug("order={}, amount={}", order.getId(), order.getAmount());
+                // ...
+                return new APIGatewayProxyResponseEvent().withStatusCode(200);
+            });
         }
     }
     ```
@@ -376,11 +413,10 @@ The following keys will also be added to all your structured logs (unless [confi
 
 #### Logging a correlation ID
 
-You can set a correlation ID using the `correlationIdPath` attribute of the `@Logging`annotation,
-by passing a [JMESPath expression](https://jmespath.org/tutorial.html){target="_blank"}, 
+You can set a correlation ID using the `correlationIdPath` parameter by passing a [JMESPath expression](https://jmespath.org/tutorial.html){target="_blank"}, 
 including our custom [JMESPath Functions](../utilities/serialization.md#built-in-functions).
 
-=== "AppCorrelationIdPath.java"
+=== "@Logging annotation"
 
     ```java hl_lines="5"
     public class AppCorrelationIdPath implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -392,6 +428,24 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
             // ...
             LOGGER.info("Collecting payment")
             // ...
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="6"
+    public class AppCorrelationIdPath implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppCorrelationIdPath.class);
+    
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, "headers.my_request_id_header", input, () -> {
+                // ...
+                LOGGER.info("Collecting payment");
+                // ...
+                return new APIGatewayProxyResponseEvent().withStatusCode(200);
+            });
         }
     }
     ```
@@ -422,7 +476,7 @@ including our custom [JMESPath Functions](../utilities/serialization.md#built-in
 To ease routine tasks like extracting correlation ID from popular event sources,
 we provide [built-in JMESPath expressions](#built-in-correlation-id-expressions).
 
-=== "AppCorrelationId.java"
+=== "@Logging annotation"
 
     ```java hl_lines="1 7"
     import software.amazon.lambda.powertools.logging.CorrelationIdPaths;
@@ -436,6 +490,26 @@ we provide [built-in JMESPath expressions](#built-in-correlation-id-expressions)
             // ...
             LOGGER.info("Collecting payment")
             // ...
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="1 8"
+    import software.amazon.lambda.powertools.logging.CorrelationIdPaths;
+
+    public class AppCorrelationId implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppCorrelationId.class);
+    
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, CorrelationIdPaths.API_GATEWAY_REST, input, () -> {
+                // ...
+                LOGGER.info("Collecting payment");
+                // ...
+                return new APIGatewayProxyResponseEvent().withStatusCode(200);
+            });
         }
     }
     ```
@@ -668,10 +742,9 @@ You can remove additional keys added with the MDC using `MDC.remove("key")`.
 #### Clearing state
 
 Logger is commonly initialized in the global scope. Due to [Lambda Execution Context reuse](https://docs.aws.amazon.com/lambda/latest/dg/runtimes-context.html){target="_blank"},
-this means that custom keys, added with the MDC can be persisted across invocations. If you want all custom keys to be deleted, you can use
-`clearState=true` attribute on the `@Logging` annotation.
+this means that custom keys, added with the MDC can be persisted across invocations. You can clear state using `clearState=true` on the `@Logging` annotation, or use the functional API which handles cleanup automatically.
 
-=== "CreditCardFunction.java"
+=== "@Logging annotation"
 
     ```java hl_lines="5 8"
     public class CreditCardFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -716,15 +789,18 @@ this means that custom keys, added with the MDC can be persisted across invocati
 
 `clearState` is based on `MDC.clear()`. State clearing is automatically done at the end of the execution of the handler if set to `true`.
 
+???+ tip
+    When using the functional API with `PowertoolsLogging.withLogging()`, state is automatically cleared at the end of execution, so you don't need to manage it manually.
+
 
 ## Logging incoming event
 
-When debugging in non-production environments, you can instruct the `@Logging` annotation to log the incoming event with `logEvent` param or via `POWERTOOLS_LOGGER_LOG_EVENT` env var.
+When debugging in non-production environments, you can log the incoming event using the `@Logging` annotation with `logEvent` param, via `POWERTOOLS_LOGGER_LOG_EVENT` env var, or manually with the functional API.
 
 ???+ warning
-    This is disabled by default to prevent sensitive info being logged
+    This is disabled by default to prevent sensitive info being logged.
 
-=== "AppLogEvent.java"
+=== "@Logging annotation"
 
     ```java hl_lines="5"
        public class AppLogEvent implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -738,17 +814,36 @@ When debugging in non-production environments, you can instruct the `@Logging` a
     }
     ```
 
+=== "Functional API"
+
+    ```java hl_lines="1 9"
+    import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
+
+    public class AppLogEvent implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogEvent.class);
+        
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, () -> {
+                LOGGER.info("Handler Event", entry("event", input));
+                // ...
+                return new APIGatewayProxyResponseEvent().withStatusCode(200);
+            });
+        }
+    }
+    ```
+
 ???+ note
-    If you use this on a RequestStreamHandler, the SDK must duplicate input streams in order to log them.
+    If you use this on a RequestStreamHandler, the SDK must duplicate input streams in order to log them when used together with the `@Logging` annotation.
 
 ## Logging handler response
 
-When debugging in non-production environments, you can instruct the `@Logging` annotation to log the response with `logResponse` param or via `POWERTOOLS_LOGGER_LOG_RESPONSE` env var.
+When debugging in non-production environments, you can log the response using the `@Logging` annotation with `logResponse` param, via `POWERTOOLS_LOGGER_LOG_RESPONSE` env var, or manually with the functional API.
 
 ???+ warning
-    This is disabled by default to prevent sensitive info being logged
+    This is disabled by default to prevent sensitive info being logged.
 
-=== "AppLogResponse.java"
+=== "@Logging annotation"
 
     ```java hl_lines="5"
     public class AppLogResponse implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -762,18 +857,41 @@ When debugging in non-production environments, you can instruct the `@Logging` a
     }
     ```
 
+=== "Functional API"
+
+    ```java hl_lines="1 11"
+    import static software.amazon.lambda.powertools.logging.argument.StructuredArguments.entry;
+
+    public class AppLogResponse implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogResponse.class);
+        
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, () -> {
+                // ...
+                APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent().withStatusCode(200);
+                LOGGER.info("Handler Response", entry("response", response));
+                return response;
+            });
+        }
+    }
+    ```
+
 ???+ note
-    If you use this on a RequestStreamHandler, Powertools must duplicate output streams in order to log them.
+    If you use this on a RequestStreamHandler, Powertools must duplicate output streams in order to log them when used together with the `@Logging` annotation.
 
 ## Logging handler uncaught exception
 By default, AWS Lambda logs any uncaught exception that might happen in the handler. However, this log is not structured
-and does not contain any additional context. You can instruct the `@Logging` annotation to log this kind of exception
+and does not contain any additional context. When using the `@Logging` annotation, you can enable structured exception logging
 with `logError` param or via `POWERTOOLS_LOGGER_LOG_ERROR` env var.
 
 ???+ warning
-    This is disabled by default to prevent double logging
+    This is disabled by default to prevent double logging.
 
-=== "AppLogResponse.java"
+???+ note
+    This feature is only available when using the `@Logging` annotation. When using the functional API, you must catch and log exceptions manually using try-catch blocks.
+
+=== "@Logging annotation"
 
     ```java hl_lines="5"
     public class AppLogError implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -783,6 +901,29 @@ with `logError` param or via `POWERTOOLS_LOGGER_LOG_ERROR` env var.
         @Logging(logError = true)
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
             // ...
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="1 9 12-13"
+    import org.slf4j.MarkerFactory;
+
+    public class AppLogError implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(AppLogError.class);
+        
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, () -> {
+                try {
+                    // ...
+                    return new APIGatewayProxyResponseEvent().withStatusCode(200);
+                } catch (Exception e) {
+                    LOGGER.error(MarkerFactory.getMarker("FATAL"), "Exception in Lambda Handler", e);
+                    throw e;
+                }
+            });
         }
     }
     ```
@@ -1050,7 +1191,10 @@ You can manually control the log buffer using the `PowertoolsLogging` utility cl
 
 Use the `@Logging` annotation to automatically flush buffered logs when an uncaught exception is raised in your Lambda function. This is enabled by default (`flushBufferOnUncaughtError = true`), but you can explicitly configure it if needed.
 
-=== "PaymentFunction.java"
+???+ warning
+    This feature is only available when using the `@Logging` annotation. When using the functional API, you must manually flush the buffer in exception handlers.
+
+=== "@Logging annotation"
 
     ```java hl_lines="5 11"
     public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -1064,6 +1208,30 @@ Use the `@Logging` annotation to automatically flush buffered logs when an uncau
             // do stuff
             
             throw new RuntimeException("Something went wrong");  // Logs will be flushed here
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="14"
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(PaymentFunction.class);
+        
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, () -> {
+                try {
+                    LOGGER.debug("a debug log");  // this is buffered
+                    // do stuff
+                    throw new RuntimeException("Something went wrong");
+                } catch (Exception e) {
+                    PowertoolsLogging.flushBuffer();  // Manually flush buffered logs
+                    throw e;
+                }
+            });
         }
     }
     ```
@@ -1161,13 +1329,13 @@ sequenceDiagram
 
 ## Sampling debug logs
 
-You can dynamically set a percentage of your logs to`DEBUG` level to be included in the logger output, regardless of configured log leve, using the`POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable or
-via `samplingRate` attribute on the `@Logging` annotation.
+You can dynamically set a percentage of your logs to`DEBUG` level to be included in the logger output, regardless of configured log level, using the`POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable,
+via `samplingRate` attribute on the `@Logging` annotation, or as a parameter in the functional API.
 
 !!! info
-    Configuration on environment variable is given precedence over sampling rate configuration on annotation, provided it's in valid value range.
+    Configuration on environment variable is given precedence over sampling rate configuration, provided it's in valid value range.
 
-=== "Sampling via annotation attribute"
+=== "@Logging annotation"
 
     ```java hl_lines="5"
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -1178,6 +1346,23 @@ via `samplingRate` attribute on the `@Logging` annotation.
         public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
             // will eventually be logged based on the sampling rate
             LOGGER.debug("Handle payment");
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="6"
+    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
+    
+        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
+            return PowertoolsLogging.withLogging(context, 0.5, () -> {
+                // will eventually be logged based on the sampling rate
+                LOGGER.debug("Handle payment");
+                return new APIGatewayProxyResponseEvent().withStatusCode(200);
+            });
         }
     }
     ```
@@ -1198,7 +1383,7 @@ via `samplingRate` attribute on the `@Logging` annotation.
 
 ## Built-in Correlation ID expressions
 
-You can use any of the following built-in JMESPath expressions as part of `@Logging(correlationIdPath = ...)`:
+You can use any of the following built-in JMESPath expressions with the `@Logging` annotation or the functional API:
 
 ???+ note "Note: Any object key named with `-` must be escaped"
     For example, **`request.headers."x-amzn-trace-id"`**.
@@ -1237,8 +1422,7 @@ The `JsonTemplateLayout` is automatically configured with the provided template:
             "field": "name"
         },
         "message": {
-            "$resolver": "powertools",
-            "field": "message"
+            "$resolver": "message"
         },
         "error": {
             "message": {
@@ -1298,6 +1482,10 @@ The `JsonTemplateLayout` is automatically configured with the provided template:
         "xray_trace_id": {
             "$resolver": "powertools",
             "field": "xray_trace_id"
+        },
+        "correlation_id": {
+            "$resolver": "powertools",
+            "field": "correlation_id"
         },
         "": {
             "$resolver": "powertools"

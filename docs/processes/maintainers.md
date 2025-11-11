@@ -17,7 +17,6 @@ This is document explains who the maintainers are, their responsibilities, and h
 | Maintainer      | GitHub ID                                                            | Affiliation |
 | --------------- | -------------------------------------------------------------------- | ----------- |
 | Philipp Page    | [phipag](https://github.com/phipag){target="\_blank" rel="nofollow"} | Amazon      |
-| Simon Thulbourn | [sthulb](https://github.com/sthulb){target="\_blank" rel="nofollow"} | Amazon      |
 
 ## Emeritus
 
@@ -25,6 +24,7 @@ Previous active maintainers who contributed to this project.
 
 | Maintainer            | GitHub ID                                                                              | Affiliation   |
 | --------------------- | -------------------------------------------------------------------------------------- | ------------- |
+| Simon Thulbourn       | [sthulb](https://github.com/sthulb){target="\_blank" rel="nofollow"}                   | Former Amazon |
 | Jerome Van Der Linden | [jeromevdl](https://github.com/jeromevdl){target="\_blank" rel="nofollow"}             | Amazon        |
 | Michele Ricciardi     | [mriccia](https://github.com/mriccia){target="\_blank" rel="nofollow"}                 | Amazon        |
 | Scott Gerring         | [scottgerring](https://github.com/scottgerring){target="\_blank" rel="nofollow"}       | DataDog       |
