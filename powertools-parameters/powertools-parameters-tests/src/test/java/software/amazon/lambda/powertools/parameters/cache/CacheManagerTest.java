@@ -21,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Clock;
 import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -69,7 +70,6 @@ public class CacheManagerTest {
         manager.setDefaultExpirationTime(of(42, SECONDS));
         manager.putInCache("key", "value");
 
-
         Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(40, SECONDS)).instant());
 
         assertThat(value).isPresent().contains("value");
@@ -99,6 +99,98 @@ public class CacheManagerTest {
 
         assertThat(value).isNotPresent();
         assertThat(value2).isPresent().contains("value2");
+    }
+
+    @Test
+    public void putInCache_sharedCache_shouldBeAccessibleAcrossThreads() throws InterruptedException {
+        // GIVEN
+        Thread thread1 = new Thread(() -> {
+            manager.setExpirationTime(of(60, SECONDS));
+            manager.putInCache("sharedKey", "valueFromThread1");
+            manager.resetExpirationTime();
+        });
+
+        Thread thread2 = new Thread(() -> {
+            manager.setExpirationTime(of(10, SECONDS));
+            // Thread 2 should be able to read the value cached by Thread 1
+            Optional<String> value = manager.getIfNotExpired("sharedKey", clock.instant());
+            assertThat(value).isPresent().contains("valueFromThread1");
+            manager.resetExpirationTime();
+        });
+
+        // WHEN
+        thread1.start();
+        thread1.join();
+        thread2.start();
+        thread2.join();
+
+        // THEN - Both threads should be able to access the same cached value
+        Optional<String> value = manager.getIfNotExpired("sharedKey", clock.instant());
+        assertThat(value).isPresent().contains("valueFromThread1");
+    }
+
+    @Test
+    public void putInCache_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+        // GIVEN
+        int threadCount = 10;
+        Thread[] threads = new Thread[threadCount];
+        boolean[] success = new boolean[threadCount];
+        Clock testClock = Clock.systemDefaultZone();
+
+        // WHEN - Multiple threads set different expiration times and cache values concurrently
+        for (int i = 0; i < threadCount; i++) {
+            final int threadIndex = i;
+            final int expirationSeconds = (i % 2 == 0) ? 60 : 10; // Alternate between 60s and 10s
+
+            threads[i] = new Thread(() -> {
+                try {
+                    manager.setExpirationTime(of(expirationSeconds, SECONDS));
+                    manager.putInCache("key" + threadIndex, "value" + threadIndex);
+                    manager.resetExpirationTime();
+                    success[threadIndex] = true;
+                } catch (Exception e) {
+                    success[threadIndex] = false;
+                }
+            });
+        }
+
+        // Start all threads
+        for (Thread thread : threads) {
+            thread.start();
+        }
+
+        // Wait for all threads to complete
+        for (Thread thread : threads) {
+            thread.join();
+        }
+
+        // THEN - All threads should complete successfully
+        for (boolean result : success) {
+            assertThat(result).isTrue();
+        }
+
+        // THEN - Each cached value should have the correct expiration time
+        // Values with 60s TTL should still be present after 9s, values with 10s should expire after 11s
+        for (int i = 0; i < threadCount; i++) {
+            final int expirationSeconds = (i % 2 == 0) ? 60 : 10;
+
+            // Check that value is still present just before expiration
+            Optional<String> valueBeforeExpiry = manager.getIfNotExpired("key" + i,
+                    offset(testClock, of(expirationSeconds - 1, SECONDS)).instant());
+            assertThat(valueBeforeExpiry)
+                    .as("Thread %d with %ds expiration should still have value after %ds", i, expirationSeconds,
+                            expirationSeconds - 1)
+                    .isPresent()
+                    .contains("value" + i);
+
+            // Check that value expires after the TTL
+            Optional<String> valueAfterExpiry = manager.getIfNotExpired("key" + i,
+                    offset(testClock, of(expirationSeconds + 1, SECONDS)).instant());
+            assertThat(valueAfterExpiry)
+                    .as("Thread %d with %ds expiration should not have value after %ds", i, expirationSeconds,
+                            expirationSeconds + 1)
+                    .isNotPresent();
+        }
     }
 
 }

@@ -20,18 +20,27 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * Manages caching of parameter values with configurable expiration times.
+ * <p>
+ * This class is thread-safe. The cache storage is shared across all threads,
+ * while expiration time configuration is thread-local to support concurrent
+ * requests with different cache TTL requirements.
+ */
 public class CacheManager {
     static final Duration DEFAULT_MAX_AGE_SECS = Duration.of(5, SECONDS);
 
     private final DataStore store;
-    private Duration defaultMaxAge = DEFAULT_MAX_AGE_SECS;
-    private Duration maxAge = defaultMaxAge;
+    private final AtomicReference<Duration> defaultMaxAge = new AtomicReference<>(DEFAULT_MAX_AGE_SECS);
+    private final ThreadLocal<Duration> maxAge = ThreadLocal.withInitial(() -> null);
 
     public CacheManager() {
         store = new DataStore();
     }
 
+    @SuppressWarnings("unchecked") // DataStore stores Object, safe cast as we control what's stored
     public <T> Optional<T> getIfNotExpired(String key, Instant now) {
         if (store.hasExpired(key, now)) {
             return Optional.empty();
@@ -40,19 +49,19 @@ public class CacheManager {
     }
 
     public void setExpirationTime(Duration duration) {
-        this.maxAge = duration;
+        this.maxAge.set(duration);
     }
 
     public void setDefaultExpirationTime(Duration duration) {
-        this.defaultMaxAge = duration;
-        this.maxAge = duration;
+        this.defaultMaxAge.set(duration);
     }
 
     public <T> void putInCache(String key, T value) {
-        store.put(key, value, Clock.systemDefaultZone().instant().plus(maxAge));
+        Duration effectiveMaxAge = maxAge.get() != null ? maxAge.get() : defaultMaxAge.get();
+        store.put(key, value, Clock.systemDefaultZone().instant().plus(effectiveMaxAge));
     }
 
     public void resetExpirationTime() {
-        maxAge = defaultMaxAge;
+        maxAge.remove();
     }
 }

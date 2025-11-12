@@ -19,7 +19,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
-import software.amazon.awssdk.annotations.NotThreadSafe;
+
+import software.amazon.awssdk.annotations.ThreadSafe;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 import software.amazon.lambda.powertools.parameters.transform.BasicTransformer;
@@ -28,8 +29,20 @@ import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
 /**
  * Base class for all parameter providers.
+ * <p>
+ * This class is thread-safe when used as a singleton in multi-threaded environments.
+ * Configuration methods ({@link #withMaxAge(int, ChronoUnit)}, {@link #withTransformation(Class)})
+ * use thread-local storage to support concurrent requests with different requirements.
+ * <p>
+ * The cache and transformation managers are thread-safe with zero synchronization overhead,
+ * using lock-free data structures (ThreadLocal, AtomicReference, ConcurrentHashMap) for optimal performance.
+ * The cache storage is shared across all threads, allowing cached values to be reused across requests.
+ * <p>
+ * <b>Implementation Requirements:</b> Subclasses must ensure that implementations of
+ * {@link #getValue(String)} and {@link #getMultipleValues(String)} are thread-safe to
+ * guarantee overall thread-safety of the provider.
  */
-@NotThreadSafe
+@ThreadSafe
 public abstract class BaseProvider implements ParamProvider {
     public static final String PARAMETERS = "parameters";
 
@@ -91,6 +104,7 @@ public abstract class BaseProvider implements ParamProvider {
      * @param transformerClass Class of the transformer to apply. For convenience, you can use {@link Transformer#json} or {@link Transformer#base64} shortcuts.
      * @return the provider itself in order to chain calls (eg. <pre>provider.withTransformation(json).get("key", MyObject.class)</pre>).
      */
+    @SuppressWarnings("rawtypes") // Transformer type parameter determined at runtime
     public BaseProvider withTransformation(Class<? extends Transformer> transformerClass) {
         if (transformationManager == null) {
             throw new IllegalStateException(
@@ -110,12 +124,12 @@ public abstract class BaseProvider implements ParamProvider {
      * eg. getMultiple("/foo/bar") will retrieve [key="baz", value="valuebaz"] for parameter "/foo/bar/baz"
      */
     @Override
+    @SuppressWarnings("unchecked") // Cache stores Object, safe cast as we control what's stored
     public Map<String, String> getMultiple(String path) {
         // remove trailing whitespace
         String pathWithoutTrailingSlash = path.replaceAll("\\/+$", "");
         try {
-            return (Map<String, String>) cacheManager.getIfNotExpired(pathWithoutTrailingSlash, now()).orElseGet(() ->
-            {
+            return (Map<String, String>) cacheManager.getIfNotExpired(pathWithoutTrailingSlash, now()).orElseGet(() -> {
                 Map<String, String> params = getMultipleValues(pathWithoutTrailingSlash);
 
                 cacheManager.putInCache(pathWithoutTrailingSlash, params);
@@ -143,8 +157,7 @@ public abstract class BaseProvider implements ParamProvider {
     @Override
     public String get(final String key) {
         try {
-            return (String) cacheManager.getIfNotExpired(key, now()).orElseGet(() ->
-            {
+            return (String) cacheManager.getIfNotExpired(key, now()).orElseGet(() -> {
                 String value = getValue(key);
 
                 String transformedValue = value;
@@ -175,10 +188,10 @@ public abstract class BaseProvider implements ParamProvider {
      * @throws TransformationException if the transformation could not be done, because of a wrong format or an error during transformation.
      */
     @Override
+    @SuppressWarnings("unchecked") // Cache stores Object, safe cast as we control what's stored
     public <T> T get(final String key, final Class<T> targetClass) {
         try {
-            return (T) cacheManager.getIfNotExpired(key, now()).orElseGet(() ->
-            {
+            return (T) cacheManager.getIfNotExpired(key, now()).orElseGet(() -> {
                 String value = getValue(key);
 
                 if (transformationManager == null) {
@@ -207,7 +220,7 @@ public abstract class BaseProvider implements ParamProvider {
     protected void resetToDefaults() {
         cacheManager.resetExpirationTime();
         if (transformationManager != null) {
-            transformationManager.setTransformer(null);
+            transformationManager.unsetTransformer();
         }
     }
 

@@ -42,7 +42,11 @@ public class DataStore {
     }
 
     public boolean hasExpired(String key, Instant now) {
-        boolean hasExpired = !store.containsKey(key) || now.isAfter(store.get(key).time);
+        ValueNode node = store.get(key);
+        if (node == null) {
+            return true;
+        }
+        boolean hasExpired = now.isAfter(node.time);
         // Auto-clean if the parameter has expired
         if (hasExpired) {
             remove(key);
