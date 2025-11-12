@@ -21,6 +21,7 @@ import static software.amazon.lambda.powertools.parameters.transform.Transformer
 import static software.amazon.lambda.powertools.parameters.transform.Transformer.json;
 
 import java.util.Base64;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -124,11 +125,13 @@ public class TransformationManagerTest {
     public void setTransformer_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
         // GIVEN
         boolean[] success = new boolean[2];
+        CountDownLatch latch = new CountDownLatch(2);
 
         Thread thread1 = new Thread(() -> {
             try {
+                latch.countDown();
+                latch.await();
                 manager.setTransformer(json);
-                Thread.sleep(10); // Small delay to increase chance of thread interleaving
                 // Thread 1 expects json transformer
                 String result = manager.performComplexTransformation(
                         "{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}",
@@ -142,7 +145,8 @@ public class TransformationManagerTest {
 
         Thread thread2 = new Thread(() -> {
             try {
-                Thread.sleep(5); // Start slightly after thread1
+                latch.countDown();
+                latch.await();
                 manager.setTransformer(base64);
                 // Thread 2 expects base64 transformer
                 String result = manager.performBasicTransformation(
@@ -170,11 +174,13 @@ public class TransformationManagerTest {
     public void unsetTransformer_concurrentCalls_shouldNotAffectOtherThreads() throws InterruptedException {
         // GIVEN
         boolean[] success = new boolean[2];
+        CountDownLatch latch = new CountDownLatch(2);
 
         Thread thread1 = new Thread(() -> {
             try {
+                latch.countDown();
+                latch.await();
                 manager.setTransformer(json);
-                Thread.sleep(10);
                 // Thread 1 should still have json transformer even if thread 2 unsets
                 assertThat(manager.shouldTransform()).isTrue();
                 success[0] = true;
@@ -186,8 +192,9 @@ public class TransformationManagerTest {
 
         Thread thread2 = new Thread(() -> {
             try {
+                latch.countDown();
+                latch.await();
                 manager.setTransformer(base64);
-                Thread.sleep(5);
                 manager.unsetTransformer();
                 // Thread 2 should have no transformer after unset
                 assertThat(manager.shouldTransform()).isFalse();
