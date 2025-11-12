@@ -21,13 +21,13 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class SSMParamAspectTest {
+class SSMParamAspectTest {
 
     // This class tests the SSM Param aspect in the same fashion
     // as the tests for the aspects for the other providers.
 
     @Test
-    public void parameterInjectedByProvider() throws Exception {
+    void parameterInjectedByProvider() throws Exception {
 
         String key = "myKey";
         String value = "mySecretValue";

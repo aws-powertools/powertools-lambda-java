@@ -25,20 +25,20 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class CacheManagerTest {
+class CacheManagerTest {
 
     CacheManager manager;
 
     Clock clock;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         clock = Clock.systemDefaultZone();
         manager = new CacheManager();
     }
 
     @Test
-    public void getIfNotExpired_notExpired_shouldReturnValue() {
+    void getIfNotExpired_notExpired_shouldReturnValue() {
         manager.putInCache("key", "value");
 
         Optional<String> value = manager.getIfNotExpired("key", clock.instant());
@@ -47,7 +47,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void getIfNotExpired_expired_shouldReturnNothing() {
+    void getIfNotExpired_expired_shouldReturnNothing() {
         manager.putInCache("key", "value");
 
         Optional<String> value = manager.getIfNotExpired("key", offset(clock, of(6, SECONDS)).instant());
@@ -56,7 +56,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void getIfNotExpired_withCustomExpirationTime_notExpired_shouldReturnValue() {
+    void getIfNotExpired_withCustomExpirationTime_notExpired_shouldReturnValue() {
         manager.setExpirationTime(of(42, SECONDS));
         manager.putInCache("key", "value");
 
@@ -66,7 +66,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void getIfNotExpired_withCustomDefaultExpirationTime_notExpired_shouldReturnValue() {
+    void getIfNotExpired_withCustomDefaultExpirationTime_notExpired_shouldReturnValue() {
         manager.setDefaultExpirationTime(of(42, SECONDS));
         manager.putInCache("key", "value");
 
@@ -76,7 +76,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void getIfNotExpired_customDefaultExpirationTime_customExpirationTime_shouldUseExpirationTime() {
+    void getIfNotExpired_customDefaultExpirationTime_customExpirationTime_shouldUseExpirationTime() {
         manager.setDefaultExpirationTime(of(42, SECONDS));
         manager.setExpirationTime(of(2, SECONDS));
         manager.putInCache("key", "value");
@@ -87,7 +87,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void getIfNotExpired_resetExpirationTime_shouldUseDefaultExpirationTime() {
+    void getIfNotExpired_resetExpirationTime_shouldUseDefaultExpirationTime() {
         manager.setDefaultExpirationTime(of(42, SECONDS));
         manager.setExpirationTime(of(2, SECONDS));
         manager.putInCache("key", "value");
@@ -102,7 +102,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void putInCache_sharedCache_shouldBeAccessibleAcrossThreads() throws InterruptedException {
+    void putInCache_sharedCache_shouldBeAccessibleAcrossThreads() throws InterruptedException {
         // GIVEN
         Thread thread1 = new Thread(() -> {
             manager.setExpirationTime(of(60, SECONDS));
@@ -130,7 +130,7 @@ public class CacheManagerTest {
     }
 
     @Test
-    public void putInCache_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+    void putInCache_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
         // GIVEN
         int threadCount = 10;
         Thread[] threads = new Thread[threadCount];

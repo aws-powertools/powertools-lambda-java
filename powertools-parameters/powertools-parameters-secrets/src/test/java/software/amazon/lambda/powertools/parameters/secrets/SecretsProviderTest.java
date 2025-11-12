@@ -40,7 +40,7 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 @ExtendWith(MockitoExtension.class)
-public class SecretsProviderTest {
+class SecretsProviderTest {
 
     @Mock
     SecretsManagerClient client;
@@ -56,13 +56,13 @@ public class SecretsProviderTest {
     SecretsProvider provider;
 
     @BeforeEach
-    public void init() {
+    void init() {
         cacheManager = new CacheManager();
         provider = new SecretsProvider(cacheManager, transformationManager, client);
     }
 
     @Test
-    public void getValue() {
+    void getValue() {
         String key = "Key1";
         String expectedValue = "Value1";
         GetSecretValueResponse response = GetSecretValueResponse.builder().secretString(expectedValue).build();
@@ -76,7 +76,7 @@ public class SecretsProviderTest {
     }
 
     @Test
-    public void getValueBase64() {
+    void getValueBase64() {
         String key = "Key2";
         String expectedValue = "Value2";
         byte[] valueb64 = Base64.getEncoder().encode(expectedValue.getBytes());
@@ -91,14 +91,14 @@ public class SecretsProviderTest {
     }
 
     @Test
-    public void getMultipleValuesThrowsException() {
+    void getMultipleValuesThrowsException() {
         // Act & Assert
         assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
                 .withMessage("Impossible to get multiple values from AWS Secrets Manager");
     }
 
     @Test
-    public void testGetSecretsProvider_withoutParameter_shouldCreateDefaultClient() {
+    void testGetSecretsProvider_withoutParameter_shouldCreateDefaultClient() {
         // Act
         SecretsProvider secretsProvider = SecretsProvider.builder()
                 .build();
@@ -109,7 +109,7 @@ public class SecretsProviderTest {
     }
 
     @Test
-    public void testGetSecretsProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
+    void testGetSecretsProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
         // Act
         SecretsProvider secretsProvider = SecretsProvider.builder()
                 .build();

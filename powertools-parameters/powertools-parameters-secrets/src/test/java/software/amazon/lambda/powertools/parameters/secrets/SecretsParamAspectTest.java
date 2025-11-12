@@ -21,10 +21,10 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class SecretsParamAspectTest {
+class SecretsParamAspectTest {
 
     @Test
-    public void parameterInjectedByProvider() throws Exception {
+    void parameterInjectedByProvider() throws Exception {
         // Setup our aspect to return a mocked SecretsProvider
         String key = "myKey";
         String value = "mySecretValue";

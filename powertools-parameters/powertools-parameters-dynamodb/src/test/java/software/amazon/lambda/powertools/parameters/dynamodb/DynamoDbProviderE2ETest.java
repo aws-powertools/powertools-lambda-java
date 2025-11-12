@@ -36,7 +36,7 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
  * will move this across.
  */
 @Disabled
-public class DynamoDbProviderE2ETest {
+class DynamoDbProviderE2ETest {
 
     final String ParamsTestTable = "ddb-params-test";
     final String MultiparamsTestTable = "ddb-multiparams-test";
@@ -52,7 +52,7 @@ public class DynamoDbProviderE2ETest {
     }
 
     @Test
-    public void TestGetValue() {
+    void TestGetValue() {
 
         // Arrange
         HashMap<String, AttributeValue> testItem = new HashMap<String, AttributeValue>();
@@ -72,7 +72,7 @@ public class DynamoDbProviderE2ETest {
     }
 
     @Test
-    public void TestGetValues() {
+    void TestGetValues() {
 
         // Arrange
         HashMap<String, AttributeValue> testItem = new HashMap<String, AttributeValue>();

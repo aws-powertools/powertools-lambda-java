@@ -22,10 +22,10 @@ import java.util.function.BiFunction;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class AppConfigParamAspectTest {
+class AppConfigParamAspectTest {
 
     @Test
-    public void parameterInjectedByProvider() throws Exception {
+    void parameterInjectedByProvider() throws Exception {
         // Setup our aspect to return a mocked AppConfigProvider
         String environment = "myEnvironment";
         String appName = "myApp";

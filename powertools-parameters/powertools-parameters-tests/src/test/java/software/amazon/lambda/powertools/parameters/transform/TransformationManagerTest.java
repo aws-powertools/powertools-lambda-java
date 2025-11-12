@@ -28,37 +28,37 @@ import org.junit.jupiter.api.Test;
 
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
-public class TransformationManagerTest {
+class TransformationManagerTest {
 
     TransformationManager manager;
 
     Class<BasicTransformer> basicTransformer = BasicTransformer.class;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         manager = new TransformationManager();
     }
 
     @Test
-    public void setTransformer_shouldTransform() {
+    void setTransformer_shouldTransform() {
         manager.setTransformer(json);
 
         assertThat(manager.shouldTransform()).isTrue();
     }
 
     @Test
-    public void notSetTransformer_shouldNotTransform() {
+    void notSetTransformer_shouldNotTransform() {
         assertThat(manager.shouldTransform()).isFalse();
     }
 
     @Test
-    public void performBasicTransformation_noTransformer_shouldThrowException() {
+    void performBasicTransformation_noTransformer_shouldThrowException() {
         assertThatIllegalStateException()
                 .isThrownBy(() -> manager.performBasicTransformation("value"));
     }
 
     @Test
-    public void performBasicTransformation_notBasicTransformer_shouldThrowException() {
+    void performBasicTransformation_notBasicTransformer_shouldThrowException() {
         manager.setTransformer(json);
 
         assertThatIllegalStateException()
@@ -66,7 +66,7 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void performBasicTransformation_abstractTransformer_throwsTransformationException() {
+    void performBasicTransformation_abstractTransformer_throwsTransformationException() {
         manager.setTransformer(basicTransformer);
 
         assertThatExceptionOfType(TransformationException.class)
@@ -74,7 +74,7 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void performBasicTransformation_shouldPerformTransformation() {
+    void performBasicTransformation_shouldPerformTransformation() {
         manager.setTransformer(base64);
 
         String expectedValue = "bar";
@@ -84,13 +84,13 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void performComplexTransformation_noTransformer_shouldThrowException() {
+    void performComplexTransformation_noTransformer_shouldThrowException() {
         assertThatIllegalStateException()
                 .isThrownBy(() -> manager.performComplexTransformation("value", ObjectToDeserialize.class));
     }
 
     @Test
-    public void performComplexTransformation_shouldPerformTransformation() {
+    void performComplexTransformation_shouldPerformTransformation() {
         manager.setTransformer(json);
 
         ObjectToDeserialize object = manager.performComplexTransformation(
@@ -101,7 +101,7 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void performComplexTransformation_throwsTransformationException() {
+    void performComplexTransformation_throwsTransformationException() {
         manager.setTransformer(basicTransformer);
 
         assertThatExceptionOfType(TransformationException.class)
@@ -109,7 +109,7 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void unsetTransformer_shouldCleanUpThreadLocal() {
+    void unsetTransformer_shouldCleanUpThreadLocal() {
         // GIVEN
         manager.setTransformer(json);
         assertThat(manager.shouldTransform()).isTrue();
@@ -122,7 +122,7 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void setTransformer_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+    void setTransformer_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
         // GIVEN
         boolean[] success = new boolean[2];
         CountDownLatch latch = new CountDownLatch(2);
@@ -171,7 +171,7 @@ public class TransformationManagerTest {
     }
 
     @Test
-    public void unsetTransformer_concurrentCalls_shouldNotAffectOtherThreads() throws InterruptedException {
+    void unsetTransformer_concurrentCalls_shouldNotAffectOtherThreads() throws InterruptedException {
         // GIVEN
         boolean[] success = new boolean[2];
         CountDownLatch latch = new CountDownLatch(2);

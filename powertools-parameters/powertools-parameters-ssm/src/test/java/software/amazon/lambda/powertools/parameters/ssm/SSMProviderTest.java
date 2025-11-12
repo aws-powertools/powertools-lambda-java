@@ -44,7 +44,7 @@ import software.amazon.awssdk.services.ssm.model.Parameter;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
-public class SSMProviderTest {
+class SSMProviderTest {
 
     @Mock
     SsmClient client;
@@ -63,14 +63,14 @@ public class SSMProviderTest {
     SSMProvider provider;
 
     @BeforeEach
-    public void init() {
+    void init() {
         MockitoAnnotations.openMocks(this);
         cacheManager = new CacheManager();
         provider = new SSMProvider(cacheManager, null, client);
     }
 
     @Test
-    public void getValue() {
+    void getValue() {
         String key = "Key1";
         String expectedValue = "Value1";
         initMock(expectedValue);
@@ -83,7 +83,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void getValueDecrypted() {
+    void getValueDecrypted() {
         String key = "Key2";
         String expectedValue = "Value2";
         initMock(expectedValue);
@@ -96,7 +96,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void getMultiple() {
+    void getMultiple() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
         parameters.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
@@ -119,7 +119,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void getMultipleWithTrailingSlash() {
+    void getMultipleWithTrailingSlash() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
         parameters.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
@@ -142,7 +142,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void getMultiple_cached_shouldNotCallSSM() {
+    void getMultiple_cached_shouldNotCallSSM() {
         List<Parameter> parameters = new ArrayList<>();
         parameters.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
         parameters.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
@@ -164,7 +164,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void getMultipleWithNextToken() {
+    void getMultipleWithNextToken() {
         List<Parameter> parameters1 = new ArrayList<>();
         parameters1.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
         parameters1.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
@@ -199,7 +199,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void testSSMProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
+    void testSSMProvider_withoutParameter_shouldHaveDefaultTransformationManager() {
 
         // Act
         SSMProvider ssmProvider = SSMProvider.builder()
@@ -209,7 +209,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void withDecryption_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+    void withDecryption_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
         // GIVEN
         Parameter param1 = Parameter.builder().value("value1").build();
         Parameter param2 = Parameter.builder().value("value2").build();
@@ -255,7 +255,7 @@ public class SSMProviderTest {
     }
 
     @Test
-    public void recursive_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+    void recursive_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
         // GIVEN
         List<Parameter> params1 = new ArrayList<>();
         params1.add(Parameter.builder().name("/path1/key1").value("value1").build());

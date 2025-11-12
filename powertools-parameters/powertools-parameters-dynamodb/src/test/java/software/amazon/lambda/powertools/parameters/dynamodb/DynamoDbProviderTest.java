@@ -45,7 +45,7 @@ import software.amazon.lambda.powertools.parameters.dynamodb.exception.DynamoDbP
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 @ExtendWith(MockitoExtension.class)
-public class DynamoDbProviderTest {
+class DynamoDbProviderTest {
 
     private final String tableName = "ddb-test-table";
 
@@ -64,14 +64,14 @@ public class DynamoDbProviderTest {
     private DynamoDbProvider provider;
 
     @BeforeEach
-    public void init() {
+    void init() {
         openMocks(this);
         CacheManager cacheManager = new CacheManager();
         provider = new DynamoDbProvider(cacheManager, transformationManager, client, tableName);
     }
 
     @Test
-    public void getValue() {
+    void getValue() {
 
         // Arrange
         String key = "Key1";
@@ -94,7 +94,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValueWithNullResultsReturnsNull() {
+    void getValueWithNullResultsReturnsNull() {
         // Arrange
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
                 .item(null)
@@ -108,7 +108,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValueWithoutResultsReturnsNull() {
+    void getValueWithoutResultsReturnsNull() {
         // Arrange
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
                 .item(new HashMap<>())
@@ -122,7 +122,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValueWithMalformedRowThrows() {
+    void getValueWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
         HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
@@ -138,7 +138,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValues() {
+    void getValues() {
 
         // Arrange
         String key = "Key1";
@@ -172,7 +172,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValuesWithoutResultsReturnsNull() {
+    void getValuesWithoutResultsReturnsNull() {
         // Arrange
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(
                 QueryResponse.builder().items().build());
@@ -185,7 +185,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getMultipleValuesMissingSortKey_throwsException() {
+    void getMultipleValuesMissingSortKey_throwsException() {
         // Arrange
         String key = "Key1";
         HashMap<String, AttributeValue> item = new HashMap<String, AttributeValue>();
@@ -204,7 +204,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValuesWithMalformedRowThrows() {
+    void getValuesWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
         HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
@@ -224,7 +224,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void testDynamoDBBuilderMissingTable_throwsException() {
+    void testDynamoDBBuilderMissingTable_throwsException() {
 
         // Act & Assert
         assertThatIllegalStateException().isThrownBy(() -> DynamoDbProvider.builder()
@@ -233,7 +233,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void testDynamoDBBuilder_withoutParameter_shouldHaveDefaultTransformationManager() {
+    void testDynamoDBBuilder_withoutParameter_shouldHaveDefaultTransformationManager() {
 
         // Act
         DynamoDbProvider dynamoDbProvider = DynamoDbProvider.builder().withTable("test-table")
