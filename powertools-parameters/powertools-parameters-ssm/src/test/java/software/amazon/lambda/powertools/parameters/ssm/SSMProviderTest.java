@@ -23,6 +23,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,6 +34,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParameterResponse;
@@ -165,8 +168,8 @@ public class SSMProviderTest {
         List<Parameter> parameters1 = new ArrayList<>();
         parameters1.add(Parameter.builder().name("/prod/app1/key1").value("foo1").build());
         parameters1.add(Parameter.builder().name("/prod/app1/key2").value("foo2").build());
-        GetParametersByPathResponse response1 =
-                GetParametersByPathResponse.builder().parameters(parameters1).nextToken("123abc").build();
+        GetParametersByPathResponse response1 = GetParametersByPathResponse.builder().parameters(parameters1)
+                .nextToken("123abc").build();
 
         List<Parameter> parameters2 = new ArrayList<>();
         parameters2.add(Parameter.builder().name("/prod/app1/key3").value("foo3").build());
@@ -185,8 +188,7 @@ public class SSMProviderTest {
         GetParametersByPathRequest request1 = requestParams.get(0);
         GetParametersByPathRequest request2 = requestParams.get(1);
 
-        assertThat(asList(request1, request2)).allSatisfy(req ->
-        {
+        assertThat(asList(request1, request2)).allSatisfy(req -> {
             assertThat(req.path()).isEqualTo("/prod/app1");
             assertThat(req.withDecryption()).isFalse();
             assertThat(req.recursive()).isFalse();
@@ -203,7 +205,101 @@ public class SSMProviderTest {
         SSMProvider ssmProvider = SSMProvider.builder()
                 .build();
         // Assert
-        assertDoesNotThrow(()->ssmProvider.withTransformation(json));
+        assertDoesNotThrow(() -> ssmProvider.withTransformation(json));
+    }
+
+    @Test
+    public void withDecryption_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+        // GIVEN
+        Parameter param1 = Parameter.builder().value("value1").build();
+        Parameter param2 = Parameter.builder().value("value2").build();
+        GetParameterResponse response1 = GetParameterResponse.builder().parameter(param1).build();
+        GetParameterResponse response2 = GetParameterResponse.builder().parameter(param2).build();
+        CountDownLatch latch = new CountDownLatch(2);
+        Mockito.when(client.getParameter(paramCaptor.capture()))
+                .thenReturn(response1, response2);
+
+        // WHEN
+        Thread thread1 = new Thread(() -> {
+            try {
+                latch.countDown();
+                latch.await();
+                provider.withDecryption().getValue("key1");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        Thread thread2 = new Thread(() -> {
+            try {
+                latch.countDown();
+                latch.await();
+                provider.getValue("key2");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        // THEN
+        List<GetParameterRequest> requests = paramCaptor.getAllValues();
+        assertThat(requests).hasSize(2);
+        boolean hasDecryptedRequest = requests.stream().anyMatch(GetParameterRequest::withDecryption);
+        boolean hasNonDecryptedRequest = requests.stream().anyMatch(r -> !r.withDecryption());
+        assertThat(hasDecryptedRequest).isTrue();
+        assertThat(hasNonDecryptedRequest).isTrue();
+    }
+
+    @Test
+    public void recursive_concurrentCalls_shouldBeThreadSafe() throws InterruptedException {
+        // GIVEN
+        List<Parameter> params1 = new ArrayList<>();
+        params1.add(Parameter.builder().name("/path1/key1").value("value1").build());
+        List<Parameter> params2 = new ArrayList<>();
+        params2.add(Parameter.builder().name("/path2/key2").value("value2").build());
+        GetParametersByPathResponse response1 = GetParametersByPathResponse.builder().parameters(params1).build();
+        GetParametersByPathResponse response2 = GetParametersByPathResponse.builder().parameters(params2).build();
+        CountDownLatch latch = new CountDownLatch(2);
+        Mockito.when(client.getParametersByPath(paramByPathCaptor.capture()))
+                .thenReturn(response1, response2);
+
+        // WHEN
+        Thread thread1 = new Thread(() -> {
+            try {
+                latch.countDown();
+                latch.await();
+                provider.recursive().getMultiple("/path1");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        Thread thread2 = new Thread(() -> {
+            try {
+                latch.countDown();
+                latch.await();
+                provider.getMultiple("/path2");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        // THEN
+        List<GetParametersByPathRequest> requests = paramByPathCaptor.getAllValues();
+        assertThat(requests).hasSize(2);
+        boolean hasRecursiveRequest = requests.stream().anyMatch(GetParametersByPathRequest::recursive);
+        boolean hasNonRecursiveRequest = requests.stream().anyMatch(r -> !r.recursive());
+        assertThat(hasRecursiveRequest).isTrue();
+        assertThat(hasNonRecursiveRequest).isTrue();
     }
 
     private void initMock(String expectedValue) {
