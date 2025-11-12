@@ -48,6 +48,7 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
     <build>
         <plugins>
             ...
@@ -89,10 +90,10 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
 
 === "Gradle"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11 12"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach
         }
 
         repositories {
@@ -100,7 +101,8 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
         }
 
         dependencies {
-            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}' // Not needed when using the functional approach
+            implementation 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}' // Use this instead of 'aspect' when using the functional approach
         }
 
         sourceCompatibility = 11
@@ -127,27 +129,12 @@ Metrics has three global settings that will be used across all metrics emitted. 
 The `Metrics` Singleton can be configured by three different interfaces. The following order of precedence applies:
 
 1. `@FlushMetrics` annotation
-2. `MetricsBuilder` using Builder pattern (see [Advanced section](#usage-without-metrics-annotation))
+2. `MetricsBuilder` using Builder pattern (see [Advanced section](#usage-without-flushmetrics-annotation))
 3. Environment variables (recommended)
 
 For most use-cases, we recommend using Environment variables and only overwrite settings in code where needed using either the `@FlushMetrics` annotation or `MetricsBuilder` if the annotation cannot be used.
 
-=== "template.yaml"
-
-    ```yaml hl_lines="9 10"
-    Resources:
-        HelloWorldFunction:
-            Type: AWS::Serverless::Function
-            Properties:
-            ...
-            Runtime: java11
-            Environment:
-                Variables:
-                    POWERTOOLS_SERVICE_NAME: payment
-                    POWERTOOLS_METRICS_NAMESPACE: ServerlessAirline
-    ```
-
-=== "MetricsEnabledHandler.java"
+=== "@FlushMetrics annotation"
 
     ```java hl_lines="9"
     import software.amazon.lambda.powertools.metrics.FlushMetrics;
@@ -165,9 +152,45 @@ For most use-cases, we recommend using Environment variables and only overwrite 
     }
     ```
 
-`Metrics` is implemented as a Singleton to keep track of your aggregate metrics in memory and make them accessible anywhere in your code. To guarantee that metrics are flushed properly the `@FlushMetrics` annotation must be added on the lambda handler.
+=== "MetricsBuilder"
 
-!!!info "You can use the Metrics utility without the `@FlushMetrics` annotation and flush manually. Read more in the [advanced section below](#usage-without-metrics-annotation)."
+    ```java hl_lines="7-8"
+    import software.amazon.lambda.powertools.metrics.Metrics;
+    import software.amazon.lambda.powertools.metrics.MetricsBuilder;
+
+    public class MetricsEnabledHandler implements RequestHandler<Object, Object> {
+
+        private static final Metrics metrics = MetricsBuilder.builder()
+            .withNamespace("ServerlessAirline")
+            .withService("payment")
+            .build();
+
+        @Override
+        public Object handleRequest(Object input, Context context) {
+            // ...
+            metrics.flush();
+        }
+    }
+    ```
+
+=== "Environment variables"
+
+    ```yaml hl_lines="9 10"
+    Resources:
+        HelloWorldFunction:
+            Type: AWS::Serverless::Function
+            Properties:
+            ...
+            Runtime: java11
+            Environment:
+                Variables:
+                    POWERTOOLS_SERVICE_NAME: payment
+                    POWERTOOLS_METRICS_NAMESPACE: ServerlessAirline
+    ```
+
+`Metrics` is implemented as a Singleton to keep track of your aggregate metrics in memory and make them accessible anywhere in your code. The `@FlushMetrics` annotation automatically flushes metrics at the end of the Lambda handler execution. Alternatively, you can use the functional approach and manually flush metrics using `metrics.flush()`.
+
+!!!info "Read more about the functional approach in the [advanced section below](#usage-without-flushmetrics-annotation)."
 
 ## Creating metrics
 
@@ -381,7 +404,7 @@ You can use `addMetadata` for advanced use cases, where you want to add metadata
     This will not be available during metrics visualization, use Dimensions for this purpose.
 
 !!! info
-    Adding metadata with a key that is the same as an existing metric will be ignored
+    Adding metadata with a key that is the same as an existing metric will be ignored.
 <!-- prettier-ignore-end -->
 
 === "App.java"
@@ -468,7 +491,7 @@ You can create metrics with different configurations e.g. different namespace an
 
 === "App.java"
 
-    ```java hl_lines="12-18"
+    ```java hl_lines="12-22"
     import software.amazon.lambda.powertools.metrics.Metrics;
     import software.amazon.lambda.powertools.metrics.MetricsFactory;
     import software.amazon.lambda.powertools.metrics.model.DimensionSet;
@@ -504,22 +527,22 @@ You can create metrics with different configurations e.g. different namespace an
 
 ### Usage without `@FlushMetrics` annotation
 
-The `Metrics` Singleton provides all configuration options via `MetricsBuilder` in addition to the `@FlushMetrics` annotation. This can be useful if work in an environment or framework that does not leverage the vanilla Lambda `handleRequest` method.
+You can use the **functional API** approach (see [usage patterns](../usage-patterns.md#functional-approach)) to work with Metrics without the `@FlushMetrics` annotation. The `Metrics` Singleton provides all configuration options via `MetricsBuilder`. This approach eliminates the AspectJ runtime dependency and is useful if you work in an environment or framework that does not leverage the vanilla Lambda `handleRequest` method.
 
 !!!info "The environment variables for Service and Namespace configuration still apply but can be overwritten with `MetricsBuilder` if needed."
 
-The following example shows how to configure a custom `Metrics` Singleton using the Builder pattern. Note that it is necessary to manually flush metrics now.
+The following example shows how to configure a custom `Metrics` Singleton using the Builder pattern. With the functional approach, you must manually flush metrics using `metrics.flush()`.
 
 === "App.java"
 
-    ```java hl_lines="7-12 19 23"
+    ```java hl_lines="7-12 19 24"
     import software.amazon.lambda.powertools.metrics.Metrics;
     import software.amazon.lambda.powertools.metrics.MetricsBuilder;
     import software.amazon.lambda.powertools.metrics.model.DimensionSet;
     import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
     public class App implements RequestHandler<Object, Object> {
-        // Create and configure a Metrics singleton without annotation
+        // Create and configure a Metrics singleton using the functional approach
         private static final Metrics metrics = MetricsBuilder.builder()
             .withNamespace("ServerlessAirline")
             .withRaiseOnEmptyMetrics(true)
@@ -533,8 +556,9 @@ The following example shows how to configure a custom `Metrics` Singleton using 
             // Dimensions are also optional.
             metrics.captureColdStartMetric(context, DimensionSet.of("FunctionName", "MyFunction", "Service", "payment"));
 
-            // Add metrics to the custom metrics singleton
+            // Add metrics
             metrics.addMetric("CustomMetric", 1, MetricUnit.COUNT);
+            // Manually flush metrics
             metrics.flush();
         }
     }
