@@ -21,10 +21,10 @@ import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
-public class Base64TransformerTest {
+class Base64TransformerTest {
 
     @Test
-    public void transform_base64_shouldTransformInString() {
+    void transform_base64_shouldTransformInString() {
         Base64Transformer transformer = new Base64Transformer();
 
         String s = transformer.applyTransformation(Base64.getEncoder().encodeToString("foobar".getBytes()));
@@ -33,7 +33,7 @@ public class Base64TransformerTest {
     }
 
     @Test
-    public void transform_base64WrongFormat_shouldThrowException() {
+    void transform_base64WrongFormat_shouldThrowException() {
         Base64Transformer transformer = new Base64Transformer();
 
         assertThatExceptionOfType(TransformationException.class)

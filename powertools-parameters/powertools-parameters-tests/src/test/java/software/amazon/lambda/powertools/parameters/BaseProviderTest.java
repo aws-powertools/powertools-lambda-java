@@ -38,7 +38,7 @@ import software.amazon.lambda.powertools.parameters.transform.ObjectToDeserializ
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 import software.amazon.lambda.powertools.parameters.transform.Transformer;
 
-public class BaseProviderTest {
+class BaseProviderTest {
 
     Clock clock;
     CacheManager cacheManager;
@@ -47,7 +47,7 @@ public class BaseProviderTest {
     boolean getFromStore = false;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         clock = Clock.systemDefaultZone();
         cacheManager = new CacheManager();
         transformationManager = new TransformationManager();
@@ -55,7 +55,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_notCached_shouldGetValue() {
+    void get_notCached_shouldGetValue() {
         String foo = provider.get("toto");
 
         assertThat(foo).isEqualTo("valueFromStore");
@@ -63,7 +63,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_cached_shouldGetFromCache() {
+    void get_cached_shouldGetFromCache() {
         provider.get("foo");
         getFromStore = false;
 
@@ -73,7 +73,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_expired_shouldGetValue() {
+    void get_expired_shouldGetValue() {
         provider.get("bar");
         getFromStore = false;
 
@@ -84,7 +84,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getMultiple_notCached_shouldGetValue() {
+    void getMultiple_notCached_shouldGetValue() {
         Map<String, String> foo = provider.getMultiple("toto");
 
         assertThat(foo.get("toto")).isEqualTo("valueFromStore");
@@ -92,7 +92,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getMultiple_cached_shouldGetFromCache() {
+    void getMultiple_cached_shouldGetFromCache() {
         provider.getMultiple("foo");
         getFromStore = false;
 
@@ -102,7 +102,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getMultiple_expired_shouldGetValue() {
+    void getMultiple_expired_shouldGetValue() {
         provider.getMultiple("bar");
         getFromStore = false;
 
@@ -113,7 +113,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_customTTL_cached_shouldGetFromCache() {
+    void get_customTTL_cached_shouldGetFromCache() {
         provider.withMaxAge(12, ChronoUnit.MINUTES).get("key");
         getFromStore = false;
 
@@ -124,7 +124,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_customTTL_expired_shouldGetValue() {
+    void get_customTTL_expired_shouldGetValue() {
         provider.withMaxAge(2, ChronoUnit.MINUTES).get("mykey");
         getFromStore = false;
 
@@ -135,7 +135,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_customDefaultTTL_cached_shouldGetFromCache() {
+    void get_customDefaultTTL_cached_shouldGetFromCache() {
         provider.cacheManager.setDefaultExpirationTime(Duration.of(12, MINUTES));
         provider.get("foobar");
         getFromStore = false;
@@ -147,7 +147,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_customDefaultTTL_expired_shouldGetValue() {
+    void get_customDefaultTTL_expired_shouldGetValue() {
         provider.cacheManager.setDefaultExpirationTime(Duration.of(2, MINUTES));
         getFromStore = false;
 
@@ -158,7 +158,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
+    void get_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
         provider.get("foobaz");
         getFromStore = false;
 
@@ -169,7 +169,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
+    void get_customDefaultTTLAndTTL_expired_shouldGetValue() {
 
         provider.cacheManager.setDefaultExpirationTime(Duration.ofMinutes(2));
 
@@ -183,7 +183,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_basicTransformation_shouldTransformInString() {
+    void get_basicTransformation_shouldTransformInString() {
         provider.setValue(Base64.getEncoder().encodeToString("bar".getBytes()));
 
         String value = provider.withTransformation(Transformer.base64).get("base64");
@@ -192,20 +192,20 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_complexTransformation_shouldTransformInObject() {
+    void get_complexTransformation_shouldTransformInObject() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         ObjectToDeserialize objectToDeserialize = provider.withTransformation(json).get("foo",
                 ObjectToDeserialize.class);
 
         assertThat(objectToDeserialize).matches(
-                o -> o.getFoo().equals("Foo")
+                o -> "Foo".equals(o.getFoo())
                         && o.getBar() == 42
                         && o.getBaz() == 123456789);
     }
 
     @Test
-    public void getObject_notCached_shouldGetValue() {
+    void getObject_notCached_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         ObjectToDeserialize foo = provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
@@ -215,7 +215,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_cached_shouldGetFromCache() {
+    void getObject_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
@@ -227,7 +227,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_expired_shouldGetValue() {
+    void getObject_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.withTransformation(json).get("foo", ObjectToDeserialize.class);
@@ -240,7 +240,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_customTTL_cached_shouldGetFromCache() {
+    void getObject_customTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.withMaxAge(12, ChronoUnit.MINUTES)
@@ -255,7 +255,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_customTTL_expired_shouldGetValue() {
+    void getObject_customTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.withMaxAge(2, ChronoUnit.MINUTES)
@@ -270,7 +270,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_customDefaultTTL_cached_shouldGetFromCache() {
+    void getObject_customDefaultTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.cacheManager.setDefaultExpirationTime(Duration.of(12, MINUTES));
@@ -286,7 +286,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_customDefaultTTL_expired_shouldGetValue() {
+    void getObject_customDefaultTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.cacheManager.setDefaultExpirationTime(Duration.of(2, MINUTES));
@@ -302,7 +302,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
+    void getObject_customDefaultTTLAndTTL_cached_shouldGetFromCache() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.cacheManager.setDefaultExpirationTime(Duration.ofSeconds(5));
@@ -319,7 +319,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_customDefaultTTLAndTTL_expired_shouldGetValue() {
+    void getObject_customDefaultTTLAndTTL_expired_shouldGetValue() {
         provider.setValue("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}");
 
         provider.cacheManager.setDefaultExpirationTime(Duration.ofMinutes(2));
@@ -336,7 +336,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void get_noTransformationManager_shouldThrowException() {
+    void get_noTransformationManager_shouldThrowException() {
         provider = new BasicProvider(new CacheManager(), null);
 
         assertThatIllegalStateException()
@@ -344,14 +344,14 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getObject_noTransformationManager_shouldThrowException() {
+    void getObject_noTransformationManager_shouldThrowException() {
 
         assertThatIllegalStateException()
                 .isThrownBy(() -> provider.get("foo", ObjectToDeserialize.class));
     }
 
     @Test
-    public void getTwoParams_shouldResetTTLOptionsInBetween() {
+    void getTwoParams_shouldResetTTLOptionsInBetween() {
         provider.withMaxAge(50, SECONDS).get("foo50");
 
         provider.get("foo5");
@@ -365,7 +365,7 @@ public class BaseProviderTest {
     }
 
     @Test
-    public void getTwoParams_shouldResetTransformationOptionsInBetween() {
+    void getTwoParams_shouldResetTransformationOptionsInBetween() {
         provider.setValue(Base64.getEncoder().encodeToString("base64encoded".getBytes()));
         String foob64 = provider.withTransformation(base64).get("foob64");
 
@@ -384,7 +384,7 @@ public class BaseProviderTest {
             super(cacheManager, transformationManager);
         }
 
-        public void setValue(String value) {
+        void setValue(String value) {
             this.value = value;
         }
 

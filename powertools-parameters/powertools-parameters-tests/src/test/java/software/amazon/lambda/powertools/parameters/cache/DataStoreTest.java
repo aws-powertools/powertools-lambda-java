@@ -24,35 +24,35 @@ import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class DataStoreTest {
+class DataStoreTest {
 
     Clock clock;
     DataStore store;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         clock = Clock.systemDefaultZone();
         store = new DataStore();
     }
 
     @Test
-    public void put_shouldInsertInStore() {
+    void put_shouldInsertInStore() {
         store.put("key", "value", Instant.now());
         assertThat(store.get("key")).isEqualTo("value");
     }
 
     @Test
-    public void get_invalidKey_shouldReturnNull() {
+    void get_invalidKey_shouldReturnNull() {
         assertThat(store.get("key")).isNull();
     }
 
     @Test
-    public void hasExpired_invalidKey_shouldReturnTrue() {
+    void hasExpired_invalidKey_shouldReturnTrue() {
         assertThat(store.hasExpired("key", clock.instant())).isTrue();
     }
 
     @Test
-    public void hasExpired_notExpired_shouldReturnFalse() {
+    void hasExpired_notExpired_shouldReturnFalse() {
         Instant now = Instant.now();
 
         store.put("key", "value", now.plus(10, SECONDS));
@@ -61,7 +61,7 @@ public class DataStoreTest {
     }
 
     @Test
-    public void hasExpired_expired_shouldReturnTrueAndRemoveElement() {
+    void hasExpired_expired_shouldReturnTrueAndRemoveElement() {
         Instant now = Instant.now();
 
         store.put("key", "value", now.plus(10, SECONDS));

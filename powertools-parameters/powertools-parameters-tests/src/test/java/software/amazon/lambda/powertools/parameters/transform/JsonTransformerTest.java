@@ -22,23 +22,23 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
-public class JsonTransformerTest {
+class JsonTransformerTest {
 
     @Test
-    public void transform_json_shouldTransformInObject() throws TransformationException {
+    void transform_json_shouldTransformInObject() throws TransformationException {
         JsonTransformer<ObjectToDeserialize> transformation = new JsonTransformer<>();
 
         ObjectToDeserialize objectToDeserialize =
                 transformation.applyTransformation("{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}",
                         ObjectToDeserialize.class);
         assertThat(objectToDeserialize).matches(
-                o -> o.getFoo().equals("Foo")
+                o -> "Foo".equals(o.getFoo())
                         && o.getBar() == 42
                         && o.getBaz() == 123456789);
     }
 
     @Test
-    public void transform_json_shouldTransformInHashMap() throws TransformationException {
+    void transform_json_shouldTransformInHashMap() throws TransformationException {
         JsonTransformer<Map> transformation = new JsonTransformer<>();
 
         Map<String, Object> map =
@@ -50,7 +50,7 @@ public class JsonTransformerTest {
     }
 
     @Test
-    public void transform_badJson_shouldThrowException() {
+    void transform_badJson_shouldThrowException() {
         JsonTransformer<ObjectToDeserialize> transformation = new JsonTransformer<>();
 
         assertThatExceptionOfType(TransformationException.class)

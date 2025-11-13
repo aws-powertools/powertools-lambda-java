@@ -15,31 +15,44 @@
 package software.amazon.lambda.powertools.parameters.transform;
 
 import java.lang.reflect.InvocationTargetException;
+
 import software.amazon.lambda.powertools.parameters.exception.TransformationException;
 
 /**
  * Manager in charge of transforming parameter values in another format. <br/>
  * Leverages a {@link Transformer} in order to perform the transformation. <br/>
  * The transformer must be passed with {@link #setTransformer(Class)} before performing any transform operation.
+ * <p>
+ * This class is thread-safe. Transformer configuration is thread-local to support concurrent
+ * requests with different transformation requirements.
  */
 public class TransformationManager {
 
-    private Class<? extends Transformer> transformer = null;
+    private final ThreadLocal<Class<? extends Transformer>> transformer = ThreadLocal.withInitial(() -> null);
 
     /**
      * Set the {@link Transformer} to use for transformation. Must be called before any transformation.
      *
      * @param transformerClass class of the {@link Transformer}
      */
+    @SuppressWarnings("rawtypes") // Transformer type parameter determined at runtime
     public void setTransformer(Class<? extends Transformer> transformerClass) {
-        this.transformer = transformerClass;
+        this.transformer.set(transformerClass);
+    }
+
+    /**
+     * Unset the {@link Transformer} and clean up thread-local storage.
+     * Should be called after transformation is complete to prevent memory leaks.
+     */
+    public void unsetTransformer() {
+        this.transformer.remove();
     }
 
     /**
      * @return true if a {@link Transformer} has been passed to the Manager
      */
     public boolean shouldTransform() {
-        return transformer != null;
+        return transformer.get() != null;
     }
 
     /**
@@ -48,20 +61,22 @@ public class TransformationManager {
      * @param value the value to transform
      * @return the value transformed
      */
+    @SuppressWarnings("rawtypes") // Transformer type parameter determined at runtime
     public String performBasicTransformation(String value) {
-        if (transformer == null) {
+        Class<? extends Transformer> transformerClass = transformer.get();
+        if (transformerClass == null) {
             throw new IllegalStateException(
                     "You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
         }
-        if (!BasicTransformer.class.isAssignableFrom(transformer)) {
+        if (!BasicTransformer.class.isAssignableFrom(transformerClass)) {
             throw new IllegalStateException("Wrong Transformer for a String, choose a BasicTransformer.");
         }
         try {
-            BasicTransformer basicTransformer =
-                    (BasicTransformer) transformer.getDeclaredConstructor().newInstance(null);
+            BasicTransformer basicTransformer = (BasicTransformer) transformerClass.getDeclaredConstructor()
+                    .newInstance(null);
             return basicTransformer.applyTransformation(value);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                 InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
+                | InvocationTargetException e) {
             throw new TransformationException(e);
         }
     }
@@ -73,17 +88,19 @@ public class TransformationManager {
      * @param targetClass the type of the target object.
      * @return the value transformed in an object ot type T.
      */
+    @SuppressWarnings("rawtypes") // Transformer type parameter determined at runtime
     public <T> T performComplexTransformation(String value, Class<T> targetClass) {
-        if (transformer == null) {
+        Class<? extends Transformer> transformerClass = transformer.get();
+        if (transformerClass == null) {
             throw new IllegalStateException(
                     "You cannot perform a transformation without Transformer, use the provider.withTransformation() method to specify it.");
         }
 
         try {
-            Transformer<T> complexTransformer = transformer.getDeclaredConstructor().newInstance(null);
+            Transformer<T> complexTransformer = transformerClass.getDeclaredConstructor().newInstance(null);
             return complexTransformer.applyTransformation(value, targetClass);
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
-                 InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException
+                | InvocationTargetException e) {
             throw new TransformationException(e);
         }
     }

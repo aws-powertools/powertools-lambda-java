@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools.parameters.cache;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DataStore {
 
-    private final ConcurrentHashMap<String, ValueNode> store;
+    private final Map<String, ValueNode> store;
 
     public DataStore() {
         this.store = new ConcurrentHashMap<>();
@@ -32,8 +33,8 @@ public class DataStore {
         store.put(key, new ValueNode(value, time));
     }
 
-    public void remove(String Key) {
-        store.remove(Key);
+    public void remove(String key) {
+        store.remove(key);
     }
 
     public Object get(String key) {
@@ -42,7 +43,11 @@ public class DataStore {
     }
 
     public boolean hasExpired(String key, Instant now) {
-        boolean hasExpired = !store.containsKey(key) || now.isAfter(store.get(key).time);
+        ValueNode node = store.get(key);
+        if (node == null) {
+            return true;
+        }
+        boolean hasExpired = now.isAfter(node.time);
         // Auto-clean if the parameter has expired
         if (hasExpired) {
             remove(key);

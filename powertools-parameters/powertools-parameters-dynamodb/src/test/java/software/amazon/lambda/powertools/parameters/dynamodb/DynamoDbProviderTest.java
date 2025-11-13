@@ -45,9 +45,9 @@ import software.amazon.lambda.powertools.parameters.dynamodb.exception.DynamoDbP
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
 @ExtendWith(MockitoExtension.class)
-public class DynamoDbProviderTest {
+class DynamoDbProviderTest {
 
-    private final String tableName = "ddb-test-table";
+    private static final String TABLE_NAME = "ddb-test-table";
 
     @Mock
     DynamoDbClient client;
@@ -64,19 +64,19 @@ public class DynamoDbProviderTest {
     private DynamoDbProvider provider;
 
     @BeforeEach
-    public void init() {
+    void init() {
         openMocks(this);
         CacheManager cacheManager = new CacheManager();
-        provider = new DynamoDbProvider(cacheManager, transformationManager, client, tableName);
+        provider = new DynamoDbProvider(cacheManager, transformationManager, client, TABLE_NAME);
     }
 
     @Test
-    public void getValue() {
+    void getValue() {
 
         // Arrange
         String key = "Key1";
         String expectedValue = "Value1";
-        HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> responseData = new HashMap<>();
         responseData.put("id", AttributeValue.fromS(key));
         responseData.put("value", AttributeValue.fromS(expectedValue));
         GetItemResponse response = GetItemResponse.builder()
@@ -89,12 +89,12 @@ public class DynamoDbProviderTest {
 
         // Assert
         assertThat(value).isEqualTo(expectedValue);
-        assertThat(getItemValueCaptor.getValue().tableName()).isEqualTo(tableName);
+        assertThat(getItemValueCaptor.getValue().tableName()).isEqualTo(TABLE_NAME);
         assertThat(getItemValueCaptor.getValue().key().get("id").s()).isEqualTo(key);
     }
 
     @Test
-    public void getValueWithNullResultsReturnsNull() {
+    void getValueWithNullResultsReturnsNull() {
         // Arrange
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
                 .item(null)
@@ -108,7 +108,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValueWithoutResultsReturnsNull() {
+    void getValueWithoutResultsReturnsNull() {
         // Arrange
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
                 .item(new HashMap<>())
@@ -122,10 +122,10 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValueWithMalformedRowThrows() {
+    void getValueWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
-        HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> responseData = new HashMap<>();
         responseData.put("id", AttributeValue.fromS(key));
         responseData.put("not-value", AttributeValue.fromS("something"));
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
@@ -138,7 +138,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValues() {
+    void getValues() {
 
         // Arrange
         String key = "Key1";
@@ -146,11 +146,11 @@ public class DynamoDbProviderTest {
         String val1 = "Val1";
         String subkey2 = "Subkey2";
         String val2 = "Val2";
-        HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item1 = new HashMap<>();
         item1.put("id", AttributeValue.fromS(key));
         item1.put("sk", AttributeValue.fromS(subkey1));
         item1.put("value", AttributeValue.fromS(val1));
-        HashMap<String, AttributeValue> item2 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item2 = new HashMap<>();
         item2.put("id", AttributeValue.fromS(key));
         item2.put("sk", AttributeValue.fromS(subkey2));
         item2.put("value", AttributeValue.fromS(val2));
@@ -166,13 +166,13 @@ public class DynamoDbProviderTest {
         assertThat(values.size()).isEqualTo(2);
         assertThat(values.get(subkey1)).isEqualTo(val1);
         assertThat(values.get(subkey2)).isEqualTo(val2);
-        assertThat(queryRequestCaptor.getValue().tableName()).isEqualTo(tableName);
+        assertThat(queryRequestCaptor.getValue().tableName()).isEqualTo(TABLE_NAME);
         assertThat(queryRequestCaptor.getValue().keyConditionExpression()).isEqualTo("id = :v_id");
         assertThat(queryRequestCaptor.getValue().expressionAttributeValues().get(":v_id").s()).isEqualTo(key);
     }
 
     @Test
-    public void getValuesWithoutResultsReturnsNull() {
+    void getValuesWithoutResultsReturnsNull() {
         // Arrange
         Mockito.when(client.query(queryRequestCaptor.capture())).thenReturn(
                 QueryResponse.builder().items().build());
@@ -185,10 +185,10 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getMultipleValuesMissingSortKey_throwsException() {
+    void getMultipleValuesMissingSortKey_throwsException() {
         // Arrange
         String key = "Key1";
-        HashMap<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item = new HashMap<>();
         item.put("id", AttributeValue.fromS(key));
         item.put("value", AttributeValue.fromS("somevalue"));
         QueryResponse response = QueryResponse.builder()
@@ -204,10 +204,10 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void getValuesWithMalformedRowThrows() {
+    void getValuesWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
-        HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item1 = new HashMap<>();
         item1.put("id", AttributeValue.fromS(key));
         item1.put("sk", AttributeValue.fromS("some-subkey"));
         item1.put("not-value", AttributeValue.fromS("somevalue"));
@@ -224,7 +224,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void testDynamoDBBuilderMissingTable_throwsException() {
+    void testDynamoDBBuilderMissingTable_throwsException() {
 
         // Act & Assert
         assertThatIllegalStateException().isThrownBy(() -> DynamoDbProvider.builder()
@@ -233,7 +233,7 @@ public class DynamoDbProviderTest {
     }
 
     @Test
-    public void testDynamoDBBuilder_withoutParameter_shouldHaveDefaultTransformationManager() {
+    void testDynamoDBBuilder_withoutParameter_shouldHaveDefaultTransformationManager() {
 
         // Act
         DynamoDbProvider dynamoDbProvider = DynamoDbProvider.builder().withTable("test-table")

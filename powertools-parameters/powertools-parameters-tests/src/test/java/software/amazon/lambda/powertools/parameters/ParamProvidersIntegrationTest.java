@@ -46,7 +46,7 @@ import software.amazon.lambda.powertools.parameters.secrets.SecretsProvider;
 import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
 @ExtendWith(MockitoExtension.class)
-public class ParamProvidersIntegrationTest {
+class ParamProvidersIntegrationTest {
     @Mock
     SsmClient ssmClient;
 
@@ -66,7 +66,7 @@ public class ParamProvidersIntegrationTest {
     ArgumentCaptor<GetSecretValueRequest> secretsCaptor;
 
     @Test
-    public void ssmProvider_get() {
+    void ssmProvider_get() {
         SSMProvider ssmProvider = SSMProvider.builder()
                 .withClient(ssmClient)
                 .build();
@@ -84,7 +84,7 @@ public class ParamProvidersIntegrationTest {
     }
 
     @Test
-    public void ssmProvider_getMultiple() {
+    void ssmProvider_getMultiple() {
         SSMProvider ssmProvider = SSMProvider.builder()
                 .withClient(ssmClient)
                 .build();
@@ -111,7 +111,7 @@ public class ParamProvidersIntegrationTest {
     }
 
     @Test
-    public void secretsProvider_get() {
+    void secretsProvider_get() {
         SecretsProvider secretsProvider = SecretsProvider.builder()
                 .withClient(secretsManagerClient)
                 .build();

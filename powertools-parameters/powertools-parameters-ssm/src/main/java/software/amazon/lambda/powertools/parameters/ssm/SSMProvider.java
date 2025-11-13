@@ -66,8 +66,8 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
 public class SSMProvider extends BaseProvider {
 
     private final SsmClient client;
-    private boolean decrypt = false;
-    private boolean recursive = false;
+    private final ThreadLocal<Boolean> decrypt = ThreadLocal.withInitial(() -> false);
+    private final ThreadLocal<Boolean> recursive = ThreadLocal.withInitial(() -> false);
 
     /**
      * Constructor with custom {@link SsmClient}. <br/>
@@ -109,7 +109,7 @@ public class SSMProvider extends BaseProvider {
     public String getValue(String key) {
         GetParameterRequest request = GetParameterRequest.builder()
                 .name(key)
-                .withDecryption(decrypt)
+                .withDecryption(decrypt.get())
                 .build();
         return client.getParameter(request).parameter().value();
     }
@@ -122,7 +122,7 @@ public class SSMProvider extends BaseProvider {
      * @return the provider itself in order to chain calls (eg. <pre>provider.withDecryption().get("key")</pre>).
      */
     public SSMProvider withDecryption() {
-        this.decrypt = true;
+        this.decrypt.set(true);
         return this;
     }
 
@@ -133,7 +133,7 @@ public class SSMProvider extends BaseProvider {
      * @return the provider itself in order to chain calls (eg. <pre>provider.recursive().getMultiple("key")</pre>).
      */
     public SSMProvider recursive() {
-        this.recursive = true;
+        this.recursive.set(true);
         return this;
     }
 
@@ -160,8 +160,8 @@ public class SSMProvider extends BaseProvider {
     private Map<String, String> getMultipleBis(String path, String nextToken) {
         GetParametersByPathRequest request = GetParametersByPathRequest.builder()
                 .path(path)
-                .withDecryption(decrypt)
-                .recursive(recursive)
+                .withDecryption(decrypt.get())
+                .recursive(recursive.get())
                 .nextToken(nextToken)
                 .build();
 
@@ -170,12 +170,12 @@ public class SSMProvider extends BaseProvider {
         // not using the client.getParametersByPathPaginator() as hardly testable
         GetParametersByPathResponse res = client.getParametersByPath(request);
         if (res.hasParameters()) {
-            res.parameters().forEach(parameter ->
-            {
-                /* Standardize the parameter name
-                   The parameter name returned by SSM will contain the full path.
-                   However, for readability, we should return only the part after
-                   the path.
+            res.parameters().forEach(parameter -> {
+                /*
+                 * Standardize the parameter name
+                 * The parameter name returned by SSM will contain the full path.
+                 * However, for readability, we should return only the part after
+                 * the path.
                  */
                 String name = parameter.name();
                 if (name.startsWith(path)) {
@@ -196,8 +196,8 @@ public class SSMProvider extends BaseProvider {
     @Override
     protected void resetToDefaults() {
         super.resetToDefaults();
-        recursive = false;
-        decrypt = false;
+        decrypt.remove();
+        recursive.remove();
     }
 
     // For tests purpose only

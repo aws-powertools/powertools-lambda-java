@@ -14,8 +14,8 @@
 
 package software.amazon.lambda.powertools.parameters.appconfig;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.appconfigdata.AppConfigDataClient;
@@ -46,7 +46,7 @@ public class AppConfigProvider extends BaseProvider {
     private final AppConfigDataClient client;
     private final String application;
     private final String environment;
-    private final Map<String, EstablishedSession> establishedSessions = new HashMap<>();
+    private final Map<String, EstablishedSession> establishedSessions = new ConcurrentHashMap<>();
 
     AppConfigProvider(CacheManager cacheManager, TransformationManager transformationManager,
             AppConfigDataClient client, String environment, String application) {
