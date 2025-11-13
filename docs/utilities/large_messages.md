@@ -4,7 +4,7 @@ description: Utility
 ---
 
 The large message utility handles SQS and SNS messages which have had their payloads
-offloaded to S3 if they are larger than the maximum allowed size (256 KB).
+offloaded to S3 if they are larger than the maximum allowed size (1 MB).
 
 ## Features
 
@@ -27,12 +27,12 @@ stateDiagram-v2
         sendMsg --> extendLib
         state extendLib {
             state if_big <<choice>>
-            bigMsg: MessageBody > 256KB ?
+            bigMsg: MessageBody > 1MB ?
             putObject: putObject(S3Bucket, S3Key, Body)
             updateMsg: Update MessageBody<br>with a pointer to S3<br>and add a message attribute
             bigMsg --> if_big
-            if_big --> [*]: size(body) <= 256kb
-            if_big --> putObject: size(body) > 256kb
+            if_big --> [*]: size(body) <= 1MB
+            if_big --> putObject: size(body) > 1MB
             putObject --> updateMsg
             updateMsg --> [*]
         }
@@ -72,7 +72,7 @@ stateDiagram-v2
     
 ```
 
-SQS and SNS message payload is limited to 256KB. If you wish to send messages with a larger payload, you can leverage the
+SQS and SNS message payload is limited to 1MB. If you wish to send messages with a larger payload, you can leverage the
 [amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-java-extended-client-lib)
 or [amazon-sns-java-extended-client-lib](https://github.com/awslabs/amazon-sns-java-extended-client-lib) which
 offload the message to Amazon S3. See documentation
@@ -87,16 +87,14 @@ extended client libraries. Once a message's payload has been processed successfu
 utility deletes the payload from S3.
 
 This utility is compatible with
-versions *[1.1.0+](https://github.com/awslabs/amazon-sqs-java-extended-client-lib/releases/tag/1.1.0)*
-of amazon-sqs-java-extended-client-lib
-and *[1.0.0+](https://github.com/awslabs/amazon-sns-java-extended-client-lib/releases/tag/1.0.0)*
-of amazon-sns-java-extended-client-lib.
+versions *[1.1.0+](https://github.com/awslabs/amazon-sqs-java-extended-client-lib/releases/tag/1.1.0)* and *[2.0.0+](https://github.com/awslabs/amazon-sqs-java-extended-client-lib/releases/tag/2.0.0)*
+of [amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-java-extended-client-lib) / [amazon-sns-java-extended-client-lib](https://github.com/awslabs/amazon-sns-java-extended-client-lib).
 
 ## Install
 
 === "Maven"
 
-    ```xml hl_lines="3-7 16 18 24-27"
+    ```xml hl_lines="3-7 25-28"
     <dependencies>
         ...
         <dependency>
@@ -108,6 +106,7 @@ of amazon-sns-java-extended-client-lib.
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
     <build>
         <plugins>
             ...
@@ -152,7 +151,7 @@ of amazon-sns-java-extended-client-lib.
     ```groovy hl_lines="3 11"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach
         }
         
         repositories {
@@ -160,7 +159,7 @@ of amazon-sns-java-extended-client-lib.
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-large-messages:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-large-messages:{{ powertools.version }}' // Use 'implementation' instead of 'aspect' when using the functional approach
         }
         
         sourceCompatibility = 11 // or higher
@@ -175,14 +174,20 @@ on the S3 bucket used for the large messages offloading:
 - `s3:GetObject`
 - `s3:DeleteObject`
 
-## Annotation
+## Usage
 
-The annotation `@LargeMessage` can be used on any method where the *first* parameter is one of:
+You can use the Large Messages utility with either the `@LargeMessage` annotation or the functional API.
+
+The `@LargeMessage` annotation can be used on any method where the *first* parameter is one of:
 
 - `SQSEvent.SQSMessage`
 - `SNSEvent.SNSRecord`
 
-=== "SQS Example"
+The functional API `LargeMessages.processLargeMessage()` accepts the same message types.
+
+### Basic usage
+
+=== "@LargeMessage annotation - SQS"
 
     ```java hl_lines="8 13 15"
     import software.amazon.lambda.powertools.largemessages.LargeMessage;
@@ -204,7 +209,28 @@ The annotation `@LargeMessage` can be used on any method where the *first* param
     }
     ```
 
-=== "SNS Example"
+=== "Functional API - SQS"
+
+    ```java hl_lines="1 8"
+    import software.amazon.lambda.powertools.largemessages.LargeMessages;
+
+    public class SqsMessageHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+
+        @Override
+        public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
+            for (SQSMessage message: event.getRecords()) {
+                LargeMessages.processLargeMessage(message, this::processRawMessage);
+            }
+            return SQSBatchResponse.builder().build();
+        }
+
+        private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
+            // sqsMessage.getBody() will contain the content of the S3 object
+        }
+    }
+    ```
+
+=== "@LargeMessage annotation - SNS"
 
     ```java hl_lines="7 11 13"
     import software.amazon.lambda.powertools.largemessages.LargeMessage;
@@ -224,6 +250,25 @@ The annotation `@LargeMessage` can be used on any method where the *first* param
     }
     ```
 
+=== "Functional API - SNS"
+
+    ```java hl_lines="1 7"
+    import software.amazon.lambda.powertools.largemessages.LargeMessages;
+
+    public class SnsRecordHandler implements RequestHandler<SNSEvent, String> {
+
+        @Override
+        public String handleRequest(SNSEvent event, Context context) {
+            return LargeMessages.processLargeMessage(event.records.get(0), this::processSNSRecord);
+        }
+
+        private String processSNSRecord(SNSEvent.SNSRecord snsRecord) {
+            // snsRecord.getSNS().getMessage() will contain the content of the S3 object
+            return "Hello World";
+        }
+    }
+    ```
+
 When the Lambda function is invoked with a SQS or SNS event, the utility first
 checks if the content was offloaded to S3. In the case of a large message, there is a message attribute
 specifying the size of the offloaded message and the message contains a pointer to the S3 object.
@@ -233,9 +278,9 @@ and place the content of the object in the message payload. You can then directl
 If there was an error during the S3 download, the function will fail with a `LargeMessageProcessingException`.
 
 After your code is invoked and returns without error, the object is deleted from S3
-using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 objects with the following configuration:
+using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 objects:
 
-=== "Don't delete S3 Objects"
+=== "@LargeMessage annotation"
     ```java
     @LargeMessage(deleteS3Object = false)
     private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
@@ -243,71 +288,143 @@ using the `deleteObject(bucket, key)` API. You can disable the deletion of S3 ob
     }
     ```
 
+=== "Functional API"
+    ```java
+    LargeMessages.processLargeMessage(message, this::processRawMessage, false);
+    ```
+
 !!! tip "Use together with batch module"
     This utility works perfectly together with the batch module (`powertools-batch`), especially for SQS:
 
-    ```java hl_lines="2 5-7 12 15 16" title="Combining batch and large message modules"
-    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
-        private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
-    
-        public SqsBatchHandler() {
-            handler = new BatchMessageHandlerBuilder()
-                    .withSqsBatchHandler()
-                    .buildWithRawMessageHandler(this::processMessage);
-        }
+    === "@LargeMessage annotation"
+        ```java hl_lines="2 5-7 12 15 16" title="Combining batch and large message modules"
+        public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+            private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+        
+            public SqsBatchHandler() {
+                handler = new BatchMessageHandlerBuilder()
+                        .withSqsBatchHandler()
+                        .buildWithRawMessageHandler(this::processMessage);
+            }
 
-        @Override
-        public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
-            return handler.processBatch(sqsEvent, context);
-        }
+            @Override
+            public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+                return handler.processBatch(sqsEvent, context);
+            }
 
-        @LargeMessage
-        private void processMessage(SQSEvent.SQSMessage sqsMessage) {
-            // do something with the message
+            @LargeMessage
+            private void processMessage(SQSEvent.SQSMessage sqsMessage) {
+                // do something with the message
+            }
         }
-    }
-    ```
+        ```
+
+    === "Functional API"
+        ```java hl_lines="7-9 14 18" title="Combining batch and large message modules"
+        import software.amazon.lambda.powertools.largemessages.LargeMessages;
+
+        public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+            private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+        
+            public SqsBatchHandler() {
+                handler = new BatchMessageHandlerBuilder()
+                        .withSqsBatchHandler()
+                        .buildWithRawMessageHandler(this::processMessage);
+            }
+
+            @Override
+            public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+                return handler.processBatch(sqsEvent, context);
+            }
+
+            private void processMessage(SQSEvent.SQSMessage sqsMessage) {
+                LargeMessages.processLargeMessage(sqsMessage, this::handleProcessedMessage);
+            }
+
+            private void handleProcessedMessage(SQSEvent.SQSMessage processedMessage) {
+                // do something with the message
+            }
+        }
+        ```
 
 !!! tip "Use together with idempotency module"
-    This utility also works together with the idempotency module (`powertools-idempotency`). 
-    You can add both the `@LargeMessage` and `@Idempotent` annotations, in any order, to the same method. 
-    The `@Idempotent` takes precedence over the `@LargeMessage` annotation.
-    It means Idempotency module will use the initial raw message (containing the S3 pointer) and not the large message.
-
-    ```java hl_lines="6 23-25" title="Combining idempotency and large message modules"
-    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+    When using the `@LargeMessage` annotation, you can combine it with the `@Idempotent` annotation on the same method. 
+    The `@Idempotent` takes precedence over the `@LargeMessage` annotation, meaning the Idempotency module will use the initial raw message (containing the S3 pointer) and not the large message.
     
-        public SqsBatchHandler() {
-            Idempotency.config().withConfig(
-                        IdempotencyConfig.builder()
-                                .withEventKeyJMESPath("body") // get the body of the message for the idempotency key
-                                .build())
-                .withPersistenceStore(
-                        DynamoDBPersistenceStore.builder()
-                                .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
-                                .build()
-                ).configure();
-        }
+    When using the functional API, call `LargeMessages.processLargeMessage()` from within the `@Idempotent` method to ensure idempotency is based on the S3 pointer, not the unwrapped large blob.
 
-        @Override
-        public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
-            for (SQSMessage message: event.getRecords()) {
-                processRawMessage(message, context);
+    === "@LargeMessage annotation"
+        ```java hl_lines="6 23-25" title="Combining idempotency and large message modules"
+        public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+    
+            public SqsBatchHandler() {
+                Idempotency.config().withConfig(
+                            IdempotencyConfig.builder()
+                                    .withEventKeyJMESPath("body") // get the body of the message for the idempotency key
+                                    .build())
+                    .withPersistenceStore(
+                            DynamoDBPersistenceStore.builder()
+                                    .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                                    .build()
+                    ).configure();
             }
-            return SQSBatchResponse.builder().build();
-        }
 
-        @Idempotent
-        @LargeMessage
-        private String processRawMessage(@IdempotencyKey SQSEvent.SQSMessage sqsMessage, Context context) {
-            // do something with the message
+            @Override
+            public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+                for (SQSMessage message: event.getRecords()) {
+                    processRawMessage(message, context);
+                }
+                return SQSBatchResponse.builder().build();
+            }
+
+            @Idempotent
+            @LargeMessage
+            private String processRawMessage(@IdempotencyKey SQSEvent.SQSMessage sqsMessage, Context context) {
+                // do something with the message
+            }
         }
-    }
-    ```
+        ```
+
+    === "Functional API"
+        ```java hl_lines="8 25 27" title="Combining idempotency and large message modules"
+        import software.amazon.lambda.powertools.largemessages.LargeMessages;
+
+        public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+    
+            public SqsBatchHandler() {
+                Idempotency.config().withConfig(
+                            IdempotencyConfig.builder()
+                                    .withEventKeyJMESPath("body") // get the body of the message for the idempotency key
+                                    .build())
+                    .withPersistenceStore(
+                            DynamoDBPersistenceStore.builder()
+                                    .withTableName(System.getenv("IDEMPOTENCY_TABLE"))
+                                    .build()
+                    ).configure();
+            }
+
+            @Override
+            public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+                for (SQSMessage message: event.getRecords()) {
+                    processRawMessage(message, context);
+                }
+                return SQSBatchResponse.builder().build();
+            }
+
+            @Idempotent
+            private String processRawMessage(@IdempotencyKey SQSEvent.SQSMessage sqsMessage, Context context) {
+                return LargeMessages.processLargeMessage(sqsMessage, this::handleProcessedMessage);
+            }
+
+            private String handleProcessedMessage(SQSEvent.SQSMessage processedMessage) {
+                // do something with the message
+            }
+        }
+        ```
 
 ## Customizing S3 client configuration
 
-To interact with S3, the utility creates a default S3 Client :
+To interact with S3, the utility creates a default S3 Client:
 
 === "Default S3 Client"
     ```java
@@ -317,9 +434,9 @@ To interact with S3, the utility creates a default S3 Client :
                         .build();
     ```
 
-If you need to customize this `S3Client`, you can leverage the `LargeMessageConfig` singleton:
+If you need to customize this `S3Client`, you can leverage the `LargeMessageConfig` singleton. This works with both the annotation and functional API:
 
-=== "Custom S3 Client"
+=== "@LargeMessage annotation"
     ```java hl_lines="6"
     import software.amazon.lambda.powertools.largemessages.LargeMessage;
 
@@ -338,6 +455,28 @@ If you need to customize this `S3Client`, you can leverage the `LargeMessageConf
         @LargeMessage
         private void processSNSRecord(SNSEvent.SNSRecord snsRecord) {
             // snsRecord.getSNS().getMessage() will contain the content of the S3 object
+        }
+    }
+    ```
+
+=== "Functional API"
+    ```java hl_lines="1 6"
+    import software.amazon.lambda.powertools.largemessages.LargeMessages;
+
+    public class SnsRecordHandler implements RequestHandler<SNSEvent, String> {
+        
+        public SnsRecordHandler() {
+            LargeMessageConfig.init().withS3Client(/* put your custom S3Client here */);
+        }
+
+        @Override
+        public String handleRequest(SNSEvent event, Context context) {
+            return LargeMessages.processLargeMessage(event.records.get(0), this::processSNSRecord);
+        }
+
+        private String processSNSRecord(SNSEvent.SNSRecord snsRecord) {
+            // snsRecord.getSNS().getMessage() will contain the content of the S3 object
+            return "Hello World";
         }
     }
     ```

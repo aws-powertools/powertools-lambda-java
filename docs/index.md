@@ -26,6 +26,7 @@ This project separates core utilities that will be available in other runtimes v
 
 ## Install
 
+<!-- TODO: Uncomment when SAM template is updated - https://github.com/aws-powertools/powertools-lambda-java/issues/1889
 **Quick hello world example using SAM CLI**
 
 You can use [SAM](https://aws.amazon.com/serverless/sam/) to quickly setup a serverless project including Powertools for AWS Lambda (Java).
@@ -71,8 +72,8 @@ Which runtime would you like to use?
 	12 - python3.10
 Runtime: 2, 3, 4 or 5
 ```
+-->
 
-**Manual installation**
 Powertools for AWS Lambda (Java) dependencies are available in Maven Central. You can use your favourite dependency management tool to install it
 
 * [Maven](https://maven.apache.org/)
@@ -90,7 +91,7 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
         </dependency>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-logging</artifactId>
+            <artifactId>powertools-logging-log4j</artifactId>
             <version>{{ powertools.version }}</version>
         </dependency>
         <dependency>
@@ -107,7 +108,8 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
         ...
     </dependencies>
     ...
-    <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
     <build>
         <plugins>
             ...
@@ -175,7 +177,8 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
+            // Note: This AspectJ configuration is not needed when using the functional approach
+            aspect 'software.amazon.lambda:powertools-logging-log4j:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
         }
@@ -184,28 +187,15 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
         targetCompatibility = 11
     ```
 
-???+ tip "Why a different configuration?"
-     Powertools for AWS Lambda (Java) is using [AspectJ](https://eclipse.dev/aspectj/doc/released/progguide/starting.html) internally 
-    to handle annotations. Recently, in order to support Java 17 we had to move to `dev.aspectj:aspectj-maven-plugin` because  
-    `org.codehaus.mojo:aspectj-maven-plugin` does not support Java 17. 
-    Under the hood, `org.codehaus.mojo:aspectj-maven-plugin` is based on AspectJ 1.9.7, 
-    while `dev.aspectj:aspectj-maven-plugin` is based on AspectJ 1.9.8, compiled for Java 11+.
+???+ tip "Don't want to use AspectJ?"
+    Powertools for AWS Lambda (Java) now provides a functional API that doesn't require AspectJ configuration. Learn more about the [functional approach](./usage-patterns.md#functional-approach).
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java version from 11 up to 21 as well as the
-[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+Powertools for AWS Lambda (Java) supports all Java versions from 11 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
-For the following modules, Powertools for AWS Lambda (Java) leverages the **aspectj** library to provide annotations:
-- Logging
-- Metrics
-- Tracing
-- Parameters
-- Idempotency
-- Validation
-- Large messages
+In addition to the functional approach, [Logging](./core/logging.md), [Metrics](./core/metrics.md), [Tracing](./core/tracing.md), [Parameters](./utilities/parameters.md), [Idempotency](./utilities/idempotency.md), [Validation](./utilities/validation.md), and [Large Messages](./utilities/large_messages.md) utilities support annotations using AspectJ, which require configuration of the `aspectjrt` runtime library.
 
-
-You may need to add the good version of `aspectjrt` to your dependencies based on the jdk used for building your function:
+You may need to add the appropriate version of `aspectjrt` to your dependencies based on the JDK used for building your function:
 
 ```xml
 <dependency>
@@ -215,17 +205,18 @@ You may need to add the good version of `aspectjrt` to your dependencies based o
 </dependency>
 ```
 
-Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/dist/doc/JavaVersionCompatibility.md) between this library and the JDK:
+Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/release/JavaVersionCompatibility.adoc) to understand which AspectJ version to use based on your JDK version:
 
 | JDK version | aspectj version        |
 |-------------|------------------------|
 | `11-17`     | `1.9.20.1` (or higher) |
 | `21`        | `1.9.21` (or higher)   |
+| `25`        | `1.9.25` (or higher)   |
 
 ## Environment variables
 
 !!! info
-    **Explicit parameters take precedence over environment variables.**
+    Explicit parameters take precedence over environment variables.
 
 | Environment variable                   | Description                                                                            | Utility                   |
 | -------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------- |

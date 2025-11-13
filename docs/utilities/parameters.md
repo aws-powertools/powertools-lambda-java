@@ -49,6 +49,7 @@ Note that you must provide the concrete parameters module you want to use below 
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the provider classes directly (without annotations) -->
     <build>
         <plugins>
             ...
@@ -91,10 +92,10 @@ Note that you must provide the concrete parameters module you want to use below 
 
 === "Gradle"
 
-    ```groovy hl_lines="3 11 12"
+    ```groovy hl_lines="3 11-13"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using provider classes directly (without annotations)
         }
         
         repositories {
@@ -103,7 +104,8 @@ Note that you must provide the concrete parameters module you want to use below 
         
         dependencies {
             // TODO! Provide the parameters module you want to use here
-            aspect 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}' // Not needed when using provider classes directly (without annotations)
+            implementation 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}' // Use this instead of 'aspect' when using provider classes directly
         }
         
         sourceCompatibility = 11 // or higher
@@ -124,19 +126,18 @@ This utility requires additional permissions to work as expected. See the table 
 | AppConfig | `AppConfigProvider.get(String)` `AppConfigProvider.getMultiple(string)` | `appconfig:StartConfigurationSession`, `appConfig:GetLatestConfiguration` |
 
 ## Retrieving Parameters
-You can retrieve parameters either using annotations or by using the `xParamProvider` class for each parameter
-provider directly. The latter is useful if you need to configure the underlying SDK client, for example to use
-a different region or credentials, the former is simpler to use.
+You can retrieve parameters using either annotations or provider classes directly:
+
+- **Annotations** (e.g., `@SecretsParam`, `@SSMParam`) - Simpler syntax with field injection, but requires AspectJ configuration
+- **Provider classes** (e.g., `SecretsProvider`, `SSMProvider`) - No AspectJ required, useful when you need to configure the underlying SDK client (e.g., different region or credentials), or prefer avoiding AspectJ setup
 
 ## Built-in provider classes
 
-This section describes the built-in provider classes for each parameter store, providing
-examples showing how to inject parameters using annotations, and how to use the provider
-interface. In cases where a provider supports extra features, these will also be described.
+This section describes the built-in provider classes for each parameter store. For each provider, examples are shown for both the annotation-based approach and the provider class approach. In cases where a provider supports extra features, these will also be described.
 
 ### Secrets Manager
 
-=== "Secrets Manager: @SecretsParam"
+=== "@SecretsParam annotation"
 
     ```java hl_lines="8 9"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -156,7 +157,7 @@ interface. In cases where a provider supports extra features, these will also be
     }
     ```
 
-=== "Secrets Manager: SecretsProvider"
+=== "SecretsProvider class"
 
     ```java hl_lines="12-15 19"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -195,7 +196,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 | **recursive()** | `False`  | For `getMultiple()` only, will fetch all parameter values recursively based on a path prefix. |
 
 
-=== "SSM Parameter Store: @SSMParam"
+=== "@SSMParam annotation"
 
     ```java hl_lines="8 9"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -214,7 +215,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "SSM Parameter Store: SSMProvider"
+=== "SSMProvider class"
 
     ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -246,15 +247,14 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "SSM Parameter Store: Additional Options"
+=== "Additional Options"
 
-    ```java hl_lines="9 12"
-    import software.amazon.lambda.powertools.parameters.SSMProvider;
-    import software.amazon.lambda.powertools.parameters.ParamManager;
+    ```java hl_lines="5 9 12"
+    import software.amazon.lambda.powertools.parameters.ssm.SSMProvider;
 
     public class AppWithSSM implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
         // Get an instance of the SSM Provider
-        SSMProvider ssmProvider = ParamManager.getSsmProvider();
+        SSMProvider ssmProvider = SSMProvider.builder().build();
     
         // Retrieve a single parameter and decrypt it
         String value = ssmProvider.withDecryption().get("/my/parameter");
@@ -267,7 +267,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 
 ### DynamoDB
 
-=== "DynamoDB: @DyanmoDbParam"
+=== "@DynamoDbParam annotation"
 
     ```java hl_lines="8 9"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -286,7 +286,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "DynamoDB: DynamoDbProvider"
+=== "DynamoDbProvider class"
 
     ```java hl_lines="12-15 19-20 22"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;
@@ -320,7 +320,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
 
 ### AppConfig
 
-=== "AppConfig: @AppConfigParam"
+=== "@AppConfigParam annotation"
 
     ```java hl_lines="8 9"
     import com.amazonaws.services.lambda.runtime.Context;
@@ -339,7 +339,7 @@ The AWS Systems Manager Parameter Store provider supports two additional argumen
     }
     ```
 
-=== "AppConfig: AppConfigProvider"
+=== "AppConfigProvider class"
 
     ```java hl_lines="12-15 19-20"
     import static software.amazon.lambda.powertools.parameters.transform.Transformer.base64;

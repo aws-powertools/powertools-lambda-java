@@ -26,7 +26,7 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
-        <artifactId>powertools-logging</artifactId>
+        <artifactId>powertools-logging-log4j</artifactId>
         <version>2.6.0</version>
     </dependency>
     <dependency>
@@ -116,6 +116,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
             aspect 'software.amazon.lambda:powertools-logging:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}'
             aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
+            implementation 'software.amazon.lambda:powertools-logging-log4j:{{ powertools.version }}'
             implementation "org.aspectj:aspectjrt:1.9.22"
         }
         
@@ -126,10 +127,10 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java version from 11 up to 21 as well as the
-[corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+Powertools for AWS Lambda (Java) supports all Java versions from 11 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+
 For the modules that provide annotations, Powertools for AWS Lambda (Java) leverages the **aspectj** library.
-You may need to add the good version of `aspectjrt` to your dependencies based on the JDK used for building your function:
+You may need to add the appropriate version of `aspectjrt` to your dependencies based on the JDK used for building your function:
 
 ```xml
 <dependency>
@@ -142,12 +143,13 @@ You may need to add the good version of `aspectjrt` to your dependencies based o
 <details>
     <summary><b>JDK - aspectj dependency matrix</b></summary>
 
+Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/release/JavaVersionCompatibility.adoc) to understand which AspectJ version to use based on your JDK version:
+
 | JDK version | aspectj version        |
 |-------------|------------------------|
 | `11-17`     | `1.9.20.1` (or higher) |
 | `21`        | `1.9.21` (or higher)   |
-
-More info [here](https://github.com/aws-powertools/powertools-lambda-java/pull/1519/files#diff-b335630551682c19a781afebcf4d07bf978fb1f8ac04c6bf87428ed5106870f5R191).
+| `25`        | `1.9.25` (or higher)   |
 
 </details>
 
