@@ -838,7 +838,7 @@ When debugging in non-production environments, you can log the incoming event us
 
 ## Logging handler response
 
-When debugging in non-production environments, you can log the response using the `@Logging` annotation with `logResponse` param, via `POWERTOOLS_LOGGER_LOG_RESPONSE` env var, or manually with the functional API.
+When debugging in non-production environments, you can log the response using the `@Logging` annotation with the `logResponse` parameter, via the `POWERTOOLS_LOGGER_LOG_RESPONSE` environment variable, or manually with the functional API.
 
 ???+ warning
     This is disabled by default to prevent sensitive info being logged.
