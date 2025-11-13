@@ -23,7 +23,7 @@ Logging provides an opinionated logger with output structured as JSON.
     You can find complete examples in the [project repository](https://github.com/aws-powertools/powertools-lambda-java/tree/v2/examples/powertools-examples-core-utilities){target="_blank"}.
 
 ### Installation
-Depending on preference, you must choose to use either _log4j2_ or _logback_ as your log provider. If you use the AspectJ annotation approach, you need to configure _aspectj_ to weave the code and make sure the annotation is processed. If you prefer the [functional approach](../usage-patterns.md#functional-approach), AspectJ configuration is not required.
+Depending on preference, you must choose to use either _log4j2_ or _logback_ as your log provider. If you use the AspectJ annotation approach, you must configure _aspectj_ to weave the code and make sure the annotation is processed. If you prefer the [functional approach](../usage-patterns.md#functional-approach), AspectJ configuration is not required.
 
 #### Maven
 === "log4j2"
