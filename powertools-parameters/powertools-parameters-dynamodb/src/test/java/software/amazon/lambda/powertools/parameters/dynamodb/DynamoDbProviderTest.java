@@ -47,7 +47,7 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
 @ExtendWith(MockitoExtension.class)
 class DynamoDbProviderTest {
 
-    private final String tableName = "ddb-test-table";
+    private static final String TABLE_NAME = "ddb-test-table";
 
     @Mock
     DynamoDbClient client;
@@ -67,7 +67,7 @@ class DynamoDbProviderTest {
     void init() {
         openMocks(this);
         CacheManager cacheManager = new CacheManager();
-        provider = new DynamoDbProvider(cacheManager, transformationManager, client, tableName);
+        provider = new DynamoDbProvider(cacheManager, transformationManager, client, TABLE_NAME);
     }
 
     @Test
@@ -76,7 +76,7 @@ class DynamoDbProviderTest {
         // Arrange
         String key = "Key1";
         String expectedValue = "Value1";
-        HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> responseData = new HashMap<>();
         responseData.put("id", AttributeValue.fromS(key));
         responseData.put("value", AttributeValue.fromS(expectedValue));
         GetItemResponse response = GetItemResponse.builder()
@@ -89,7 +89,7 @@ class DynamoDbProviderTest {
 
         // Assert
         assertThat(value).isEqualTo(expectedValue);
-        assertThat(getItemValueCaptor.getValue().tableName()).isEqualTo(tableName);
+        assertThat(getItemValueCaptor.getValue().tableName()).isEqualTo(TABLE_NAME);
         assertThat(getItemValueCaptor.getValue().key().get("id").s()).isEqualTo(key);
     }
 
@@ -166,7 +166,7 @@ class DynamoDbProviderTest {
         assertThat(values.size()).isEqualTo(2);
         assertThat(values.get(subkey1)).isEqualTo(val1);
         assertThat(values.get(subkey2)).isEqualTo(val2);
-        assertThat(queryRequestCaptor.getValue().tableName()).isEqualTo(tableName);
+        assertThat(queryRequestCaptor.getValue().tableName()).isEqualTo(TABLE_NAME);
         assertThat(queryRequestCaptor.getValue().keyConditionExpression()).isEqualTo("id = :v_id");
         assertThat(queryRequestCaptor.getValue().expressionAttributeValues().get(":v_id").s()).isEqualTo(key);
     }

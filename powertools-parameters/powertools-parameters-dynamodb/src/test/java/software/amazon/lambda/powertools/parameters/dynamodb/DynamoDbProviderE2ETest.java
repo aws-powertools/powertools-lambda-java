@@ -38,8 +38,8 @@ import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 @Disabled
 class DynamoDbProviderE2ETest {
 
-    final String ParamsTestTable = "ddb-params-test";
-    final String MultiparamsTestTable = "ddb-multiparams-test";
+    private static final String PARAMS_TEST_TABLE = "ddb-params-test";
+    private static final String MULTI_PARAMS_TEST_TABLE = "ddb-multiparams-test";
     private final DynamoDbClient ddbClient;
 
     public DynamoDbProviderE2ETest() {
@@ -55,16 +55,16 @@ class DynamoDbProviderE2ETest {
     void TestGetValue() {
 
         // Arrange
-        HashMap<String, AttributeValue> testItem = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> testItem = new HashMap<>();
         testItem.put("id", AttributeValue.fromS("test_param"));
         testItem.put("value", AttributeValue.fromS("the_value_is_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
-                .tableName(ParamsTestTable)
+                .tableName(PARAMS_TEST_TABLE)
                 .item(testItem)
                 .build());
 
         // Act
-        DynamoDbProvider provider = makeProvider(ParamsTestTable);
+        DynamoDbProvider provider = makeProvider(PARAMS_TEST_TABLE);
         String value = provider.getValue("test_param");
 
         // Assert
@@ -75,26 +75,26 @@ class DynamoDbProviderE2ETest {
     void TestGetValues() {
 
         // Arrange
-        HashMap<String, AttributeValue> testItem = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> testItem = new HashMap<>();
         testItem.put("id", AttributeValue.fromS("test_param"));
         testItem.put("sk", AttributeValue.fromS("test_param_part_1"));
         testItem.put("value", AttributeValue.fromS("the_value_is_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
-                .tableName(MultiparamsTestTable)
+                .tableName(MULTI_PARAMS_TEST_TABLE)
                 .item(testItem)
                 .build());
 
-        HashMap<String, AttributeValue> testItem2 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> testItem2 = new HashMap<>();
         testItem2.put("id", AttributeValue.fromS("test_param"));
         testItem2.put("sk", AttributeValue.fromS("test_param_part_2"));
         testItem2.put("value", AttributeValue.fromS("the_value_is_still_hello!"));
         ddbClient.putItem(PutItemRequest.builder()
-                .tableName(MultiparamsTestTable)
+                .tableName(MULTI_PARAMS_TEST_TABLE)
                 .item(testItem2)
                 .build());
 
         // Act
-        DynamoDbProvider provider = makeProvider(MultiparamsTestTable);
+        DynamoDbProvider provider = makeProvider(MULTI_PARAMS_TEST_TABLE);
         Map<String, String> values = provider.getMultipleValues("test_param");
 
         // Assert
