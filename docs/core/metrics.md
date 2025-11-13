@@ -527,7 +527,7 @@ You can create metrics with different configurations e.g. different namespace an
 
 ### Usage without `@FlushMetrics` annotation
 
-You can use the **functional API** approach (see [usage patterns](../usage-patterns.md#functional-approach)) to work with Metrics without the `@FlushMetrics` annotation. The `Metrics` Singleton provides all configuration options via `MetricsBuilder`. This approach eliminates the AspectJ runtime dependency and is useful if you work in an environment or framework that does not leverage the vanilla Lambda `handleRequest` method.
+You can use the **functional API** approach (see [usage patterns](../usage-patterns.md#functional-approach)) to work with Metrics without the `@FlushMetrics` annotation. The `Metrics` Singleton provides all configuration options via `MetricsBuilder`. This approach eliminates the AspectJ runtime dependency and is useful if you work in an environment or with a framework that does not leverage the vanilla Lambda `handleRequest` method.
 
 !!!info "The environment variables for Service and Namespace configuration still apply but can be overwritten with `MetricsBuilder` if needed."
 
