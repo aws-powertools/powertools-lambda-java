@@ -795,7 +795,7 @@ this means that custom keys, added with the MDC can be persisted across invocati
 
 ## Logging incoming event
 
-When debugging in non-production environments, you can log the incoming event using the `@Logging` annotation with `logEvent` param, via `POWERTOOLS_LOGGER_LOG_EVENT` env var, or manually with the functional API.
+When debugging in non-production environments, you can log the incoming event using the `@Logging` annotation with the `logEvent` parameter, via the `POWERTOOLS_LOGGER_LOG_EVENT` environment variable, or manually with the functional API.
 
 ???+ warning
     This is disabled by default to prevent sensitive info being logged.
