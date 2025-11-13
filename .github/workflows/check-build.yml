@@ -47,6 +47,7 @@ on:
       - 'powertools-large-messages/**'
       - 'powertools-logging/**'
       - 'powertools-metrics/**'
+      - 'powertools-kafka/**'
       - 'powertools-parameters/**'
       - 'powertools-serialization/**'
       - 'powertools-sqs/**'
@@ -72,6 +73,7 @@ jobs:
           - 11
           - 17
           - 21
+          - 25
     steps:
       - id: checkout
         name: Checkout repository
