@@ -191,7 +191,7 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
     Powertools for AWS Lambda (Java) now provides a functional API that doesn't require AspectJ configuration. Learn more about the [functional approach](./usage-patterns.md#functional-approach).
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java versions from 11 up to 25 inline with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+Powertools for AWS Lambda (Java) supports all Java versions from 11 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 In addition to the functional approach, [Logging](./core/logging.md), [Metrics](./core/metrics.md), [Tracing](./core/tracing.md), [Parameters](./utilities/parameters.md), [Idempotency](./utilities/idempotency.md), [Validation](./utilities/validation.md), and [Large Messages](./utilities/large_messages.md) utilities support annotations using AspectJ, which require configuration of the `aspectjrt` runtime library.
 
