@@ -156,7 +156,7 @@ Resources:
 !!! info "Info: DynamoDB"
     Each function invocation will generally make 1 request to DynamoDB. If the
     result returned by your Lambda is less than 1kb, you can expect 1 WCUs per invocation. For retried invocations, you will
-    see 1WCU. In some cases, the utility might make 2 requests to DynamoDB in which case you will see 1RCU and 1WCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
+    see 1 WCU. In some cases, the utility might make 2 requests to DynamoDB in which case you will see 1 RCU and 1 WCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
     estimate the cost.
 
 ### Basic usage
