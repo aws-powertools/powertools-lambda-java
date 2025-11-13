@@ -285,7 +285,7 @@ You can make any synchronous Java function idempotent, not only the `handleReque
 
 === "Functional API"
 
-    This example also demonstrates how you can integrate with [Batch utility](batch.md), so you can process each record in an idempotent manner. **Note: The JMESPath function still applies even when passing the idempotency key manually.**
+    This example also demonstrates how you can integrate with the [Batch utility](batch.md), so you can process each record in an idempotent manner. **Note: The JMESPath function still applies even when passing the idempotency key manually.**
 
     ```java hl_lines="6-15 17-19 24 29"
     public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
