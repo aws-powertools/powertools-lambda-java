@@ -1330,7 +1330,7 @@ sequenceDiagram
 ## Sampling debug logs
 
 You can dynamically set a percentage of your logs to`DEBUG` level to be included in the logger output, regardless of configured log level, using the`POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable,
-via `samplingRate` attribute on the `@Logging` annotation, or as a parameter in the functional API.
+via the `samplingRate` attribute on the `@Logging` annotation, or as a parameter in the functional API.
 
 !!! info
     Configuration on environment variable is given precedence over sampling rate configuration, provided it's in valid value range.
