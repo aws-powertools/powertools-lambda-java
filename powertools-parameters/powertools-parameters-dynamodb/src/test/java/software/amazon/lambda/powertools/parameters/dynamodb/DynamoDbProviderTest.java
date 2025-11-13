@@ -125,7 +125,7 @@ class DynamoDbProviderTest {
     void getValueWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
-        HashMap<String, AttributeValue> responseData = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> responseData = new HashMap<>();
         responseData.put("id", AttributeValue.fromS(key));
         responseData.put("not-value", AttributeValue.fromS("something"));
         Mockito.when(client.getItem(getItemValueCaptor.capture())).thenReturn(GetItemResponse.builder()
@@ -146,11 +146,11 @@ class DynamoDbProviderTest {
         String val1 = "Val1";
         String subkey2 = "Subkey2";
         String val2 = "Val2";
-        HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item1 = new HashMap<>();
         item1.put("id", AttributeValue.fromS(key));
         item1.put("sk", AttributeValue.fromS(subkey1));
         item1.put("value", AttributeValue.fromS(val1));
-        HashMap<String, AttributeValue> item2 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item2 = new HashMap<>();
         item2.put("id", AttributeValue.fromS(key));
         item2.put("sk", AttributeValue.fromS(subkey2));
         item2.put("value", AttributeValue.fromS(val2));
@@ -188,7 +188,7 @@ class DynamoDbProviderTest {
     void getMultipleValuesMissingSortKey_throwsException() {
         // Arrange
         String key = "Key1";
-        HashMap<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item = new HashMap<>();
         item.put("id", AttributeValue.fromS(key));
         item.put("value", AttributeValue.fromS("somevalue"));
         QueryResponse response = QueryResponse.builder()
@@ -207,7 +207,7 @@ class DynamoDbProviderTest {
     void getValuesWithMalformedRowThrows() {
         // Arrange
         String key = "Key1";
-        HashMap<String, AttributeValue> item1 = new HashMap<String, AttributeValue>();
+        Map<String, AttributeValue> item1 = new HashMap<>();
         item1.put("id", AttributeValue.fromS(key));
         item1.put("sk", AttributeValue.fromS("some-subkey"));
         item1.put("not-value", AttributeValue.fromS("somevalue"));
