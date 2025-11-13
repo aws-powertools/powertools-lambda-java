@@ -136,7 +136,7 @@ class TransformationManagerTest {
                 String result = manager.performComplexTransformation(
                         "{\"foo\":\"Foo\", \"bar\":42, \"baz\":123456789}",
                         ObjectToDeserialize.class).getFoo();
-                success[0] = result.equals("Foo");
+                success[0] = "Foo".equals(result);
             } catch (Exception e) {
                 e.printStackTrace();
                 success[0] = false;
@@ -151,7 +151,7 @@ class TransformationManagerTest {
                 // Thread 2 expects base64 transformer
                 String result = manager.performBasicTransformation(
                         Base64.getEncoder().encodeToString("bar".getBytes()));
-                success[1] = result.equals("bar");
+                success[1] = "bar".equals(result);
             } catch (Exception e) {
                 e.printStackTrace();
                 success[1] = false;

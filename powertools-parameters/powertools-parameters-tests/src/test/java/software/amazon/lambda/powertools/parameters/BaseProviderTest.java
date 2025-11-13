@@ -199,7 +199,7 @@ class BaseProviderTest {
                 ObjectToDeserialize.class);
 
         assertThat(objectToDeserialize).matches(
-                o -> o.getFoo().equals("Foo")
+                o -> "Foo".equals(o.getFoo())
                         && o.getBar() == 42
                         && o.getBaz() == 123456789);
     }
