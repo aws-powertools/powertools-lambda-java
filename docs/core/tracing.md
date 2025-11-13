@@ -195,7 +195,7 @@ specifying a different `captureMode` to always record response, exception, both,
 
 !!! warning "Returning sensitive information from your Lambda handler or functions?"
     When using the `@Tracing` annotation, you can disable it from capturing responses and exceptions as tracing metadata with **`captureMode=DISABLED`**
-    or globally by setting environment variables **`POWERTOOLS_TRACER_CAPTURE_RESPONSE`** and **`POWERTOOLS_TRACER_CAPTURE_ERROR`** to **`false`**.
+    or globally by setting the environment variables **`POWERTOOLS_TRACER_CAPTURE_RESPONSE`** and **`POWERTOOLS_TRACER_CAPTURE_ERROR`** to **`false`**.
     When using the functional API, you have full control over what metadata is captured.
 
 === "@Tracing annotation - Disable on method"
