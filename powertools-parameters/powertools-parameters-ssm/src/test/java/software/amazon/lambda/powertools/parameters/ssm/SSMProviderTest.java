@@ -247,11 +247,10 @@ class SSMProviderTest {
 
         // THEN
         List<GetParameterRequest> requests = paramCaptor.getAllValues();
-        assertThat(requests).hasSize(2);
-        boolean hasDecryptedRequest = requests.stream().anyMatch(GetParameterRequest::withDecryption);
-        boolean hasNonDecryptedRequest = requests.stream().anyMatch(r -> !r.withDecryption());
-        assertThat(hasDecryptedRequest).isTrue();
-        assertThat(hasNonDecryptedRequest).isTrue();
+        assertThat(requests)
+                .hasSize(2)
+                .anyMatch(GetParameterRequest::withDecryption)
+                .anyMatch(r -> !r.withDecryption());
     }
 
     @Test
