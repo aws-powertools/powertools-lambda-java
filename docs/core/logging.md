@@ -1333,7 +1333,7 @@ You can dynamically set a percentage of your logs to`DEBUG` level to be included
 via the `samplingRate` attribute on the `@Logging` annotation, or as a parameter in the functional API.
 
 !!! info
-    Configuration on environment variable is given precedence over sampling rate configuration, provided it's in valid value range.
+    Configuration via environment variable is given precedence over sampling rate configuration, provided it's in valid value range.
 
 === "@Logging annotation"
 
