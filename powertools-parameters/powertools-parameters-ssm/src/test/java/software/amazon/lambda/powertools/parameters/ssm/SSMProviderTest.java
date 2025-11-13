@@ -188,11 +188,13 @@ class SSMProviderTest {
         GetParametersByPathRequest request1 = requestParams.get(0);
         GetParametersByPathRequest request2 = requestParams.get(1);
 
-        assertThat(asList(request1, request2)).allSatisfy(req -> {
-            assertThat(req.path()).isEqualTo("/prod/app1");
-            assertThat(req.withDecryption()).isFalse();
-            assertThat(req.recursive()).isFalse();
-        });
+        assertThat(asList(request1, request2))
+                .isNotEmpty()
+                .allSatisfy(req -> {
+                    assertThat(req.path()).isEqualTo("/prod/app1");
+                    assertThat(req.withDecryption()).isFalse();
+                    assertThat(req.recursive()).isFalse();
+                });
 
         assertThat(request1.nextToken()).isNull();
         assertThat(request2.nextToken()).isEqualTo("123abc");
@@ -294,11 +296,10 @@ class SSMProviderTest {
 
         // THEN
         List<GetParametersByPathRequest> requests = paramByPathCaptor.getAllValues();
-        assertThat(requests).hasSize(2);
-        boolean hasRecursiveRequest = requests.stream().anyMatch(GetParametersByPathRequest::recursive);
-        boolean hasNonRecursiveRequest = requests.stream().anyMatch(r -> !r.recursive());
-        assertThat(hasRecursiveRequest).isTrue();
-        assertThat(hasNonRecursiveRequest).isTrue();
+        assertThat(requests)
+                .hasSize(2)
+                .anyMatch(GetParametersByPathRequest::recursive)
+                .anyMatch(r -> !r.recursive());
     }
 
     private void initMock(String expectedValue) {
