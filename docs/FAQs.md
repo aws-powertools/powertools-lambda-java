@@ -7,6 +7,8 @@ description: Frequently Asked Questions
 
 Many utilities in this library use `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. In case you want to use `Lombok` or other compile-time preprocessor for your project, it is required to change `aspectj-maven-plugin` configuration to enable in-place weaving feature. Otherwise the plugin will ignore changes introduced by `Lombok` and will use `.java` files as a source.
 
+Alternatively, you can use the [functional approach](./usage-patterns.md#functional-approach) which does not require AspectJ configuration.
+
 To enable in-place weaving feature you need to use following `aspectj-maven-plugin` configuration:
 
 ```xml hl_lines="2-6"
@@ -30,6 +32,8 @@ To enable in-place weaving feature you need to use following `aspectj-maven-plug
 
 Many utilities use `aspectj-maven-plugin` to compile-time weave (CTW) aspects into the project. When using it with Kotlin projects, it is required to `forceAjcCompile`.
 No explicit configuration should be required for gradle projects.
+
+Alternatively, you can use the [functional approach](./usage-patterns.md#functional-approach) which does not require AspectJ configuration.
 
 To enable `forceAjcCompile` you need to use following `aspectj-maven-plugin` configuration:
 

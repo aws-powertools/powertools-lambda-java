@@ -29,7 +29,7 @@ times with the same parameters**. This makes idempotent operations safe to retry
 
 === "Maven"
 
-    ```xml hl_lines="3-7 16 18 24-27"
+    ```xml hl_lines="3-7 16 18 25-28"
     <dependencies>
         ...
         <dependency>
@@ -41,6 +41,7 @@ times with the same parameters**. This makes idempotent operations safe to retry
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
     <build>
         <plugins>
             ...
@@ -82,10 +83,10 @@ times with the same parameters**. This makes idempotent operations safe to retry
 
 === "Gradle"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11 12"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach
         }
         
         repositories {
@@ -93,7 +94,8 @@ times with the same parameters**. This makes idempotent operations safe to retry
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-idempotency-dynamodb:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-idempotency-core:{{ powertools.version }}' // Not needed when using the functional approach
+            implementation 'software.amazon.lambda:powertools-idempotency-dynamodb:{{ powertools.version }}'
         }
         
         sourceCompatibility = 11 // or higher
@@ -104,7 +106,7 @@ times with the same parameters**. This makes idempotent operations safe to retry
 
 Before getting started, you need to create a persistent storage layer where the idempotency utility can store its state - your Lambda functions will need read and write access to it.
 
-As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first.
+As of now, Amazon DynamoDB is the only supported persistent storage layer, so you'll need to create a table first or [bring your own persistence store](#bring-your-own-persistent-store).
 
 **Default table configuration**
 
@@ -148,29 +150,29 @@ Resources:
 ```
 
 !!! warning "Warning: Large responses with DynamoDB persistence layer"
-    When using this utility with DynamoDB, your function's responses must be [smaller than 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Limits.html#limits-items).
+    When using this utility with DynamoDB, your function's responses must be [smaller than 400KB](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Constraints.html#limits-items).
     Larger items cannot be written to DynamoDB and will cause exceptions.
 
 !!! info "Info: DynamoDB"
-    Each function invocation will generally make 2 requests to DynamoDB. If the
-    result returned by your Lambda is less than 1kb, you can expect 2 WCUs per invocation. For retried invocations, you will
-    see 1WCU and 1RCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
+    Each function invocation will generally make 1 request to DynamoDB. If the
+    result returned by your Lambda is less than 1kb, you can expect 1 WCUs per invocation. For retried invocations, you will
+    see 1 WCU. In some cases, the utility might make 2 requests to DynamoDB in which case you will see 1 RCU and 1 WCU. Review the [DynamoDB pricing documentation](https://aws.amazon.com/dynamodb/pricing/) to
     estimate the cost.
 
-### Idempotent annotation
+### Basic usage
 
-You can quickly start by initializing the `DynamoDBPersistenceStore` and using it with the `@Idempotent` annotation on your Lambda handler.
+You can use Powertools for AWS Lambda Idempotency with either the `@Idempotent` annotation or the functional API.
 
 !!! warning "Important"
     Initialization and configuration of the `DynamoDBPersistenceStore` must be performed outside the handler, preferably in the constructor.
 
-=== "App.java"
+=== "@Idempotent annotation"
 
     ```java hl_lines="5-9 12 19"
     public class App implements RequestHandler<Subscription, SubscriptionResult> {
 
       public App() {
-        // we need to initialize idempotency store before the handleRequest method is called
+        // We need to initialize idempotency store before the handleRequest method is called
         Idempotency.config().withPersistenceStore(
           DynamoDBPersistenceStore.builder()
             .withTableName(System.getenv("TABLE_NAME"))
@@ -191,6 +193,33 @@ You can quickly start by initializing the `DynamoDBPersistenceStore` and using i
 
     ```
 
+=== "Functional API"
+
+    ```java hl_lines="5-9 13-14"
+    public class App implements RequestHandler<Subscription, SubscriptionResult> {
+
+      public App() {
+        // We need to initialize idempotency store before the handleRequest method is called
+        Idempotency.config().withPersistenceStore(
+          DynamoDBPersistenceStore.builder()
+            .withTableName(System.getenv("TABLE_NAME"))
+            .build()
+          ).configure();
+      }
+
+      public SubscriptionResult handleRequest(final Subscription event, final Context context) {
+        Idempotency.registerLambdaContext(context);
+        return Idempotency.makeIdempotent(this::processSubscription, event, SubscriptionResult.class);
+      }
+
+      private SubscriptionResult processSubscription(Subscription event) {
+        SubscriptionPayment payment = createSubscriptionPayment(event.getUsername(), event.getProductId());
+        return new SubscriptionResult(payment.getId(), "success", 200);
+      }
+    }
+
+    ```
+
 === "Example event"
 
     ```json
@@ -200,25 +229,32 @@ You can quickly start by initializing the `DynamoDBPersistenceStore` and using i
     }
     ```
 
-#### Idempotent annotation on another method
+#### Making non-handler methods idempotent
 
-You can use the `@Idempotent` annotation for any synchronous Java function, not only the `handleRequest` one.
+You can make any synchronous Java function idempotent, not only the `handleRequest` handler.
 
-When using `@Idempotent` annotation on another method, you must tell which parameter in the method signature has the data we should use:
+**With the `@Idempotent` annotation**, you must specify which parameter contains the idempotency key:
 
  - If the method only has one parameter, it will be used by default. 
  - If there are 2 or more parameters, you must set the `@IdempotencyKey` on the parameter to use.
 
+**With the functional API**, you explicitly pass the idempotency key:
+
+ - For single-parameter methods, use `Idempotency.makeIdempotent(this::method, param, ReturnType.class)`
+ - For multi-parameter methods, use `Idempotency.makeIdempotent(idempotencyKey, () -> method(param1, param2), ReturnType.class)`
+
 !!! info "The parameter must be serializable in JSON. We use Jackson internally to (de)serialize objects"
 
-=== "AppSqsEvent.java"
+=== "@Idempotent annotation"
 
     This example also demonstrates how you can integrate with [Batch utility](batch.md), so you can process each record in an idempotent manner.
 
-    ```java hl_lines="19 23-25 30-31"
-    public class AppSqsEvent implements RequestHandler<SQSEvent, String> {
+    ```java hl_lines="6-15 17-19 27-28"
+    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
     
-      public AppSqsEvent() {
+      private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+    
+      public SqsBatchHandler() {
         Idempotency.config()
           .withPersistenceStore(
               DynamoDBPersistenceStore.builder()
@@ -226,31 +262,66 @@ When using `@Idempotent` annotation on another method, you must tell which param
                 .build()
           ).withConfig(
                IdempotencyConfig.builder()
-                 .withEventKeyJMESPath("messageId") // see Choosing a payload subset section
+                 .withEventKeyJMESPath("messageId")
                  .build()
           ).configure();
-        }
+
+        handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWithRawMessageHandler(this::processMessage);
+      }
     
       @Override
-      @SqsBatch(SampleMessageHandler.class)
-      public String handleRequest(SQSEvent input, Context context) {
-        dummy("hello", "world");
-        return "{\"statusCode\": 200}";
+      public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+        return handler.processBatch(sqsEvent, context);
       }
 
       @Idempotent
-      private String dummy(String argOne, @IdempotencyKey String argTwo) {
-        return "something";
+      private void processMessage(@IdempotencyKey SQSEvent.SQSMessage message) {
+        // Process message
+      }
+    }
+    ```
+
+=== "Functional API"
+
+    This example also demonstrates how you can integrate with the [Batch utility](batch.md), so you can process each record in an idempotent manner. **Note: The JMESPath function still applies even when passing the idempotency key manually.**
+
+    ```java hl_lines="6-15 17-19 24 29"
+    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+    
+      private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+    
+      public SqsBatchHandler() {
+        Idempotency.config()
+          .withPersistenceStore(
+              DynamoDBPersistenceStore.builder()
+                .withTableName(System.getenv("TABLE_NAME"))
+                .build()
+          ).withConfig(
+               IdempotencyConfig.builder()
+                 .withEventKeyJMESPath("messageId")
+                 .build()
+          ).configure();
+
+        handler = new BatchMessageHandlerBuilder()
+                .withSqsBatchHandler()
+                .buildWithRawMessageHandler(this::processMessage);
       }
     
-      public static class SampleMessageHandler implements SqsMessageHandler<Object> {
-        @Override
-        @Idempotent
-        // no need to use @IdempotencyKey as there is only one parameter
-        public String process(SQSMessage message) {
-          String returnVal = doSomething(message.getBody());
-          return returnVal;
-        }
+      @Override
+      public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+        Idempotency.registerLambdaContext(context);
+        return handler.processBatch(sqsEvent, context);
+      }
+
+      private void processMessage(SQSEvent.SQSMessage message) {
+        Idempotency.makeIdempotent(this::handleMessage, message, Void.class);
+      }
+
+      private Void handleMessage(SQSEvent.SQSMessage message) {
+        // Process message
+        return null;
       }
     }
     ```
@@ -304,9 +375,9 @@ Imagine the function executes successfully, but the client never receives the re
 
     To alter this behaviour, you can use the [JMESPath built-in function](serialization.md#jmespath-functions) `powertools_json()` to treat the payload as a JSON object rather than a string.
 
-=== "PaymentFunction.java"
+=== "@Idempotent annotation"
 
-    ```java hl_lines="5-7 16 29-31"
+    ```java hl_lines="7 16"
     public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
       public PaymentFunction() {
@@ -324,6 +395,50 @@ Imagine the function executes successfully, but the client never receives the re
 
     @Idempotent
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent event, final Context context) {
+      APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
+
+      try {
+        Subscription subscription = JsonConfig.get().getObjectMapper().readValue(event.getBody(), Subscription.class);
+
+        SubscriptionPayment payment = createSubscriptionPayment(
+             subscription.getUsername(),
+             subscription.getProductId()
+        );
+
+        return response
+                 .withStatusCode(200)
+                 .withBody(String.format("{\"paymentId\":\"%s\"}", payment.getId()));
+
+      } catch (JsonProcessingException e) {
+        return response.withStatusCode(500);
+      }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="7 17-18"
+    public class PaymentFunction implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+      public PaymentFunction() {
+        Idempotency.config()
+        .withConfig(
+            IdempotencyConfig.builder()
+              .withEventKeyJMESPath("powertools_json(body)")
+              .build())
+        .withPersistenceStore(
+            DynamoDBPersistenceStore.builder()
+              .withTableName(System.getenv("TABLE_NAME"))
+              .build())
+        .configure();
+    }
+
+    public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent event, final Context context) {
+      Idempotency.registerLambdaContext(context);
+      return Idempotency.makeIdempotent(this::processPayment, event, APIGatewayProxyResponseEvent.class);
+    }
+
+    private APIGatewayProxyResponseEvent processPayment(APIGatewayProxyRequestEvent event) {
       APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent();
 
       try {
@@ -417,46 +532,82 @@ The client was successful in receiving the result after the retry. Since the Lam
 
 #### Lambda timeouts
 
-This is automatically done when you annotate your Lambda handler with [@Idempotent annotation](#idempotent-annotation).
-
 To prevent against extended failed retries when a [Lambda function times out](https://aws.amazon.com/premiumsupport/knowledge-center/lambda-verify-invocation-timeouts/), Powertools for AWS Lambda (Java) calculates and includes the remaining invocation available time as part of the idempotency record.
 
 !!! example
     If a second invocation happens **after** this timestamp, and the record is marked as `INPROGRESS`, we will execute the invocation again as if it was in the `EXPIRED` state.
     This means that if an invocation expired during execution, it will be quickly executed again on the next retry.
 
-!!! important
-    If you are using the [@Idempotent annotation on another method](#idempotent-annotation-on-another-method) to guard isolated parts of your code, you must use `registerLambdaContext` method available in the `Idempotency` object to benefit from this protection.
+**With the `@Idempotent` annotation**, this is automatically done when you annotate your Lambda handler.
 
+**With the functional API** or when using the `@Idempotent` annotation on methods other than the handler, you must call `Idempotency.registerLambdaContext(context)` to benefit from this protection.
+
+!!! important
     Here is an example on how you register the Lambda context in your handler:
     
-    ```java hl_lines="13-19" title="Registering the Lambda context"
-    public class PaymentHandler implements RequestHandler<SQSEvent, List<String>> {
-    
-        public PaymentHandler() {
-            Idempotency.config()
-                    .withPersistenceStore(
-                            DynamoDBPersistenceStore.builder()
-                                    .withTableName(System.getenv("TABLE_NAME"))
-                                    .build())
-                    .configure();
-        }
+    === "@Idempotent annotation"
+
+        ```java hl_lines="14" title="Registering the Lambda context"
+        public class PaymentHandler implements RequestHandler<SQSEvent, List<String>> {
         
-        @Override
-        public List<String> handleRequest(SQSEvent sqsEvent, Context context) {
-            Idempotency.registerLambdaContext(context);
-            return sqsEvent.getRecords().stream().map(record -> process(record.getMessageId(), record.getBody())).collect(Collectors.toList());
+            public PaymentHandler() {
+                Idempotency.config()
+                        .withPersistenceStore(
+                                DynamoDBPersistenceStore.builder()
+                                        .withTableName(System.getenv("TABLE_NAME"))
+                                        .build())
+                        .configure();
+            }
+            
+            @Override
+            public List<String> handleRequest(SQSEvent sqsEvent, Context context) {
+                Idempotency.registerLambdaContext(context);
+                return sqsEvent.getRecords().stream().map(record -> process(record.getMessageId(), record.getBody())).collect(Collectors.toList());
+            }
+        
+            @Idempotent
+            private String process(String messageId, @IdempotencyKey String messageBody) {
+                logger.info("Processing messageId: {}", messageId);
+                PaymentRequest request = extractDataFrom(messageBody).as(PaymentRequest.class);
+                return paymentService.process(request);
+            }
+        
         }
-    
-        @Idempotent
-        private String process(String messageId, @IdempotencyKey String messageBody) {
-            logger.info("Processing messageId: {}", messageId);
-            PaymentRequest request = extractDataFrom(messageBody).as(PaymentRequest.class);
-            return paymentService.process(request);
+        ```
+
+    === "Functional API"
+
+        ```java hl_lines="14" title="Registering the Lambda context"
+        public class PaymentHandler implements RequestHandler<SQSEvent, List<String>> {
+        
+            public PaymentHandler() {
+                Idempotency.config()
+                        .withPersistenceStore(
+                                DynamoDBPersistenceStore.builder()
+                                        .withTableName(System.getenv("TABLE_NAME"))
+                                        .build())
+                        .configure();
+            }
+            
+            @Override
+            public List<String> handleRequest(SQSEvent sqsEvent, Context context) {
+                Idempotency.registerLambdaContext(context);
+                return sqsEvent.getRecords().stream()
+                    .map(record -> Idempotency.makeIdempotent(
+                        record.getBody(), 
+                        () -> process(record.getMessageId(), record.getBody()), 
+                        String.class))
+                    .collect(Collectors.toList());
+            }
+        
+            private String process(String messageId, String messageBody) {
+                logger.info("Processing messageId: {}", messageId);
+                PaymentRequest request = extractDataFrom(messageBody).as(PaymentRequest.class);
+                return paymentService.process(request);
+            }
+        
         }
-    
-    }
-    ```
+        ```
 
 #### Lambda timeout sequence diagram
 
@@ -499,8 +650,10 @@ sequenceDiagram
 
 ### Handling exceptions
 
-If you are using the `@Idempotent` annotation on your Lambda handler or any other method, any unhandled exceptions that are thrown during the code execution will cause **the record in the persistence layer to be deleted**.
+**With the `@Idempotent` annotation**, any unhandled exceptions that are thrown during the code execution will cause **the record in the persistence layer to be deleted**.
 This means that new invocations will execute your code again despite having the same payload. If you don't want the record to be deleted, you need to catch exceptions within the idempotent function and return a successful response.
+
+**With the functional API**, exceptions are handled the same way - unhandled exceptions will cause the record to be deleted. You should catch and handle exceptions within your idempotent function if you want to preserve the record.
 
 <center>
 ```mermaid
@@ -553,7 +706,7 @@ If an Exception is raised _outside_ the scope of a decorated method and after yo
 This persistence store is built-in, and you can either use an existing DynamoDB table or create a new one dedicated for idempotency state (recommended).
 
 Use the builder to customize the table structure:
-```java hl_lines="3-7" title="Customizing DynamoDBPersistenceStore to suit your table structure"
+```java hl_lines="2-7" title="Customizing DynamoDBPersistenceStore to suit your table structure"
 DynamoDBPersistenceStore.builder()
                         .withTableName(System.getenv("TABLE_NAME"))
                         .withKeyAttr("idempotency_key")
@@ -579,11 +732,68 @@ When using DynamoDB as a persistence layer, you can alter the attribute names by
 
 ## Advanced
 
+### Using explicit function names
+
+When using the functional API, if you need to call different methods with the same payload as the idempotency key, you must provide explicit function names to differentiate between them. This ensures each function has its own idempotency scope.
+
+=== "Functional API with explicit names"
+
+    ```java hl_lines="5-9 11-15"
+    public Response handleRequest(Order order, Context context) {
+        Idempotency.registerLambdaContext(context);
+        
+        // Same orderId, different operations - need explicit function names
+        Idempotency.makeIdempotent(
+            "processPayment", 
+            order.getId(), 
+            () -> processPayment(order), 
+            PaymentResult.class);
+        
+        Idempotency.makeIdempotent(
+            "sendConfirmation", 
+            order.getId(), 
+            () -> sendEmail(order), 
+            EmailResult.class);
+        
+        return new Response("success");
+    }
+    ```
+
+!!! note
+    When using the `@Idempotent` annotation, the function name is automatically inferred from the method name, so this is not needed.
+
+### Generic return types support
+
+The functional API supports making methods with generic return types idempotent using Jackson's `TypeReference`. This is not possible with the `@Idempotent` annotation due to type erasure.
+
+=== "Functional API with TypeReference"
+
+    ```java hl_lines="1 6-10"
+    import com.fasterxml.jackson.core.type.TypeReference;
+
+    public Map<String, Basket> handleRequest(Product input, Context context) {
+        Idempotency.registerLambdaContext(context);
+        
+        return Idempotency.makeIdempotent(
+            this::processProduct,
+            input,
+            new TypeReference<Map<String, Basket>>() {}
+        );
+    }
+
+    private Map<String, Basket> processProduct(Product product) {
+        // business logic returning generic type
+        Map<String, Basket> result = new HashMap<>();
+        // ...
+        return result;
+    }
+    ```
+
 ### Customizing the default behavior
 
 Idempotency behavior can be further configured with **`IdempotencyConfig`** using a builder:
 
-```java hl_lines="2-8" title="Customizing IdempotencyConfig"
+```java hl_lines="2-9" title="Customizing IdempotencyConfig"
 IdempotencyConfig.builder()
                 .withEventKeyJMESPath("id")
                 .withPayloadValidationJMESPath("paymentId")
@@ -667,7 +877,7 @@ By default, we will return the same result as it returned before, however in thi
 
 With **`PayloadValidationJMESPath`**, you can provide an additional JMESPath expression to specify which part of the event body should be validated against previous idempotent invocations
 
-=== "App.java"
+=== "@Idempotent annotation"
 
     ```java hl_lines="8 13 20 26"
     public App() {
@@ -684,6 +894,43 @@ With **`PayloadValidationJMESPath`**, you can provide an additional JMESPath exp
 
     @Idempotent
     public SubscriptionResult handleRequest(final Subscription input, final Context context) {
+        // Creating a subscription payment is a side
+        // effect of calling this function!
+        SubscriptionPayment payment = createSubscriptionPayment(
+          input.getUserDetail().getUsername(),
+          input.getProductId(),
+          input.getAmount()
+        )
+        // ...
+        return new SubscriptionResult(
+            "success", 200,
+            payment.getId(),
+            payment.getAmount()
+        );
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="8 14-15 24 30"
+    public App() {
+      Idempotency.config()
+        .withPersistenceStore(DynamoDBPersistenceStore.builder()
+            .withTableName(System.getenv("TABLE_NAME"))
+            .build())
+        .withConfig(IdempotencyConfig.builder()
+            .withEventKeyJMESPath("[userDetail, productId]")
+            .withPayloadValidationJMESPath("amount")
+            .build())
+        .configure();
+    }
+
+    public SubscriptionResult handleRequest(final Subscription input, final Context context) {
+        Idempotency.registerLambdaContext(context);
+        return Idempotency.makeIdempotent(this::processSubscription, input, SubscriptionResult.class);
+    }
+
+    private SubscriptionResult processSubscription(Subscription input) {
         // Creating a subscription payment is a side
         // effect of calling this function!
         SubscriptionPayment payment = createSubscriptionPayment(
@@ -745,9 +992,9 @@ This means that we will throw **`IdempotencyKeyException`** if the evaluation of
 
 When set to `false` (the default), if the idempotency key is null, then the data is not persisted in the store.
 
-=== "App.java"
+=== "@Idempotent annotation"
 
-    ```java hl_lines="9-10 13"
+    ```java hl_lines="9"
     public App() {
       Idempotency.config()
         .withPersistenceStore(DynamoDBPersistenceStore.builder()
@@ -763,6 +1010,32 @@ When set to `false` (the default), if the idempotency key is null, then the data
 
     @Idempotent
     public OrderResult handleRequest(final Order input, final Context context) {
+      // ...
+    }
+    ```
+
+=== "Functional API"
+
+    ```java hl_lines="9"
+    public App() {
+      Idempotency.config()
+        .withPersistenceStore(DynamoDBPersistenceStore.builder()
+            .withTableName(System.getenv("TABLE_NAME"))
+            .build())
+        .withConfig(IdempotencyConfig.builder()
+            // Requires "user"."uid" and "orderId" to be present
+            .withEventKeyJMESPath("[user.uid, orderId]")
+            .withThrowOnNoIdempotencyKey(true)
+            .build())
+        .configure();
+    }
+
+    public OrderResult handleRequest(final Order input, final Context context) {
+      Idempotency.registerLambdaContext(context);
+      return Idempotency.makeIdempotent(this::processOrder, input, OrderResult.class);
+    }
+
+    private OrderResult processOrder(Order input) {
       // ...
     }
     ```
@@ -977,7 +1250,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
 
 === "pom.xml"
 
-    ```xml hl_lines="4-6 24-26 28-31 42 45-47"
+    ```xml
     <dependencies>
         <!-- maven dependency for DynamoDB local -->
         <dependency>
@@ -1046,7 +1319,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
 
 === "AppTest.java"
 
-    ```java hl_lines="13-18 24-30 34"
+    ```java
     public class AppTest {
         @Mock
         private Context context;
@@ -1143,7 +1416,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
 
 === "App.java"
 
-    ```java hl_lines="8 9 16"
+    ```java
     public class App implements RequestHandler<Subscription, SubscriptionResult> {
 
       public App() {
@@ -1174,7 +1447,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
 
 === "shell"
 
-    ```shell hl_lines="2 6 7 12 16 21 22"
+    ```shell
     # use or create a docker network 
     docker network inspect sam-local || docker network create sam-local
 
@@ -1201,7 +1474,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
 
 === "env.json"
 
-    ```json hl_lines="3"
+    ```json
     {
         "IdempotentFunction": {
             "TABLE_NAME": "idempotency"

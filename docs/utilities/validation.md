@@ -26,6 +26,7 @@ This utility provides JSON Schema validation for payloads held within events and
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
+    <!-- Note: This AspectJ configuration is not needed when using the functional approach with ValidationUtils.validate() -->
     <build>
         <plugins>
             ...
@@ -67,10 +68,10 @@ This utility provides JSON Schema validation for payloads held within events and
 
 === "Gradle"
 
-    ```groovy hl_lines="3 11"
+    ```groovy hl_lines="3 11 12"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0'
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach with ValidationUtils.validate()
         }
         
         repositories {
@@ -78,7 +79,8 @@ This utility provides JSON Schema validation for payloads held within events and
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-validation:{{ powertools.version }}'
+            aspect 'software.amazon.lambda:powertools-validation:{{ powertools.version }}' // Not needed when using the functional approach with ValidationUtils.validate()
+            implementation 'software.amazon.lambda:powertools-validation:{{ powertools.version }}' // Use this instead of 'aspect' when using the functional approach
         }
         
         sourceCompatibility = 11 // or higher
@@ -87,17 +89,18 @@ This utility provides JSON Schema validation for payloads held within events and
 
 ## Validating events
 
-You can validate inbound and outbound events using `@Validation` annotation.
+You can validate inbound and outbound events using either the `@Validation` annotation or the functional approach with `ValidationUtils.validate()` methods:
 
-You can also use the `Validator#validate()` methods, if you want more control over the validation process such as handling a validation error.
+- **@Validation annotation** - Simpler syntax with automatic validation, but requires AspectJ configuration
+- **ValidationUtils.validate()** - No AspectJ required, provides more control over the validation process such as handling validation errors
 
-We support JSON schema version 4, 6, 7, 2019-09 and 2020-12 using the [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator). ([Compatibility with JSON Schema versions](https://github.com/networknt/json-schema-validator/blob/master/doc/compatibility.md)).
+We support JSON schema version 4, 6, 7, 2019-09 and 2020-12 using the [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator) ([Compatibility with JSON Schema versions](https://github.com/networknt/json-schema-validator/blob/master/doc/compatibility.md)).
 
 The validator is configured to enable format assertions by default even for 2019-09 and 2020-12.
 
 ### Validation annotation
 
-`@Validation` annotation is used to validate either inbound events or functions' response.
+The `@Validation` annotation is used to validate either inbound events or functions' response.
 
 It will fail fast if an event or response doesn't conform with given JSON Schema. For most type of events a `ValidationException` will be thrown.
 
@@ -129,11 +132,11 @@ While it is easier to specify a json schema file in the classpath (using the not
 
 **NOTE**: It's not a requirement to validate both inbound and outbound schemas - You can either use one, or both.
 
-### Validate function
+### Functional approach with ValidationUtils
 
-Validate standalone function is used within the Lambda handler, or any other methods that perform data validation.
+The `ValidationUtils.validate()` method provides a functional approach that can be used within the Lambda handler or any other methods that perform data validation. This approach does not require AspectJ configuration.
 
-You can also gracefully handle schema validation errors by catching `ValidationException`.
+With this approach, you can gracefully handle schema validation errors by catching `ValidationException`.
 
 === "MyFunctionHandler.java"
 

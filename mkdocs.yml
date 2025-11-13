@@ -1,9 +1,10 @@
 site_name: Powertools for AWS Lambda (Java)
 site_description: Powertools for AWS Lambda (Java)
 site_author: Amazon Web Services
-site_url: https://docs.powertools.aws.dev/lambda/java/latest/
+site_url: https://docs.aws.amazon.com/powertools/java/latest/
 nav:
   - Homepage: index.md
+  - Usage patterns: usage-patterns.md
   - Changelog: changelog.md
   - Upgrade Guide: upgrade.md
   - FAQs: FAQs.md
@@ -99,6 +100,7 @@ plugins:
       sections:
         Project Overview:
           - index.md
+          - usage-patterns.md
           - changelog.md
           - FAQs.md
           - roadmap.md
@@ -127,7 +129,7 @@ extra_javascript:
 
 extra:
   powertools:
-    version: 2.6.0
+    version: 2.7.0
   version:
     provider: mike
     default: latest
