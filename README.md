@@ -127,7 +127,7 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
 
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java versions from 11 up to 25 inline with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+Powertools for AWS Lambda (Java) supports all Java versions from 11 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 For the modules that provide annotations, Powertools for AWS Lambda (Java) leverages the **aspectj** library.
 You may need to add the appropriate version of `aspectjrt` to your dependencies based on the JDK used for building your function:
