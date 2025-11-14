@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import software.amazon.lambda.powertools.metrics.internal.ThreadLocalMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
-import software.amazon.lambda.powertools.metrics.testutils.TestMetrics;
 import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
 
 class MetricsBuilderTest {
@@ -49,7 +49,7 @@ class MetricsBuilderTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
         field.setAccessible(true);
         field.set(null, null);
 
@@ -151,7 +151,7 @@ class MetricsBuilderTest {
     }
 
     @Test
-    void shouldBuildWithCustomMetricsProvider() {
+    void shouldBuildWithCustomMetricsProvider() throws Exception {
         // Given
         MetricsProvider testProvider = new TestMetricsProvider();
 
@@ -161,7 +161,13 @@ class MetricsBuilderTest {
                 .build();
 
         // Then
-        assertThat(metrics).isInstanceOf(TestMetrics.class);
+        assertThat(metrics)
+                .isInstanceOf(ThreadLocalMetricsProxy.class);
+
+        java.lang.reflect.Field providerField = metrics.getClass().getDeclaredField("provider");
+        providerField.setAccessible(true);
+        MetricsProvider actualProvider = (MetricsProvider) providerField.get(metrics);
+        assertThat(actualProvider).isSameAs(testProvider);
     }
 
     @Test

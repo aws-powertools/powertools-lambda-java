@@ -16,9 +16,11 @@ package software.amazon.lambda.powertools.metrics;
 
 import org.crac.Core;
 import org.crac.Resource;
+
 import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.internal.ThreadLocalMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
@@ -28,7 +30,7 @@ import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
  */
 public final class MetricsFactory implements Resource {
     private static MetricsProvider provider = new EmfMetricsProvider();
-    private static Metrics metrics;
+    private static ThreadLocalMetricsProxy metricsProxy;
 
     // Dummy instance to register MetricsFactory with CRaC
     private static final MetricsFactory INSTANCE = new MetricsFactory();
@@ -44,23 +46,23 @@ public final class MetricsFactory implements Resource {
      * @return the singleton Metrics instance
      */
     public static synchronized Metrics getMetricsInstance() {
-        if (metrics == null) {
-            metrics = provider.getMetricsInstance();
+        if (metricsProxy == null) {
+            metricsProxy = new ThreadLocalMetricsProxy(provider);
 
             // Apply default configuration from environment variables
             String envNamespace = System.getenv("POWERTOOLS_METRICS_NAMESPACE");
             if (envNamespace != null) {
-                metrics.setNamespace(envNamespace);
+                metricsProxy.setNamespace(envNamespace);
             }
 
             // Only set Service dimension if it's not the default undefined value
             String serviceName = LambdaHandlerProcessor.serviceName();
             if (!LambdaConstants.SERVICE_UNDEFINED.equals(serviceName)) {
-                metrics.setDefaultDimensions(DimensionSet.of("Service", serviceName));
+                metricsProxy.setDefaultDimensions(DimensionSet.of("Service", serviceName));
             }
         }
 
-        return metrics;
+        return metricsProxy;
     }
 
     /**
@@ -73,8 +75,8 @@ public final class MetricsFactory implements Resource {
             throw new IllegalArgumentException("Metrics provider cannot be null");
         }
         provider = metricsProvider;
-        // Reset the metrics instance so it will be recreated with the new provider
-        metrics = null;
+        // Reset the metrics proxy so it will be recreated with the new provider
+        metricsProxy = null;
     }
 
     @Override

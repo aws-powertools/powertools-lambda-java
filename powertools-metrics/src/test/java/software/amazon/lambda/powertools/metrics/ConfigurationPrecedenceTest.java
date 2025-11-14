@@ -68,7 +68,7 @@ class ConfigurationPrecedenceTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
         field.setAccessible(true);
         field.set(null, null);
 

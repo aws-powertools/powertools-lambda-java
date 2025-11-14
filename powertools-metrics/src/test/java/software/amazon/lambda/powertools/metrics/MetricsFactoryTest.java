@@ -20,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,9 +31,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.metrics.internal.ThreadLocalMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
-import software.amazon.lambda.powertools.metrics.testutils.TestMetrics;
 import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
 
 class MetricsFactoryTest {
@@ -64,7 +65,7 @@ class MetricsFactoryTest {
         System.setOut(standardOut);
 
         // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
+        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
         field.setAccessible(true);
         field.set(null, null);
 
@@ -126,7 +127,7 @@ class MetricsFactoryTest {
     }
 
     @Test
-    void shouldSetCustomMetricsProvider() {
+    void shouldSetCustomMetricsProvider() throws Exception {
         // Given
         MetricsProvider testProvider = new TestMetricsProvider();
 
@@ -135,7 +136,13 @@ class MetricsFactoryTest {
         Metrics metrics = MetricsFactory.getMetricsInstance();
 
         // Then
-        assertThat(metrics).isInstanceOf(TestMetrics.class);
+        assertThat(metrics)
+                .isInstanceOf(ThreadLocalMetricsProxy.class);
+
+        java.lang.reflect.Field providerField = metrics.getClass().getDeclaredField("provider");
+        providerField.setAccessible(true);
+        MetricsProvider actualProvider = (MetricsProvider) providerField.get(metrics);
+        assertThat(actualProvider).isSameAs(testProvider);
     }
 
     @Test
@@ -162,5 +169,76 @@ class MetricsFactoryTest {
 
         // Service dimension should not be present
         assertThat(rootNode.has("Service")).isFalse();
+    }
+
+    @Test
+    void concurrentInvocations_shouldIsolateDimensions() throws Exception {
+        // GIVEN - Simulate real Lambda scenario: Metrics instance created outside handler
+        Metrics metrics = MetricsFactory.getMetricsInstance();
+
+        CountDownLatch latch = new CountDownLatch(2);
+        Exception[] exceptions = new Exception[2];
+
+        Thread thread1 = new Thread(() -> {
+            try {
+                latch.countDown();
+                latch.await();
+
+                // Simulate handleRequest execution
+                metrics.setNamespace("TestNamespace");
+                metrics.addDimension("userId", "user123");
+                metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
+                metrics.flush();
+            } catch (Exception e) {
+                exceptions[0] = e;
+            }
+        });
+
+        Thread thread2 = new Thread(() -> {
+            try {
+                latch.countDown();
+                latch.await();
+
+                // Simulate handleRequest execution
+                metrics.setNamespace("TestNamespace");
+                metrics.addDimension("userId", "user456");
+                metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
+                metrics.flush();
+            } catch (Exception e) {
+                exceptions[1] = e;
+            }
+        });
+
+        // WHEN
+        thread1.start();
+        thread2.start();
+        thread1.join();
+        thread2.join();
+
+        // THEN
+        assertThat(exceptions[0]).isNull();
+        assertThat(exceptions[1]).isNull();
+
+        String emfOutput = outputStreamCaptor.toString().trim();
+        String[] jsonLines = emfOutput.split("\n");
+        assertThat(jsonLines).hasSize(2);
+
+        JsonNode output1 = objectMapper.readTree(jsonLines[0]);
+        JsonNode output2 = objectMapper.readTree(jsonLines[1]);
+
+        // Check if dimensions are leaking across threads
+        boolean hasLeakage = false;
+
+        if (output1.has("userId") && output2.has("userId")) {
+            String userId1 = output1.get("userId").asText();
+            String userId2 = output2.get("userId").asText();
+            // Both should have different userIds
+            hasLeakage = userId1.equals(userId2);
+        }
+
+        // Each thread should have isolated dimensions
+        assertThat(hasLeakage)
+                .as("Dimensions should NOT leak across threads - each thread should have its own userId")
+                .isFalse();
     }
 }
