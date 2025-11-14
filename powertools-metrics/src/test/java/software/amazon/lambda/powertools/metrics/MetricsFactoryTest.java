@@ -41,7 +41,7 @@ class MetricsFactoryTest {
     private static final String TEST_NAMESPACE = "TestNamespace";
     private static final String TEST_SERVICE = "TestService";
 
-    private final PrintStream standardOut = System.out;
+    private static final PrintStream STANDARD_OUT = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,7 +62,7 @@ class MetricsFactoryTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        System.setOut(standardOut);
+        System.setOut(STANDARD_OUT);
         System.clearProperty(LambdaConstants.XRAY_TRACE_HEADER);
 
         // Reset the singleton state between tests

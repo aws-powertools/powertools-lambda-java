@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -33,7 +34,7 @@ import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
 public class RequestScopedMetricsProxy implements Metrics {
     private static final String DEFAULT_TRACE_ID = "DEFAULT";
-    private final ConcurrentHashMap<String, Metrics> metricsMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Metrics> metricsMap = new ConcurrentHashMap<>();
     private final MetricsProvider provider;
     private final AtomicReference<String> initialNamespace = new AtomicReference<>();
     private final AtomicReference<DimensionSet> initialDefaultDimensions = new AtomicReference<>();

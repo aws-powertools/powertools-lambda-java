@@ -35,7 +35,7 @@ import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
 
 class MetricsBuilderTest {
 
-    private final PrintStream standardOut = System.out;
+    private static final PrintStream STANDARD_OUT = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -46,7 +46,7 @@ class MetricsBuilderTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        System.setOut(standardOut);
+        System.setOut(STANDARD_OUT);
 
         // Reset the singleton state between tests
         java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");

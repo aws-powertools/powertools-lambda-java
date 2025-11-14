@@ -41,7 +41,7 @@ import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 class LambdaMetricsAspectTest {
 
-    private final PrintStream standardOut = System.out;
+    private static final PrintStream STANDARD_OUT = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -62,7 +62,7 @@ class LambdaMetricsAspectTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        System.setOut(standardOut);
+        System.setOut(STANDARD_OUT);
 
         // Reset the singleton state between tests
         java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
@@ -216,7 +216,7 @@ class LambdaMetricsAspectTest {
         JsonNode dimensions = coldStartNode.get("_aws").get("CloudWatchMetrics").get(0).get("Dimensions").get(0);
         boolean hasFunctionName = false;
         for (JsonNode dimension : dimensions) {
-            if (dimension.asText().equals("FunctionName")) {
+            if ("FunctionName".equals(dimension.asText())) {
                 hasFunctionName = true;
                 break;
             }

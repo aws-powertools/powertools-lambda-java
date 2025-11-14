@@ -33,8 +33,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
+import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 
 /**
  * Tests to verify the hierarchy of precedence for configuration:
@@ -44,7 +44,7 @@ import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
  */
 class ConfigurationPrecedenceTest {
 
-    private final PrintStream standardOut = System.out;
+    private static final PrintStream STANDARD_OUT = System.out;
     private final ByteArrayOutputStream outputStreamCaptor = new ByteArrayOutputStream();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -65,7 +65,7 @@ class ConfigurationPrecedenceTest {
 
     @AfterEach
     void tearDown() throws Exception {
-        System.setOut(standardOut);
+        System.setOut(STANDARD_OUT);
 
         // Reset the singleton state between tests
         java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
@@ -183,7 +183,7 @@ class ConfigurationPrecedenceTest {
         assertThat(rootNode.has("Service")).isFalse();
     }
 
-    private static class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
+    private static final class HandlerWithMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
         @Override
         @FlushMetrics(namespace = "AnnotationNamespace", service = "AnnotationService")
         public String handleRequest(Map<String, Object> input, Context context) {
@@ -193,7 +193,8 @@ class ConfigurationPrecedenceTest {
         }
     }
 
-    private static class HandlerWithDefaultMetricsAnnotation implements RequestHandler<Map<String, Object>, String> {
+    private static final class HandlerWithDefaultMetricsAnnotation
+            implements RequestHandler<Map<String, Object>, String> {
         @Override
         @FlushMetrics
         public String handleRequest(Map<String, Object> input, Context context) {
