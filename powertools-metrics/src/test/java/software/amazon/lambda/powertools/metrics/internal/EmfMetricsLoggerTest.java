@@ -38,14 +38,15 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import software.amazon.cloudwatchlogs.emf.environment.EnvironmentProvider;
+import software.amazon.cloudwatchlogs.emf.model.MetricsContext;
 import software.amazon.cloudwatchlogs.emf.model.Unit;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
+import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.metrics.Metrics;
-import software.amazon.lambda.powertools.metrics.MetricsFactory;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
-import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 
 class EmfMetricsLoggerTest {
 
@@ -66,19 +67,14 @@ class EmfMetricsLoggerTest {
         coldStartField.setAccessible(true);
         coldStartField.set(null, null);
 
-        metrics = MetricsFactory.getMetricsInstance();
+        metrics = new EmfMetricsLogger(new EnvironmentProvider(), new MetricsContext());
         metrics.setNamespace("TestNamespace");
         System.setOut(new PrintStream(outputStreamCaptor));
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         System.setOut(standardOut);
-
-        // Reset the singleton state between tests
-        java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metrics");
-        field.setAccessible(true);
-        field.set(null, null);
     }
 
     @ParameterizedTest
