@@ -29,6 +29,7 @@ import org.junitpioneer.jupiter.SetEnvironmentVariable;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.internal.RequestScopedMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
@@ -62,7 +63,7 @@ class MetricsFactoryTest {
     @AfterEach
     void tearDown() throws Exception {
         System.setOut(standardOut);
-        System.clearProperty("com.amazonaws.xray.traceHeader");
+        System.clearProperty(LambdaConstants.XRAY_TRACE_HEADER);
 
         // Reset the singleton state between tests
         java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
@@ -177,14 +178,14 @@ class MetricsFactoryTest {
         Metrics metrics = MetricsFactory.getMetricsInstance();
 
         // WHEN - Simulate Lambda invocation 1 with trace ID 1
-        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-trace-id-1");
+        System.setProperty(LambdaConstants.XRAY_TRACE_HEADER, "Root=1-trace-id-1");
         metrics.setNamespace("TestNamespace");
         metrics.addDimension("userId", "user123");
         metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
         metrics.flush();
 
         // WHEN - Simulate Lambda invocation 2 with trace ID 2
-        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-trace-id-2");
+        System.setProperty(LambdaConstants.XRAY_TRACE_HEADER, "Root=1-trace-id-2");
         metrics.setNamespace("TestNamespace");
         metrics.addDimension("userId", "user456");
         metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
@@ -205,7 +206,7 @@ class MetricsFactoryTest {
     @Test
     void shouldUseDefaultKeyWhenNoTraceId() throws Exception {
         // GIVEN - No trace ID set
-        System.clearProperty("com.amazonaws.xray.traceHeader");
+        System.clearProperty(LambdaConstants.XRAY_TRACE_HEADER);
 
         // WHEN
         Metrics metrics = MetricsFactory.getMetricsInstance();

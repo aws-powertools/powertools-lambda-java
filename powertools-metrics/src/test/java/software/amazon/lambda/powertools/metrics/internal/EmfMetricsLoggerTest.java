@@ -73,7 +73,7 @@ class EmfMetricsLoggerTest {
     }
 
     @AfterEach
-    void tearDown() throws Exception {
+    void tearDown() {
         System.setOut(standardOut);
     }
 

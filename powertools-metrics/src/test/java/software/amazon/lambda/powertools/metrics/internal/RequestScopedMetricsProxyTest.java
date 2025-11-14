@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.Mock.Strictness;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
@@ -50,7 +51,7 @@ class RequestScopedMetricsProxyTest {
 
     @AfterEach
     void tearDown() {
-        System.clearProperty("com.amazonaws.xray.traceHeader");
+        System.clearProperty(LambdaConstants.XRAY_TRACE_HEADER);
     }
 
     // ========== LAZY INITIALIZATION TESTS (Configuration Methods) ==========
@@ -158,7 +159,7 @@ class RequestScopedMetricsProxyTest {
     @Test
     void shouldShareInstanceAcrossThreadsWithSameTraceId() throws Exception {
         // GIVEN - Set trace ID
-        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-test-trace-id");
+        System.setProperty(LambdaConstants.XRAY_TRACE_HEADER, "Root=1-test-trace-id");
 
         // WHEN - Parent thread adds metric
         proxy.addMetric("metric1", 1, MetricUnit.COUNT);
