@@ -20,7 +20,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +30,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.internal.ThreadLocalMetricsProxy;
+import software.amazon.lambda.powertools.metrics.internal.RequestScopedMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 import software.amazon.lambda.powertools.metrics.testutils.TestMetricsProvider;
@@ -63,6 +62,7 @@ class MetricsFactoryTest {
     @AfterEach
     void tearDown() throws Exception {
         System.setOut(standardOut);
+        System.clearProperty("com.amazonaws.xray.traceHeader");
 
         // Reset the singleton state between tests
         java.lang.reflect.Field field = MetricsFactory.class.getDeclaredField("metricsProxy");
@@ -137,7 +137,7 @@ class MetricsFactoryTest {
 
         // Then
         assertThat(metrics)
-                .isInstanceOf(ThreadLocalMetricsProxy.class);
+                .isInstanceOf(RequestScopedMetricsProxy.class);
 
         java.lang.reflect.Field providerField = metrics.getClass().getDeclaredField("provider");
         providerField.setAccessible(true);
@@ -172,53 +172,25 @@ class MetricsFactoryTest {
     }
 
     @Test
-    void concurrentInvocations_shouldIsolateDimensions() throws Exception {
-        // GIVEN - Simulate real Lambda scenario: Metrics instance created outside handler
+    void shouldIsolateMetricsByTraceId() throws Exception {
+        // GIVEN
         Metrics metrics = MetricsFactory.getMetricsInstance();
 
-        CountDownLatch latch = new CountDownLatch(2);
-        Exception[] exceptions = new Exception[2];
+        // WHEN - Simulate Lambda invocation 1 with trace ID 1
+        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-trace-id-1");
+        metrics.setNamespace("TestNamespace");
+        metrics.addDimension("userId", "user123");
+        metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
+        metrics.flush();
 
-        Thread thread1 = new Thread(() -> {
-            try {
-                latch.countDown();
-                latch.await();
+        // WHEN - Simulate Lambda invocation 2 with trace ID 2
+        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-trace-id-2");
+        metrics.setNamespace("TestNamespace");
+        metrics.addDimension("userId", "user456");
+        metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
+        metrics.flush();
 
-                // Simulate handleRequest execution
-                metrics.setNamespace("TestNamespace");
-                metrics.addDimension("userId", "user123");
-                metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
-                metrics.flush();
-            } catch (Exception e) {
-                exceptions[0] = e;
-            }
-        });
-
-        Thread thread2 = new Thread(() -> {
-            try {
-                latch.countDown();
-                latch.await();
-
-                // Simulate handleRequest execution
-                metrics.setNamespace("TestNamespace");
-                metrics.addDimension("userId", "user456");
-                metrics.addMetric("ProcessedOrder", 1, MetricUnit.COUNT);
-                metrics.flush();
-            } catch (Exception e) {
-                exceptions[1] = e;
-            }
-        });
-
-        // WHEN
-        thread1.start();
-        thread2.start();
-        thread1.join();
-        thread2.join();
-
-        // THEN
-        assertThat(exceptions[0]).isNull();
-        assertThat(exceptions[1]).isNull();
-
+        // THEN - Verify each invocation has isolated metrics
         String emfOutput = outputStreamCaptor.toString().trim();
         String[] jsonLines = emfOutput.split("\n");
         assertThat(jsonLines).hasSize(2);
@@ -226,19 +198,26 @@ class MetricsFactoryTest {
         JsonNode output1 = objectMapper.readTree(jsonLines[0]);
         JsonNode output2 = objectMapper.readTree(jsonLines[1]);
 
-        // Check if dimensions are leaking across threads
-        boolean hasLeakage = false;
+        assertThat(output1.get("userId").asText()).isEqualTo("user123");
+        assertThat(output2.get("userId").asText()).isEqualTo("user456");
+    }
 
-        if (output1.has("userId") && output2.has("userId")) {
-            String userId1 = output1.get("userId").asText();
-            String userId2 = output2.get("userId").asText();
-            // Both should have different userIds
-            hasLeakage = userId1.equals(userId2);
-        }
+    @Test
+    void shouldUseDefaultKeyWhenNoTraceId() throws Exception {
+        // GIVEN - No trace ID set
+        System.clearProperty("com.amazonaws.xray.traceHeader");
 
-        // Each thread should have isolated dimensions
-        assertThat(hasLeakage)
-                .as("Dimensions should NOT leak across threads - each thread should have its own userId")
-                .isFalse();
+        // WHEN
+        Metrics metrics = MetricsFactory.getMetricsInstance();
+        metrics.setNamespace("TestNamespace");
+        metrics.addMetric("TestMetric", 1, MetricUnit.COUNT);
+        metrics.flush();
+
+        // THEN - Should work without X-Ray trace ID
+        String emfOutput = outputStreamCaptor.toString().trim();
+        assertThat(emfOutput).isNotEmpty();
+
+        JsonNode rootNode = objectMapper.readTree(emfOutput);
+        assertThat(rootNode.get("TestMetric").asDouble()).isEqualTo(1.0);
     }
 }

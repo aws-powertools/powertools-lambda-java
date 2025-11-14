@@ -20,7 +20,7 @@ import org.crac.Resource;
 import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.LambdaConstants;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.metrics.internal.ThreadLocalMetricsProxy;
+import software.amazon.lambda.powertools.metrics.internal.RequestScopedMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.provider.EmfMetricsProvider;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
@@ -30,7 +30,7 @@ import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
  */
 public final class MetricsFactory implements Resource {
     private static MetricsProvider provider = new EmfMetricsProvider();
-    private static ThreadLocalMetricsProxy metricsProxy;
+    private static RequestScopedMetricsProxy metricsProxy;
 
     // Dummy instance to register MetricsFactory with CRaC
     private static final MetricsFactory INSTANCE = new MetricsFactory();
@@ -47,7 +47,7 @@ public final class MetricsFactory implements Resource {
      */
     public static synchronized Metrics getMetricsInstance() {
         if (metricsProxy == null) {
-            metricsProxy = new ThreadLocalMetricsProxy(provider);
+            metricsProxy = new RequestScopedMetricsProxy(provider);
 
             // Apply default configuration from environment variables
             String envNamespace = System.getenv("POWERTOOLS_METRICS_NAMESPACE");

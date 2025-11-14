@@ -17,33 +17,40 @@ package software.amazon.lambda.powertools.metrics.internal;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import com.amazonaws.services.lambda.runtime.Context;
 
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.metrics.Metrics;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricResolution;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
-public class ThreadLocalMetricsProxy implements Metrics {
-    private final InheritableThreadLocal<Metrics> threadLocalMetrics = new InheritableThreadLocal<>();
+public class RequestScopedMetricsProxy implements Metrics {
+    private static final String DEFAULT_TRACE_ID = "DEFAULT";
+    private final ConcurrentHashMap<String, Metrics> metricsMap = new ConcurrentHashMap<>();
     private final MetricsProvider provider;
     private final AtomicReference<String> initialNamespace = new AtomicReference<>();
     private final AtomicReference<DimensionSet> initialDefaultDimensions = new AtomicReference<>();
     private final AtomicBoolean initialRaiseOnEmptyMetrics = new AtomicBoolean(false);
 
-    public ThreadLocalMetricsProxy(MetricsProvider provider) {
+    public RequestScopedMetricsProxy(MetricsProvider provider) {
         this.provider = provider;
     }
 
-    private Metrics getOrCreateThreadLocalMetrics() {
-        Metrics metrics = threadLocalMetrics.get();
-        if (metrics == null) {
-            metrics = provider.getMetricsInstance();
+    private String getTraceId() {
+        return LambdaHandlerProcessor.getXrayTraceId().orElse(DEFAULT_TRACE_ID);
+    }
+
+    private Metrics getOrCreateMetrics() {
+        String traceId = getTraceId();
+        return metricsMap.computeIfAbsent(traceId, key -> {
+            Metrics metrics = provider.getMetricsInstance();
             String namespace = initialNamespace.get();
             if (namespace != null) {
                 metrics.setNamespace(namespace);
@@ -53,13 +60,12 @@ public class ThreadLocalMetricsProxy implements Metrics {
                 metrics.setDefaultDimensions(dimensions);
             }
             metrics.setRaiseOnEmptyMetrics(initialRaiseOnEmptyMetrics.get());
-            threadLocalMetrics.set(metrics);
-        }
-        return metrics;
+            return metrics;
+        });
     }
 
     // Configuration methods - called by MetricsFactory and MetricsBuilder
-    // These methods DO NOT eagerly create thread-local instances because they are typically called
+    // These methods DO NOT eagerly create instances because they are typically called
     // outside the Lambda handler (e.g., during class initialization) potentially on a different thread.
     // We delay instance creation until the first operation that needs the metrics backend (e.g., addMetric).
     // See {@link software.amazon.lambda.powertools.metrics.MetricsFactory#getMetricsInstance()}
@@ -68,7 +74,7 @@ public class ThreadLocalMetricsProxy implements Metrics {
     @Override
     public void setNamespace(String namespace) {
         this.initialNamespace.set(namespace);
-        Optional.ofNullable(threadLocalMetrics.get()).ifPresent(m -> m.setNamespace(namespace));
+        Optional.ofNullable(metricsMap.get(getTraceId())).ifPresent(m -> m.setNamespace(namespace));
     }
 
     @Override
@@ -77,18 +83,18 @@ public class ThreadLocalMetricsProxy implements Metrics {
             throw new IllegalArgumentException("DimensionSet cannot be null");
         }
         this.initialDefaultDimensions.set(dimensionSet);
-        Optional.ofNullable(threadLocalMetrics.get()).ifPresent(m -> m.setDefaultDimensions(dimensionSet));
+        Optional.ofNullable(metricsMap.get(getTraceId())).ifPresent(m -> m.setDefaultDimensions(dimensionSet));
     }
 
     @Override
     public void setRaiseOnEmptyMetrics(boolean raiseOnEmptyMetrics) {
         this.initialRaiseOnEmptyMetrics.set(raiseOnEmptyMetrics);
-        Optional.ofNullable(threadLocalMetrics.get()).ifPresent(m -> m.setRaiseOnEmptyMetrics(raiseOnEmptyMetrics));
+        Optional.ofNullable(metricsMap.get(getTraceId())).ifPresent(m -> m.setRaiseOnEmptyMetrics(raiseOnEmptyMetrics));
     }
 
     @Override
     public DimensionSet getDefaultDimensions() {
-        Metrics metrics = threadLocalMetrics.get();
+        Metrics metrics = metricsMap.get(getTraceId());
         if (metrics != null) {
             return metrics.getDefaultDimensions();
         }
@@ -96,54 +102,54 @@ public class ThreadLocalMetricsProxy implements Metrics {
         return dimensions != null ? dimensions : DimensionSet.of(new HashMap<>());
     }
 
-    // Metrics operations - these eagerly create thread-local instances
+    // Metrics operations - these eagerly create instances
 
     @Override
     public void addMetric(String key, double value, MetricUnit unit, MetricResolution resolution) {
-        getOrCreateThreadLocalMetrics().addMetric(key, value, unit, resolution);
+        getOrCreateMetrics().addMetric(key, value, unit, resolution);
     }
 
     @Override
     public void addDimension(DimensionSet dimensionSet) {
-        getOrCreateThreadLocalMetrics().addDimension(dimensionSet);
+        getOrCreateMetrics().addDimension(dimensionSet);
     }
 
     @Override
     public void setTimestamp(Instant timestamp) {
-        getOrCreateThreadLocalMetrics().setTimestamp(timestamp);
+        getOrCreateMetrics().setTimestamp(timestamp);
     }
 
     @Override
     public void addMetadata(String key, Object value) {
-        getOrCreateThreadLocalMetrics().addMetadata(key, value);
+        getOrCreateMetrics().addMetadata(key, value);
     }
 
     @Override
     public void clearDefaultDimensions() {
-        getOrCreateThreadLocalMetrics().clearDefaultDimensions();
+        getOrCreateMetrics().clearDefaultDimensions();
     }
 
     @Override
     public void flush() {
         // Always create instance to ensure validation and warnings are triggered. E.g. when raiseOnEmptyMetrics
         // is enabled.
-        Metrics metrics = getOrCreateThreadLocalMetrics();
+        Metrics metrics = getOrCreateMetrics();
         metrics.flush();
-        threadLocalMetrics.remove();
+        metricsMap.remove(getTraceId());
     }
 
     @Override
     public void captureColdStartMetric(Context context, DimensionSet dimensions) {
-        getOrCreateThreadLocalMetrics().captureColdStartMetric(context, dimensions);
+        getOrCreateMetrics().captureColdStartMetric(context, dimensions);
     }
 
     @Override
     public void captureColdStartMetric(DimensionSet dimensions) {
-        getOrCreateThreadLocalMetrics().captureColdStartMetric(dimensions);
+        getOrCreateMetrics().captureColdStartMetric(dimensions);
     }
 
     @Override
     public void flushMetrics(Consumer<Metrics> metricsConsumer) {
-        getOrCreateThreadLocalMetrics().flushMetrics(metricsConsumer);
+        getOrCreateMetrics().flushMetrics(metricsConsumer);
     }
 }

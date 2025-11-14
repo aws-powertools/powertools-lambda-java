@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,14 +25,14 @@ import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
 
 /**
- * Tests for ThreadLocalMetricsProxy focusing on lazy vs eager initialization behavior.
+ * Tests for RequestScopedMetricsProxy focusing on lazy vs eager initialization behavior.
  * 
  * CRITICAL: These tests ensure configuration methods (setNamespace, setDefaultDimensions, 
  * setRaiseOnEmptyMetrics) do NOT eagerly create instances, while metrics operations 
  * (addMetric, addDimension, flush) DO eagerly create instances.
  */
 @ExtendWith(MockitoExtension.class)
-class ThreadLocalMetricsProxyTest {
+class RequestScopedMetricsProxyTest {
 
     @Mock(strictness = Strictness.LENIENT)
     private MetricsProvider mockProvider;
@@ -39,12 +40,17 @@ class ThreadLocalMetricsProxyTest {
     @Mock(strictness = Strictness.LENIENT)
     private Metrics mockMetrics;
 
-    private ThreadLocalMetricsProxy proxy;
+    private RequestScopedMetricsProxy proxy;
 
     @BeforeEach
     void setUp() {
         when(mockProvider.getMetricsInstance()).thenReturn(mockMetrics);
-        proxy = new ThreadLocalMetricsProxy(mockProvider);
+        proxy = new RequestScopedMetricsProxy(mockProvider);
+    }
+
+    @AfterEach
+    void tearDown() {
+        System.clearProperty("com.amazonaws.xray.traceHeader");
     }
 
     // ========== LAZY INITIALIZATION TESTS (Configuration Methods) ==========
@@ -150,19 +156,22 @@ class ThreadLocalMetricsProxyTest {
     // ========== THREAD ISOLATION TESTS ==========
 
     @Test
-    void differentThreads_shouldInheritParentInstance() throws Exception {
+    void shouldShareInstanceAcrossThreadsWithSameTraceId() throws Exception {
+        // GIVEN - Set trace ID
+        System.setProperty("com.amazonaws.xray.traceHeader", "Root=1-test-trace-id");
+
         // WHEN - Parent thread adds metric
         proxy.addMetric("metric1", 1, MetricUnit.COUNT);
         verify(mockProvider, times(1)).getMetricsInstance();
 
-        // WHEN - Child thread adds metric (inherits parent's instance)
+        // WHEN - Child thread adds metric (same trace ID)
         Thread thread2 = new Thread(() -> {
             proxy.addMetric("metric2", 2, MetricUnit.COUNT);
         });
         thread2.start();
         thread2.join();
 
-        // THEN - Only one instance created (child inherits via InheritableThreadLocal)
+        // THEN - Only one instance created (same trace ID = shared instance)
         verify(mockProvider, times(1)).getMetricsInstance();
     }
 

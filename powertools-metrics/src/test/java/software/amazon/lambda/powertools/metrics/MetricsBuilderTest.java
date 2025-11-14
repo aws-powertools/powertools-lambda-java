@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import software.amazon.lambda.powertools.metrics.internal.ThreadLocalMetricsProxy;
+import software.amazon.lambda.powertools.metrics.internal.RequestScopedMetricsProxy;
 import software.amazon.lambda.powertools.metrics.model.DimensionSet;
 import software.amazon.lambda.powertools.metrics.model.MetricUnit;
 import software.amazon.lambda.powertools.metrics.provider.MetricsProvider;
@@ -162,7 +162,7 @@ class MetricsBuilderTest {
 
         // Then
         assertThat(metrics)
-                .isInstanceOf(ThreadLocalMetricsProxy.class);
+                .isInstanceOf(RequestScopedMetricsProxy.class);
 
         java.lang.reflect.Field providerField = metrics.getClass().getDeclaredField("provider");
         providerField.setAccessible(true);
