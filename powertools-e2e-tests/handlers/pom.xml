@@ -261,6 +261,15 @@
                 <aspectj.version>1.9.21</aspectj.version>
             </properties>
         </profile>
+        <profile>
+            <id>jdk25</id>
+            <activation>
+                <jdk>[25,)</jdk>
+            </activation>
+            <properties>
+                <aspectj.version>1.9.25</aspectj.version>
+            </properties>
+        </profile>
     </profiles>
 
 </project>

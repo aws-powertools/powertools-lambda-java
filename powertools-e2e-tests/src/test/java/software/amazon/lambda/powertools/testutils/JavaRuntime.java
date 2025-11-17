@@ -19,7 +19,8 @@ import software.amazon.awscdk.services.lambda.Runtime;
 public enum JavaRuntime {
     JAVA11("java11", Runtime.JAVA_11, "11"),
     JAVA17("java17", Runtime.JAVA_17, "17"),
-    JAVA21("java21", Runtime.JAVA_21, "21");
+    JAVA21("java21", Runtime.JAVA_21, "21"),
+    JAVA25("java25", Runtime.JAVA_25, "25");
 
     private final String runtime;
     private final Runtime cdkRuntime;

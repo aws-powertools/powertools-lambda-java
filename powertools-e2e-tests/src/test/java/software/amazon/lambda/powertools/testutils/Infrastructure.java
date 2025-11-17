@@ -522,6 +522,8 @@ public final class Infrastructure {
                 ret = JavaRuntime.JAVA17;
             } else if (javaVersion.startsWith("21")) {
                 ret = JavaRuntime.JAVA21;
+            } else if (javaVersion.startsWith("25")) {
+                ret = JavaRuntime.JAVA25;
             } else {
                 throw new IllegalArgumentException("Unsupported Java version " + javaVersion);
             }
