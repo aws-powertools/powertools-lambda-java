@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>4.1.0</version> <!-- Supports >= 3.0.0 -->
+            <version>4.1.1</version> <!-- Supports >= 3.0.0 -->
         </dependency>
         <dependency>
             <groupId>org.apache.avro</groupId>
