@@ -247,7 +247,7 @@ public final class Infrastructure {
                 .create(e2eStack, functionName + "-logs")
                 .logGroupName("/aws/lambda/" + functionName)
                 .retention(RetentionDays.ONE_DAY)
-                .removalPolicy(RemovalPolicy.DESTROY)
+                .removalPolicy(RemovalPolicy.RETAIN)
                 .build();
 
         if (!StringUtils.isEmpty(idempotencyTable)) {
