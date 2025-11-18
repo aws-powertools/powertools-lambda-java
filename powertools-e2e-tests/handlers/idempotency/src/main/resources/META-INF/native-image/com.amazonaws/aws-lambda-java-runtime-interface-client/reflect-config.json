@@ -56,6 +56,7 @@
       { "name": "tenantId" },
       { "name": "content" }
     ],
-    "allPublicMethods": true
+    "allPublicMethods": true,
+    "unsafeAllocated": true
   }
 ]

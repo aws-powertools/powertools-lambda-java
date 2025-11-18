@@ -48,12 +48,13 @@ jobs:
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 4
       matrix:
         java:
           - 11
           - 17
           - 21
+          - 25
           
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
@@ -81,12 +82,10 @@ jobs:
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 1
       matrix:
         java:
-          - 11
-          - 17
-          - 21
+          - 25
           
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # v5.0.0
