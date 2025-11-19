@@ -14,24 +14,26 @@
 
 package software.amazon.lambda.powertools.batch.handler;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
-import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
-import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
+import com.amazonaws.services.lambda.runtime.events.SQSEvent;
+
 import software.amazon.lambda.powertools.batch.internal.MultiThreadMDC;
+import software.amazon.lambda.powertools.batch.internal.XRayTraceEntityPropagator;
 import software.amazon.lambda.powertools.utilities.EventDeserializer;
 
 /**
@@ -54,9 +56,9 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
     private final BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler;
 
     public SqsBatchMessageHandler(BiConsumer<M, Context> messageHandler, Class<M> messageClass,
-                                  BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler,
-                                  Consumer<SQSEvent.SQSMessage> successHandler,
-                                  BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler) {
+            BiConsumer<SQSEvent.SQSMessage, Context> rawMessageHandler,
+            Consumer<SQSEvent.SQSMessage> successHandler,
+            BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler) {
         this.messageHandler = messageHandler;
         this.messageClass = messageClass;
         this.rawMessageHandler = rawMessageHandler;
@@ -77,16 +79,16 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
         for (; messageCursor < event.getRecords().size() && !failWholeBatch.get(); messageCursor++) {
             SQSEvent.SQSMessage message = event.getRecords().get(messageCursor);
 
-            String messageGroupId = message.getAttributes() != null ?
-                    message.getAttributes().get(MESSAGE_GROUP_ID_KEY) : null;
+            String messageGroupId = message.getAttributes() != null ? message.getAttributes().get(MESSAGE_GROUP_ID_KEY)
+                    : null;
 
             processBatchItem(message, context).ifPresent(batchItemFailure -> {
                 response.getBatchItemFailures().add(batchItemFailure);
                 if (messageGroupId != null) {
                     failWholeBatch.set(true);
                     LOGGER.info(
-                            "A message in a batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too"
-                            , messageGroupId, message.getMessageId());
+                            "A message in a batch with messageGroupId {} and messageId {} failed; failing the rest of the batch too",
+                            messageGroupId, message.getMessageId());
                 }
             });
         }
@@ -105,18 +107,28 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
     @Override
     public SQSBatchResponse processBatchInParallel(SQSEvent event, Context context) {
         if (isFIFOEnabled(event)) {
-            throw new UnsupportedOperationException("FIFO queues are not supported in parallel mode, use the processBatch method instead");
+            throw new UnsupportedOperationException(
+                    "FIFO queues are not supported in parallel mode, use the processBatch method instead");
         }
 
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        Object capturedSubsegment = XRayTraceEntityPropagator.captureTraceEntity();
+
         List<SQSBatchResponse.BatchItemFailure> batchItemFailures = event.getRecords()
                 .parallelStream() // Parallel processing
                 .map(sqsMessage -> {
+                    AtomicReference<Optional<SQSBatchResponse.BatchItemFailure>> result = new AtomicReference<>();
 
-                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    Optional<SQSBatchResponse.BatchItemFailure> failureOpt = processBatchItem(sqsMessage, context);
-                    multiThreadMDC.removeThread(Thread.currentThread().getName());
-                    return failureOpt;
+                    XRayTraceEntityPropagator.runWithEntity(capturedSubsegment, () -> {
+                        multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                        try {
+                            result.set(processBatchItem(sqsMessage, context));
+                        } finally {
+                            multiThreadMDC.removeThread(Thread.currentThread().getName());
+                        }
+                    });
+
+                    return result.get();
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -128,17 +140,26 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
     @Override
     public SQSBatchResponse processBatchInParallel(SQSEvent event, Context context, Executor executor) {
         if (isFIFOEnabled(event)) {
-            throw new UnsupportedOperationException("FIFO queues are not supported in parallel mode, use the processBatch method instead");
+            throw new UnsupportedOperationException(
+                    "FIFO queues are not supported in parallel mode, use the processBatch method instead");
         }
 
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        Object capturedSubsegment = XRayTraceEntityPropagator.captureTraceEntity();
+
         List<SQSBatchResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
         List<CompletableFuture<Void>> futures = event.getRecords().stream()
                 .map(eventRecord -> CompletableFuture.runAsync(() -> {
-                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    Optional<SQSBatchResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
-                    failureOpt.ifPresent(batchItemFailures::add);
-                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                    XRayTraceEntityPropagator.runWithEntity(capturedSubsegment, () -> {
+                        multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                        try {
+                            Optional<SQSBatchResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord,
+                                    context);
+                            failureOpt.ifPresent(batchItemFailures::add);
+                        } finally {
+                            multiThreadMDC.removeThread(Thread.currentThread().getName());
+                        }
+                    });
                 }, executor))
                 .collect(Collectors.toList());
         futures.forEach(CompletableFuture::join);
@@ -182,6 +203,7 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
     }
 
     private boolean isFIFOEnabled(SQSEvent sqsEvent) {
-        return !sqsEvent.getRecords().isEmpty() && sqsEvent.getRecords().get(0).getAttributes().get(MESSAGE_GROUP_ID_KEY) != null;
+        return !sqsEvent.getRecords().isEmpty()
+                && sqsEvent.getRecords().get(0).getAttributes().get(MESSAGE_GROUP_ID_KEY) != null;
     }
 }

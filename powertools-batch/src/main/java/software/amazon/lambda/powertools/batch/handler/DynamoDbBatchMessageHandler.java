@@ -14,21 +14,25 @@
 
 package software.amazon.lambda.powertools.batch.handler;
 
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
-import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.amazonaws.services.lambda.runtime.Context;
+import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
+import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+
 import software.amazon.lambda.powertools.batch.internal.MultiThreadMDC;
+import software.amazon.lambda.powertools.batch.internal.XRayTraceEntityPropagator;
 
 /**
  * A batch message processor for DynamoDB Streams batches.
@@ -43,8 +47,8 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
     private final BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler;
 
     public DynamoDbBatchMessageHandler(Consumer<DynamodbEvent.DynamodbStreamRecord> successHandler,
-                                       BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler,
-                                       BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler) {
+            BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler,
+            BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> rawMessageHandler) {
         this.successHandler = successHandler;
         this.failureHandler = failureHandler;
         this.rawMessageHandler = rawMessageHandler;
@@ -65,14 +69,23 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
     @Override
     public StreamsEventResponse processBatchInParallel(DynamodbEvent event, Context context) {
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        Object capturedSubsegment = XRayTraceEntityPropagator.captureTraceEntity();
 
         List<StreamsEventResponse.BatchItemFailure> batchItemFailures = event.getRecords()
                 .parallelStream() // Parallel processing
                 .map(eventRecord -> {
-                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
-                    multiThreadMDC.removeThread(Thread.currentThread().getName());
-                    return failureOpt;
+                    AtomicReference<Optional<StreamsEventResponse.BatchItemFailure>> result = new AtomicReference<>();
+
+                    XRayTraceEntityPropagator.runWithEntity(capturedSubsegment, () -> {
+                        multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                        try {
+                            result.set(processBatchItem(eventRecord, context));
+                        } finally {
+                            multiThreadMDC.removeThread(Thread.currentThread().getName());
+                        }
+                    });
+
+                    return result.get();
                 })
                 .filter(Optional::isPresent)
                 .map(Optional::get)
@@ -84,21 +97,29 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
     @Override
     public StreamsEventResponse processBatchInParallel(DynamodbEvent event, Context context, Executor executor) {
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        Object capturedSubsegment = XRayTraceEntityPropagator.captureTraceEntity();
 
         List<StreamsEventResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
         List<CompletableFuture<Void>> futures = event.getRecords().stream()
                 .map(eventRecord -> CompletableFuture.runAsync(() -> {
-                    multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
-                    Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord, context);
-                    failureOpt.ifPresent(batchItemFailures::add);
-                    multiThreadMDC.removeThread(Thread.currentThread().getName());
+                    XRayTraceEntityPropagator.runWithEntity(capturedSubsegment, () -> {
+                        multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
+                        try {
+                            Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord,
+                                    context);
+                            failureOpt.ifPresent(batchItemFailures::add);
+                        } finally {
+                            multiThreadMDC.removeThread(Thread.currentThread().getName());
+                        }
+                    });
                 }, executor))
                 .collect(Collectors.toList());
         futures.forEach(CompletableFuture::join);
         return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
 
-    private Optional<StreamsEventResponse.BatchItemFailure> processBatchItem(DynamodbEvent.DynamodbStreamRecord streamRecord, Context context) {
+    private Optional<StreamsEventResponse.BatchItemFailure> processBatchItem(
+            DynamodbEvent.DynamodbStreamRecord streamRecord, Context context) {
         try {
             LOGGER.debug("Processing item {}", streamRecord.getEventID());
 
@@ -124,7 +145,8 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
                     LOGGER.warn("failureHandler threw handling failure", e2);
                 }
             }
-            return Optional.of(StreamsEventResponse.BatchItemFailure.builder().withItemIdentifier(sequenceNumber).build());
+            return Optional
+                    .of(StreamsEventResponse.BatchItemFailure.builder().withItemIdentifier(sequenceNumber).build());
         }
     }
 }
