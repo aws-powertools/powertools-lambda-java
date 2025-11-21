@@ -484,7 +484,9 @@ used with SQS FIFO. In that case, an `UnsupportedOperationException` is thrown.
     in most cases the defaults work well, and changing them is more likely to decrease performance 
     (see [here](https://www.baeldung.com/java-when-to-use-parallel-stream#fork-join-framework)
     and [here](https://dzone.com/articles/be-aware-of-forkjoinpoolcommonpool)). 
-    In situations where this may be useful - such as performing IO-bound work in parallel - make sure to measure before and after!
+    In situations where this may be useful, such as performing IO-bound work in parallel, make sure to measure before and after!
+
+When using parallel processing with X-Ray tracing enabled, the Tracing utility automatically handles trace context propagation to worker threads. This ensures that subsegments created during parallel message processing appear under the correct parent segment in your X-Ray trace, maintaining proper trace hierarchy and visibility into your batch processing performance.
 
 
 === "Example with SQS"
@@ -535,6 +537,84 @@ used with SQS FIFO. In that case, an `UnsupportedOperationException` is thrown.
         }
     }
     ```
+
+=== "Example with X-Ray Tracing"
+
+    ```java hl_lines="12 17"
+    public class SqsBatchHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+
+        private final BatchMessageHandler<SQSEvent, SQSBatchResponse> handler;
+    
+        public SqsBatchHandler() {
+            handler = new BatchMessageHandlerBuilder()
+                    .withSqsBatchHandler()
+                    .buildWithMessageHandler(this::processMessage, Product.class);
+        }
+    
+        @Override
+        @Tracing
+        public SQSBatchResponse handleRequest(SQSEvent sqsEvent, Context context) {
+            return handler.processBatchInParallel(sqsEvent, context);
+        }
+    
+        @Tracing // This will appear correctly under the handleRequest subsegment
+        private void processMessage(Product p, Context c) {
+            // Process the product - subsegments will appear under handleRequest
+        }
+    }
+    ```
+
+### Choosing the right concurrency model
+
+The `processBatchInParallel` method has two overloads with different concurrency characteristics:
+
+#### Without custom executor (parallelStream)
+
+When you call `processBatchInParallel(event, context)` without providing an executor, the implementation uses Java's `parallelStream()` which leverages the common `ForkJoinPool`.
+
+**Best for: CPU-bound workloads**
+
+- Thread pool size matches available CPU cores
+- Optimized for computational tasks (data transformation, calculations, parsing)
+- Main thread participates in work-stealing
+- Simple to use with no configuration needed
+
+```java
+// Good for CPU-intensive processing
+return handler.processBatchInParallel(sqsEvent, context);
+```
+
+#### With custom executor (CompletableFuture)
+
+When you call `processBatchInParallel(event, context, executor)` with a custom executor, the implementation uses `CompletableFuture` which gives you full control over the thread pool.
+
+**Best for: I/O-bound workloads**
+
+- You control thread pool size and characteristics
+- Ideal for I/O operations (HTTP calls, database queries, S3 operations)
+- Can use larger thread pools since threads spend time waiting, not computing
+- Main thread only waits; worker threads do all processing
+
+```java
+// Good for I/O-intensive processing (API calls, DB queries, etc.)
+ExecutorService executor = Executors.newFixedThreadPool(50);
+return handler.processBatchInParallel(sqsEvent, context, executor);
+```
+
+**For Java 21+: Virtual Threads**
+
+If you're using Java 21 or later, virtual threads are ideal for I/O-bound workloads:
+
+```java
+ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+return handler.processBatchInParallel(sqsEvent, context, executor);
+```
+
+Virtual threads are lightweight and can handle thousands of concurrent I/O operations efficiently without the overhead of platform threads.
+
+**Recommendation for typical Lambda SQS processing:**
+
+Most Lambda functions processing SQS messages perform I/O operations (calling APIs, querying databases, writing to S3). For these workloads, use the custom executor approach with a thread pool sized appropriately for your I/O operations or virtual threads for Java 21+.
 
 
 ## Handling Messages
