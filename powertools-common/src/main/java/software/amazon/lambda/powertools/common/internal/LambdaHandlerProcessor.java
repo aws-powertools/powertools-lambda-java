@@ -93,7 +93,15 @@ public final class LambdaHandlerProcessor {
     }
 
     public static boolean isColdStart() {
-        return isColdStart == null;
+        if (isColdStart != null) {
+            return isColdStart;
+        }
+
+        String initType = System.getenv(LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE);
+        boolean cold = LambdaConstants.ON_DEMAND_INVOCATION_TYPE.equals(initType);
+
+        isColdStart = cold;
+        return cold;
     }
 
     public static void coldStartDone() {
