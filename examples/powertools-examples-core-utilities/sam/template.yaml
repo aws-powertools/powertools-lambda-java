@@ -7,13 +7,12 @@ Description: >
 Globals:
   Function:
     Timeout: 20
-    Runtime: java11
+    Runtime: java25
     MemorySize: 512
     Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
     Environment:
       Variables:
         # Powertools for AWS Lambda (Java) env vars: https://docs.powertools.aws.dev/lambda/java/#environment-variables
-        POWERTOOLS_LOG_LEVEL: DEBUG # We use log buffering to buffer DEBUG logs (see log4j2.xml)
         POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
         POWERTOOLS_METRICS_NAMESPACE: Coreutilities
@@ -27,6 +26,9 @@ Resources:
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
           POWERTOOLS_SERVICE_NAME: hello
+      # AutoPublishAlias: live
+      # SnapStart:
+      #   ApplyOn: PublishedVersions
       Events:
         HelloWorld:
           Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api

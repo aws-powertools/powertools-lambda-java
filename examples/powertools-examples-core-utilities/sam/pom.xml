@@ -9,9 +9,9 @@
     <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <aspectj.version>1.9.20.1</aspectj.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
+        <aspectj.version>1.9.25</aspectj.version>
     </properties>
 
     <dependencies>
