@@ -216,6 +216,7 @@ class LambdaHandlerProcessorTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = LambdaConstants.AWS_LAMBDA_INITIALIZATION_TYPE, value = LambdaConstants.ON_DEMAND_INVOCATION_TYPE)
     void isColdStart() {
         boolean isColdStart = LambdaHandlerProcessor.isColdStart();
 
