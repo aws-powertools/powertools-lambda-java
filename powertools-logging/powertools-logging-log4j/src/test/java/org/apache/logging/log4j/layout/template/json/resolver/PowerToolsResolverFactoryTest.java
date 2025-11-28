@@ -79,7 +79,7 @@ class PowerToolsResolverFactoryTest {
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
                 "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":\"1\",\"service\":\"testLog4j\",\"timestamp\":")
-                .contains("\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+                .contains("\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\r\n");
     }
 
     @Test
@@ -89,7 +89,7 @@ class PowerToolsResolverFactoryTest {
 
         File logFile = new File("target/ecslogfile.json");
         assertThat(contentOf(logFile)).contains(
-                "\"ecs.version\":\"1.2.0\",\"log.level\":\"DEBUG\",\"message\":\"Test debug event\",\"service.name\":\"testLog4j\",\"service.version\":\"1\",\"log.logger\":\"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled\",\"process.thread.name\":\"main\",\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"eu-central-1\",\"cloud.account.id\":\"123456789012\",\"faas.id\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"faas.name\":\"test-function\",\"faas.version\":\"1\",\"faas.memory\":128,\"faas.execution\":\"test-request-id\",\"faas.coldstart\":true,\"trace.id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\n");
+                "\"ecs.version\":\"1.2.0\",\"log.level\":\"DEBUG\",\"message\":\"Test debug event\",\"service.name\":\"testLog4j\",\"service.version\":\"1\",\"log.logger\":\"software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled\",\"process.thread.name\":\"main\",\"cloud.provider\":\"aws\",\"cloud.service.name\":\"lambda\",\"cloud.region\":\"eu-central-1\",\"cloud.account.id\":\"123456789012\",\"faas.id\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"faas.name\":\"test-function\",\"faas.version\":\"1\",\"faas.memory\":128,\"faas.execution\":\"test-request-id\",\"faas.coldstart\":true,\"trace.id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\"}\r\n");
     }
 
 }
