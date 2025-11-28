@@ -104,7 +104,6 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
     <profiles>
         <profile>
             <id>generate-graalvm-files</id>

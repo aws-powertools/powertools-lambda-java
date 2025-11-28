@@ -28,4 +28,6 @@ public final class LambdaConstants {
     public static final String ROOT_EQUALS = "Root=";
     public static final String POWERTOOLS_SERVICE_NAME = "POWERTOOLS_SERVICE_NAME";
     public static final String SERVICE_UNDEFINED = "service_undefined";
+    public static final String AWS_LAMBDA_INITIALIZATION_TYPE = "AWS_LAMBDA_INITIALIZATION_TYPE";
+    public static final String ON_DEMAND_INVOCATION_TYPE = "on-demand";
 }
