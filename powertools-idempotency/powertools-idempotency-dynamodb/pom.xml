@@ -99,24 +99,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.almworks.sqlite4java</groupId>
-            <artifactId>sqlite4java</artifactId>
-            <version>1.0.392</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>software.amazon.awssdk</groupId>
             <artifactId>s3</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>dynamodblocal</id>
-            <name>AWS DynamoDB Local Release Repository</name>
-            <url>https://s3-us-west-2.amazonaws.com/dynamodb-local/release</url>
-        </repository>
-    </repositories>
     <profiles>
         <profile>
             <id>generate-graalvm-files</id>
@@ -263,7 +250,6 @@
                 <configuration>
                     <systemPropertyVariables>
                         <dynamodb.endpoint>http://localhost:8000</dynamodb.endpoint>
-                        <sqlite4java.library.path>${project.build.directory}/native-libs</sqlite4java.library.path>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
