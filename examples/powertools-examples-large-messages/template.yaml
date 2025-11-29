@@ -32,7 +32,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      # IMPORTANTE: Asegúrate que esto coincida con tu paquete y clase Java
       Handler: helloworld.App::handleRequest
 
       Policies:
