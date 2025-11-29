@@ -1,59 +1,63 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  Kafka Deserialization example with Kafka Lambda ESM
+  Large Message Handling Example using SQS and S3 offloading
 
 Globals:
   Function:
-    Timeout: 20
+    Timeout: 30
     Runtime: java11
     MemorySize: 512
     Tracing: Active
+    Environment:
+      Variables:
+        JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_SERVICE_NAME: LargeMessageExample
 
 Resources:
-  JsonDeserializationFunction:
+  LargeMessageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldMessages
+            Status: Enabled
+            ExpirationInDays: 1
+  MyLargeMessageQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 30
+  LargeMessageProcessingFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
-      Handler: org.demo.kafka.JsonDeserializationFunction::handleRequest
+      # IMPORTANTE: Asegúrate que esto coincida con tu paquete y clase Java
+      Handler: helloworld.App::handleRequest
+
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref LargeMessageBucket
+        - SQSPollerPolicy:
+            QueueName: !GetAtt MyLargeMessageQueue.QueueName
+
       Environment:
         Variables:
-          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
-          POWERTOOLS_LOG_LEVEL: DEBUG
-          POWERTOOLS_SERVICE_NAME: JsonDeserialization
-          POWERTOOLS_METRICS_NAMESPACE: JsonDeserializationFunction
+          POWERTOOLS_LARGE_MESSAGES_BUCKET: !Ref LargeMessageBucket
 
-  AvroDeserializationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: .
-      Handler: org.demo.kafka.AvroDeserializationFunction::handleRequest
-      Environment:
-        Variables:
-          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
-          POWERTOOLS_LOG_LEVEL: DEBUG
-          POWERTOOLS_SERVICE_NAME: AvroDeserialization
-          POWERTOOLS_METRICS_NAMESPACE: AvroDeserializationFunction
-
-  ProtobufDeserializationFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: .
-      Handler: org.demo.kafka.ProtobufDeserializationFunction::handleRequest
-      Environment:
-        Variables:
-          JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
-          POWERTOOLS_LOG_LEVEL: DEBUG
-          POWERTOOLS_SERVICE_NAME: ProtobufDeserialization
-          POWERTOOLS_METRICS_NAMESPACE: ProtobufDeserializationFunction
-
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MyLargeMessageQueue.Arn
+            BatchSize: 1
 Outputs:
-  JsonFunction:
-    Description: "Kafka JSON Lambda Function ARN"
-    Value: !GetAtt JsonDeserializationFunction.Arn
-  AvroFunction:
-    Description: "Kafka Avro Lambda Function ARN"
-    Value: !GetAtt AvroDeserializationFunction.Arn
-  ProtobufFunction:
-    Description: "Kafka Protobuf Lambda Function ARN"
-    Value: !GetAtt ProtobufDeserializationFunction.Arn
+  LargeMessageBucketName:
+    Description: "S3 Bucket for large payloads"
+    Value: !Ref LargeMessageBucket
+  QueueURL:
+    Description: "SQS Queue URL"
+    Value: !Ref MyLargeMessageQueue
+  FunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt LargeMessageProcessingFunction.Arn

@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>software.amazon.lambda.examples</groupId>
     <version>2.8.0</version>
-    <artifactId>powertools-examples-kafka</artifactId>
+    <artifactId>powertools-examples-large-messages</artifactId>
     <packaging>jar</packaging>
-    <name>Powertools for AWS Lambda (Java) - Examples - Kafka</name>
+    <name>Powertools for AWS Lambda (Java) - Examples - Large Messages</name>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -18,23 +18,13 @@
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
-            <artifactId>powertools-kafka</artifactId>
+            <artifactId>powertools-large-messages</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka-clients</artifactId>
-            <version>4.1.1</version> <!-- Supports >= 3.0.0 -->
-        </dependency>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>${avro.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-            <version>${protobuf.version}</version>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>amazon-sqs-java-extended-client-lib</artifactId>
+            <version>2.1.1</version>
         </dependency>
 
         <!-- Basic logging setup -->
