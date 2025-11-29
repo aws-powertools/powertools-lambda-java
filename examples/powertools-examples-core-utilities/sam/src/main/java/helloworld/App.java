@@ -52,7 +52,7 @@ public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatew
     private static final Logger log = LoggerFactory.getLogger(App.class);
     private static final Metrics metrics = MetricsFactory.getMetricsInstance();
 
-    @Logging(logEvent = true, samplingRate = 0.7)
+    @Logging(logEvent = true)
     @Tracing(captureMode = CaptureMode.RESPONSE_AND_ERROR)
     @FlushMetrics(namespace = "ServerlessAirline", service = "payment", captureColdStart = true)
     public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {

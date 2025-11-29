@@ -13,7 +13,6 @@ Globals:
     Environment:
       Variables:
         # Powertools for AWS Lambda (Java) env vars: https://docs.powertools.aws.dev/lambda/java/#environment-variables
-        POWERTOOLS_LOGGER_SAMPLE_RATE: 0.1
         POWERTOOLS_LOGGER_LOG_EVENT: true
         POWERTOOLS_METRICS_NAMESPACE: Coreutilities
 
