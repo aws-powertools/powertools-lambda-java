@@ -164,6 +164,27 @@ public class EmfMetricsLogger implements Metrics {
             }
         } else {
             emfLogger.flush();
+
+            // Clear custom dimensions after flush while preserving default dimensions
+            clearCustomDimensions();
+        }
+    }
+
+    private void clearCustomDimensions() {
+        // Reset all dimensions in the EMF logger
+        emfLogger.resetDimensions(false);
+
+        // Re-apply default dimensions if they exist
+        if (!defaultDimensions.isEmpty()) {
+            DimensionSet emfDimensionSet = new DimensionSet();
+            defaultDimensions.forEach((key, value) -> {
+                try {
+                    emfDimensionSet.addDimension(key, value);
+                } catch (Exception e) {
+                    // Ignore dimension errors
+                }
+            });
+            emfLogger.setDimensions(emfDimensionSet);
         }
     }
 
@@ -198,7 +219,8 @@ public class EmfMetricsLogger implements Metrics {
             metrics.setNamespace(this.namespace);
         }
         if (!defaultDimensions.isEmpty()) {
-            metrics.setDefaultDimensions(software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions));
+            metrics.setDefaultDimensions(
+                    software.amazon.lambda.powertools.metrics.model.DimensionSet.of(defaultDimensions));
         }
         properties.forEach(metrics::addMetadata);
 
