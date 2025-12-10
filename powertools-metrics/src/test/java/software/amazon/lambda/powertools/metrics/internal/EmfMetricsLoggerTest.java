@@ -264,6 +264,65 @@ class EmfMetricsLoggerTest {
     }
 
     @Test
+    void shouldClearMetadataAfterFlush() throws Exception {
+        // Given - Add metadata and flush first time
+        metrics.addMetadata("RequestId", "req-123");
+        metrics.addMetadata("UserAgent", "test-agent");
+        metrics.addMetric("FirstMetric", 1.0);
+        metrics.flush();
+
+        // Capture first flush output and reset for second flush
+        String firstFlushOutput = outputStreamCaptor.toString().trim();
+        outputStreamCaptor.reset();
+
+        // When - Add another metric and flush again using the SAME metrics instance
+        metrics.addMetric("SecondMetric", 2.0);
+        metrics.flush();
+
+        // Then - Verify first flush had metadata
+        JsonNode firstRootNode = objectMapper.readTree(firstFlushOutput);
+        assertThat(firstRootNode.has("RequestId")).isTrue();
+        assertThat(firstRootNode.get("RequestId").asText()).isEqualTo("req-123");
+        assertThat(firstRootNode.has("UserAgent")).isTrue();
+        assertThat(firstRootNode.get("UserAgent").asText()).isEqualTo("test-agent");
+        assertThat(firstRootNode.has("FirstMetric")).isTrue();
+
+        // Verify second flush does NOT have metadata from first flush
+        // The EMF library automatically clears metadata after flush
+        String secondFlushOutput = outputStreamCaptor.toString().trim();
+        JsonNode secondRootNode = objectMapper.readTree(secondFlushOutput);
+
+        // Metadata should be cleared after first flush by the EMF library
+        assertThat(secondRootNode.has("RequestId")).isFalse();
+        assertThat(secondRootNode.has("UserAgent")).isFalse();
+        assertThat(secondRootNode.has("SecondMetric")).isTrue();
+    }
+
+    @Test
+    void shouldInheritMetadataInFlushMetricsMethod() throws Exception {
+        // Given - Add metadata to the main metrics instance
+        metrics.addMetadata("PersistentMetadata", "should-inherit");
+        metrics.addMetadata("GlobalContext", "main-instance");
+
+        // When - Use flushMetrics to create a separate metrics context
+        metrics.flushMetrics(separateMetrics -> {
+            separateMetrics.addMetric("SeparateMetric", 1.0);
+            // Don't add any metadata to the separate instance
+        });
+
+        // Then - The separate metrics context SHOULD inherit metadata from main instance
+        String flushMetricsOutput = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(flushMetricsOutput);
+
+        // The separate metrics should have inherited metadata (this is expected behavior)
+        assertThat(rootNode.has("PersistentMetadata")).isTrue();
+        assertThat(rootNode.get("PersistentMetadata").asText()).isEqualTo("should-inherit");
+        assertThat(rootNode.has("GlobalContext")).isTrue();
+        assertThat(rootNode.get("GlobalContext").asText()).isEqualTo("main-instance");
+        assertThat(rootNode.has("SeparateMetric")).isTrue();
+    }
+
+    @Test
     void shouldSetDefaultDimensions() throws Exception {
         // Given
         DimensionSet dimensionSet = DimensionSet.of("Service", "TestService", "Environment", "Test");
@@ -546,5 +605,135 @@ class EmfMetricsLoggerTest {
         // Then
         String emfOutput = outputStreamCaptor.toString().trim();
         assertThat(emfOutput).isEmpty();
+    }
+
+    @Test
+    void shouldClearCustomDimensionsAfterFlush() throws Exception {
+        // Given - Set up default dimensions that should persist
+        DimensionSet defaultDimensions = DimensionSet.of("Service", "TestService", "Environment", "Test");
+        metrics.setDefaultDimensions(defaultDimensions);
+
+        // First invocation - add custom dimensions and flush
+        DimensionSet customDimensions = DimensionSet.of("EXAMPLE_KEY", "EXAMPLE_VALUE");
+        metrics.addDimension(customDimensions);
+        metrics.addMetric("SERL", 1.0);
+        metrics.flush();
+
+        // Capture first flush output
+        String firstFlushOutput = outputStreamCaptor.toString().trim();
+        outputStreamCaptor.reset(); // Clear for second flush
+
+        // Second invocation - should NOT have custom dimensions from first invocation
+        metrics.addMetric("Expected", 1.0);
+        metrics.flush();
+
+        // Then - Verify first flush had both default and custom dimensions
+        JsonNode firstRootNode = objectMapper.readTree(firstFlushOutput);
+        assertThat(firstRootNode.has("Service")).isTrue();
+        assertThat(firstRootNode.get("Service").asText()).isEqualTo("TestService");
+        assertThat(firstRootNode.has("Environment")).isTrue();
+        assertThat(firstRootNode.get("Environment").asText()).isEqualTo("Test");
+        assertThat(firstRootNode.has("EXAMPLE_KEY")).isTrue();
+        assertThat(firstRootNode.get("EXAMPLE_KEY").asText()).isEqualTo("EXAMPLE_VALUE");
+        assertThat(firstRootNode.has("SERL")).isTrue();
+
+        // Verify second flush has ONLY default dimensions (custom dimensions should be cleared)
+        String secondFlushOutput = outputStreamCaptor.toString().trim();
+        JsonNode secondRootNode = objectMapper.readTree(secondFlushOutput);
+
+        // Default dimensions should still be present
+        assertThat(secondRootNode.has("Service")).isTrue();
+        assertThat(secondRootNode.get("Service").asText()).isEqualTo("TestService");
+        assertThat(secondRootNode.has("Environment")).isTrue();
+        assertThat(secondRootNode.get("Environment").asText()).isEqualTo("Test");
+
+        // Custom dimensions should be cleared (this is the failing assertion that demonstrates the bug)
+        assertThat(secondRootNode.has("EXAMPLE_KEY")).isFalse();
+        assertThat(secondRootNode.has("Expected")).isTrue();
+
+        // Verify dimensions in CloudWatchMetrics section
+        JsonNode secondDimensions = secondRootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Dimensions").get(0);
+        boolean hasExampleKey = false;
+        boolean hasService = false;
+        boolean hasEnvironment = false;
+
+        for (JsonNode dimension : secondDimensions) {
+            String dimName = dimension.asText();
+            if ("EXAMPLE_KEY".equals(dimName)) {
+                hasExampleKey = true;
+            } else if ("Service".equals(dimName)) {
+                hasService = true;
+            } else if ("Environment".equals(dimName)) {
+                hasEnvironment = true;
+            }
+        }
+
+        // Default dimensions should be in CloudWatchMetrics
+        assertThat(hasService).isTrue();
+        assertThat(hasEnvironment).isTrue();
+        // Custom dimension should NOT be in CloudWatchMetrics (this should fail initially)
+        assertThat(hasExampleKey).isFalse();
+    }
+
+    @Test
+    void shouldHandleEmptyCustomDimensionsGracefully() throws Exception {
+        // Given - Only default dimensions, no custom dimensions
+        metrics.setDefaultDimensions(DimensionSet.of("Service", "TestService"));
+
+        // When - Flush without adding custom dimensions
+        metrics.addMetric("TestMetric", 1.0);
+        metrics.flush();
+        outputStreamCaptor.reset();
+
+        // Second flush
+        metrics.addMetric("TestMetric2", 2.0);
+        metrics.flush();
+
+        // Then - Should work normally with only default dimensions
+        String output = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(output);
+
+        assertThat(rootNode.has("Service")).isTrue();
+        assertThat(rootNode.get("Service").asText()).isEqualTo("TestService");
+        assertThat(rootNode.has("TestMetric2")).isTrue();
+    }
+
+    @Test
+    void shouldClearCustomDimensionsWhenNoDefaultDimensionsSet() throws Exception {
+        // Given - No default dimensions set
+        metrics.clearDefaultDimensions();
+
+        // When - Add custom dimensions and flush
+        metrics.addDimension("CustomDim", "CustomValue");
+        metrics.addMetric("Metric1", 1.0);
+        metrics.flush();
+        outputStreamCaptor.reset();
+
+        // Second flush without custom dimensions
+        metrics.addMetric("Metric2", 2.0);
+        metrics.flush();
+
+        // Then - Custom dimensions should be cleared
+        String output = outputStreamCaptor.toString().trim();
+        JsonNode rootNode = objectMapper.readTree(output);
+
+        assertThat(rootNode.has("CustomDim")).isFalse();
+        assertThat(rootNode.has("Metric2")).isTrue();
+
+        // Verify no custom dimensions in CloudWatchMetrics section
+        JsonNode dimensionsArray = rootNode.get("_aws").get("CloudWatchMetrics").get(0).get("Dimensions");
+        boolean hasCustomDim = false;
+        if (dimensionsArray != null && dimensionsArray.size() > 0) {
+            JsonNode dimensions = dimensionsArray.get(0);
+            if (dimensions != null) {
+                for (JsonNode dimension : dimensions) {
+                    if ("CustomDim".equals(dimension.asText())) {
+                        hasCustomDim = true;
+                        break;
+                    }
+                }
+            }
+        }
+        assertThat(hasCustomDim).isFalse();
     }
 }
