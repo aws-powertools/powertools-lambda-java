@@ -231,6 +231,7 @@
                 <configuration>
                     <environmentVariables>
                         <AWS_EMF_ENVIRONMENT>Lambda</AWS_EMF_ENVIRONMENT>
+                        <AWS_LAMBDA_INITIALIZATION_TYPE>on-demand</AWS_LAMBDA_INITIALIZATION_TYPE>
                     </environmentVariables>
                 </configuration>
             </plugin>

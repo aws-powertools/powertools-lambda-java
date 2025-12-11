@@ -131,8 +131,7 @@ class KeyBufferTest {
 
         Deque<String> events = buffer.removeAll("key1");
         // Should only contain the last few small events plus the large event
-        // 18 bytes for large event leaves 2 bytes, so only "ij" should remain with the
-        // large event
+        // 18 bytes for large event leaves 2 bytes, so only "ij" should remain with the large event
         assertThat(events).containsExactly("ij", "123456789012345678");
     }
 
@@ -354,8 +353,7 @@ class KeyBufferTest {
             // Assert System.err received the warning
             assertThat(errCapture)
                     .hasToString(
-                            "WARN [KeyBuffer] - Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer."
-                                    + System.lineSeparator());
+                            "WARN [KeyBuffer] - Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer.\n");
         } finally {
             System.setErr(originalErr);
         }
