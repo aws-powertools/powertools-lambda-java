@@ -22,17 +22,17 @@ Powertools for AWS Lambda (Java) is available in Maven Central. You can use your
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-tracing</artifactId>
-        <version>2.8.0</version>
+        <version>2.9.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-logging-log4j</artifactId>
-        <version>2.8.0</version>
+        <version>2.9.0</version>
     </dependency>
     <dependency>
         <groupId>software.amazon.lambda</groupId>
         <artifactId>powertools-metrics</artifactId>
-        <version>2.8.0</version>
+        <version>2.9.0</version>
     </dependency>
     ...
 </dependencies>
