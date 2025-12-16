@@ -114,7 +114,7 @@
         <versions-maven-plugin.version>2.20.1</versions-maven-plugin.version>
         <elastic.version>1.7.0</elastic.version>
         <mockito.version>5.20.0</mockito.version>
-        <mockito-junit-jupiter.version>5.20.0</mockito-junit-jupiter.version>
+        <mockito-junit-jupiter.version>5.21.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
 
