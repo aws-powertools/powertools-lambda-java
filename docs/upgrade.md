@@ -7,7 +7,7 @@ description: Guide to update between major Powertools for AWS Lambda (Java) vers
 
 <!-- prettier-ignore-start -->
 !!! warning "End of support notice"
-    On December 12th, 2025, Powertools for AWS Lambda (Java) v1 will reach end of support and will no longer receive updates or releases. If you are still using v1, we strongly recommend you to read our upgrade guide and update to the latest version.
+    On December 12th, 2025, Powertools for AWS Lambda (Java) v1 reached end-of-life and will no longer receive updates or releases. If you are still using v1, we strongly recommend you to read our upgrade guide and update to the latest version. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/1895) for details.
 <!-- prettier-ignore-end -->
 
 Given our commitment to all of our customers using Powertools for AWS Lambda (Java), we will keep [Maven Central](https://central.sonatype.com/search?q=powertools){target="\_blank"} `v1` releases and a `v1` documentation archive to prevent any disruption.

@@ -55,7 +55,7 @@ To see the list of available major versions of Powertools for AWS Lambda and whe
 
 ### Version support matrix
 
-| SDK                              | Major version | Current Phase        | General Availability Date | Notes                                                                                                               |
-| -------------------------------- | ------------- | -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Powertools for AWS Lambda (Java) | 2.x           | General Availability | 06/12/2025                | See [Release notes](https://github.com/aws-powertools/powertools-lambda-java/releases/tag/v2.0.0)                   |
-| Powertools for AWS Lambda (Java) | 1.x           | Maintenance          | 11/04/2020                | End-of-support: December 12, 2025. See [upgrade guide](https://docs.powertools.aws.dev/lambda/java/latest/upgrade/) |
+| SDK                              | Major version | Current Phase        | General Availability Date | Notes                                                                                             |
+| -------------------------------- | ------------- | -------------------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
+| Powertools for AWS Lambda (Java) | 2.x           | General Availability | 06/12/2025                | See [Release notes](https://github.com/aws-powertools/powertools-lambda-java/releases/tag/v2.0.0) |
+| Powertools for AWS Lambda (Java) | 1.x           | End-of-life          | 11/04/2020                | See [announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/1895)          |
