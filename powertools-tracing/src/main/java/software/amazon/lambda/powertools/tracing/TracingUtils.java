@@ -35,6 +35,7 @@ import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 public final class TracingUtils implements Resource{
     private static final Logger LOG = LoggerFactory.getLogger(TracingUtils.class);
     private static ObjectMapper objectMapper;
+
     private static final TracingUtils INSTANCE = new TracingUtils();
 
     static {
