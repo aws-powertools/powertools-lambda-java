@@ -131,8 +131,7 @@ class KeyBufferTest {
 
         Deque<String> events = buffer.removeAll("key1");
         // Should only contain the last few small events plus the large event
-        // 18 bytes for large event leaves 2 bytes, so only "ij" should remain with the
-        // large event
+        // 18 bytes for large event leaves 2 bytes, so only "ij" should remain with the large event
         assertThat(events).containsExactly("ij", "123456789012345678");
     }
 
