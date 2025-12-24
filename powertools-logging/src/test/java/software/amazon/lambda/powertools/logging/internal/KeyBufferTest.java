@@ -354,8 +354,7 @@ class KeyBufferTest {
             // Assert System.err received the warning
             assertThat(errCapture)
                     .hasToString(
-                            "WARN [KeyBuffer] - Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer."
-                                    + System.lineSeparator());
+                            "WARN [KeyBuffer] - Some logs are not displayed because they were evicted from the buffer. Increase buffer size to store more logs in the buffer.\n");
         } finally {
             System.setErr(originalErr);
         }
