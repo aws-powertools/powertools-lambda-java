@@ -42,6 +42,11 @@ public final class TracingUtils implements Resource{
         Core.getGlobalContext().register(INSTANCE);
     }
 
+    public static void init() {
+        // Placeholder method used to enable SnapStart priming. Users need a direct reference to this class in order for the CRaC hooks to execute.
+        new TracingUtils();
+    }
+
     /**
      * Put an annotation to the current subsegment with a String value.
      *
@@ -205,7 +210,7 @@ public final class TracingUtils implements Resource{
 
     @Override
     public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
-        new TracingUtils();
+        init();
         ClassPreLoader.preloadClasses();
     }
 

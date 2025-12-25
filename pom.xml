@@ -500,11 +500,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <environmentVariables>
-                        <AWS_LAMBDA_INITIALIZATION_TYPE>on-demand</AWS_LAMBDA_INITIALIZATION_TYPE>
-                    </environmentVariables>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -635,9 +630,6 @@
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                             </argLine>
-                            <environmentVariables>
-                                <AWS_LAMBDA_INITIALIZATION_TYPE>on-demand</AWS_LAMBDA_INITIALIZATION_TYPE>
-                            </environmentVariables>
                         </configuration>
                     </plugin>
                 </plugins>

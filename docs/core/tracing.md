@@ -464,7 +464,7 @@ If you don't set a custom `TracingUtils` in your code yet, make sure to referenc
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
         public MyFunctionHandler() {
-            TracingUtils.putAnnotation("init", "priming"); // Ensure TracingUtils is loaded for SnapStart
+            TracingUtils.init(); // Ensure TracingUtils is loaded for SnapStart
         }
 
         @Override
@@ -485,7 +485,7 @@ If you don't set a custom `TracingUtils` in your code yet, make sure to referenc
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
 
         static {
-            TracingUtils.putAnnotation("init", "priming"); // Ensure TracingUtils is loaded for SnapStart
+            TracingUtils.init(); // Ensure TracingUtils is loaded for SnapStart
         }
 
         @Override
