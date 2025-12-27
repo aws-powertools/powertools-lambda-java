@@ -18,9 +18,10 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent.SQSMessage;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.lambda.powertools.largemessages.LargeMessages;
+import software.amazon.lambda.powertools.logging.Logging;
 
 /**
  * Example handler showing how to use LargeMessageProcessor functionally.
@@ -28,8 +29,9 @@ import software.amazon.lambda.powertools.largemessages.LargeMessages;
  */
 public final class App implements RequestHandler<SQSEvent, String> {
 
-    private static final Logger LOG = LogManager.getLogger(App.class);
+    private static final Logger LOG = LoggerFactory.getLogger(App.class);
 
+    @Logging
     @Override
     public String handleRequest(final SQSEvent event, final Context context) {
         LOG.info("Received event with {} records", event.getRecords().size());
