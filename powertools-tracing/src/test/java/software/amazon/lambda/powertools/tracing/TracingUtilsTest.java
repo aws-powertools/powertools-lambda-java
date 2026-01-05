@@ -14,18 +14,25 @@
 
 package software.amazon.lambda.powertools.tracing;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
+import static org.mockito.Mockito.mock;
 import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.crac.Context;
+import org.crac.Resource;
 import com.amazonaws.xray.AWSXRay;
 import com.amazonaws.xray.entities.Entity;
 
 class TracingUtilsTest {
+    TracingUtils tracingUtils = new TracingUtils();
+    Context<Resource> context = mock(Context.class);
+
     @BeforeEach
     void setUp() {
         AWSXRay.beginSegment("test");
@@ -204,5 +211,14 @@ class TracingUtilsTest {
                             .hasSize(1)
                             .containsEntry("key", "val");
                 });
+    }
+    @Test
+    void testBeforeCheckpointDoesNotThrowException() {
+        assertThatNoException().isThrownBy(() -> tracingUtils.beforeCheckpoint(context));
+    }
+
+    @Test
+    void testAfterRestoreDoesNotThrowException() {
+        assertThatNoException().isThrownBy(() -> tracingUtils.afterRestore(context));
     }
 }
