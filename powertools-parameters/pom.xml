@@ -21,7 +21,7 @@
     <parent>
         <artifactId>powertools-parent</artifactId>
         <groupId>software.amazon.lambda</groupId>
-        <version>2.8.0</version>
+        <version>2.9.0</version>
     </parent>
 
     <artifactId>powertools-parameters</artifactId>
@@ -80,7 +80,6 @@
         <plugins>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
                 <configuration>
                     <environmentVariables>
                         <AWS_REGION>eu-central-1</AWS_REGION>
@@ -98,7 +97,6 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-surefire-plugin</artifactId>
-                        <version>3.5.4</version>
                         <configuration>
                             <argLine>
                                 -Dorg.graalvm.nativeimage.imagecode=agent
