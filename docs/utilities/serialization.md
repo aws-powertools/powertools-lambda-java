@@ -472,3 +472,50 @@ to powertools.You can then use it to do your validation or in idempotency module
        }
     }
     ```
+## Advanced
+
+### Lambda SnapStart priming
+
+The Serialization utility integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart priming logic of this utility runs correctly, you need an explicit reference to `EventDeserializer` in your code to allow the library to register before SnapStart takes a memory snapshot. Learn more about what priming is in this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/){target="_blank"}.
+
+If you don't set a custom `EventDeserializer` in your code yet, make sure to reference `EventDeserializer` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
+
+=== "Constructor"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.utilities.EventDeserializer;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        public MyFunctionHandler() {
+            EventDeserializer.init(); // Ensure TracingUtils is loaded for SnapStart
+        }
+
+        @Override
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```
+
+=== "Static Initializer"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.utilities.EventDeserializer;
+
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        static {
+            EventDeserializer.init(); // Ensure TracingUtils is loaded for SnapStart
+        }
+
+        @Override
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```
+
