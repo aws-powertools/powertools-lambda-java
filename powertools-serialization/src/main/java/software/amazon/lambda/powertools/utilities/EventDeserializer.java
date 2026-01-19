@@ -204,6 +204,7 @@ public class EventDeserializer implements Resource{
         } catch (Exception e) {
             // Best-effort priming only — never fail checkpointing
             LOG.debug("EventDeserializer priming failed", e);
+            throw new PrimingException("Failed to prime event ", e);
         }
     }
 
