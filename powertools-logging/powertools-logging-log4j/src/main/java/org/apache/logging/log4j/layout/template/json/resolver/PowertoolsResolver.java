@@ -25,6 +25,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SAMPLING_RATE;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.TENANT_ID;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -168,6 +169,22 @@ final class PowertoolsResolver implements EventResolver {
     private static final EventResolver REGION_RESOLVER =
             (final LogEvent logEvent, final JsonWriter jsonWriter) ->
                     jsonWriter.writeString(SystemWrapper.getenv(LambdaConstants.AWS_REGION_ENV));
+                    
+    private static final EventResolver TENANT_ID_RESOLVER = new EventResolver() {
+        @Override
+        public boolean isResolvable(LogEvent logEvent) {
+            final String tenantId =
+                    logEvent.getContextData().getValue(PowertoolsLoggedFields.TENANT_ID.getName());
+            return null != tenantId;
+        }
+
+        @Override
+        public void resolve(LogEvent logEvent, JsonWriter jsonWriter) {
+            final String tenantId =
+                    logEvent.getContextData().getValue(PowertoolsLoggedFields.TENANT_ID.getName());
+            jsonWriter.writeString(tenantId);
+        }
+    };
 
     public static final String LAMBDA_ARN_REGEX =
             "^arn:(aws|aws-us-gov|aws-cn):lambda:[a-zA-Z0-9-]+:\\d{12}:function:[a-zA-Z0-9-_]+(:[a-zA-Z0-9-_]+)?$";
@@ -233,6 +250,7 @@ final class PowertoolsResolver implements EventResolver {
                     { FUNCTION_TRACE_ID.getName(), XRAY_TRACE_RESOLVER },
                     { CORRELATION_ID.getName(), CORRELATION_ID_RESOLVER },
                     { SAMPLING_RATE.getName(), SAMPLING_RATE_RESOLVER },
+                    { TENANT_ID.getName(), TENANT_ID_RESOLVER },
                     { "region", REGION_RESOLVER },
                     { "account_id", ACCOUNT_ID_RESOLVER }
             }).collect(Collectors.toMap(data -> (String) data[0], data -> (EventResolver) data[1])));

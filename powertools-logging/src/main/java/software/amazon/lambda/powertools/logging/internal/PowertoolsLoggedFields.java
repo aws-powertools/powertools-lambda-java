@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools.logging.internal;
 
 import com.amazonaws.services.lambda.runtime.Context;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,8 @@ public enum PowertoolsLoggedFields {
     FUNCTION_TRACE_ID("xray_trace_id"),
     SAMPLING_RATE("sampling_rate"),
     CORRELATION_ID("correlation_id"),
-    SERVICE("service");
+    SERVICE("service"),
+    TENANT_ID("tenant_id");
 
     private final String name;
 
@@ -55,8 +57,25 @@ public enum PowertoolsLoggedFields {
         hashMap.put(FUNCTION_ARN.name, context.getInvokedFunctionArn());
         hashMap.put(FUNCTION_MEMORY_SIZE.name, String.valueOf(context.getMemoryLimitInMB()));
         hashMap.put(FUNCTION_REQUEST_ID.name, String.valueOf(context.getAwsRequestId()));
+        
+        // Add TenantId if available (Lambda Tenant Isolation feature)
+        String tenantId = getTenantId(context);
+        if (tenantId != null) {
+            hashMap.put(TENANT_ID.name, tenantId);
+        }
 
         return hashMap;
+    }
+    
+    private static String getTenantId(Context context) {
+        try {
+            Method getTenantIdMethod = context.getClass().getMethod("getTenantId");
+            Object tenantId = getTenantIdMethod.invoke(context);
+            return tenantId != null ? tenantId.toString() : null;
+        } catch (Exception e) {
+            // TenantId method not available or failed to invoke
+            return null;
+        }
     }
 
     public String getName() {

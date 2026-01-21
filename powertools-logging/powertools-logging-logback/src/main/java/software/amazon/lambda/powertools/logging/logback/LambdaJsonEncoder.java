@@ -233,6 +233,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *     <li>xray_trace_id</li>
      *     <li>sampling_rate</li>
      *     <li>service</li>
+     *     <li>tenant_id</li>
      * </ul>
      * <br/>
      * We strongly recommend to keep these information.
