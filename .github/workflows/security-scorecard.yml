@@ -23,7 +23,7 @@ on:
 name: OpenSSF Scorecard
 run-name: OpenSSF Scorecard
 
-permissions: read-all
+permissions: {}
 
 jobs:
   analysis:
@@ -31,8 +31,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: Security
     permissions:
-      security-events: write  
-      id-token: write
+      contents: read        # checkout repository
+      security-events: write  # upload SARIF results
+      id-token: write       # OIDC authentication
     steps:
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
