@@ -109,7 +109,7 @@ class LambdaJsonEncoderTest {
         // THEN
         File logFile = new File("target/logfile.json");
         assertThat(contentOf(logFile)).contains(
-                "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":1,\"service\":\"testLogback\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\",\"timestamp\":");
+                "{\"level\":\"DEBUG\",\"message\":\"Test debug event\",\"cold_start\":true,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":1,\"service\":\"testLogback\",\"tenant_id\":\"test-tenant\",\"xray_trace_id\":\"1-63441c4a-abcdef012345678912345678\",\"myKey\":\"myValue\",\"timestamp\":");
     }
 
     @Test
@@ -201,7 +201,7 @@ class LambdaJsonEncoderTest {
 
         // THEN
         assertThat(result).contains(
-                "{\"level\":\"INFO\",\"message\":\"message\",\"cold_start\":false,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":1,\"sampling_rate\":0.2,\"service\":\"Service\",\"timestamp\":");
+                "{\"level\":\"INFO\",\"message\":\"message\",\"cold_start\":false,\"function_arn\":\"arn:aws:lambda:us-east-1:123456789012:function:test\",\"function_memory_size\":128,\"function_name\":\"test-function\",\"function_request_id\":\"test-request-id\",\"function_version\":1,\"sampling_rate\":0.2,\"service\":\"Service\",\"tenant_id\":\"test-tenant\",\"timestamp\":");
 
         // WHEN (powertoolsInfo = false)
         encoder.setIncludePowertoolsInfo(false);
