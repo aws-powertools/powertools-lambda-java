@@ -23,12 +23,14 @@ on:
 name: Build Latest Docs
 run-name: Build Latest Docs - ${{ inputs.version }}
 
+permissions: {}
+
 jobs:
   docs:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write
+      contents: read   # checkout repository
+      id-token: write  # OIDC for AWS credentials
     environment: Docs
     steps:
       - name: Checkout Repository
