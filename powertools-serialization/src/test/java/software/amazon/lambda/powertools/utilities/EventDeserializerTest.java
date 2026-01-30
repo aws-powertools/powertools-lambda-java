@@ -16,12 +16,17 @@ package software.amazon.lambda.powertools.utilities;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static software.amazon.lambda.powertools.utilities.EventDeserializer.extractDataFrom;
+
+import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.crac.Context;
+import org.crac.Resource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 
@@ -47,6 +52,8 @@ import software.amazon.lambda.powertools.utilities.model.Order;
 import software.amazon.lambda.powertools.utilities.model.Product;
 
 class EventDeserializerTest {
+    EventDeserializer eventDeserializer = new EventDeserializer();
+    Context<Resource> context = mock(Context.class);
 
     @Test
     void testDeserializeStringAsString_shouldReturnString() {
@@ -391,5 +398,13 @@ class EventDeserializerTest {
         JsonNode parsed = JsonConfig.get().getObjectMapper().readTree(json);
         assertThat(parsed.has("resourceProperties")).isTrue();
     }
+    @Test
+    void testBeforeCheckpointDoesNotThrowException() {
+        assertThatNoException().isThrownBy(() -> eventDeserializer.beforeCheckpoint(context));
+    }
 
+    @Test
+    void testAfterRestoreDoesNotThrowException() {
+        assertThatNoException().isThrownBy(() -> eventDeserializer.afterRestore(context));
+    }
 }
