@@ -201,7 +201,6 @@ public class EventDeserializer implements Resource{
             kaStreamsRecord.setData(ByteBuffer.allocate(0));
             kaStreamsEvent.setRecords(List.of(kaStreamsRecord));
             extractDataFrom(kaStreamsEvent);
-
         } catch (Exception e) {
             // Best-effort priming only — never fail checkpointing
             throw new PrimingException("Failed to prime event ", e);
