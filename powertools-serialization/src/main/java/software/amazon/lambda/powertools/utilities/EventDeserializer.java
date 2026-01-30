@@ -59,6 +59,7 @@ public class EventDeserializer implements Resource{
 
     private static final Logger LOG = LoggerFactory.getLogger(EventDeserializer.class);
     private static final EventDeserializer INSTANCE = new EventDeserializer();
+    public static final String DATA = "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=";
 
     static {
         Core.getGlobalContext().register(INSTANCE);
@@ -159,7 +160,7 @@ public class EventDeserializer implements Resource{
             KafkaEvent kafkaEvent = new KafkaEvent();
             KafkaEvent.KafkaEventRecord kafkaRecord =
                     new KafkaEvent.KafkaEventRecord();
-            kafkaRecord.setValue("eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=");
+            kafkaRecord.setValue(DATA);
             kafkaEvent.setRecords(
                     Map.of("topic", List.of(kafkaRecord))
             );
@@ -169,7 +170,7 @@ public class EventDeserializer implements Resource{
             ActiveMQEvent activeMQEvent = new ActiveMQEvent();
             ActiveMQEvent.ActiveMQMessage activeMQMessage =
                     new ActiveMQEvent.ActiveMQMessage();
-            activeMQMessage.setData("eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=");
+            activeMQMessage.setData(DATA);
             activeMQEvent.setMessages(List.of(activeMQMessage));
             extractDataFrom(activeMQEvent);
 
@@ -177,7 +178,7 @@ public class EventDeserializer implements Resource{
             RabbitMQEvent rabbitMQEvent = new RabbitMQEvent();
             RabbitMQEvent.RabbitMessage rabbitMessage =
                     new RabbitMQEvent.RabbitMessage();
-            rabbitMessage.setData("eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=");
+            rabbitMessage.setData(DATA);
             rabbitMQEvent.setRmqMessagesByQueue(
                     Map.of("queue", List.of(rabbitMessage))
             );
@@ -203,7 +204,6 @@ public class EventDeserializer implements Resource{
 
         } catch (Exception e) {
             // Best-effort priming only — never fail checkpointing
-            LOG.debug("EventDeserializer priming failed", e);
             throw new PrimingException("Failed to prime event ", e);
         }
     }
