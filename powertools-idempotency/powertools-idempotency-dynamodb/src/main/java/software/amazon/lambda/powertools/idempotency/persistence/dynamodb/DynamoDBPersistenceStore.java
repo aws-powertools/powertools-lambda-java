@@ -130,6 +130,9 @@ public final class DynamoDBPersistenceStore extends BasePersistenceStore impleme
         }
 
         try {
+            // Automatic priming - preload classes from classesloaded.txt
+            ClassPreLoader.preloadClasses();
+
             // Invoke priming - exercise DynamoDB SDK paths
             String primingRecordKey = "__invoke_prime__";
             Instant now = Instant.now();
@@ -144,9 +147,6 @@ public final class DynamoDBPersistenceStore extends BasePersistenceStore impleme
             putRecord(primingDataRecord, Instant.now());
             getRecord(primingRecordKey);
             deleteRecord(primingRecordKey);
-
-            // Automatic priming - preload classes from classesloaded.txt
-            ClassPreLoader.preloadClasses();
         } catch (Exception e) {
             // Log the exception for debugging but continue to ensure checkpoint succeeds
             LOG.warn("Priming failed during checkpoint, continuing anyway", e);
