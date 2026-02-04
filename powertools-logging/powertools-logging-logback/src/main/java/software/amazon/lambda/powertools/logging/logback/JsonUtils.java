@@ -73,6 +73,12 @@ final class JsonUtils {
         }
     }
 
+    static void serializeKVPEntry(String key, Object value, JsonSerializer serializer) {
+        serializer.writeRaw(',');
+        serializer.writeFieldName(key);
+        serializer.writeObject(value);
+    }
+
     static void serializeArguments(ILoggingEvent event, JsonSerializer serializer) throws IOException {
         Object[] arguments = event.getArgumentArray();
         if (arguments != null) {

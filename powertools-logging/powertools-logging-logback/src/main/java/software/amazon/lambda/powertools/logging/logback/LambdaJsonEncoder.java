@@ -15,10 +15,7 @@
 package software.amazon.lambda.powertools.logging.logback;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeArguments;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntries;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntry;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeTimestamp;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.*;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -27,10 +24,8 @@ import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
+
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
@@ -88,6 +83,8 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
 
             serializeMDCEntries(sortedMap, serializer);
 
+            serializeKeyValuePairs(event, serializer);
+
             serializeArguments(event, serializer);
 
             serializeThreadInfo(event, serializer);
@@ -102,6 +99,13 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
             System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
         }
         return builder.toString().getBytes(UTF_8);
+    }
+
+    private void serializeKeyValuePairs(ILoggingEvent event, JsonSerializer serializer) {
+        Optional.ofNullable(event.getKeyValuePairs())
+            .orElse(Collections.emptyList()).stream()
+            .filter(Objects::nonNull)
+            .forEach(kvp -> serializeKVPEntry(String.valueOf(kvp.key), kvp.value, serializer));
     }
 
     private void serializeThreadInfo(ILoggingEvent event, JsonSerializer serializer) {
