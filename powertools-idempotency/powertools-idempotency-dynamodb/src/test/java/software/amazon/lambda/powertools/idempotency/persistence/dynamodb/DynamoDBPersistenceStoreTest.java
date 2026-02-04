@@ -17,7 +17,6 @@ package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -25,7 +24,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.crac.Resource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -395,8 +393,8 @@ class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                 .withTableName(TABLE_NAME)
                 .withDynamoDbClient(client)
                 .build();
-        org.crac.Context<Resource> context = mock(org.crac.Context.class);
-        assertThatNoException().isThrownBy(() -> store.beforeCheckpoint(context));
+        // Pass null since beforeCheckpoint doesn't use the context parameter
+        assertThatNoException().isThrownBy(() -> store.beforeCheckpoint(null));
     }
 
     @Test
@@ -405,7 +403,7 @@ class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                 .withTableName(TABLE_NAME)
                 .withDynamoDbClient(client)
                 .build();
-        org.crac.Context<Resource> context = mock(org.crac.Context.class);
-        assertThatNoException().isThrownBy(() -> store.afterRestore(context));
+        // Pass null since afterRestore doesn't use the context parameter
+        assertThatNoException().isThrownBy(() -> store.afterRestore(null));
     }
 }
