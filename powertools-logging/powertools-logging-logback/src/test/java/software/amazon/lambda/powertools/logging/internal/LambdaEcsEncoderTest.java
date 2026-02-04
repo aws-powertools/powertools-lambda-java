@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.AfterEach;
@@ -40,11 +41,14 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.pattern.RootCauseFirstThrowableProxyConverter;
 import ch.qos.logback.classic.spi.LoggingEvent;
+import org.slf4j.event.KeyValuePair;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 import software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder;
+import software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder;
 
 @Order(3)
 class LambdaEcsEncoderTest {
@@ -177,6 +181,63 @@ class LambdaEcsEncoderTest {
         MDC.put(PowertoolsLoggedFields.SAMPLING_RATE.getName(), "0.2");
         MDC.put(PowertoolsLoggedFields.SERVICE.getName(), "Service");
         MDC.put(PowertoolsLoggedFields.CORRELATION_ID.getName(), "test-correlation-id");
+    }
+
+    @Test
+    void shouldLogKeyValuePairs() {
+        // GIVEN
+        LambdaEcsEncoder encoder = new LambdaEcsEncoder();
+        encoder.start();
+
+        Object[] arguments = {
+                "argument_01",
+                StructuredArguments.entry("structured_argument_01_retain", "retained"),
+                StructuredArguments.entry("structured_argument_02_overwrite", "to_be_overwritten")
+        };
+        LoggingEvent keyValuePairsLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Key Value Pairs Test with argument: {}",
+                null, arguments);
+
+        MDC.put("mdc_01_retain", "retained");
+        MDC.put("mdc_02_overwrite", "to_be_overwritten");
+
+        keyValuePairsLoggingEvent.setKeyValuePairs(List.of(
+                new KeyValuePair("key_01_string", "value_01"),
+                new KeyValuePair("key_02_numeric", 2),
+                new KeyValuePair("key_03_decimal", 2.333),
+                new KeyValuePair("key_04_null", null),
+                new KeyValuePair("", "value_05_empty_key"),
+                new KeyValuePair(null, "value_06_null_key"),
+                new KeyValuePair("key_07_boolean_true", true),
+                new KeyValuePair("key_08_boolean_false", false),
+                new KeyValuePair("mdc_02_overwrite", "overwritten_by_kvp"),
+                new KeyValuePair("structured_argument_02_overwrite", "overwritten_by_kvp")
+        ));
+
+        // WHEN
+        byte[] encoded = encoder.encode(keyValuePairsLoggingEvent);
+        String result = new String(encoded, StandardCharsets.UTF_8);
+
+        // THEN
+        assertThat(result)
+                // Arguments
+                .contains("Key Value Pairs Test with argument: argument_01")
+                .contains("\"structured_argument_01_retain\":\"retained\"")
+                // .doesNotContain("\"structured_argument_02_overwrite\":\"to_be_overwritten\"") TODO: Deduplication not implemented vor Arguments
+                // MDC
+                .contains("\"mdc_01_retain\":\"retained\"")
+                // .doesNotContain("\"mdc_02_overwrite\":\"to_be_overwritten\"") TODO: Deduplication not implemented vor Arguments
+                // Key Value Pairs
+                .contains("\"key_01_string\":\"value_01\"")
+                .contains("\"key_02_numeric\":2")
+                .contains("\"key_03_decimal\":2.333")
+                .contains("\"key_04_null\":null")
+                .contains("\"\":\"value_05_empty_key\"")
+                .contains("\"null\":\"value_06_null_key\"")
+                .contains("\"key_07_boolean_true\":true")
+                .contains("\"key_08_boolean_false\":false")
+                .contains("\"mdc_02_overwrite\":\"overwritten_by_kvp\"")
+                .contains("\"structured_argument_02_overwrite\":\"overwritten_by_kvp\"")
+        ;
     }
 
 }

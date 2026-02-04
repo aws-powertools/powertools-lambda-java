@@ -23,9 +23,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_REQUEST_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeArguments;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntries;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeTimestamp;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.*;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -34,8 +32,8 @@ import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
@@ -132,6 +130,8 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
 
             serializeMDCEntries(mdcPropertyMap, serializer);
 
+            serializeKeyValuePairs(event, serializer);
+
             serializeArguments(event, serializer);
 
             serializer.writeEndObject();
@@ -140,6 +140,13 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
             System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
         }
         return builder.toString().getBytes(UTF_8);
+    }
+
+    private void serializeKeyValuePairs(ILoggingEvent event, JsonSerializer serializer) {
+        Optional.ofNullable(event.getKeyValuePairs())
+                .orElse(Collections.emptyList()).stream()
+                .filter(Objects::nonNull)
+                .forEach(kvp -> serializeKVPEntry(String.valueOf(kvp.key), kvp.value, serializer));
     }
 
     private void serializeFunctionInfo(JsonSerializer serializer, String arn, Map<String, String> mdcPropertyMap) {
