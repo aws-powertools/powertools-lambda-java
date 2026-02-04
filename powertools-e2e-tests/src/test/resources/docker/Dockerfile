@@ -1,5 +1,5 @@
 # Use the official AWS SAM base image for Java 25
-FROM public.ecr.aws/sam/build-java25@sha256:bffac7de6e418a93d2aefc1e8e7c79eda0971e7a026725fe618b58ddfba7a128
+FROM public.ecr.aws/sam/build-java25@sha256:e727d33413d8406bbbdc409392b9c87ef961a588609a3d2937eb2e78622fb082
 
 # Install GraalVM dependencies
 RUN curl -4 -L https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz | tar -xvz
