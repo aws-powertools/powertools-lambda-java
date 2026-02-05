@@ -62,7 +62,7 @@ public class EventDeserializer implements Resource{
     /*
     * Base64 encoding of: {"id":1234,"name":"product","price":42}
     * Used in priming of Kafka, ActiveMQ, RabbitMQ events
-     */
+    */
     public static final String DATA = "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=";
 
     static {
