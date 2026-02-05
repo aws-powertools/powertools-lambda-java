@@ -29,10 +29,6 @@ package software.amazon.lambda.powertools.metadata.exception;
 public class LambdaMetadataException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
-
-    /**
-     * HTTP status code from the metadata endpoint, or -1 if not applicable.
-     */
     private final int statusCode;
 
     /**
