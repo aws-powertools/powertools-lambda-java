@@ -23,6 +23,8 @@ import static software.amazon.lambda.powertools.parameters.transform.Transformer
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,8 +36,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.BatchGetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.BatchGetSecretValueResponse;
+import software.amazon.awssdk.services.secretsmanager.model.Filter;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueResponse;
+import software.amazon.awssdk.services.secretsmanager.model.SecretValueEntry;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
 
@@ -50,6 +56,9 @@ class SecretsProviderTest {
 
     @Captor
     ArgumentCaptor<GetSecretValueRequest> paramCaptor;
+
+    @Captor
+    ArgumentCaptor<BatchGetSecretValueRequest> batchCaptor;
 
     CacheManager cacheManager;
 
@@ -94,7 +103,47 @@ class SecretsProviderTest {
     void getMultipleValuesThrowsException() {
         // Act & Assert
         assertThatRuntimeException().isThrownBy(() -> provider.getMultipleValues("path"))
-                .withMessage("Impossible to get multiple values from AWS Secrets Manager");
+                .withMessage("Impossible to get multiple values from AWS Secrets Manager via path. Use getMultiple(List<String> names) instead.");
+    }
+    @Test
+    void getMultipleValues() {
+        List<String> names = List.of("name1", "name2");
+        String value1 = "Value1";
+        String value2 = "Value2";
+
+        SecretValueEntry entry1 =
+                SecretValueEntry.builder()
+                        .name("name1")
+                        .secretString(value1)
+                        .build();
+
+        byte[] value2b64 = Base64.getEncoder().encode(value2.getBytes());
+        SecretValueEntry entry2 =
+                SecretValueEntry.builder()
+                        .name("name2")
+                        .secretBinary(SdkBytes.fromByteArray(value2b64))
+                        .build();
+
+        BatchGetSecretValueResponse response =
+                BatchGetSecretValueResponse.builder()
+                        .secretValues(entry1, entry2)
+                        .build();
+
+        Mockito.when(client.batchGetSecretValue(batchCaptor.capture())).thenReturn(response);
+
+        Map<String, String> result = provider.getMultiple(names);
+
+        assertThat(result).hasSize(2)
+                .containsEntry("name1", value1)
+                .containsEntry("name2", value2);
+
+        BatchGetSecretValueRequest captured = batchCaptor.getValue();
+        assertThat(captured.secretIdList()).isEmpty();
+        assertThat(captured.filters()).hasSize(1);
+
+        Filter filter = captured.filters().get(0);
+        assertThat(filter.key().toString()).isEqualTo("name");
+        assertThat(filter.values()).isEqualTo(names);
     }
 
     @Test
