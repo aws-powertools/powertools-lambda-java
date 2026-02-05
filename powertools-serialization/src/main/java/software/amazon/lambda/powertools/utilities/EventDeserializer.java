@@ -59,6 +59,7 @@ public class EventDeserializer implements Resource{
 
     private static final Logger LOG = LoggerFactory.getLogger(EventDeserializer.class);
     private static final EventDeserializer INSTANCE = new EventDeserializer();
+    // Base64 encoding of: {"id":1234,"name":"product","price":42}
     public static final String DATA = "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=";
 
     static {
