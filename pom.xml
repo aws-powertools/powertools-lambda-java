@@ -85,7 +85,7 @@
         <log4j.version>2.25.3</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.20.1</jackson.version>
-        <aws.sdk.version>2.40.13</aws.sdk.version>
+        <aws.sdk.version>2.41.10</aws.sdk.version>
         <aws.xray.recorder.version>2.20.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -113,7 +113,7 @@
         <aws.sdk.v1.version>1.12.781</aws.sdk.v1.version>
         <versions-maven-plugin.version>2.20.1</versions-maven-plugin.version>
         <elastic.version>1.7.0</elastic.version>
-        <mockito.version>5.20.0</mockito.version>
+        <mockito.version>5.21.0</mockito.version>
         <mockito-junit-jupiter.version>5.21.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>

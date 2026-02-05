@@ -14,14 +14,15 @@ on:
 name: Release Drafter
 run-name: Release Drafter
 
+permissions: {}
+
 jobs:
   update_release:
     runs-on: ubuntu-latest  
     permissions:
-      contents: write
-      id-token: write
+      contents: write  # required for creating draft releases
     steps:
       - name: Relase Drafter
-        uses: release-drafter/release-drafter@b1476f6e6eb133afa41ed8589daba6dc69b4d3f5
+        uses: release-drafter/release-drafter@6db134d15f3909ccc9eefd369f02bd1e9cffdf97
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
