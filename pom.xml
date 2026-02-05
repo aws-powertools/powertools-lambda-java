@@ -70,6 +70,7 @@
         <module>powertools-e2e-tests</module>
         <module>powertools-e2e-tests/handlers</module>
         <module>powertools-batch</module>
+        <module>powertools-lambda-metadata</module>
         <module>powertools-parameters/powertools-parameters-ssm</module>
         <module>powertools-parameters/powertools-parameters-secrets</module>
         <module>powertools-parameters/powertools-parameters-dynamodb</module>
