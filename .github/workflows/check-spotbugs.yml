@@ -28,6 +28,7 @@ on:
       - 'powertools-tracing/**'
       - 'powertools-validation/**'
       - 'powertools-test-suite/**'
+      - 'powertools-lambda-metadata/**'
       - 'pom.xml'
       - '.github/workflows/**'
 
