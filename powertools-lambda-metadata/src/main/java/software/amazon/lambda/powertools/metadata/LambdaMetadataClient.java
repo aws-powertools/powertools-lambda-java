@@ -114,13 +114,13 @@ public final class LambdaMetadataClient implements Resource {
      * Forces a refresh of the cached metadata.
      * <p>
      * This method clears the cache and fetches fresh metadata from the endpoint.
-     * Use this only for advanced use cases where you need to force a refresh.
+     * Used internally for SnapStart cache invalidation.
      * </p>
      *
      * @return the refreshed LambdaMetadata instance
      * @throws LambdaMetadataException if the metadata endpoint is unavailable or returns an error
      */
-    public static LambdaMetadata refresh() {
+    static LambdaMetadata refresh() {
         cachedInstance.set(null);
         return get();
     }

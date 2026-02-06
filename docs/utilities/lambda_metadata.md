@@ -160,29 +160,6 @@ For [Lambda Managed Instances](https://docs.aws.amazon.com/lambda/latest/dg/lamb
     }
     ```
 
-### Forcing a refresh
-
-In rare cases where you need to force a refresh of the cached metadata, use the `refresh()` method:
-
-=== "RefreshExample.java"
-
-    ```java hl_lines="10"
-    import software.amazon.lambda.powertools.metadata.LambdaMetadata;
-    import software.amazon.lambda.powertools.metadata.LambdaMetadataClient;
-
-    public class RefreshExample implements RequestHandler<Object, String> {
-
-        @Override
-        public String handleRequest(Object input, Context context) {
-            // Force a refresh of the cached metadata
-            // This makes a new HTTP request to the metadata endpoint
-            LambdaMetadata metadata = LambdaMetadataClient.refresh();
-            return "{\"az\": \"" + metadata.getAvailabilityZoneId() + "\"}";
-        }
-    }
-    ```
-
-
 ### Error handling
 
 The utility throws `LambdaMetadataException` when the metadata endpoint is unavailable or returns an error:
