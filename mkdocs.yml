@@ -22,6 +22,7 @@ nav:
       - utilities/validation.md
       - utilities/custom_resources.md
       - utilities/serialization.md
+      - utilities/lambda_metadata.md
   - Processes:
       - processes/maintainers.md
       - "Versioning policy": processes/versioning.md
@@ -114,6 +115,7 @@ plugins:
           - utilities/batch.md
           - utilities/kafka.md
           - utilities/large_messages.md
+          - utilities/lambda_metadata.md
           - utilities/validation.md
           - utilities/custom_resources.md
           - utilities/serialization.md
