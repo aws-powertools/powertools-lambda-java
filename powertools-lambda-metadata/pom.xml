@@ -190,6 +190,7 @@
                             <buildArgs>
                                 <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
                                 <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
+                                <buildArg>--enable-url-protocols=http</buildArg>
                                 <buildArg>--no-fallback</buildArg>
                                 <buildArg>--verbose</buildArg>
                                 <buildArg>--native-image-info</buildArg>
