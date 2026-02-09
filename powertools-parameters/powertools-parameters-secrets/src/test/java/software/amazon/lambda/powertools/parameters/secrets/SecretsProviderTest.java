@@ -142,7 +142,7 @@ class SecretsProviderTest {
         assertThat(captured.filters()).hasSize(1);
 
         Filter filter = captured.filters().get(0);
-        assertThat(filter.key().toString()).isEqualTo("name");
+        assertThat(filter.key().toString()).hasToString("name");
         assertThat(filter.values()).isEqualTo(names);
     }
 
