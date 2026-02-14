@@ -48,7 +48,6 @@ import software.amazon.lambda.powertools.logging.PowertoolsLogging;
 import software.amazon.lambda.powertools.logging.argument.StructuredArguments;
 import software.amazon.lambda.powertools.logging.internal.handler.PowertoolsLogEnabled;
 import software.amazon.lambda.powertools.logging.logback.LambdaEcsEncoder;
-import software.amazon.lambda.powertools.logging.logback.LambdaJsonEncoder;
 
 @Order(3)
 class LambdaEcsEncoderTest {
