@@ -221,10 +221,10 @@ class LambdaEcsEncoderTest {
                 // Arguments
                 .contains("Key Value Pairs Test with argument: argument_01")
                 .contains("\"structured_argument_01_retain\":\"retained\"")
-                // .doesNotContain("\"structured_argument_02_overwrite\":\"to_be_overwritten\"") TODO: Deduplication not implemented vor Arguments
+                // .doesNotContain("\"structured_argument_02_overwrite\":\"to_be_overwritten\"") // TODO: Deduplication not implemented for arguments
                 // MDC
                 .contains("\"mdc_01_retain\":\"retained\"")
-                // .doesNotContain("\"mdc_02_overwrite\":\"to_be_overwritten\"") TODO: Deduplication not implemented vor Arguments
+                // .doesNotContain("\"mdc_02_overwrite\":\"to_be_overwritten\"") // TODO: Deduplication not implemented for MDC
                 // Key Value Pairs
                 .contains("\"key_01_string\":\"value_01\"")
                 .contains("\"key_02_numeric\":2")
