@@ -79,11 +79,10 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
             serializeException(event, serializer);
 
             TreeMap<String, String> sortedMap = new TreeMap<>(event.getMDCPropertyMap());
+            sortedMap.putAll(getKeyValuePairs(event));
             serializePowertools(sortedMap, serializer);
 
             serializeMDCEntries(sortedMap, serializer);
-
-            serializeKeyValuePairs(event, serializer);
 
             serializeArguments(event, serializer);
 
@@ -101,14 +100,11 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         return builder.toString().getBytes(UTF_8);
     }
 
-    private void serializeKeyValuePairs(ILoggingEvent event, JsonSerializer serializer) {
-        Optional.ofNullable(event.getKeyValuePairs())
+    private Map<String, String> getKeyValuePairs(ILoggingEvent event) {
+        return Optional.ofNullable(event.getKeyValuePairs())
                 .orElse(Collections.emptyList()).stream()
                 .filter(Objects::nonNull)
-                .map(kvp -> new AbstractMap.SimpleEntry<>(String.valueOf(kvp.key), kvp.value))
-                .filter(kvp -> !PowertoolsLoggedFields.stringValues().contains(kvp.getKey()))
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(kvp -> serializeKVPEntry(kvp.getKey(), kvp.getValue(), serializer));
+                .collect(TreeMap::new, (map, kvp) -> map.put(String.valueOf(kvp.key), String.valueOf(kvp.value)), TreeMap::putAll);
     }
 
     private void serializeThreadInfo(ILoggingEvent event, JsonSerializer serializer) {

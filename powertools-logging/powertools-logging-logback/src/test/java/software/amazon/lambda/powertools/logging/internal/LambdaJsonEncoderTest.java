@@ -450,7 +450,7 @@ class LambdaJsonEncoderTest {
         LambdaJsonEncoder encoder = new LambdaJsonEncoder();
         encoder.start();
 
-        LoggingEvent keyValuePairsLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Key Value Pairs Test with argument: {}",
+        LoggingEvent keyValuePairsLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Key Value Pairs Test",
                 null, new Object[0]);
 
         keyValuePairsLoggingEvent.setKeyValuePairs(List.of(
@@ -473,7 +473,7 @@ class LambdaJsonEncoderTest {
                 .contains("\"key_01_string\":\"value_01\"")
                 .contains("\"key_02_numeric\":2")
                 .contains("\"key_03_decimal\":2.333")
-                .contains("\"key_04_null\":null")
+                .contains("\"key_04_null\":\"null\"")
                 .contains("\"\":\"value_05_empty_key\"")
                 .contains("\"null\":\"value_06_null_key\"")
                 .contains("\"key_07_boolean_true\":true")

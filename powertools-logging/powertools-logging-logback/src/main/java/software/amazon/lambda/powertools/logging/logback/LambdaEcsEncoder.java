@@ -36,7 +36,6 @@ import java.util.*;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
-import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 
 /**
@@ -98,7 +97,8 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
     @SuppressWarnings("java:S106")
     @Override
     public byte[] encode(ILoggingEvent event) {
-        final Map<String, String> mdcPropertyMap = event.getMDCPropertyMap();
+        final Map<String, String> mdcPropertyMap = new TreeMap<>(event.getMDCPropertyMap());
+        mdcPropertyMap.putAll(getKeyValuePairs(event));
 
         StringBuilder builder = new StringBuilder();
         try (JsonSerializer serializer = new JsonSerializer(builder)) {
@@ -131,8 +131,6 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
 
             serializeMDCEntries(mdcPropertyMap, serializer);
 
-            serializeKeyValuePairs(event, serializer);
-
             serializeArguments(event, serializer);
 
             serializer.writeEndObject();
@@ -143,14 +141,11 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
         return builder.toString().getBytes(UTF_8);
     }
 
-    private void serializeKeyValuePairs(ILoggingEvent event, JsonSerializer serializer) {
-        Optional.ofNullable(event.getKeyValuePairs())
+    private Map<String, String> getKeyValuePairs(ILoggingEvent event) {
+        return Optional.ofNullable(event.getKeyValuePairs())
                 .orElse(Collections.emptyList()).stream()
                 .filter(Objects::nonNull)
-                .map(kvp -> new AbstractMap.SimpleEntry<>(String.valueOf(kvp.key), kvp.value))
-                .filter(kvp -> !PowertoolsLoggedFields.stringValues().contains(kvp.getKey()))
-                .sorted(Map.Entry.comparingByKey())
-                .forEach(kvp -> serializeKVPEntry(kvp.getKey(), kvp.getValue(), serializer));
+                .collect(TreeMap::new, (map, kvp) -> map.put(String.valueOf(kvp.key), String.valueOf(kvp.value)), TreeMap::putAll);
     }
 
     private void serializeFunctionInfo(JsonSerializer serializer, String arn, Map<String, String> mdcPropertyMap) {
