@@ -36,6 +36,7 @@ import java.util.*;
 
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
+import software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields;
 
 
 /**
@@ -146,7 +147,10 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
         Optional.ofNullable(event.getKeyValuePairs())
                 .orElse(Collections.emptyList()).stream()
                 .filter(Objects::nonNull)
-                .forEach(kvp -> serializeKVPEntry(String.valueOf(kvp.key), kvp.value, serializer));
+                .map(kvp -> new AbstractMap.SimpleEntry<>(String.valueOf(kvp.key), kvp.value))
+                .filter(kvp -> !PowertoolsLoggedFields.stringValues().contains(kvp.getKey()))
+                .sorted(Comparator.comparing(AbstractMap.SimpleEntry::getKey))
+                .forEach(kvp -> serializeKVPEntry(kvp.getKey(), kvp.getValue(), serializer));
     }
 
     private void serializeFunctionInfo(JsonSerializer serializer, String arn, Map<String, String> mdcPropertyMap) {

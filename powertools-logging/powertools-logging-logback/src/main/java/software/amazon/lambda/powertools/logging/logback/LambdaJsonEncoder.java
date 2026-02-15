@@ -103,9 +103,12 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
 
     private void serializeKeyValuePairs(ILoggingEvent event, JsonSerializer serializer) {
         Optional.ofNullable(event.getKeyValuePairs())
-            .orElse(Collections.emptyList()).stream()
-            .filter(Objects::nonNull)
-            .forEach(kvp -> serializeKVPEntry(String.valueOf(kvp.key), kvp.value, serializer));
+                .orElse(Collections.emptyList()).stream()
+                .filter(Objects::nonNull)
+                .map(kvp -> new AbstractMap.SimpleEntry<>(String.valueOf(kvp.key), kvp.value))
+                .filter(kvp -> !PowertoolsLoggedFields.stringValues().contains(kvp.getKey()))
+                .sorted(Comparator.comparing(AbstractMap.SimpleEntry::getKey))
+                .forEach(kvp -> serializeKVPEntry(kvp.getKey(), kvp.getValue(), serializer));
     }
 
     private void serializeThreadInfo(ILoggingEvent event, JsonSerializer serializer) {
