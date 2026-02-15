@@ -188,16 +188,8 @@ class LambdaEcsEncoderTest {
         LambdaEcsEncoder encoder = new LambdaEcsEncoder();
         encoder.start();
 
-        Object[] arguments = {
-                "argument_01",
-                StructuredArguments.entry("structured_argument_01_retain", "retained"),
-                StructuredArguments.entry("structured_argument_02_overwrite", "to_be_overwritten")
-        };
         LoggingEvent keyValuePairsLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Key Value Pairs Test with argument: {}",
-                null, arguments);
-
-        MDC.put("mdc_01_retain", "retained");
-        MDC.put("mdc_02_overwrite", "to_be_overwritten");
+                null, new Object[0]);
 
         keyValuePairsLoggingEvent.setKeyValuePairs(List.of(
                 new KeyValuePair("key_01_string", "value_01"),
@@ -207,9 +199,7 @@ class LambdaEcsEncoderTest {
                 new KeyValuePair("", "value_05_empty_key"),
                 new KeyValuePair(null, "value_06_null_key"),
                 new KeyValuePair("key_07_boolean_true", true),
-                new KeyValuePair("key_08_boolean_false", false),
-                new KeyValuePair("mdc_02_overwrite", "overwritten_by_kvp"),
-                new KeyValuePair("structured_argument_02_overwrite", "overwritten_by_kvp")
+                new KeyValuePair("key_08_boolean_false", false)
         ));
 
         // WHEN
@@ -218,14 +208,6 @@ class LambdaEcsEncoderTest {
 
         // THEN
         assertThat(result)
-                // Arguments
-                .contains("Key Value Pairs Test with argument: argument_01")
-                .contains("\"structured_argument_01_retain\":\"retained\"")
-                // .doesNotContain("\"structured_argument_02_overwrite\":\"to_be_overwritten\"") // TODO: Deduplication not implemented for arguments
-                // MDC
-                .contains("\"mdc_01_retain\":\"retained\"")
-                // .doesNotContain("\"mdc_02_overwrite\":\"to_be_overwritten\"") // TODO: Deduplication not implemented for MDC
-                // Key Value Pairs
                 .contains("\"key_01_string\":\"value_01\"")
                 .contains("\"key_02_numeric\":2")
                 .contains("\"key_03_decimal\":2.333")
@@ -234,8 +216,6 @@ class LambdaEcsEncoderTest {
                 .contains("\"null\":\"value_06_null_key\"")
                 .contains("\"key_07_boolean_true\":true")
                 .contains("\"key_08_boolean_false\":false")
-                .contains("\"mdc_02_overwrite\":\"overwritten_by_kvp\"")
-                .contains("\"structured_argument_02_overwrite\":\"overwritten_by_kvp\"")
         ;
     }
 

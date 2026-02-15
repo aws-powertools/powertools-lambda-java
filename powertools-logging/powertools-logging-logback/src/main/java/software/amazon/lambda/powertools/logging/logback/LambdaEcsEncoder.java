@@ -149,7 +149,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
                 .filter(Objects::nonNull)
                 .map(kvp -> new AbstractMap.SimpleEntry<>(String.valueOf(kvp.key), kvp.value))
                 .filter(kvp -> !PowertoolsLoggedFields.stringValues().contains(kvp.getKey()))
-                .sorted(Comparator.comparing(AbstractMap.SimpleEntry::getKey))
+                .sorted(Map.Entry.comparingByKey())
                 .forEach(kvp -> serializeKVPEntry(kvp.getKey(), kvp.getValue(), serializer));
     }
 
