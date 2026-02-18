@@ -201,6 +201,11 @@
         <Class name="software.amazon.lambda.powertools.tracing.TracingUtils"/>
         <Method name="beforeCheckpoint"/>
     </Match>
+    <Match>
+        <Bug pattern="RV_RETURN_VALUE_IGNORED_NO_SIDE_EFFECT"/>
+        <Class name="software.amazon.lambda.powertools.utilities.EventDeserializer"/>
+        <Method name="beforeCheckpoint"/>
+    </Match>
     <!--Functionally needed-->
     <Match>
         <Bug pattern="MS_SHOULD_BE_FINAL"/>
