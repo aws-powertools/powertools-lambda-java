@@ -196,6 +196,82 @@ The utility throws `LambdaMetadataException` when the metadata endpoint is unava
     }
     ```
 
+## Testing your code
+
+When running outside a Lambda execution environment (e.g., in unit tests), the `AWS_LAMBDA_METADATA_API` and `AWS_LAMBDA_METADATA_TOKEN` environment variables are not available. Calling `LambdaMetadataClient.get()` in this context throws a `LambdaMetadataException`.
+
+### Mocking LambdaMetadataClient
+
+For tests where you need to control the metadata values, use Mockito's `mockStatic` to mock `LambdaMetadataClient.get()`:
+
+=== "MockedMetadataTest.java"
+
+    ```java hl_lines="15-17"
+    import software.amazon.lambda.powertools.metadata.LambdaMetadata;
+    import software.amazon.lambda.powertools.metadata.LambdaMetadataClient;
+    import org.mockito.MockedStatic;
+    import org.junit.jupiter.api.Test;
+    import static org.assertj.core.api.Assertions.assertThat;
+    import static org.mockito.Mockito.*;
+
+    class MockedMetadataTest {
+
+        @Test
+        void shouldUseMetadataInHandler() {
+            LambdaMetadata mockMetadata = mock(LambdaMetadata.class);
+            when(mockMetadata.getAvailabilityZoneId()).thenReturn("use1-az1");
+
+            try (MockedStatic<LambdaMetadataClient> mockedClient =
+                     mockStatic(LambdaMetadataClient.class)) {
+                mockedClient.when(LambdaMetadataClient::get).thenReturn(mockMetadata);
+
+                App handler = new App();
+                String result = handler.handleRequest(null, null);
+
+                assertThat(result).contains("use1-az1");
+            }
+        }
+    }
+    ```
+
+### Using WireMock
+
+For integration tests, you can use [WireMock](https://wiremock.org/){target="_blank"} to mock the metadata HTTP endpoint. Set `AWS_LAMBDA_METADATA_API` and `AWS_LAMBDA_METADATA_TOKEN` environment variables using [junit-pioneer](https://junit-pioneer.org/docs/environment-variables/){target="_blank"}, and stub the endpoint response:
+
+=== "WireMockMetadataTest.java"
+
+    ```java hl_lines="10-12"
+    import static com.github.tomakehurst.wiremock.client.WireMock.*;
+    import static org.assertj.core.api.Assertions.assertThat;
+
+    import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+    import org.junitpioneer.jupiter.SetEnvironmentVariable;
+    import org.junit.jupiter.api.Test;
+    import software.amazon.lambda.powertools.metadata.LambdaMetadata;
+    import software.amazon.lambda.powertools.metadata.internal.LambdaMetadataHttpClient;
+
+    @WireMockTest(httpPort = 8089)
+    @SetEnvironmentVariable(key = "AWS_LAMBDA_METADATA_API", value = "localhost:8089")
+    @SetEnvironmentVariable(key = "AWS_LAMBDA_METADATA_TOKEN", value = "test-token")
+    class WireMockMetadataTest {
+
+        @Test
+        void shouldFetchMetadataFromEndpoint() {
+            stubFor(get(urlEqualTo("/2026-01-15/metadata/execution-environment"))
+                    .withHeader("Authorization", equalTo("Bearer test-token"))
+                    .willReturn(aResponse()
+                            .withStatus(200)
+                            .withHeader("Content-Type", "application/json")
+                            .withBody("{\"AvailabilityZoneID\": \"use1-az1\"}")));
+
+            LambdaMetadataHttpClient client = new LambdaMetadataHttpClient();
+            LambdaMetadata metadata = client.fetchMetadata();
+
+            assertThat(metadata.getAvailabilityZoneId()).isEqualTo("use1-az1");
+        }
+    }
+    ```
+
 ## Using with other Powertools utilities
 
 Lambda Metadata integrates seamlessly with other Powertools utilities to enrich your observability data with Availability Zone information.
