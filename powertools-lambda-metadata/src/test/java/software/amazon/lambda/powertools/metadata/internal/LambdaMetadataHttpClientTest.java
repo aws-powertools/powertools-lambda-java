@@ -101,11 +101,11 @@ class LambdaMetadataHttpClientTest {
         // Given
         LambdaMetadataHttpClient client = new LambdaMetadataHttpClient() {
             @Override
-            String getEnvironmentVariable(String name) {
-                if (LambdaMetadataHttpClient.ENV_METADATA_TOKEN.equals(name)) {
-                    return null;
+            String getRequiredEnvironmentVariable(String name) {
+                if (LambdaMetadataHttpClient.ENV_METADATA_API.equals(name)) {
+                    return "localhost:8080";
                 }
-                return "localhost:8080";
+                return super.getRequiredEnvironmentVariable(name);
             }
         };
 
@@ -120,11 +120,11 @@ class LambdaMetadataHttpClientTest {
         // Given
         LambdaMetadataHttpClient client = new LambdaMetadataHttpClient() {
             @Override
-            String getEnvironmentVariable(String name) {
+            String getRequiredEnvironmentVariable(String name) {
                 if (LambdaMetadataHttpClient.ENV_METADATA_TOKEN.equals(name)) {
                     return TEST_TOKEN;
                 }
-                return null;
+                return super.getRequiredEnvironmentVariable(name);
             }
         };
 
@@ -156,14 +156,14 @@ class LambdaMetadataHttpClientTest {
     private LambdaMetadataHttpClient createClient(WireMockRuntimeInfo wmRuntimeInfo) {
         return new LambdaMetadataHttpClient() {
             @Override
-            String getEnvironmentVariable(String name) {
+            String getRequiredEnvironmentVariable(String name) {
                 if (LambdaMetadataHttpClient.ENV_METADATA_TOKEN.equals(name)) {
                     return TEST_TOKEN;
                 }
                 if (LambdaMetadataHttpClient.ENV_METADATA_API.equals(name)) {
                     return "localhost:" + wmRuntimeInfo.getHttpPort();
                 }
-                return null;
+                return super.getRequiredEnvironmentVariable(name);
             }
         };
     }

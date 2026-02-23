@@ -61,18 +61,8 @@ public class LambdaMetadataHttpClient {
      * @throws LambdaMetadataException if the fetch fails
      */
     public LambdaMetadata fetchMetadata() {
-        String token = getEnvironmentVariable(ENV_METADATA_TOKEN);
-        String api = getEnvironmentVariable(ENV_METADATA_API);
-
-        if (token == null || token.isEmpty()) {
-            throw new LambdaMetadataException(
-                    "Lambda metadata token not available. Ensure " + ENV_METADATA_TOKEN + " is set.");
-        }
-
-        if (api == null || api.isEmpty()) {
-            throw new LambdaMetadataException(
-                    "Lambda metadata API endpoint not available. Ensure " + ENV_METADATA_API + " is set.");
-        }
+        String token = getRequiredEnvironmentVariable(ENV_METADATA_TOKEN);
+        String api = getRequiredEnvironmentVariable(ENV_METADATA_API);
 
         String urlString = "http://" + api + "/" + API_VERSION + METADATA_PATH;
         LOG.debug("Fetching Lambda metadata from: {}", urlString);
@@ -111,14 +101,21 @@ public class LambdaMetadataHttpClient {
     }
 
     /**
-     * Gets an environment variable value.
+     * Gets a required environment variable value.
+     * Throws {@link LambdaMetadataException} if the value is null or empty.
      * This method is package-private to allow overriding in tests.
      *
      * @param name the environment variable name
-     * @return the value, or null if not set
+     * @return the value, never null or empty
+     * @throws LambdaMetadataException if the environment variable is not set or empty
      */
-    String getEnvironmentVariable(String name) {
-        return System.getenv(name);
+    String getRequiredEnvironmentVariable(String name) {
+        String value = System.getenv(name);
+        if (value == null || value.isEmpty()) {
+            throw new LambdaMetadataException(
+                    "Environment variable " + name + " is not set. Ensure " + name + " is set.");
+        }
+        return value;
     }
 
     /**
