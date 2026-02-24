@@ -31,6 +31,7 @@ on:
         - 'powertools-tracing/**'
         - 'powertools-tracing/**'
         - 'powertools-validation/**'
+        - 'powertools-lambda-metadata/**'
         - 'pom.xml'
 
 name: E2E Tests

@@ -257,6 +257,7 @@
                                 <include>**/ParametersE2ET.java</include>
                                 <include>**/TracingE2ET.java</include>
                                 <include>**/IdempotencyE2ET.java</include>
+                                <include>**/LambdaMetadataE2ET.java</include>
                             </includes>
                             <systemPropertyVariables>
                                 <graalvm.enabled>true</graalvm.enabled>
