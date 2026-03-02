@@ -30,7 +30,9 @@
         <module>largemessage-functional</module>
         <module>largemessage_idempotent</module>
         <module>logging-log4j</module>
+        <module>logging-log4j-fluent-api</module>
         <module>logging-logback</module>
+        <module>logging-logback-fluent-api</module>
         <module>logging-functional</module>
         <module>tracing</module>
         <module>metrics</module>

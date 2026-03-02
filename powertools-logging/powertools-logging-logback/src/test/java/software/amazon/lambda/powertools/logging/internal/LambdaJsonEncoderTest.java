@@ -40,6 +40,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Collections;
 import java.util.Date;
 import java.util.TimeZone;
@@ -50,6 +51,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.slf4j.event.KeyValuePair;
 import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -440,6 +442,43 @@ class LambdaJsonEncoderTest {
         assertThat(result).contains("\"message\":\"Unexpected value\"")
                 .contains("\"name\":\"java.lang.IllegalStateException\"")
                 .contains("\"stack\":\"java.lang.IllegalStateException: Unexpected value\\n");
+    }
+
+    @Test
+    void shouldLogKeyValuePairs() {
+        // GIVEN
+        LambdaJsonEncoder encoder = new LambdaJsonEncoder();
+        encoder.start();
+
+        LoggingEvent keyValuePairsLoggingEvent = new LoggingEvent("fqcn", logger, Level.INFO, "Key Value Pairs Test",
+                null, new Object[0]);
+
+        keyValuePairsLoggingEvent.setKeyValuePairs(List.of(
+                new KeyValuePair("key_01_string", "value_01"),
+                new KeyValuePair("key_02_numeric", 2),
+                new KeyValuePair("key_03_decimal", 2.333),
+                new KeyValuePair("key_04_null", null),
+                new KeyValuePair("", "value_05_empty_key"),
+                new KeyValuePair(null, "value_06_null_key"),
+                new KeyValuePair("key_07_boolean_true", true),
+                new KeyValuePair("key_08_boolean_false", false)
+                ));
+
+        // WHEN
+        byte[] encoded = encoder.encode(keyValuePairsLoggingEvent);
+        String result = new String(encoded, StandardCharsets.UTF_8);
+
+        // THEN
+        assertThat(result)
+                .contains("\"key_01_string\":\"value_01\"")
+                .contains("\"key_02_numeric\":2")
+                .contains("\"key_03_decimal\":2.333")
+                .contains("\"key_04_null\":\"null\"")
+                .contains("\"\":\"value_05_empty_key\"")
+                .contains("\"null\":\"value_06_null_key\"")
+                .contains("\"key_07_boolean_true\":true")
+                .contains("\"key_08_boolean_false\":false")
+        ;
     }
 
 }

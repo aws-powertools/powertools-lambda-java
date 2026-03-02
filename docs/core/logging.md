@@ -378,6 +378,18 @@ You can use Powertools for AWS Lambda Logging with either the `@Logging` annotat
     }
     ```
 
+???+ warning "Do not reuse reserved keys"
+
+    Do not reuse reserved keys listed in [standard structured keys](#standard-structured-keys) and [additional structured keys](#additional-structured-keys).
+    This restriction applies to all structured logging mechanisms, including:
+
+    - Log arguments
+    - MDC entries
+    - `addKeyValue(...)` or `addArgument(...)` of [SLF4J Fluent Logging API](https://www.slf4j.org/manual.html#fluent)
+    - Any other structured data fields
+
+    Reusing reserved keys in any of these contexts may result in unintended or inconsistent behavior.
+
 ## Standard structured keys
 
 Your logs will always include the following keys in your structured logging:

@@ -23,9 +23,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_REQUEST_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeArguments;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeMDCEntries;
-import static software.amazon.lambda.powertools.logging.logback.JsonUtils.serializeTimestamp;
+import static software.amazon.lambda.powertools.logging.logback.JsonUtils.*;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -34,8 +32,8 @@ import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.encoder.EncoderBase;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
+
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.logging.internal.JsonSerializer;
 
@@ -99,7 +97,8 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
     @SuppressWarnings("java:S106")
     @Override
     public byte[] encode(ILoggingEvent event) {
-        final Map<String, String> mdcPropertyMap = event.getMDCPropertyMap();
+        final Map<String, String> mdcPropertyMap = new TreeMap<>(event.getMDCPropertyMap());
+        mdcPropertyMap.putAll(getKeyValuePairs(event));
 
         StringBuilder builder = new StringBuilder();
         try (JsonSerializer serializer = new JsonSerializer(builder)) {
@@ -140,6 +139,13 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
             System.err.printf("Failed to encode log event, error: %s.%n", e.getMessage());
         }
         return builder.toString().getBytes(UTF_8);
+    }
+
+    private Map<String, String> getKeyValuePairs(ILoggingEvent event) {
+        return Optional.ofNullable(event.getKeyValuePairs())
+                .orElse(Collections.emptyList()).stream()
+                .filter(Objects::nonNull)
+                .collect(TreeMap::new, (map, kvp) -> map.put(String.valueOf(kvp.key), String.valueOf(kvp.value)), TreeMap::putAll);
     }
 
     private void serializeFunctionInfo(JsonSerializer serializer, String arn, Map<String, String> mdcPropertyMap) {
