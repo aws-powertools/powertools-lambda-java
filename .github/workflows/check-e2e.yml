@@ -93,7 +93,7 @@ jobs:
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 10
+      max-parallel: 20
       matrix:
         java:
           - 11
