@@ -40,21 +40,69 @@ permissions:
   contents: read
 
 jobs:
-  e2e:  
-    name: End-to-end Tests (Java ${{ matrix.java }})
+  discover-tests:
+    name: Discover E2E test classes
+    runs-on: ubuntu-latest
+    outputs:
+      e2e-classes: ${{ steps.parse.outputs.e2e-classes }}
+      e2e-graal-classes: ${{ steps.parse.outputs.e2e-graal-classes }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: Parse test classes from POM profiles
+        id: parse
+        run: |
+          TEST_DIR="powertools-e2e-tests/src/test/java"
+          POM="powertools-e2e-tests/pom.xml"
+
+          # Extracts <include> patterns from a POM profile, resolves them
+          # against the test directory, and outputs a compact JSON array
+          # of class names (without .java suffix).
+          resolve_classes() {
+            local profile_id="$1"
+            awk "/<id>${profile_id}<\\/id>/,/<\\/profile>/" "$POM" \
+            | { grep '<include>' || true; } \
+            | sed 's/.*<include>\(.*\)<\/include>.*/\1/' \
+            | while read -r pattern; do
+                find "$TEST_DIR" -type f -path "$TEST_DIR/$pattern" -print0 | xargs -0 -r basename -a
+              done \
+            | sed 's/\.java$//' | sort -u | jq -R . | jq -sc .
+          }
+
+          E2E_CLASSES=$(resolve_classes "e2e")
+          GRAAL_CLASSES=$(resolve_classes "e2e-graal")
+
+          echo "e2e test classes: $E2E_CLASSES"
+          echo "e2e-graal test classes: $GRAAL_CLASSES"
+
+          if [ "$E2E_CLASSES" = "[]" ] || [ -z "$E2E_CLASSES" ]; then
+            echo "::error::No e2e test classes found — check POM includes and test directory"
+            exit 1
+          fi
+          if [ "$GRAAL_CLASSES" = "[]" ] || [ -z "$GRAAL_CLASSES" ]; then
+            echo "::error::No e2e-graal test classes found — check POM includes and test directory"
+            exit 1
+          fi
+
+          echo "e2e-classes=$E2E_CLASSES" >> "$GITHUB_OUTPUT"
+          echo "e2e-graal-classes=$GRAAL_CLASSES" >> "$GITHUB_OUTPUT"
+
+  e2e:
+    name: E2E ${{ matrix.test-class }} (Java ${{ matrix.java }})
+    needs: discover-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 20
       matrix:
         java:
           - 11
           - 17
           - 21
           - 25
+        test-class: ${{ fromJSON(needs.discover-tests.outputs.e2e-classes) }}
           
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -64,6 +112,8 @@ jobs:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
           cache: maven
+      - name: Build all modules
+        run: mvn -B -DskipTests -ntp install --file pom.xml
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
@@ -72,20 +122,25 @@ jobs:
       - name: Run e2e test with Maven
         env:
             JAVA_VERSION: ${{ matrix.java }}
-        run: mvn -DskipTests -ntp install --file pom.xml && mvn -Pe2e -B -ntp verify --file powertools-e2e-tests/pom.xml
+        run: >
+          mvn -Pe2e -B -ntp
+          -Dit.test="${{ matrix.test-class }}"
+          verify --file powertools-e2e-tests/pom.xml
 
   e2e-graal:  
-    name: End-to-end GraalVM Tests (Java ${{ matrix.java }})
+    name: E2E GraalVM ${{ matrix.test-class }} (Java ${{ matrix.java }})
+    needs: discover-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 5
       matrix:
         java:
           - 25
+        test-class: ${{ fromJSON(needs.discover-tests.outputs.e2e-graal-classes) }}
           
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -95,6 +150,8 @@ jobs:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
           cache: maven
+      - name: Build all modules
+        run: mvn -B -DskipTests -ntp install --file pom.xml
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
@@ -103,4 +160,7 @@ jobs:
       - name: Run e2e-graal test with Maven
         env:
             JAVA_VERSION: ${{ matrix.java }}
-        run: mvn -DskipTests -ntp install --file pom.xml && mvn -Pe2e-graal -B -ntp verify --file powertools-e2e-tests/pom.xml
+        run: >
+          mvn -Pe2e-graal -B -ntp
+          -Dit.test="${{ matrix.test-class }}"
+          verify --file powertools-e2e-tests/pom.xml
