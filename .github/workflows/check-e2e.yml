@@ -63,8 +63,7 @@ jobs:
             | grep '<include>' \
             | sed 's/.*<include>\(.*\)<\/include>.*/\1/' \
             | while read -r pattern; do
-                filename="${pattern##*/}"
-                find "$TEST_DIR" -name "$filename" -print0 | xargs -0 -r basename -a
+                find "$TEST_DIR" -type f -path "$TEST_DIR/$pattern" -print0 | xargs -0 -r basename -a
               done \
             | sed 's/\.java$//' | sort -u | jq -R . | jq -sc .
           }
