@@ -55,7 +55,7 @@ jobs:
           POM="powertools-e2e-tests/pom.xml"
 
           # e2e profile uses **/*E2ET.java — find all matching test files
-          E2E_CLASSES=$(find "$TEST_DIR" -name '*E2ET.java' | xargs -n1 basename | sed 's/\.java$//' | sort | jq -R . | jq -s .)
+          E2E_CLASSES=$(find "$TEST_DIR" -name '*E2ET.java' | xargs -n1 basename | sed 's/\.java$//' | sort | jq -R . | jq -sc .)
 
           # Extract include patterns from e2e-graal profile, then match against test files
           GRAAL_CLASSES=$(
@@ -66,7 +66,7 @@ jobs:
                 filename="${pattern##*/}"
                 find "$TEST_DIR" -name "$filename" | xargs -n1 basename | sed 's/\.java$//'
               done \
-            | sort | jq -R . | jq -s .
+            | sort | jq -R . | jq -sc .
           )
 
           echo "e2e test classes: $E2E_CLASSES"
