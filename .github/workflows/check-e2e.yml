@@ -54,20 +54,23 @@ jobs:
           TEST_DIR="powertools-e2e-tests/src/test/java"
           POM="powertools-e2e-tests/pom.xml"
 
-          # e2e profile uses **/*E2ET.java — find all matching test files
-          E2E_CLASSES=$(find "$TEST_DIR" -name '*E2ET.java' | xargs -n1 basename | sed 's/\.java$//' | sort | jq -R . | jq -sc .)
-
-          # Extract include patterns from e2e-graal profile, then match against test files
-          GRAAL_CLASSES=$(
-            awk '/<id>e2e-graal<\/id>/,/<\/profile>/' "$POM" \
+          # Extracts <include> patterns from a POM profile, resolves them
+          # against the test directory, and outputs a compact JSON array
+          # of class names (without .java suffix).
+          resolve_classes() {
+            local profile_id="$1"
+            awk "/<id>${profile_id}<\\/id>/,/<\\/profile>/" "$POM" \
             | grep '<include>' \
             | sed 's/.*<include>\(.*\)<\/include>.*/\1/' \
             | while read -r pattern; do
                 filename="${pattern##*/}"
-                find "$TEST_DIR" -name "$filename" | xargs -n1 basename | sed 's/\.java$//'
+                find "$TEST_DIR" -name "$filename" -print0 | xargs -0 -r basename -a
               done \
-            | sort | jq -R . | jq -sc .
-          )
+            | sed 's/\.java$//' | sort -u | jq -R . | jq -sc .
+          }
+
+          E2E_CLASSES=$(resolve_classes "e2e")
+          GRAAL_CLASSES=$(resolve_classes "e2e-graal")
 
           echo "e2e test classes: $E2E_CLASSES"
           echo "e2e-graal test classes: $GRAAL_CLASSES"
@@ -149,7 +152,7 @@ jobs:
           java-version: ${{ matrix.java }}
           cache: maven
       - name: Build all modules
-        run: mvn -DskipTests -ntp install --file pom.xml
+        run: mvn -B -DskipTests -ntp install --file pom.xml
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
