@@ -59,13 +59,13 @@ jobs:
           # of class names (without .java suffix).
           resolve_classes() {
             local profile_id="$1"
-            | grep '<include>' || true \
+            awk "/<id>${profile_id}<\\/id>/,/<\\/profile>/" "$POM" \
+            | { grep '<include>' || true; } \
             | sed 's/.*<include>\(.*\)<\/include>.*/\1/' \
             | while read -r pattern; do
-                filename="${pattern##*/}"
-                find "$TEST_DIR" -name "$filename" -print0 | xargs -0 -r basename -a
+                find "$TEST_DIR" -type f -path "$TEST_DIR/$pattern" -print0 | xargs -0 -r basename -a
               done \
-            | sed 's/\.java$//' | sort -u | jq -R . | jq -sc 'if length == 0 then [] else . end'
+            | sed 's/\.java$//' | sort -u | jq -R . | jq -sc .
           }
 
           E2E_CLASSES=$(resolve_classes "e2e")
