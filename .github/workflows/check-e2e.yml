@@ -40,8 +40,53 @@ permissions:
   contents: read
 
 jobs:
+  discover-tests:
+    name: Discover E2E test classes
+    runs-on: ubuntu-latest
+    outputs:
+      e2e-classes: ${{ steps.parse.outputs.e2e-classes }}
+      e2e-graal-classes: ${{ steps.parse.outputs.e2e-graal-classes }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      - name: Parse test classes from POM profiles
+        id: parse
+        run: |
+          TEST_DIR="powertools-e2e-tests/src/test/java"
+          POM="powertools-e2e-tests/pom.xml"
+
+          # e2e profile uses **/*E2ET.java — find all matching test files
+          E2E_CLASSES=$(find "$TEST_DIR" -name '*E2ET.java' | xargs -n1 basename | sed 's/\.java$//' | sort | jq -R . | jq -s .)
+
+          # Extract include patterns from e2e-graal profile, then match against test files
+          GRAAL_CLASSES=$(
+            awk '/<id>e2e-graal<\/id>/,/<\/profile>/' "$POM" \
+            | grep '<include>' \
+            | sed 's/.*<include>\(.*\)<\/include>.*/\1/' \
+            | while read -r pattern; do
+                filename="${pattern##*/}"
+                find "$TEST_DIR" -name "$filename" | xargs -n1 basename | sed 's/\.java$//'
+              done \
+            | sort | jq -R . | jq -s .
+          )
+
+          echo "e2e test classes: $E2E_CLASSES"
+          echo "e2e-graal test classes: $GRAAL_CLASSES"
+
+          if [ "$E2E_CLASSES" = "[]" ] || [ -z "$E2E_CLASSES" ]; then
+            echo "::error::No e2e test classes found — check POM includes and test directory"
+            exit 1
+          fi
+          if [ "$GRAAL_CLASSES" = "[]" ] || [ -z "$GRAAL_CLASSES" ]; then
+            echo "::error::No e2e-graal test classes found — check POM includes and test directory"
+            exit 1
+          fi
+
+          echo "e2e-classes=$E2E_CLASSES" >> "$GITHUB_OUTPUT"
+          echo "e2e-graal-classes=$GRAAL_CLASSES" >> "$GITHUB_OUTPUT"
+
   e2e:
     name: E2E ${{ matrix.test-class }} (Java ${{ matrix.java }})
+    needs: discover-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -55,17 +100,7 @@ jobs:
           - 17
           - 21
           - 25
-        test-class:
-          - BatchE2ET
-          - IdempotencyE2ET
-          - LargeMessageE2ET
-          - LargeMessageIdempotentE2ET
-          - LoggingE2ET
-          - MetricsE2ET
-          - ParametersE2ET
-          - TracingE2ET
-          - ValidationALBE2ET
-          - ValidationApiGWE2ET
+        test-class: ${{ fromJSON(needs.discover-tests.outputs.e2e-classes) }}
           
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -92,6 +127,7 @@ jobs:
 
   e2e-graal:  
     name: E2E GraalVM ${{ matrix.test-class }} (Java ${{ matrix.java }})
+    needs: discover-tests
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -102,12 +138,7 @@ jobs:
       matrix:
         java:
           - 25
-        test-class:
-          - MetricsE2ET
-          - LoggingE2ET
-          - ParametersE2ET
-          - TracingE2ET
-          - IdempotencyE2ET
+        test-class: ${{ fromJSON(needs.discover-tests.outputs.e2e-graal-classes) }}
           
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
