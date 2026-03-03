@@ -41,20 +41,31 @@ permissions:
 
 jobs:
   e2e:  
-    name: End-to-end Tests (Java ${{ matrix.java }})
+    name: E2E ${{ matrix.test-class }} (Java ${{ matrix.java }})
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 3
       matrix:
         java:
           - 11
           - 17
           - 21
           - 25
+        test-class:
+          - BatchE2ET
+          - IdempotencyE2ET
+          - LargeMessageE2ET
+          - LargeMessageIdempotentE2ET
+          - LoggingE2ET
+          - MetricsE2ET
+          - ParametersE2ET
+          - TracingE2ET
+          - ValidationALBE2ET
+          - ValidationApiGWE2ET
           
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -72,20 +83,30 @@ jobs:
       - name: Run e2e test with Maven
         env:
             JAVA_VERSION: ${{ matrix.java }}
-        run: mvn -DskipTests -ntp install --file pom.xml && mvn -Pe2e -B -ntp verify --file powertools-e2e-tests/pom.xml
+        run: >
+          mvn -DskipTests -ntp install --file pom.xml &&
+          mvn -Pe2e -B -ntp
+          -Dit.test="${{ matrix.test-class }}"
+          verify --file powertools-e2e-tests/pom.xml
 
   e2e-graal:  
-    name: End-to-end GraalVM Tests (Java ${{ matrix.java }})
+    name: E2E GraalVM ${{ matrix.test-class }} (Java ${{ matrix.java }})
     runs-on: ubuntu-latest
     permissions:
       id-token: write
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 3
       matrix:
         java:
           - 25
+        test-class:
+          - MetricsE2ET
+          - LoggingE2ET
+          - ParametersE2ET
+          - TracingE2ET
+          - IdempotencyE2ET
           
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
@@ -103,4 +124,8 @@ jobs:
       - name: Run e2e-graal test with Maven
         env:
             JAVA_VERSION: ${{ matrix.java }}
-        run: mvn -DskipTests -ntp install --file pom.xml && mvn -Pe2e-graal -B -ntp verify --file powertools-e2e-tests/pom.xml
+        run: >
+          mvn -DskipTests -ntp install --file pom.xml &&
+          mvn -Pe2e-graal -B -ntp
+          -Dit.test="${{ matrix.test-class }}"
+          verify --file powertools-e2e-tests/pom.xml
