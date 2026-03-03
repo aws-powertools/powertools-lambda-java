@@ -40,7 +40,7 @@ permissions:
   contents: read
 
 jobs:
-  e2e:  
+  e2e:
     name: E2E ${{ matrix.test-class }} (Java ${{ matrix.java }})
     runs-on: ubuntu-latest
     permissions:
@@ -48,7 +48,7 @@ jobs:
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 10
       matrix:
         java:
           - 11
@@ -75,6 +75,8 @@ jobs:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
           cache: maven
+      - name: Build all modules
+        run: mvn -DskipTests -ntp install --file pom.xml
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
@@ -84,7 +86,6 @@ jobs:
         env:
             JAVA_VERSION: ${{ matrix.java }}
         run: >
-          mvn -DskipTests -ntp install --file pom.xml &&
           mvn -Pe2e -B -ntp
           -Dit.test="${{ matrix.test-class }}"
           verify --file powertools-e2e-tests/pom.xml
@@ -97,7 +98,7 @@ jobs:
     environment: E2E
     strategy:
       fail-fast: false
-      max-parallel: 3
+      max-parallel: 5
       matrix:
         java:
           - 25
@@ -116,6 +117,8 @@ jobs:
           distribution: 'corretto'
           java-version: ${{ matrix.java }}
           cache: maven
+      - name: Build all modules
+        run: mvn -DskipTests -ntp install --file pom.xml
       - name: Setup AWS credentials
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6.0.0
         with:
@@ -125,7 +128,6 @@ jobs:
         env:
             JAVA_VERSION: ${{ matrix.java }}
         run: >
-          mvn -DskipTests -ntp install --file pom.xml &&
           mvn -Pe2e-graal -B -ntp
           -Dit.test="${{ matrix.test-class }}"
           verify --file powertools-e2e-tests/pom.xml
