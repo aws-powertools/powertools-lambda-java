@@ -56,4 +56,6 @@ In order to generate the `classloaded.txt` file for a Java module in this projec
 - `classesloaded.txt` file includes test classes as well because the file is generated while running tests. This is not a problem because all the classes that are not found are ignored by `ClassPreLoader.preloadClasses()`. Also `beforeCheckpoint()` hook is not time-sensitive, it only runs once when a new Lambda version gets published. 
 
 ## Reference Implementation
-Working example is available in the [powertools-metrics](powertools-metrics/src/main/java/software/amazon/lambda/powertools/metrics/MetricsFactory.java). 
+Working examples are available in:
+- [powertools-metrics](powertools-metrics/src/main/java/software/amazon/lambda/powertools/metrics/MetricsFactory.java) - Automatic priming with `ClassPreLoader`
+- [powertools-idempotency-dynamodb](powertools-idempotency/powertools-idempotency-dynamodb/src/main/java/software/amazon/lambda/powertools/idempotency/persistence/dynamodb/DynamoDBPersistenceStore.java) - Invoke priming + Automatic priming 

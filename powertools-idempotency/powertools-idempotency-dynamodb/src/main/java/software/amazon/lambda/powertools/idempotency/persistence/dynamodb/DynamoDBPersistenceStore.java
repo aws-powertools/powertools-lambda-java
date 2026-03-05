@@ -30,6 +30,7 @@ import software.amazon.awssdk.services.dynamodb.model.GetItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.GetItemResponse;
 import software.amazon.awssdk.services.dynamodb.model.PutItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.UpdateItemRequest;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.common.internal.UserAgentConfigurator;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyItemAlreadyExistsException;
@@ -123,7 +124,16 @@ public final class DynamoDBPersistenceStore extends BasePersistenceStore impleme
      */
     @Override
     public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        // Skip priming if DynamoDB client is not available
+        if (dynamoDbClient == null) {
+            return;
+        }
+
         try {
+            // Automatic priming - preload classes from classesloaded.txt
+            ClassPreLoader.preloadClasses();
+
+            // Invoke priming - exercise DynamoDB SDK paths
             String primingRecordKey = "__invoke_prime__";
             Instant now = Instant.now();
             long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
@@ -137,8 +147,9 @@ public final class DynamoDBPersistenceStore extends BasePersistenceStore impleme
             putRecord(primingDataRecord, Instant.now());
             getRecord(primingRecordKey);
             deleteRecord(primingRecordKey);
-        } catch (Exception unknown) {
-            // This is unexpected but we must continue without any interruption
+        } catch (Exception e) {
+            // Log the exception for debugging but continue to ensure checkpoint succeeds
+            LOG.warn("Priming failed during checkpoint, continuing anyway", e);
         }
     }
 

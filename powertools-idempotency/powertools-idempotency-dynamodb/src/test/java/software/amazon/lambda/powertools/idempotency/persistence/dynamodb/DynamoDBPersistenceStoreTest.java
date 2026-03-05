@@ -15,6 +15,7 @@
 package software.amazon.lambda.powertools.idempotency.persistence.dynamodb;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
@@ -384,5 +385,25 @@ class DynamoDBPersistenceStoreTest extends DynamoDBConfig {
                     client.deleteItem(DeleteItemRequest.builder().tableName(TABLE_NAME).key(itemKey).build());
                 });
         key = null;
+    }
+
+    @Test
+    void testBeforeCheckpointDoesNotThrowException() {
+        DynamoDBPersistenceStore store = DynamoDBPersistenceStore.builder()
+                .withTableName(TABLE_NAME)
+                .withDynamoDbClient(client)
+                .build();
+        // Pass null since beforeCheckpoint doesn't use the context parameter
+        assertThatNoException().isThrownBy(() -> store.beforeCheckpoint(null));
+    }
+
+    @Test
+    void testAfterRestoreDoesNotThrowException() {
+        DynamoDBPersistenceStore store = DynamoDBPersistenceStore.builder()
+                .withTableName(TABLE_NAME)
+                .withDynamoDbClient(client)
+                .build();
+        // Pass null since afterRestore doesn't use the context parameter
+        assertThatNoException().isThrownBy(() -> store.afterRestore(null));
     }
 }
