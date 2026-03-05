@@ -14,9 +14,16 @@
 
 package software.amazon.lambda.powertools.utilities;
 
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction.decompress;
+
+import java.nio.ByteBuffer;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
@@ -48,9 +55,161 @@ import org.slf4j.LoggerFactory;
  * Class that can be used to extract the meaningful part of an event and deserialize it into a Java object.<br/>
  * For example, extract the body of an API Gateway event, or messages from an SQS event.
  */
-public class EventDeserializer {
+public class EventDeserializer implements Resource{
 
     private static final Logger LOG = LoggerFactory.getLogger(EventDeserializer.class);
+    private static final EventDeserializer INSTANCE = new EventDeserializer();
+    /*
+    * Base64 encoding of: {"id":1234,"name":"product","price":42}
+    * Used in priming of Kafka, ActiveMQ, RabbitMQ events
+    */
+    public static final String DATA = "eyJpZCI6MTIzNCwgIm5hbWUiOiJwcm9kdWN0IiwgInByaWNlIjo0Mn0=";
+
+    static {
+        Core.getGlobalContext().register(INSTANCE);
+    }
+
+    public static void init() {
+        // Placeholder method used to enable SnapStart priming. Users need a direct reference to this class in order for the CRaC hooks to execute.
+        new EventDeserializer();
+    }
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        init();
+        primeAllEventTypes();
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // This is a no-op, as we don't need to do anything after restore
+    }
+    private void primeAllEventTypes() {
+        try {
+            // API Gateway v1
+            APIGatewayProxyRequestEvent apiV1 = new APIGatewayProxyRequestEvent();
+            apiV1.setBody("{}");
+            extractDataFrom(apiV1);
+
+            // API Gateway v2
+            APIGatewayV2HTTPEvent apiV2 = new APIGatewayV2HTTPEvent();
+            apiV2.setBody("{}");
+            extractDataFrom(apiV2);
+
+            // SNS
+            SNSEvent snsEvent = new SNSEvent();
+            SNSEvent.SNS sns = new SNSEvent.SNS();
+            sns.setMessage("{}");
+            SNSEvent.SNSRecord snsRecord = new SNSEvent.SNSRecord();
+            snsRecord.setSns(sns);
+            snsEvent.setRecords(List.of(snsRecord));
+            extractDataFrom(snsEvent);
+
+            // SQS
+            SQSEvent sqsEvent = new SQSEvent();
+            SQSEvent.SQSMessage sqsMessage = new SQSEvent.SQSMessage();
+            sqsMessage.setBody("{}");
+            sqsEvent.setRecords(List.of(sqsMessage));
+            extractDataFrom(sqsEvent);
+
+            // Single SQS message
+            extractDataFrom(sqsMessage);
+
+            // Scheduled Event
+            ScheduledEvent scheduledEvent = new ScheduledEvent();
+            scheduledEvent.setDetail(Map.of("key", "value"));
+            extractDataFrom(scheduledEvent);
+
+            // ALB
+            ApplicationLoadBalancerRequestEvent albEvent =
+                    new ApplicationLoadBalancerRequestEvent();
+            albEvent.setBody("{}");
+            extractDataFrom(albEvent);
+
+            // CloudWatch Logs
+            CloudWatchLogsEvent cwEvent = new CloudWatchLogsEvent();
+            CloudWatchLogsEvent.AWSLogs logs = new CloudWatchLogsEvent.AWSLogs();
+            logs.setData("ewogICJpZCI6IDEyMzQsCiAgIm5hbWUiOiAicHJvZHVjdCIsCiAgInByaWNlIjogNDIKfQ");
+            cwEvent.setAwsLogs(logs);
+            extractDataFrom(cwEvent);
+
+            // CloudFormation
+            CloudFormationCustomResourceEvent cfEvent =
+                    new CloudFormationCustomResourceEvent();
+            cfEvent.setResourceProperties(Map.of("key", "value"));
+            extractDataFrom(cfEvent);
+
+            // Kinesis
+            KinesisEvent kinesisEvent = new KinesisEvent();
+            KinesisEvent.Record kinesisRecord = new KinesisEvent.Record();
+            kinesisRecord.setData(ByteBuffer.allocate(0));
+            KinesisEvent.KinesisEventRecord kinesisEventRecord =
+                    new KinesisEvent.KinesisEventRecord();
+            kinesisEventRecord.setKinesis(kinesisRecord);
+            kinesisEvent.setRecords(List.of(kinesisEventRecord));
+            extractDataFrom(kinesisEvent);
+
+            // Single Kinesis record
+            extractDataFrom(kinesisEventRecord);
+
+            // Firehose
+            KinesisFirehoseEvent firehoseEvent = new KinesisFirehoseEvent();
+            KinesisFirehoseEvent.Record firehoseRecord =
+                    new KinesisFirehoseEvent.Record();
+            firehoseRecord.setData(ByteBuffer.allocate(0));
+            firehoseEvent.setRecords(List.of(firehoseRecord));
+            extractDataFrom(firehoseEvent);
+
+            // Kafka
+            KafkaEvent kafkaEvent = new KafkaEvent();
+            KafkaEvent.KafkaEventRecord kafkaRecord =
+                    new KafkaEvent.KafkaEventRecord();
+            kafkaRecord.setValue(DATA);
+            kafkaEvent.setRecords(
+                    Map.of("topic", List.of(kafkaRecord))
+            );
+            extractDataFrom(kafkaEvent);
+
+            // ActiveMQ
+            ActiveMQEvent activeMQEvent = new ActiveMQEvent();
+            ActiveMQEvent.ActiveMQMessage activeMQMessage =
+                    new ActiveMQEvent.ActiveMQMessage();
+            activeMQMessage.setData(DATA);
+            activeMQEvent.setMessages(List.of(activeMQMessage));
+            extractDataFrom(activeMQEvent);
+
+            // RabbitMQ
+            RabbitMQEvent rabbitMQEvent = new RabbitMQEvent();
+            RabbitMQEvent.RabbitMessage rabbitMessage =
+                    new RabbitMQEvent.RabbitMessage();
+            rabbitMessage.setData(DATA);
+            rabbitMQEvent.setRmqMessagesByQueue(
+                    Map.of("queue", List.of(rabbitMessage))
+            );
+            extractDataFrom(rabbitMQEvent);
+
+            // Kinesis Analytics Firehose preprocessing
+            KinesisAnalyticsFirehoseInputPreprocessingEvent kaFirehoseEvent =
+                    new KinesisAnalyticsFirehoseInputPreprocessingEvent();
+            KinesisAnalyticsFirehoseInputPreprocessingEvent.Record kaFirehoseRecord =
+                    new KinesisAnalyticsFirehoseInputPreprocessingEvent.Record();
+            kaFirehoseRecord.setData(ByteBuffer.allocate(0));
+            kaFirehoseEvent.setRecords(List.of(kaFirehoseRecord));
+            extractDataFrom(kaFirehoseEvent);
+
+            // Kinesis Analytics Streams preprocessing
+            KinesisAnalyticsStreamsInputPreprocessingEvent kaStreamsEvent =
+                    new KinesisAnalyticsStreamsInputPreprocessingEvent();
+            KinesisAnalyticsStreamsInputPreprocessingEvent.Record kaStreamsRecord =
+                    new KinesisAnalyticsStreamsInputPreprocessingEvent.Record();
+            kaStreamsRecord.setData(ByteBuffer.allocate(0));
+            kaStreamsEvent.setRecords(List.of(kaStreamsRecord));
+            extractDataFrom(kaStreamsEvent);
+        } catch (Exception e) {
+            // Best-effort priming only — never fail checkpointing
+            throw new PrimingException("Failed to prime event ", e);
+        }
+    }
 
     /**
      * Extract the meaningful part of a Lambda Event object. Main events are built-in:
