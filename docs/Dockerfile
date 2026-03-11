@@ -1,4 +1,4 @@
-FROM squidfunk/mkdocs-material@sha256:f4332a8e8895aa303bf7f3ceede749980a98cf79f5d87ad567b4d41f037b0101
+FROM squidfunk/mkdocs-material@sha256:c3739993c3e7c92cfe649ba03cbc04f4fa9b1497886abd16267eb413cda8aecf
 
 COPY requirements.txt /tmp/
 RUN pip install --require-hashes -r /tmp/requirements.txt
