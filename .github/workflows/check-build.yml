@@ -107,7 +107,7 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@f744c72a42b1995d7b0cbc314bde4bace7ac1fe1 # v1.5.0
         with:
-          java-version: "21"
+          java-version: "21.0.8"
           distribution: "graalvm"
           cache: maven
       - id: graalvm-native-test
