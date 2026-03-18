@@ -124,9 +124,9 @@ jobs:
           
           echo "Changes detected in powertools modules: $CHANGED_FILES"
           
-          # Find modules with graalvm-native profile and run tests
+          # Find modules with native profile and run tests with the tracing agent
           find . -name "pom.xml" -path "./powertools-*" | while read module; do
-            if grep -q "<id>graalvm-native</id>" "$module"; then
+            if grep -q "<id>native</id>" "$module"; then
               module_dir=$(dirname "$module")
               module_name=$(basename "$module_dir")
               
@@ -135,11 +135,8 @@ jobs:
                  echo " $CHANGED_FILES " | grep -q " pom.xml " || \
                  echo "$CHANGED_FILES" | grep -q "powertools-common/"; then
                 echo "::group::Building $module_name with GraalVM"
-                echo "Changes detected in $module_name - running GraalVM tests"
-                echo "Regenerating GraalVM metadata for $module_dir"
-                mvn -B -q -f "$module" -Pgenerate-graalvm-files clean test
-                echo "Running GraalVM native tests for $module_dir"
-                mvn -B -q -f "$module" -Pgraalvm-native test
+                echo "Changes detected in $module_name - running GraalVM native tests"
+                mvn -B -q -f "$module" -Pnative -Dagent=true clean test
                 echo "::endgroup::"
               else
                 echo "No changes detected in $module_name - skipping GraalVM tests"
