@@ -14,15 +14,17 @@
 
 package software.amazon.lambda.powertools.e2e;
 
+import java.util.Map;
+
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import software.amazon.lambda.powertools.metadata.LambdaMetadata;
 import software.amazon.lambda.powertools.metadata.LambdaMetadataClient;
 
-public class Function implements RequestHandler<Object, String> {
+public class Function implements RequestHandler<Object, Map<String, String>> {
 
-    public String handleRequest(Object input, Context context) {
+    public Map<String, String> handleRequest(Object input, Context context) {
         LambdaMetadata metadata = LambdaMetadataClient.get();
-        return "{\"availabilityZoneId\": \"" + metadata.getAvailabilityZoneId() + "\"}";
+        return Map.of("availabilityZoneId", metadata.getAvailabilityZoneId());
     }
 }
