@@ -117,6 +117,7 @@
         <mockito-junit-jupiter.version>5.21.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
+        <native-maven-plugin.version>0.11.5</native-maven-plugin.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
@@ -450,6 +451,45 @@
                     <artifactId>exec-maven-plugin</artifactId>
                     <version>3.6.2</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.graalvm.buildtools</groupId>
+                    <artifactId>native-maven-plugin</artifactId>
+                    <version>${native-maven-plugin.version}</version>
+                    <extensions>true</extensions>
+                    <executions>
+                        <execution>
+                            <id>test-native</id>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <phase>test</phase>
+                        </execution>
+                    </executions>
+                    <configuration>
+                        <agent>
+                            <enabled>true</enabled>
+                            <options>
+                                <enableExperimentalPredefinedClasses>true</enableExperimentalPredefinedClasses>
+                                <enableExperimentalUnsafeAllocationTracing>true</enableExperimentalUnsafeAllocationTracing>
+                            </options>
+                            <metadataCopy>
+                                <disabledStages>
+                                    <stage>main</stage>
+                                </disabledStages>
+                                <merge>false</merge>
+                            </metadataCopy>
+                        </agent>
+                        <buildArgs>
+                            <buildArg>--add-opens java.base/java.util=ALL-UNNAMED</buildArg>
+                            <buildArg>--add-opens java.base/java.lang=ALL-UNNAMED</buildArg>
+                            <buildArg>--no-fallback</buildArg>
+                            <buildArg>--verbose</buildArg>
+                            <buildArg>--native-image-info</buildArg>
+                            <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
+                            <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                        </buildArgs>
+                    </configuration>
+                </plugin>
             </plugins>
         </pluginManagement>
         <plugins>
@@ -630,6 +670,29 @@
                                 --add-opens java.base/java.util=ALL-UNNAMED
                                 --add-opens java.base/java.lang=ALL-UNNAMED
                             </argLine>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+            The native profile configures surefire to pass add-opens flags via JDK_JAVA_OPTIONS.
+            This is necessary because the native-maven-plugin's NativeExtension overwrites surefire's
+            argLine when -Dagent=true is set (it adds its own argLine element for the tracing agent),
+            which causes the add-opens flags from the jdk16 profile to be lost.
+            JDK_JAVA_OPTIONS is picked up by the JVM automatically, bypassing the argLine override.
+        -->
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <configuration>
+                            <environmentVariables>
+                                <JDK_JAVA_OPTIONS>--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED</JDK_JAVA_OPTIONS>
+                            </environmentVariables>
                         </configuration>
                     </plugin>
                 </plugins>

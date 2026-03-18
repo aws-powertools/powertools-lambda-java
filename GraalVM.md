@@ -19,26 +19,33 @@ GraalVM native image compilation requires complete knowledge of an application's
 
 In order to generate the metadata reachability files for Powertools for Lambda, follow these general steps.
 
-1. **Add Maven Profiles**
-    - Add profile for generating GraalVM reachability metadata files. You can find an example of this in profile `generate-graalvm-files` of this [pom.xml](powertools-common/pom.xml). 
-    - Add another profile for running the tests in the native image. You can find and example of this in profile `graalvm-native` of this [pom.xml](powertools-common/pom.xml).
+1. **Add the `native` Maven Profile**
+    - The root `pom.xml` provides a shared `pluginManagement` configuration for the `native-maven-plugin` with the `<agent>` configuration, common `buildArgs`, and the `test-native` execution.
+    - Each module only needs to define a `native` profile that specifies module-specific configuration: `imageName` and `metadataCopy.outputDirectory`. You can find an example in the `native` profile of this [pom.xml](powertools-common/pom.xml).
+    - If a module needs extra `buildArgs` beyond the common ones, use `<buildArgs combine.children="append">` to add them without overriding the parent configuration.
 
 2. **Generate Reachability Metadata**
     - Set the `JAVA_HOME` environment variable to use GraalVM
-    - Run tests with `-Pgenerate-graalvm-files` profile.
+    - Run tests with the `-Dagent=true` flag to attach the GraalVM tracing agent to the test execution:
 ```shell
-mvn -Pgenerate-graalvm-files clean test
+mvn -Pnative -Dagent=true clean test
 ```
 
-3. **Validate Native Image Tests**
+3. **Copy Metadata to Source**
+    - Copy the generated metadata from the agent output directory to the module's `src/main/resources` directory:
+```shell
+mvn -Pnative native:metadata-copy
+```
+
+4. **Validate Native Image Tests**
     - Set the `JAVA_HOME` environment variable to use GraalVM
-    - Run tests with `-Pgraalvm-native` profile. This will build a GraalVM native image and run the JUnit tests.
+    - Run tests with `-Pnative` profile. This will build a GraalVM native image and run the JUnit tests.
 ```shell
-mvn -Pgraalvm-native clean test
+mvn -Pnative test
 ```
 
-4. **Clean Up Metadata**
-    -  GraalVM metadata reachability files generated in Step 2 contains references to the test scoped dependencies as well.
+5. **Clean Up Metadata**
+    -  GraalVM metadata reachability files generated in Step 2 contain references to the test scoped dependencies as well.
     - Remove the references in generated metadata files for the following (and any other references to test scoped resources and classes):
         - JUnit
         - Mockito
@@ -46,17 +53,21 @@ mvn -Pgraalvm-native clean test
 
 ## Known Issues and Solutions
 1. **Mockito Compatibility**
-   - Powertools uses Mockito 5.x which uses “inline mock maker” as the default. This mock maker does not play well with GraalVM. Mockito [recommends](https://github.com/mockito/mockito/releases/tag/v5.0.0) using subclass mock maker with GraalVM. Therefore `generate-graalvm-files` profile uses subclass mock maker instead of inline mock maker.
+   - Powertools uses Mockito 5.x which uses "inline mock maker" as the default. This mock maker does not play well with GraalVM. Mockito [recommends](https://github.com/mockito/mockito/releases/tag/v5.0.0) using subclass mock maker with GraalVM. Therefore the `native` profile adds the `mockito-subclass` dependency where needed.
    - Subclass mock maker does not support testing static methods. Tests have therefore been modified to use [JUnit Pioneer](https://junit-pioneer.org/docs/environment-variables/) to inject the environment variables in the scope of the test's execution.
 
-2. **Log4j Compatibility**
+2. **Unsafe Allocation Tracing**
+   - GraalVM 21.0.10+ requires `"unsafeAllocated": true` in `reflect-config.json` for classes instantiated via `Unsafe.allocateInstance()`. Mockito uses Objenesis which relies on this.
+   - The `enableExperimentalUnsafeAllocationTracing` option is enabled in the root `pluginManagement` agent configuration to address this.
+
+3. **Log4j Compatibility**
    - Version 2.22.1 fails with this error
 ```
 java.lang.InternalError: com.oracle.svm.core.jdk.UnsupportedFeatureError: Defining hidden classes at runtime is not supported.
 ```
    - This has been [fixed](https://github.com/apache/logging-log4j2/discussions/2364#discussioncomment-8950077) in Log4j 2.24.x. PT has been updated to use this version of Log4j 
 
-3. **Test Class Organization**
+4. **Test Class Organization**
    - **Issue**: Anonymous inner classes and lambda expressions in Mockito matchers cause `NoSuchMethodError` in GraalVM native tests
    - **Solution**: 
      - Extract static inner test classes to separate concrete classes in the same package as the class under test
@@ -72,12 +83,12 @@ java.lang.InternalError: com.oracle.svm.core.jdk.UnsupportedFeatureError: Defini
    })
    ```
 
-4. **Package Visibility Issues**
+5. **Package Visibility Issues**
    - **Issue**: Test handler classes cannot access package-private methods when placed in subpackages
    - **Solution**: Place test handler classes in the same package as the class under test, not in subpackages like `handlers/`
    - **Example**: Use `software.amazon.lambda.powertools.cloudformation` instead of `software.amazon.lambda.powertools.cloudformation.handlers`
 
-5. **Test Stubs Best Practice**
+6. **Test Stubs Best Practice**
    - **Best Practice**: Avoid mocking where possible and use concrete test stubs provided by `powertools-common` package
    - **Solution**: Use `TestLambdaContext` and other test stubs from `powertools-common` test-jar instead of Mockito mocks
    - **Implementation**: Add `powertools-common` test-jar dependency and replace `mock(Context.class)` with `new TestLambdaContext()`
