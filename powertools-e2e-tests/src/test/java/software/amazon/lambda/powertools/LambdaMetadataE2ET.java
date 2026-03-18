@@ -62,7 +62,7 @@ class LambdaMetadataE2ET {
 
         // THEN
         assertThat(invocationResult.getFunctionError())
-                .describedAs("Lambda function failed: %s", invocationResult.getResult())
+                .describedAs("Lambda function failed: %s", invocationResult.getFunctionError())
                 .isNull();
 
         JsonNode response = JsonConfig.get().getObjectMapper().readTree(invocationResult.getResult());
@@ -78,10 +78,10 @@ class LambdaMetadataE2ET {
 
         // THEN - both should return the same AZ ID (cached within sandbox)
         assertThat(firstResult.getFunctionError())
-                .describedAs("Lambda function failed on first invocation: %s", firstResult.getResult())
+                .describedAs("Lambda function failed on first invocation: %s", firstResult.getFunctionError())
                 .isNull();
         assertThat(secondResult.getFunctionError())
-                .describedAs("Lambda function failed on second invocation: %s", secondResult.getResult())
+                .describedAs("Lambda function failed on second invocation: %s", secondResult.getFunctionError())
                 .isNull();
 
         JsonNode firstResponse = JsonConfig.get().getObjectMapper().readTree(firstResult.getResult());
