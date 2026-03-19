@@ -22,6 +22,7 @@ public class InvocationResult {
 
     private final InvocationLogs logs;
     private final String result;
+    private final String functionError;
 
     private final String requestId;
     private final Instant start;
@@ -31,6 +32,7 @@ public class InvocationResult {
         requestId = response.responseMetadata().requestId();
         logs = new InvocationLogs(response.logResult(), requestId);
         result = response.payload().asUtf8String();
+        functionError = response.functionError();
         this.start = start;
         this.end = end;
     }
@@ -53,5 +55,9 @@ public class InvocationResult {
 
     public Instant getEnd() {
         return end;
+    }
+
+    public String getFunctionError() {
+        return functionError;
     }
 }

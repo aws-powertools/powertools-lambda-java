@@ -42,6 +42,7 @@
         <module>parameters</module>
         <module>validation-alb-event</module>
         <module>validation-apigw-event</module>
+        <module>lambda-metadata</module>
     </modules>
 
     <dependencyManagement>
@@ -111,6 +112,11 @@
             <dependency>
                 <groupId>software.amazon.lambda</groupId>
                 <artifactId>powertools-validation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>software.amazon.lambda</groupId>
+                <artifactId>powertools-lambda-metadata</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
