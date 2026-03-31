@@ -118,7 +118,7 @@
         <mockito-junit-jupiter.version>5.21.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
-        <native-maven-plugin.version>0.11.5</native-maven-plugin.version>
+        <native-maven-plugin.version>1.0.0</native-maven-plugin.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
