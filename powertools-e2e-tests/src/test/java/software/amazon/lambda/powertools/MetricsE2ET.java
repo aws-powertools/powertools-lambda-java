@@ -123,9 +123,8 @@ class MetricsE2ET {
                 paddedEnd, 1, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
-        // With a period of 1 second, only the high resolution metric is available.
-        // Sum all data points as the padded window may return multiple 1-second buckets.
-        double highResSum = productMetricDataResult.stream().mapToDouble(Double::doubleValue).sum();
-        assertThat(highResSum).isEqualTo(8);
+        // With a period of 1 second and a padded window, both standard (4) and high resolution (8)
+        // metrics may appear as separate 1-second buckets. Verify the high resolution value is present.
+        assertThat(productMetricDataResult).contains(8.0);
     }
 }
