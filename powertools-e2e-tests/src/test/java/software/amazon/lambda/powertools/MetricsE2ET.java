@@ -119,12 +119,13 @@ class MetricsE2ET {
                 "products", Collections.singletonMap("Service", SERVICE));
         assertThat(productMetrics.get(0)).isEqualTo(12);
 
-        List<Double> productMetricDataResult = metricsFetcher.fetchMetrics(invocationResult.getStart(),
-                invocationResult.getEnd(), 1, NAMESPACE,
+        List<Double> productMetricDataResult = metricsFetcher.fetchMetrics(paddedStart,
+                paddedEnd, 1, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
-        // We are searching across the time period the metric was created but with a period of 1 second. Only the high
-        // resolution metric will be available at this point
-        assertThat(productMetricDataResult.get(0)).isEqualTo(8);
+        // With a period of 1 second, only the high resolution metric is available.
+        // Sum all data points as the padded window may return multiple 1-second buckets.
+        double highResSum = productMetricDataResult.stream().mapToDouble(Double::doubleValue).sum();
+        assertThat(highResSum).isEqualTo(8);
     }
 }
