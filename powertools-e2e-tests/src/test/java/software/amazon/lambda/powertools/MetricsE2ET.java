@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static software.amazon.lambda.powertools.testutils.Infrastructure.FUNCTION_NAME_OUTPUT;
 import static software.amazon.lambda.powertools.testutils.lambda.LambdaInvoker.invokeFunction;
 
-import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -74,7 +73,6 @@ class MetricsE2ET {
     void test_recordMetrics() {
         // GIVEN
 
-        Instant currentTimeTruncatedToMinutes = Instant.now(Clock.systemUTC()).truncatedTo(ChronoUnit.MINUTES);
         String event1 = "{ \"metrics\": {\"orders\": 1, \"products\": 4}, \"dimensions\": { \"Environment\": \"test\"}, \"highResolution\": \"false\"}";
 
         String event2 = "{ \"metrics\": {\"orders\": 1, \"products\": 8}, \"dimensions\": { \"Environment\": \"test\"}, \"highResolution\": \"true\"}";
@@ -84,15 +82,20 @@ class MetricsE2ET {
         invokeFunction(functionName, event2);
 
         // THEN
+        // Pad the query window to address CloudWatch eventual consistency:
+        // metric timestamps can shift by up to a minute during batch processing.
+        Instant paddedStart = invocationResult.getStart().minus(1, ChronoUnit.MINUTES);
+        Instant paddedEnd = invocationResult.getEnd().plus(2, ChronoUnit.MINUTES);
+
         MetricsFetcher metricsFetcher = new MetricsFetcher();
-        List<Double> coldStart = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
+        List<Double> coldStart = metricsFetcher.fetchMetrics(paddedStart, paddedEnd, 60,
                 NAMESPACE,
                 "ColdStart", Stream.of(new String[][] {
                         { "FunctionName", functionName },
                         { "Service", SERVICE } }).collect(Collectors.toMap(data -> data[0], data -> data[1])));
         assertThat(coldStart.get(0)).isEqualTo(1);
         List<Double> orderMetrics = RetryUtils.withRetry(() -> {
-            List<Double> metrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(),
+            List<Double> metrics = metricsFetcher.fetchMetrics(paddedStart, paddedEnd,
                     60, NAMESPACE, "orders", Collections.singletonMap("Environment", "test"));
             if (metrics.get(0) != 2.0) {
                 throw new DataNotReadyException("Expected 2.0 orders but got " + metrics.get(0));
@@ -100,26 +103,24 @@ class MetricsE2ET {
             return metrics;
         }, "orderMetricsRetry", DataNotReadyException.class).get();
         assertThat(orderMetrics.get(0)).isEqualTo(2);
-        List<Double> productMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(),
-                invocationResult.getEnd(), 60, NAMESPACE,
+        List<Double> productMetrics = metricsFetcher.fetchMetrics(paddedStart,
+                paddedEnd, 60, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
         // When searching across a 1 minute time period with a period of 60 we find both metrics and the sum is 12
         assertThat(productMetrics.get(0)).isEqualTo(12);
 
-        orderMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
+        orderMetrics = metricsFetcher.fetchMetrics(paddedStart, paddedEnd, 60,
                 NAMESPACE,
                 "orders", Collections.singletonMap("Service", SERVICE));
         assertThat(orderMetrics.get(0)).isEqualTo(2);
-        productMetrics = metricsFetcher.fetchMetrics(invocationResult.getStart(), invocationResult.getEnd(), 60,
+        productMetrics = metricsFetcher.fetchMetrics(paddedStart, paddedEnd, 60,
                 NAMESPACE,
                 "products", Collections.singletonMap("Service", SERVICE));
         assertThat(productMetrics.get(0)).isEqualTo(12);
 
-        Instant searchStartTime = currentTimeTruncatedToMinutes.plusSeconds(15);
-        Instant searchEndTime = currentTimeTruncatedToMinutes.plusSeconds(45);
-
-        List<Double> productMetricDataResult = metricsFetcher.fetchMetrics(searchStartTime, searchEndTime, 1, NAMESPACE,
+        List<Double> productMetricDataResult = metricsFetcher.fetchMetrics(invocationResult.getStart(),
+                invocationResult.getEnd(), 1, NAMESPACE,
                 "products", Collections.singletonMap("Environment", "test"));
 
         // We are searching across the time period the metric was created but with a period of 1 second. Only the high
