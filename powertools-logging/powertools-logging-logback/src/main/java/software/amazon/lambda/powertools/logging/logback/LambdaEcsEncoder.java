@@ -24,6 +24,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
 import static software.amazon.lambda.powertools.logging.logback.JsonUtils.*;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.TENANT_ID;
 
 import ch.qos.logback.classic.pattern.ThrowableHandlingConverter;
 import ch.qos.logback.classic.pattern.ThrowableProxyConverter;
@@ -72,6 +73,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
     protected static final String FUNCTION_MEMORY_ATTR_NAME = "faas.memory";
     protected static final String FUNCTION_TRACE_ID_ATTR_NAME = "trace.id";
     protected static final String CORRELATION_ID_ATTR_NAME = "correlation.id";
+    protected static final String TENANT_ID_ATTR_NAME = "tenant.id";
 
     protected static final String ECS_VERSION = "1.2.0";
     protected static final String CLOUD_PROVIDER = "aws";
@@ -168,6 +170,12 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
             if (correlationId != null) {
                 serializer.writeRaw(',');
                 serializer.writeStringField(CORRELATION_ID_ATTR_NAME, correlationId);
+            }
+            
+            String tenantId = mdcPropertyMap.get(TENANT_ID.getName());
+            if (tenantId != null) {
+                serializer.writeRaw(',');
+                serializer.writeStringField(TENANT_ID_ATTR_NAME, tenantId);
             }
         }
     }

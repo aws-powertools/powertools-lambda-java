@@ -35,7 +35,8 @@ public enum PowertoolsLoggedFields {
     FUNCTION_TRACE_ID("xray_trace_id"),
     SAMPLING_RATE("sampling_rate"),
     CORRELATION_ID("correlation_id"),
-    SERVICE("service");
+    SERVICE("service"),
+    TENANT_ID("tenant_id");
 
     private final String name;
 
@@ -55,6 +56,10 @@ public enum PowertoolsLoggedFields {
         hashMap.put(FUNCTION_ARN.name, context.getInvokedFunctionArn());
         hashMap.put(FUNCTION_MEMORY_SIZE.name, String.valueOf(context.getMemoryLimitInMB()));
         hashMap.put(FUNCTION_REQUEST_ID.name, String.valueOf(context.getAwsRequestId()));
+        String tenantId = context.getTenantId();
+        if (tenantId != null && !tenantId.isEmpty()) {
+            hashMap.put(TENANT_ID.name, tenantId);
+        }
 
         return hashMap;
     }
