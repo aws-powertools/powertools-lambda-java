@@ -483,4 +483,33 @@ class LambdaJsonEncoderTest {
         ;
     }
 
+    @Test
+    void shouldNotLogTenantIdWhenNull() {
+        // GIVEN
+        LambdaJsonEncoder encoder = new LambdaJsonEncoder();
+        MDC.put(PowertoolsLoggedFields.TENANT_ID.getName(), null);
+
+        // WHEN
+        byte[] encoded = encoder.encode(loggingEvent);
+        String result = new String(encoded, StandardCharsets.UTF_8);
+
+        // THEN
+        assertThat(result).doesNotContain("tenant_id");
+    }
+
+    @Test
+    void shouldNotLogTenantIdWhenEmpty() {
+        // GIVEN
+        LambdaJsonEncoder encoder = new LambdaJsonEncoder();
+        MDC.put(PowertoolsLoggedFields.TENANT_ID.getName(), "");
+
+        // WHEN
+        byte[] encoded = encoder.encode(loggingEvent);
+        String result = new String(encoded, StandardCharsets.UTF_8);
+
+        // THEN
+        assertThat(result).doesNotContain("tenant_id");
+    }
+
+
 }

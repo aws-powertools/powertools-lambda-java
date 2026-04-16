@@ -192,7 +192,7 @@ final class PowertoolsResolver implements EventResolver {
         public boolean isResolvable(LogEvent logEvent) {
             final String tenantId =
                     logEvent.getContextData().getValue(PowertoolsLoggedFields.TENANT_ID.getName());
-            return null != tenantId;
+            return null != tenantId && !tenantId.isEmpty();
         }
 
         @Override

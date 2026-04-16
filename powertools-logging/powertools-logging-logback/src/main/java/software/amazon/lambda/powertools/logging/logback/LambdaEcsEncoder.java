@@ -173,7 +173,7 @@ public class LambdaEcsEncoder extends EncoderBase<ILoggingEvent> {
             }
             
             String tenantId = mdcPropertyMap.get(TENANT_ID.getName());
-            if (tenantId != null) {
+            if (tenantId != null && !tenantId.isEmpty() {
                 serializer.writeRaw(',');
                 serializer.writeStringField(TENANT_ID_ATTR_NAME, tenantId);
             }
