@@ -86,7 +86,7 @@
         <log4j.version>2.25.4</log4j.version>
         <slf4j.version>2.0.17</slf4j.version>
         <jackson.version>2.21.1</jackson.version>
-        <aws.sdk.version>2.42.34</aws.sdk.version>
+        <aws.sdk.version>2.42.35</aws.sdk.version>
         <aws.xray.recorder.version>2.21.0</aws.xray.recorder.version>
         <payloadoffloading-common.version>2.2.0</payloadoffloading-common.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -102,7 +102,7 @@
         <maven-source-plugin.version>3.4.0</maven-source-plugin.version>
         <maven-gpg-plugin.version>3.2.1</maven-gpg-plugin.version>
         <aspectj-maven-plugin.version>1.14.1</aspectj-maven-plugin.version>
-        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
+        <maven-surefire-plugin.version>3.5.5</maven-surefire-plugin.version>
         <jacoco-maven-plugin.version>0.8.14</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.7.0</nexus-staging-maven-plugin.version>
         <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
