@@ -26,6 +26,7 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_TRACE_ID;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.FUNCTION_VERSION;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
+import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.TENANT_ID;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -88,7 +89,7 @@ import software.amazon.lambda.powertools.logging.handlers.PowertoolsLogSamplingE
 
 class LambdaLoggingAspectTest {
 
-    private static final int EXPECTED_CONTEXT_SIZE = 8;
+    private static final int EXPECTED_CONTEXT_SIZE = 9;
     private RequestStreamHandler requestStreamHandler;
     private RequestHandler<Object, Object> requestHandler;
 
@@ -148,6 +149,7 @@ class LambdaLoggingAspectTest {
                 .containsEntry(FUNCTION_VERSION.getName(), "1")
                 .containsEntry(FUNCTION_NAME.getName(), "test-function")
                 .containsEntry(FUNCTION_REQUEST_ID.getName(), "test-request-id")
+                .containsEntry(TENANT_ID.getName(), "test-tenant")
                 .containsKey(FUNCTION_COLD_START.getName())
                 .containsKey(SERVICE.getName());
     }
@@ -166,6 +168,7 @@ class LambdaLoggingAspectTest {
                 .containsEntry(FUNCTION_VERSION.getName(), "1")
                 .containsEntry(FUNCTION_NAME.getName(), "test-function")
                 .containsEntry(FUNCTION_REQUEST_ID.getName(), "test-request-id")
+                .containsEntry(TENANT_ID.getName(), "test-tenant")
                 .containsKey(FUNCTION_COLD_START.getName())
                 .containsKey(SERVICE.getName());
     }

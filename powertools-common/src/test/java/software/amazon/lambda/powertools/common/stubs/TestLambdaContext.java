@@ -74,4 +74,9 @@ public class TestLambdaContext implements Context {
     public LambdaLogger getLogger() {
         return null;
     }
+
+    @Override
+    public String getTenantId() {
+        return "test-tenant";
+    }
 }

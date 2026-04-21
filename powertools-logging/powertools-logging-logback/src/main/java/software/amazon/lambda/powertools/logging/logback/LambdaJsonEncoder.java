@@ -124,7 +124,9 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
         if (includePowertoolsInfo) {
             for (Map.Entry<String, String> entry : sortedMap.entrySet()) {
                 if (PowertoolsLoggedFields.stringValues().contains(entry.getKey())
-                    && !(entry.getKey().equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && entry.getValue().equals("0.0"))) {
+                    && !(entry.getKey().equals(PowertoolsLoggedFields.SAMPLING_RATE.getName()) && "0.0".equals(entry.getValue()))
+                    && !(entry.getKey().equals(PowertoolsLoggedFields.TENANT_ID.getName())
+                    && (entry.getValue() == null || entry.getValue().isEmpty()))) {
                     serializeMDCEntry(entry, serializer);
                 }
             }
@@ -236,6 +238,7 @@ public class LambdaJsonEncoder extends EncoderBase<ILoggingEvent> {
      *     <li>xray_trace_id</li>
      *     <li>sampling_rate</li>
      *     <li>service</li>
+     *     <li>tenant_id</li> 
      * </ul>
      * <br/>
      * We strongly recommend to keep these information.

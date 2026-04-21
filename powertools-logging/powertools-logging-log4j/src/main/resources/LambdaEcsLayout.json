@@ -87,6 +87,10 @@
     "$resolver": "powertools",
     "field": "correlation_id"
   },
+  "tenant.id": {
+    "$resolver": "powertools",
+    "field": "tenant_id"
+  },
   "": {
     "$resolver": "powertools"
   }
