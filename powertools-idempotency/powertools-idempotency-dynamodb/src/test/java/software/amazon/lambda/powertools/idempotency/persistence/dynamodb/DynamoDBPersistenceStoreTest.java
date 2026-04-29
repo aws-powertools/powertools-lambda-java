@@ -68,10 +68,10 @@ class DynamoDBPersistenceStoreTest {
         // GIVEN
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        DataRecord record = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null);
+        DataRecord dataRecord = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, null, null);
 
         // WHEN
-        persistenceStore.putRecord(record, now);
+        persistenceStore.putRecord(dataRecord, now);
 
         // THEN
         ArgumentCaptor<PutItemRequest> captor = ArgumentCaptor.forClass(PutItemRequest.class);
@@ -92,10 +92,10 @@ class DynamoDBPersistenceStoreTest {
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
         long inProgressExpiry = now.plus(300, ChronoUnit.SECONDS).toEpochMilli();
-        DataRecord record = new DataRecord("key", DataRecord.Status.INPROGRESS, expiry, null, null, OptionalLong.of(inProgressExpiry));
+        DataRecord dataRecord = new DataRecord("key", DataRecord.Status.INPROGRESS, expiry, null, null, OptionalLong.of(inProgressExpiry));
 
         // WHEN
-        persistenceStore.putRecord(record, now);
+        persistenceStore.putRecord(dataRecord, now);
 
         // THEN
         ArgumentCaptor<PutItemRequest> captor = ArgumentCaptor.forClass(PutItemRequest.class);
@@ -110,7 +110,7 @@ class DynamoDBPersistenceStoreTest {
         // GIVEN
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        DataRecord record = new DataRecord("key", DataRecord.Status.INPROGRESS, expiry, null, null);
+        DataRecord dataRecord = new DataRecord("key", DataRecord.Status.INPROGRESS, expiry, null, null);
         
         Map<String, AttributeValue> existingItem = new HashMap<>();
         existingItem.put("id", AttributeValue.builder().s("key").build());
@@ -124,7 +124,7 @@ class DynamoDBPersistenceStoreTest {
         when(mockClient.putItem(any(PutItemRequest.class))).thenThrow(exception);
 
         // WHEN / THEN
-        assertThatThrownBy(() -> persistenceStore.putRecord(record, now))
+        assertThatThrownBy(() -> persistenceStore.putRecord(dataRecord, now))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class)
                 .matches(e -> ((IdempotencyItemAlreadyExistsException) e).getDataRecord().isPresent())
                 .satisfies(e -> {
@@ -141,13 +141,13 @@ class DynamoDBPersistenceStoreTest {
         // GIVEN
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        DataRecord record = new DataRecord("key", DataRecord.Status.INPROGRESS, expiry, null, null);
+        DataRecord dataRecord = new DataRecord("key", DataRecord.Status.INPROGRESS, expiry, null, null);
         
         ConditionalCheckFailedException exception = ConditionalCheckFailedException.builder().build();
         when(mockClient.putItem(any(PutItemRequest.class))).thenThrow(exception);
 
         // WHEN / THEN
-        assertThatThrownBy(() -> persistenceStore.putRecord(record, now))
+        assertThatThrownBy(() -> persistenceStore.putRecord(dataRecord, now))
                 .isInstanceOf(IdempotencyItemAlreadyExistsException.class)
                 .matches(e -> !((IdempotencyItemAlreadyExistsException) e).getDataRecord().isPresent());
     }
@@ -168,7 +168,7 @@ class DynamoDBPersistenceStoreTest {
         when(mockClient.getItem(any(GetItemRequest.class))).thenReturn(response);
 
         // WHEN
-        DataRecord record = persistenceStore.getRecord("key");
+        DataRecord dataRecord = persistenceStore.getRecord("key");
 
         // THEN
         ArgumentCaptor<GetItemRequest> captor = ArgumentCaptor.forClass(GetItemRequest.class);
@@ -179,10 +179,10 @@ class DynamoDBPersistenceStoreTest {
         assertThat(request.consistentRead()).isTrue();
         assertThat(request.key()).containsEntry("id", AttributeValue.builder().s("key").build());
         
-        assertThat(record.getIdempotencyKey()).isEqualTo("key");
-        assertThat(record.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
-        assertThat(record.getExpiryTimestamp()).isEqualTo(expiry);
-        assertThat(record.getResponseData()).isEqualTo("Response Data");
+        assertThat(dataRecord.getIdempotencyKey()).isEqualTo("key");
+        assertThat(dataRecord.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
+        assertThat(dataRecord.getExpiryTimestamp()).isEqualTo(expiry);
+        assertThat(dataRecord.getResponseData()).isEqualTo("Response Data");
     }
 
     @Test
@@ -200,10 +200,10 @@ class DynamoDBPersistenceStoreTest {
     void updateRecord_shouldSendCorrectUpdateItemRequest() {
         // GIVEN
         long expiry = Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        DataRecord record = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, "Response", null);
+        DataRecord dataRecord = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, "Response", null);
 
         // WHEN
-        persistenceStore.updateRecord(record);
+        persistenceStore.updateRecord(dataRecord);
 
         // THEN
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
@@ -224,10 +224,10 @@ class DynamoDBPersistenceStoreTest {
         // GIVEN
         persistenceStore.configure(IdempotencyConfig.builder().withPayloadValidationJMESPath("body").build(), null);
         long expiry = Instant.now().plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        DataRecord record = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, "Response", "hash123");
+        DataRecord dataRecord = new DataRecord("key", DataRecord.Status.COMPLETED, expiry, "Response", "hash123");
 
         // WHEN
-        persistenceStore.updateRecord(record);
+        persistenceStore.updateRecord(dataRecord);
 
         // THEN
         ArgumentCaptor<UpdateItemRequest> captor = ArgumentCaptor.forClass(UpdateItemRequest.class);
@@ -269,10 +269,10 @@ class DynamoDBPersistenceStoreTest {
         
         Instant now = Instant.now();
         long expiry = now.plus(3600, ChronoUnit.SECONDS).getEpochSecond();
-        DataRecord record = new DataRecord("mykey", DataRecord.Status.INPROGRESS, expiry, null, null);
+        DataRecord dataRecord = new DataRecord("mykey", DataRecord.Status.INPROGRESS, expiry, null, null);
 
         // WHEN
-        customStore.putRecord(record, now);
+        customStore.putRecord(dataRecord, now);
 
         // THEN
         ArgumentCaptor<PutItemRequest> captor = ArgumentCaptor.forClass(PutItemRequest.class);
@@ -310,7 +310,7 @@ class DynamoDBPersistenceStoreTest {
         when(mockClient.getItem(any(GetItemRequest.class))).thenReturn(response);
 
         // WHEN
-        DataRecord record = customStore.getRecord("mykey");
+        DataRecord dataRecord = customStore.getRecord("mykey");
 
         // THEN
         ArgumentCaptor<GetItemRequest> captor = ArgumentCaptor.forClass(GetItemRequest.class);
@@ -320,8 +320,8 @@ class DynamoDBPersistenceStoreTest {
         assertThat(request.key()).containsEntry("pk", AttributeValue.builder().s("IDEMPOTENCY").build());
         assertThat(request.key()).containsEntry("sk", AttributeValue.builder().s("mykey").build());
         
-        assertThat(record.getIdempotencyKey()).isEqualTo("mykey");
-        assertThat(record.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
+        assertThat(dataRecord.getIdempotencyKey()).isEqualTo("mykey");
+        assertThat(dataRecord.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
     }
 
     @Test
