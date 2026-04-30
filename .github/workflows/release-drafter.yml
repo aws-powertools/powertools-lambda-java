@@ -23,6 +23,6 @@ jobs:
       contents: write  # required for creating draft releases
     steps:
       - name: Relase Drafter
-        uses: release-drafter/release-drafter@5de93583980a40bd78603b6dfdcda5b4df377b32
+        uses: release-drafter/release-drafter@563bf132657a13ded0b01fcb723c5a58cdd824e2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
