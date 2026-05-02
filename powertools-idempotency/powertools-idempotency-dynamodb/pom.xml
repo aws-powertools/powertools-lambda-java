@@ -78,6 +78,16 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <scope>test</scope>
@@ -87,15 +97,6 @@
             <artifactId>powertools-common</artifactId>
             <version>${project.version}</version>
             <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <!-- DynamoDB Local for testing -->
-        <dependency>
-            <groupId>com.amazonaws</groupId>
-            <artifactId>DynamoDBLocal</artifactId>
-            <!-- >2.2.0 is not compatible with Java 11 anymore -->
-            <!-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocalHistory.html -->
-            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -116,6 +117,11 @@
                 <dependency>
                     <groupId>com.amazonaws</groupId>
                     <artifactId>aws-xray-recorder-sdk-aws-sdk-v2-instrumentor</artifactId>
+                    <scope>test</scope>
+                </dependency>
+                <dependency>
+                    <groupId>org.mockito</groupId>
+                    <artifactId>mockito-subclass</artifactId>
                     <scope>test</scope>
                 </dependency>
             </dependencies>
@@ -149,57 +155,6 @@
 
     <build>
         <plugins>
-            <!-- Copy DynamoDB Local JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dynamodb-local</id>
-                        <phase>generate-test-resources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeScope>test</includeScope>
-                            <excludeTransitive>false</excludeTransitive>
-                            <!-- MDEP-187: Avoids Maven phase circular dependency by not trying to copy unpacked reactor
-                            artifacts (powertools-idempotency-core)  -->
-                            <excludeGroupIds>software.amazon.lambda</excludeGroupIds>
-                            <outputDirectory>${project.build.directory}/dynamodb-local</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- Start DynamoDB Local before tests -->
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>start-dynamodb-local</id>
-                        <phase>process-test-classes</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>java</executable>
-                            <workingDirectory>${project.build.directory}/dynamodb-local</workingDirectory>
-                            <arguments>
-                                <argument>-Djava.library.path=${project.build.directory}/dynamodb-local</argument>
-                                <argument>-cp</argument>
-                                <argument>${project.build.directory}/dynamodb-local/*</argument>
-                                <argument>com.amazonaws.services.dynamodbv2.local.main.ServerRunner</argument>
-                                <argument>-inMemory</argument>
-                                <argument>-port</argument>
-                                <argument>8000</argument>
-                            </arguments>
-                            <async>true</async>
-                            <asyncDestroyOnShutdown>true</asyncDestroyOnShutdown>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -210,16 +165,6 @@
                             <Automatic-Module-Name>software.amazon.awssdk.enhanced.dynamodb</Automatic-Module-Name>
                         </manifestEntries>
                     </archive>
-                </configuration>
-            </plugin>
-            <!-- Configure Surefire to expose external DynamoDB Local address -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <systemPropertyVariables>
-                        <dynamodb.endpoint>http://localhost:8000</dynamodb.endpoint>
-                    </systemPropertyVariables>
                 </configuration>
             </plugin>
             <plugin>
