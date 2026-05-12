@@ -82,8 +82,26 @@ class DynamoDBPersistenceStoreTest {
         assertThat(request.item()).containsEntry("id", AttributeValue.builder().s("key").build());
         assertThat(request.item().get("status").s()).isEqualTo("COMPLETED");
         assertThat(request.item().get("expiration").n()).isEqualTo(String.valueOf(expiry));
-        assertThat(request.conditionExpression()).contains("attribute_not_exists(#id)");
-        assertThat(request.conditionExpression()).contains("#expiry < :now");
+        
+        // Assert full condition expression (protects bugfix from #1285)
+        assertThat(request.conditionExpression()).isEqualTo(
+            "attribute_not_exists(#id) OR #expiry < :now OR " +
+            "(attribute_exists(#in_progress_expiry) AND #in_progress_expiry < :now_milliseconds AND #status = :inprogress)");
+        
+        // Assert expression attribute names
+        assertThat(request.expressionAttributeNames())
+            .containsEntry("#id", "id")
+            .containsEntry("#expiry", "expiration")
+            .containsEntry("#in_progress_expiry", "in_progress_expiration")
+            .containsEntry("#status", "status");
+        
+        // Assert expression attribute values
+        assertThat(request.expressionAttributeValues().get(":now").n())
+            .isEqualTo(String.valueOf(now.getEpochSecond()));
+        assertThat(request.expressionAttributeValues().get(":now_milliseconds").n())
+            .isEqualTo(String.valueOf(now.toEpochMilli()));
+        assertThat(request.expressionAttributeValues().get(":inprogress").s())
+            .isEqualTo("INPROGRESS");
     }
 
     @Test
@@ -134,6 +152,12 @@ class DynamoDBPersistenceStoreTest {
                     assertThat(existingRecord.getStatus()).isEqualTo(DataRecord.Status.COMPLETED);
                     assertThat(existingRecord.getResponseData()).isEqualTo("Existing Data");
                 });
+        
+        // Assert returnValuesOnConditionCheckFailure is ALL_OLD (protects behavior from #1821)
+        ArgumentCaptor<PutItemRequest> captor = ArgumentCaptor.forClass(PutItemRequest.class);
+        verify(mockClient).putItem(captor.capture());
+        PutItemRequest request = captor.getValue();
+        assertThat(request.returnValuesOnConditionCheckFailureAsString()).isEqualTo("ALL_OLD");
     }
 
     @Test
