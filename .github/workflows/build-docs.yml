@@ -43,7 +43,7 @@ jobs:
           docker build -t squidfunk/mkdocs-material ./docs/
           docker run --rm -t -v ${PWD}:/docs squidfunk/mkdocs-material build
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@99214aa6889fcddfa57764031d71add364327e59
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
         with:
           aws-region: us-east-1
           role-to-assume: ${{ secrets.AWS_DOCS_ROLE_ARN }}
