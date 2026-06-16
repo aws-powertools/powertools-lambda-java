@@ -107,7 +107,7 @@ jobs:
             powertools-*/**
             pom.xml
       - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@329c42c5f4c343bceb505f0b28cc8499bc2bf174 # v1.5.4
+        uses: graalvm/setup-graalvm@809afe62741147990fbf405045cd15e61bffedfe # v1.5.5
         with:
           # Pinned to 21.0.8 due to unsafeAllocated enforcement in 21.0.10+. See #2416
           java-version: "21.0.8"
