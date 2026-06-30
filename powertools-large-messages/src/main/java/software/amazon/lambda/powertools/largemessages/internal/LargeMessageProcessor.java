@@ -17,6 +17,7 @@ package software.amazon.lambda.powertools.largemessages.internal;
 import static java.lang.String.format;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,7 @@ import software.amazon.awssdk.core.exception.SdkException;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.lambda.powertools.largemessages.LargeMessageConfig;
 import software.amazon.lambda.powertools.largemessages.LargeMessageProcessingException;
+import software.amazon.payloadoffloading.PayloadS3Pointer;
 import software.amazon.payloadoffloading.S3BackedPayloadStore;
 import software.amazon.payloadoffloading.S3Dao;
 
@@ -70,6 +72,11 @@ public abstract class LargeMessageProcessor<T> {
         // legacy attribute (sqs only)
         payloadPointer = payloadPointer.replace("com.amazon.sqs.javamessaging.MessageS3Pointer",
                 "software.amazon.payloadoffloading.PayloadS3Pointer");
+
+        // The bucket name in the pointer is controlled by the message sender. Validate it against the configured
+        // allowlist (if any) before any S3 interaction, to prevent reading from or deleting objects in arbitrary
+        // buckets using the function's own credentials.
+        validateBucket(payloadPointer);
 
         if (LOG.isInfoEnabled()) {
             LOG.info("Large message [{}]: retrieving content from S3", getMessageId(message));
@@ -135,6 +142,20 @@ public abstract class LargeMessageProcessor<T> {
      * @param message the message
      */
     protected abstract void removeLargeMessageAttributes(T message);
+
+    private void validateBucket(String payloadPointer) {
+        Set<String> allowedBuckets = LargeMessageConfig.get().getAllowedBuckets();
+        if (allowedBuckets == null || allowedBuckets.isEmpty()) {
+            // No allowlist configured: keep the existing (unrestricted) behavior for backward compatibility.
+            return;
+        }
+
+        String bucketName = PayloadS3Pointer.fromJson(payloadPointer).getS3BucketName();
+        if (!allowedBuckets.contains(bucketName)) {
+            throw new LargeMessageProcessingException(
+                    format("S3 bucket [%s] is not in the configured allowedBuckets", bucketName));
+        }
+    }
 
     private String getS3ObjectContent(String payloadPointer) {
         try {

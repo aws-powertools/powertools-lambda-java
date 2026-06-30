@@ -28,6 +28,7 @@
         <module>batch</module>
         <module>largemessage</module>
         <module>largemessage-functional</module>
+        <module>largemessage-restricted</module>
         <module>largemessage_idempotent</module>
         <module>logging-log4j</module>
         <module>logging-log4j-fluent-api</module>
