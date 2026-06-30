@@ -101,7 +101,7 @@ public class LargeMessageConfig {
      * @return the (unmodifiable) set of allowed bucket names, never null
      */
     public Set<String> getAllowedBuckets() {
-        return allowedBuckets;
+        return Collections.unmodifiableSet(allowedBuckets);
     }
 
     // For tests purpose
