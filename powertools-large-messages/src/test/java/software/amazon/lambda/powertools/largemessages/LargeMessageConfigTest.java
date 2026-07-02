@@ -16,26 +16,30 @@ package software.amazon.lambda.powertools.largemessages;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 
-public class LargeMessageConfigTest {
+class LargeMessageConfigTest {
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         LargeMessageConfig.get().resetS3Client();
     }
 
     @AfterEach
-    public void tearDown() {
+    void tearDown() {
         LargeMessageConfig.get().resetS3Client();
     }
 
     @Test
-    public void singleton_shouldNotChangeWhenCalledMultipleTimes() {
+    void singleton_shouldNotChangeWhenCalledMultipleTimes() {
         LargeMessageConfig.init().withS3Client(S3Client.builder().region(Region.US_EAST_1).build());
         LargeMessageConfig config = LargeMessageConfig.get();
 
@@ -46,12 +50,45 @@ public class LargeMessageConfigTest {
     }
 
     @Test
-    public void singletonWithDefaultClient_shouldNotChangeWhenCalledMultipleTimes() {
+    void singletonWithDefaultClient_shouldNotChangeWhenCalledMultipleTimes() {
         S3Client s3Client = LargeMessageConfig.get().getS3Client();
 
         LargeMessageConfig.init().withS3Client(S3Client.create());
         S3Client s3Client2 = LargeMessageConfig.get().getS3Client();
 
         assertThat(s3Client2).isEqualTo(s3Client);
+    }
+
+    @Test
+    void allowedBuckets_shouldDefaultToEmpty() {
+        assertThat(LargeMessageConfig.get().getAllowedBuckets()).isEmpty();
+    }
+
+    @Test
+    void withAllowedBuckets_shouldStoreAndReturnTheSet() {
+        Set<String> buckets = new HashSet<>();
+        buckets.add("bucket-a");
+        buckets.add("bucket-b");
+
+        LargeMessageConfig.init().withAllowedBuckets(buckets);
+
+        assertThat(LargeMessageConfig.get().getAllowedBuckets()).containsExactlyInAnyOrder("bucket-a", "bucket-b");
+    }
+
+    @Test
+    void withAllowedBuckets_null_shouldResultInEmptySet() {
+        LargeMessageConfig.init().withAllowedBuckets(Collections.singleton("bucket-a"));
+        LargeMessageConfig.init().withAllowedBuckets(null);
+
+        assertThat(LargeMessageConfig.get().getAllowedBuckets()).isEmpty();
+    }
+
+    @Test
+    void reset_shouldClearAllowedBuckets() {
+        LargeMessageConfig.init().withAllowedBuckets(Collections.singleton("bucket-a"));
+
+        LargeMessageConfig.get().resetS3Client();
+
+        assertThat(LargeMessageConfig.get().getAllowedBuckets()).isEmpty();
     }
 }

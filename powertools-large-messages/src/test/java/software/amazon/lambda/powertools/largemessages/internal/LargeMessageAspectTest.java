@@ -85,6 +85,8 @@ class LargeMessageAspectTest {
         Field client = LargeMessageConfig.class.getDeclaredField("s3Client");
         client.setAccessible(true);
         client.set(LargeMessageConfig.get(), null);
+        // clear any allowlist configured by a previous test (singleton)
+        LargeMessageConfig.init().withAllowedBuckets(null);
         LargeMessageConfig.init().withS3Client(s3Client);
     }
 
@@ -130,6 +132,35 @@ class LargeMessageAspectTest {
         // This test verifies the message object itself is modified, not a copy
         assertThat(sqsMessage.getBody()).isEqualTo(BIG_MSG);
         assertThat(sqsMessage.getMd5OfBody()).isEqualTo(BIG_MSG_MD5);
+    }
+
+    @Test
+    void testLargeSQSMessage_withAllowedBucketMatching_shouldRetrieveFromS3() {
+        // given
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
+        LargeMessageConfig.init().withAllowedBuckets(Collections.singleton(BUCKET_NAME));
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
+
+        // when
+        String message = processSQSMessage(sqsMessage, context);
+
+        // then
+        assertThat(message).isEqualTo(BIG_MSG);
+        verify(s3Client).deleteObject(any(DeleteObjectRequest.class));
+    }
+
+    @Test
+    void testLargeSQSMessage_withAllowedBucketNotMatching_shouldThrowAndNotTouchS3() {
+        // given
+        LargeMessageConfig.init().withAllowedBuckets(Collections.singleton("some-other-bucket"));
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
+
+        // when / then
+        assertThatThrownBy(() -> processSQSMessage(sqsMessage, context))
+                .isInstanceOf(LargeMessageProcessingException.class)
+                .hasMessageContaining("is not in the configured allowedBuckets")
+                .hasMessageContaining(BUCKET_NAME);
+        verifyNoInteractions(s3Client);
     }
 
     @Test

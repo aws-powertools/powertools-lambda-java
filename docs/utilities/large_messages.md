@@ -174,6 +174,40 @@ on the S3 bucket used for the large messages offloading:
 - `s3:GetObject`
 - `s3:DeleteObject`
 
+### Security: Restrict which buckets the utility accesses
+
+???+ warning "The message sender controls the `s3BucketName` in the payload pointer"
+    The large message body contains a pointer of the form
+    `["software.amazon.payloadoffloading.PayloadS3Pointer",{"s3BucketName":"...","s3Key":"..."}]`.
+    The utility reads `s3BucketName` from this pointer and fetches the object using your Lambda function's
+    own IAM credentials. Any sender that can write to your queue, or publish to a topic that fans out to it,
+    can name any bucket your execution role can reach. Your function then reads from that bucket. Delete-after-read
+    is enabled by default (`deleteS3Object=true`), so your function also deletes the object it read.
+
+Apply both of the following controls:
+
+1. **Configure an allowlist** with `LargeMessageConfig.init().withAllowedBuckets(...)`. The utility rejects any
+   message whose pointer names a bucket outside the allowlist before it reads or deletes from S3. See
+   [Restricting allowed buckets](#restricting-allowed-buckets).
+2. **Scope your IAM policy** to the offload bucket. Grant `s3:GetObject` and `s3:DeleteObject` on the bucket
+   ARN instead of `*`:
+
+    ```json
+    {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "s3:GetObject",
+                    "s3:DeleteObject"
+                ],
+                "Resource": "arn:aws:s3:::<your-offload-bucket>/*"
+            }
+        ]
+    }
+    ```
+
 ## Usage
 
 You can use the Large Messages utility with either the `@LargeMessage` annotation or the functional API.
@@ -477,6 +511,66 @@ If you need to customize this `S3Client`, you can leverage the `LargeMessageConf
         private String processSNSRecord(SNSEvent.SNSRecord snsRecord) {
             // snsRecord.getSNS().getMessage() will contain the content of the S3 object
             return "Hello World";
+        }
+    }
+    ```
+
+## Restricting allowed buckets
+
+The message sender controls the bucket named in the message pointer (see
+[the security note in Permissions](#security-restrict-which-buckets-the-utility-accesses)). Use the
+`LargeMessageConfig` singleton to restrict which S3 buckets the utility reads from and deletes. This works with
+both the annotation and the functional API. When you configure a non-empty allowlist, the utility rejects any
+message whose pointer names a bucket outside the allowlist. It throws a `LargeMessageProcessingException` before
+it reads or deletes from S3. An empty allowlist, the default, applies no restriction.
+
+=== "@LargeMessage annotation"
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.largemessages.LargeMessage;
+
+    public class SqsMessageHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+
+        public SqsMessageHandler() {
+            LargeMessageConfig.init().withAllowedBuckets(Collections.singleton("my-offload-bucket"));
+        }
+
+        @Override
+        public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
+            for (SQSMessage message: event.getRecords()) {
+                // throws LargeMessageProcessingException if the pointer's bucket is not in the allowlist
+                processRawMessage(message, context);
+            }
+            return SQSBatchResponse.builder().build();
+        }
+
+        @LargeMessage
+        private void processRawMessage(SQSEvent.SQSMessage sqsMessage, Context context) {
+            // sqsMessage.getBody() will contain the content of the S3 object
+        }
+    }
+    ```
+
+=== "Functional API"
+    ```java hl_lines="6"
+    import software.amazon.lambda.powertools.largemessages.LargeMessages;
+
+    public class SqsMessageHandler implements RequestHandler<SQSEvent, SQSBatchResponse> {
+
+        public SqsMessageHandler() {
+            LargeMessageConfig.init().withAllowedBuckets(Collections.singleton("my-offload-bucket"));
+        }
+
+        @Override
+        public SQSBatchResponse handleRequest(SQSEvent event, Context context) {
+            for (SQSMessage message: event.getRecords()) {
+                // throws LargeMessageProcessingException if the pointer's bucket is not in the allowlist
+                LargeMessages.processLargeMessage(message, this::processRawMessage);
+            }
+            return SQSBatchResponse.builder().build();
+        }
+
+        private void processRawMessage(SQSEvent.SQSMessage sqsMessage) {
+            // sqsMessage.getBody() will contain the content of the S3 object
         }
     }
     ```
