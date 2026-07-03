@@ -21,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +32,6 @@ public final class ClassPreLoader {
     public static final String CLASSES_FILE = "classesloaded.txt";
 
     private static final Logger LOG = LoggerFactory.getLogger(ClassPreLoader.class);
-
-    // A binary class name contains only letters, digits, and the '.', '_' and '$' characters. This
-    // filters out malformed entries such as runtime-synthetic lambda classes
-    // (e.g. "com.example.Foo$$Lambda$1/0x0000...") and lines that contain a path or other junk
-    // (e.g. a URL-encoded space "%20" followed by a file path), none of which Class.forName can
-    // load. The character class is a single linear match, so it is not prone to backtracking.
-    private static final Pattern BINARY_CLASS_NAME = Pattern.compile("[\\p{L}\\p{N}_$.]+");
 
     private ClassPreLoader() {
         // Hide default constructor
@@ -81,8 +73,7 @@ public final class ClassPreLoader {
                     line = line.substring(0, idx);
                 }
                 final String className = line.strip();
-                if (!className.isBlank() && BINARY_CLASS_NAME.matcher(className).matches()
-                        && loadClassIfFound(className)) {
+                if (!className.isBlank() && loadClassIfFound(className)) {
                     loaded++;
                 }
             }
