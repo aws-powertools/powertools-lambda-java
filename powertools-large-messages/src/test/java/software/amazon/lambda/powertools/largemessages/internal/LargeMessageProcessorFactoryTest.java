@@ -21,10 +21,10 @@ import com.amazonaws.services.lambda.runtime.events.SNSEvent;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import org.junit.jupiter.api.Test;
 
-public class LargeMessageProcessorFactoryTest {
+class LargeMessageProcessorFactoryTest {
 
     @Test
-    public void createLargeSQSMessageProcessor() {
+    void createLargeSQSMessageProcessor() {
         assertThat(LargeMessageProcessorFactory.get(new SQSEvent.SQSMessage()))
                 .isPresent()
                 .get()
@@ -32,7 +32,7 @@ public class LargeMessageProcessorFactoryTest {
     }
 
     @Test
-    public void createLargeSNSMessageProcessor() {
+    void createLargeSNSMessageProcessor() {
         assertThat(LargeMessageProcessorFactory.get(new SNSEvent.SNSRecord()))
                 .isPresent()
                 .get()
@@ -40,7 +40,7 @@ public class LargeMessageProcessorFactoryTest {
     }
 
     @Test
-    public void createUnknownMessageProcessor() {
+    void createUnknownMessageProcessor() {
         assertThat(LargeMessageProcessorFactory.get(new KinesisEvent.KinesisEventRecord())).isNotPresent();
     }
 }

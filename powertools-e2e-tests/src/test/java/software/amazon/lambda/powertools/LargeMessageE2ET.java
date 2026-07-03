@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -35,6 +36,7 @@ import software.amazon.awssdk.services.dynamodb.model.DeleteItemRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryRequest;
 import software.amazon.awssdk.services.dynamodb.model.QueryResponse;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import software.amazon.lambda.powertools.testutils.DataNotReadyException;
@@ -164,6 +166,60 @@ class LargeMessageE2ET {
         messageId = items.get(0).get("id").s();
         assertThat(Integer.valueOf(items.get(0).get("bodySize").n())).isEqualTo(300977);
         assertThat(items.get(0).get("bodyMD5").s()).isEqualTo("22bde5e7b05fa80bc7be45bdd4bc6c75");
+    }
+
+    @Test
+    @Timeout(value = 5, unit = TimeUnit.MINUTES)
+    // Sonar java:S2925 (Thread.sleep in tests): suppressed intentionally. This is an end-to-end test of the real
+    // asynchronous SQS -> Lambda delivery path, asserting a side effect that does NOT happen (the S3 object is not
+    // deleted). There is no positive completion signal to await on, so we must give the asynchronous flow time to run
+    // before asserting the absence. Replacing the wait with a synchronous invoke would degrade this into a near
+    // unit-test that no longer exercises the event source nor the delete-after-read side effect.
+    @SuppressWarnings("java:S2925")
+    void bigSQSMessage_withDisallowedBucket_shouldNotProcessNorDelete() throws IOException, InterruptedException {
+        // The largemessage-restricted handler pins allowedBuckets to a fixed, non-matching bucket name, so the
+        // utility must reject the offloaded message before reading from or deleting the actual offload bucket.
+        setupInfrastructure("largemessage-restricted");
+
+        // GIVEN a large message offloaded to the real (random) offload bucket
+        final ExtendedClientConfiguration extendedClientConfig = new ExtendedClientConfiguration()
+                .withPayloadSupportEnabled(s3Client, bucketName);
+        try (AmazonSQSExtendedClient client = new AmazonSQSExtendedClient(
+                SqsClient.builder().region(region).httpClient(httpClient).build(), extendedClientConfig);
+                InputStream inputStream = this.getClass().getResourceAsStream("/large_sqs_message.txt");) {
+            String bigMessage = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+            // WHEN the message is sent and the function is invoked
+            client.sendMessage(SendMessageRequest
+                    .builder()
+                    .queueUrl(queueUrl)
+                    .messageBody(bigMessage)
+                    .build());
+        }
+
+        // Give the function time to be invoked, fail the bucket-allowlist check, and the message to be dead-lettered
+        // (the queue uses maxReceiveCount=1, so there is a single attempt and no retries).
+        TimeUnit.SECONDS.sleep(90);
+
+        // THEN the handler never processed the message (no item written to DynamoDB)
+        QueryRequest request = QueryRequest
+                .builder()
+                .tableName(tableName)
+                .keyConditionExpression("functionName = :func")
+                .expressionAttributeValues(
+                        Collections.singletonMap(":func", AttributeValue.builder().s(functionName).build()))
+                .build();
+        QueryResponse response = dynamoDbClient.query(request);
+        assertThat(response.items()).isEmpty();
+
+        // AND the S3 object was never deleted (delete-after-read is on by default, but the disallowed bucket is
+        // rejected before any S3 interaction)
+        long objectCount = s3Client.listObjectsV2(
+                ListObjectsV2Request.builder()
+                        .bucket(bucketName)
+                        .build())
+                .keyCount();
+        assertThat(objectCount).isGreaterThanOrEqualTo(1);
     }
 
     @ParameterizedTest

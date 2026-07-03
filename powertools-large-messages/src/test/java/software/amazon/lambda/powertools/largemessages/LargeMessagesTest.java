@@ -69,6 +69,8 @@ class LargeMessagesTest {
         Field client = LargeMessageConfig.class.getDeclaredField("s3Client");
         client.setAccessible(true);
         client.set(LargeMessageConfig.get(), null);
+        // clear any allowlist configured by a previous test (singleton)
+        LargeMessageConfig.init().withAllowedBuckets(null);
         LargeMessageConfig.init().withS3Client(s3Client);
     }
 
@@ -244,6 +246,39 @@ class LargeMessagesTest {
         // then - verify the original message object was modified
         assertThat(sqsMessage.getBody()).isEqualTo(BIG_MSG);
         assertThat(sqsMessage.getBody()).isNotEqualTo(originalBody);
+    }
+
+    @Test
+    void testProcessLargeMessage_withAllowedBucketMatching_shouldRetrieveFromS3AndDelete() {
+        // given
+        when(s3Client.getObject(any(GetObjectRequest.class))).thenReturn(s3ObjectWithLargeMessage());
+        LargeMessageConfig.init().withAllowedBuckets(Collections.singleton(BUCKET_NAME));
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
+
+        // when
+        String result = LargeMessages.processLargeMessage(sqsMessage, SQSMessage::getBody);
+
+        // then
+        assertThat(result).isEqualTo(BIG_MSG);
+        ArgumentCaptor<DeleteObjectRequest> delete = ArgumentCaptor.forClass(DeleteObjectRequest.class);
+        verify(s3Client).deleteObject(delete.capture());
+        assertThat(delete.getValue().bucket()).isEqualTo(BUCKET_NAME);
+        assertThat(delete.getValue().key()).isEqualTo(BUCKET_KEY);
+    }
+
+    @Test
+    void testProcessLargeMessage_withAllowedBucketNotMatching_shouldThrowAndNotTouchS3() {
+        // given
+        LargeMessageConfig.init().withAllowedBuckets(Collections.singleton("some-other-bucket"));
+        SQSMessage sqsMessage = sqsMessageWithBody(BIG_MESSAGE_BODY, true);
+
+        // when / then
+        assertThatThrownBy(() -> LargeMessages.processLargeMessage(sqsMessage, SQSMessage::getBody))
+                .isInstanceOf(LargeMessageProcessingException.class)
+                .hasMessageContaining("is not in the configured allowedBuckets")
+                .hasMessageContaining(BUCKET_NAME);
+        // the disallowed bucket must never be read from nor deleted
+        verifyNoInteractions(s3Client);
     }
 
     private String processOrderSimple(SQSMessage message, String orderId) {
