@@ -66,7 +66,7 @@ public final class ClassPreLoader {
                 if (idx != -1) {
                     line = line.substring(0, idx);
                 }
-                final String className = line.stripTrailing();
+                final String className = line.strip();
                 if (!className.isBlank()) {
                     loadClassIfFound(className);
                 }
