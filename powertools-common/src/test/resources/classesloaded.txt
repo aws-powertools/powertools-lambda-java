@@ -1,3 +1,4 @@
 software.amazon.lambda.powertools.common.internal.NonExistingClass
 software.amazon.lambda.powertools.common.internal.ClassPreLoaderTest$DummyClass
  software.amazon.lambda.powertools.common.internal.ClassPreLoaderTest$LeadingSpaceDummyClass
+ software.amazon.lambda.powertools.common.internal.ClassPreLoaderTest$MalformedDummyClass%20SAHA/.m2/repository/some/path.jar

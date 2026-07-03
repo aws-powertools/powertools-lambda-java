@@ -21,12 +21,25 @@ import java.nio.charset.StandardCharsets;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
+import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Used to preload classes to support automatic priming for SnapStart
  */
 public final class ClassPreLoader {
     public static final String CLASSES_FILE = "classesloaded.txt";
+
+    private static final Logger LOG = LoggerFactory.getLogger(ClassPreLoader.class);
+
+    // A binary class name is a series of dot-separated Java identifiers ($ is allowed for nested
+    // classes). This filters out malformed entries such as runtime-synthetic lambda classes
+    // (e.g. "com.example.Foo$$Lambda$1/0x0000...") and lines that contain a path or other junk,
+    // none of which Class.forName can load.
+    private static final Pattern BINARY_CLASS_NAME = Pattern.compile(
+            "[\\p{L}_$][\\p{L}\\p{N}_$]*(\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)*");
 
     private ClassPreLoader() {
         // Hide default constructor
@@ -57,6 +70,7 @@ public final class ClassPreLoader {
      * @param is
      */
     private static void preloadClassesFromStream(InputStream is) {
+        int loaded = 0;
         try (is;
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
@@ -67,25 +81,30 @@ public final class ClassPreLoader {
                     line = line.substring(0, idx);
                 }
                 final String className = line.strip();
-                if (!className.isBlank()) {
-                    loadClassIfFound(className);
+                if (!className.isBlank() && BINARY_CLASS_NAME.matcher(className).matches()
+                        && loadClassIfFound(className)) {
+                    loaded++;
                 }
             }
         } catch (Exception ignored) {
             // No action is required if preloading fails for any reason
         }
+        LOG.debug("SnapStart priming: preloaded {} class(es) from {}", loaded, CLASSES_FILE);
     }
 
     /**
      * Initializes the class with given name if found, ignores otherwise
      *
-     * @param className
+     * @param className the binary name of the class to load
+     * @return true if the class was found and loaded, false otherwise
      */
-    private static void loadClassIfFound(String className) {
+    private static boolean loadClassIfFound(String className) {
         try {
             Class.forName(className, true, ClassPreLoader.class.getClassLoader());
+            return true;
         } catch (ClassNotFoundException e) {
             // No action is required if the class with given name cannot be found
+            return false;
         }
     }
 }

@@ -41,6 +41,7 @@ import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabled
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledExplicitlyForResponseAndError;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForError;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponse;
+import software.amazon.lambda.powertools.tracing.TracingUtils;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForResponseWithCustomMapper;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStream;
 import software.amazon.lambda.powertools.tracing.handlers.PowerTracerToolEnabledForStreamWithNoMetaData;
@@ -70,6 +71,10 @@ class LambdaTracingAspectTest {
     @AfterEach
     void tearDown() {
         AWSXRay.endSegment();
+        // Some tests (e.g. the custom mapper handler) set the static TracingUtils.objectMapper.
+        // Reset it so it does not leak into later tests running in the same JVM fork and change how
+        // responses and errors are serialized.
+        TracingUtils.defaultObjectMapper(null);
     }
 
     @Test

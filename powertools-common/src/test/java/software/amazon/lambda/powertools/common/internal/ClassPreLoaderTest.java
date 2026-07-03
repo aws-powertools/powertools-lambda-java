@@ -9,6 +9,7 @@ class ClassPreLoaderTest {
     // Making this volatile so the Thread Context doesn't need any special handling
     static volatile boolean dummyClassLoaded = false;
     static volatile boolean leadingSpaceDummyClassLoaded = false;
+    static volatile boolean malformedDummyClassLoaded = false;
 
     /**
      * Dummy class to be loaded by ClassPreLoader in test.
@@ -34,11 +35,24 @@ class ClassPreLoaderTest {
         }
     }
 
+    /**
+     * Dummy class whose name is referenced by a malformed entry in
+     * <i>powertools-common/src/test/resources/classesloaded.txt</i>, where the class name is
+     * followed by a URL-encoded space and a file path. The loader must reject such entries rather
+     * than pass them to Class.forName.
+     */
+    static class MalformedDummyClass {
+        static {
+            malformedDummyClassLoaded = true;
+        }
+    }
+
     @Test
     void preloadClasses_shouldIgnoreInvalidClassesAndLoadValidClasses() {
 
         dummyClassLoaded = false;
         leadingSpaceDummyClassLoaded = false;
+        malformedDummyClassLoaded = false;
         // A class only runs its static initializer the first time it is loaded, so this test calls
         // preloadClasses once and asserts on all classes listed in classesloaded.txt together.
         // powertools-common/src/test/resources/classesloaded.txt has a class that does not exist.
@@ -51,5 +65,9 @@ class ClassPreLoaderTest {
         // strip it before Class.forName, otherwise the class is never loaded.
         assertTrue(leadingSpaceDummyClassLoaded,
                 "LeadingSpaceDummyClass should be loaded despite the leading space");
+        // classesloaded.txt references MalformedDummyClass with trailing junk (%20 and a path). The
+        // loader must reject the malformed entry, so the class must not be loaded.
+        assertFalse(malformedDummyClassLoaded,
+                "MalformedDummyClass should not be loaded from a malformed entry");
     }
 }
