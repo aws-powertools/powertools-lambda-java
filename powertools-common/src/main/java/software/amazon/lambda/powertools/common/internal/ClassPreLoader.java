@@ -34,12 +34,12 @@ public final class ClassPreLoader {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClassPreLoader.class);
 
-    // A binary class name is a series of dot-separated Java identifiers ($ is allowed for nested
-    // classes). This filters out malformed entries such as runtime-synthetic lambda classes
-    // (e.g. "com.example.Foo$$Lambda$1/0x0000...") and lines that contain a path or other junk,
-    // none of which Class.forName can load.
-    private static final Pattern BINARY_CLASS_NAME = Pattern.compile(
-            "[\\p{L}_$][\\p{L}\\p{N}_$]*(\\.[\\p{L}_$][\\p{L}\\p{N}_$]*)*");
+    // A binary class name contains only letters, digits, and the '.', '_' and '$' characters. This
+    // filters out malformed entries such as runtime-synthetic lambda classes
+    // (e.g. "com.example.Foo$$Lambda$1/0x0000...") and lines that contain a path or other junk
+    // (e.g. a URL-encoded space "%20" followed by a file path), none of which Class.forName can
+    // load. The character class is a single linear match, so it is not prone to backtracking.
+    private static final Pattern BINARY_CLASS_NAME = Pattern.compile("[\\p{L}\\p{N}_$.]+");
 
     private ClassPreLoader() {
         // Hide default constructor
