@@ -586,3 +586,58 @@ it reads or deletes from S3. An empty allowlist, the default, applies no restric
 - The new module only provides an annotation, an equivalent to the `SqsUtils` class is not available anymore in this new version.
 
 Finally, if you are still using the `powertools-sqs` library for batch processing, consider moving to `powertools-batch` at the same time to remove the dependency on this library completely; it has been deprecated and will be removed in v2.
+
+## Advanced
+
+### Lambda SnapStart priming
+
+The LargerMessages class integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart
+priming logic of this class runs correctly, you need an explicit reference to `LargerMessages` in your code to allow the
+library to register before SnapStart takes a memory snapshot. Learn more about what priming is in
+this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/)
+{target="_blank"}.
+
+If you don't set a custom `LargerMessages` in your code yet, make sure to reference `LargerMessages` in your Lambda handler
+initialization code. This can be done by adding one of the following lines to your handler class:
+
+=== "Constructor"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.validation.Validation;
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        public MyFunctionHandler() {
+            LargerMessages.init(); // Ensure LargerMessages is loaded for SnapStart
+        }
+    
+        @Override
+        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```
+
+=== "Static Initializer"
+
+    ```java hl_lines="7"
+    import software.amazon.lambda.powertools.validation.Validation;
+    import software.amazon.lambda.powertools.validation.ValidationConfig;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+
+        static {
+            LargerMessages.init(); // Ensure LargerMessages is loaded for SnapStart
+        }
+
+        @Override
+        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+            return something;
+        }
+    }
+    ```

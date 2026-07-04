@@ -107,6 +107,12 @@ public final class LargeMessages implements Resource {
         Core.getGlobalContext().register(INSTANCE);
     }
 
+    public static void init() {
+        // Placeholder method used to enable SnapStart priming. Users need a direct reference to this class in order
+        // for the CRaC hooks to execute.
+        new LargeMessages();
+    }
+
     /**
      * Process a large message and execute the function with the processed message.
      * <p>
@@ -167,6 +173,7 @@ public final class LargeMessages implements Resource {
 
     @Override
     public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        init();
         ClassPreLoader.preloadClasses();
     }
 
