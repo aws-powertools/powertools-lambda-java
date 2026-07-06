@@ -22,11 +22,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Enumeration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Used to preload classes to support automatic priming for SnapStart
  */
 public final class ClassPreLoader {
     public static final String CLASSES_FILE = "classesloaded.txt";
+
+    private static final Logger LOG = LoggerFactory.getLogger(ClassPreLoader.class);
 
     private ClassPreLoader() {
         // Hide default constructor
@@ -57,6 +62,7 @@ public final class ClassPreLoader {
      * @param is
      */
     private static void preloadClassesFromStream(InputStream is) {
+        int loaded = 0;
         try (is;
              InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
@@ -66,26 +72,30 @@ public final class ClassPreLoader {
                 if (idx != -1) {
                     line = line.substring(0, idx);
                 }
-                final String className = line.stripTrailing();
-                if (!className.isBlank()) {
-                    loadClassIfFound(className);
+                final String className = line.strip();
+                if (!className.isBlank() && loadClassIfFound(className)) {
+                    loaded++;
                 }
             }
         } catch (Exception ignored) {
             // No action is required if preloading fails for any reason
         }
+        LOG.debug("SnapStart priming: preloaded {} class(es) from {}", loaded, CLASSES_FILE);
     }
 
     /**
      * Initializes the class with given name if found, ignores otherwise
      *
-     * @param className
+     * @param className the binary name of the class to load
+     * @return true if the class was found and loaded, false otherwise
      */
-    private static void loadClassIfFound(String className) {
+    private static boolean loadClassIfFound(String className) {
         try {
             Class.forName(className, true, ClassPreLoader.class.getClassLoader());
+            return true;
         } catch (ClassNotFoundException e) {
             // No action is required if the class with given name cannot be found
+            return false;
         }
     }
 }

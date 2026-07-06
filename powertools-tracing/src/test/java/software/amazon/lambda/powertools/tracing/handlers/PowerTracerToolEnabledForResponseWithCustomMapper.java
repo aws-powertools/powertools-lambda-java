@@ -28,7 +28,11 @@ import software.amazon.lambda.powertools.tracing.Tracing;
 import software.amazon.lambda.powertools.tracing.TracingUtils;
 
 public class PowerTracerToolEnabledForResponseWithCustomMapper implements RequestHandler<Object, Object> {
-    static {
+    public PowerTracerToolEnabledForResponseWithCustomMapper() {
+        // Set the custom mapper in the constructor rather than a static initializer. A static
+        // initializer only runs the first time this class is loaded, which makes the resulting
+        // global state depend on when the class happens to be loaded (for example by SnapStart
+        // class priming). Setting it in the constructor makes each instantiation deterministic.
         ObjectMapper objectMapper = new ObjectMapper();
         SimpleModule simpleModule = new SimpleModule();
         simpleModule.addSerializer(ChildClass.class, new ChildSerializer());
