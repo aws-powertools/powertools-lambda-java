@@ -16,6 +16,9 @@ package software.amazon.lambda.powertools.largemessages;
 
 import static software.amazon.lambda.powertools.common.internal.LambdaConstants.AWS_REGION_ENV;
 
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -26,9 +29,11 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3ClientBuilder;
 
 /**
- * Singleton instance for Large Message Config. We need this to provide a way to customize the S3 client configuration used by the annotation.
+ * Singleton instance for Large Message Config. We need this to provide a way to customize the S3 client
+ * configuration used by the annotation.
  * <br/>
- * Optional: Use it in your Lambda constructor to pass a custom {@link S3Client} to the {@link software.amazon.lambda.powertools.largemessages.internal.LargeMessageProcessor}
+ * Optional: Use it in your Lambda constructor to pass a custom {@link S3Client} to the
+ * {@link software.amazon.lambda.powertools.largemessages.internal.LargeMessageProcessor}
  * <br/>
  * If you don't use this, a default S3Client will be created.
  * <pre>
@@ -37,13 +42,14 @@ import software.amazon.awssdk.services.s3.S3ClientBuilder;
  * }
  * </pre>
  */
-public class LargeMessageConfig {
+public class LargeMessageConfig implements Resource {
 
     private static final LargeMessageConfig INSTANCE = new LargeMessageConfig();
     private S3Client s3Client;
     private Set<String> allowedBuckets = Collections.emptySet();
 
     private LargeMessageConfig() {
+        Core.getGlobalContext().register(this);
     }
 
     /**
@@ -119,5 +125,15 @@ public class LargeMessageConfig {
             this.s3Client = s3ClientBuilder.build();
         }
         return this.s3Client;
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        getS3Client();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }

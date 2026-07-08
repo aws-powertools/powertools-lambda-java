@@ -17,9 +17,13 @@ package software.amazon.lambda.powertools.largemessages;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.largemessages.internal.LargeMessageProcessor;
 import software.amazon.lambda.powertools.largemessages.internal.LargeMessageProcessorFactory;
 
@@ -27,13 +31,16 @@ import software.amazon.lambda.powertools.largemessages.internal.LargeMessageProc
  * Functional API for processing large messages without AspectJ.
  * <p>
  * Use this class to handle large messages (> 1 MB) from SQS or SNS.
- * When large messages are sent to an SQS Queue or SNS Topic, they are offloaded to S3 and only a reference is passed in the message/record.
+ * When large messages are sent to an SQS Queue or SNS Topic, they are offloaded to S3 and only a reference is passed
+ * in the message/record.
  * <p>
  * {@code LargeMessages} automatically retrieves and optionally deletes messages
- * which have been offloaded to S3 using the {@code amazon-sqs-java-extended-client-lib} or {@code amazon-sns-java-extended-client-lib}
+ * which have been offloaded to S3 using the {@code amazon-sqs-java-extended-client-lib} or {@code amazon-sns-java
+ * -extended-client-lib}
  * client libraries.
  * <p>
- * This version is compatible with version 1.1.0+ and 2.0.0+ of {@code amazon-sqs-java-extended-client-lib} / {@code amazon-sns-java-extended-client-lib}.
+ * This version is compatible with version 1.1.0+ and 2.0.0+ of {@code amazon-sqs-java-extended-client-lib} / {@code
+ * amazon-sns-java-extended-client-lib}.
  * <p>
  * <u>SQS Example</u>:
  * <pre>
@@ -88,12 +95,22 @@ import software.amazon.lambda.powertools.largemessages.internal.LargeMessageProc
  *
  * @see LargeMessage
  */
-public final class LargeMessages {
+public final class LargeMessages implements Resource {
 
     private static final Logger LOG = LoggerFactory.getLogger(LargeMessages.class);
 
-    private LargeMessages() {
-        // Utility class
+    // Dummy instance to register LargeMessages with CRaC
+    private static final LargeMessages INSTANCE = new LargeMessages();
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(INSTANCE);
+    }
+
+    public static void init() {
+        // Placeholder method used to enable SnapStart priming. Users need a direct reference to this class in order
+        // for the CRaC hooks to execute.
+        new LargeMessages();
     }
 
     /**
@@ -108,10 +125,10 @@ public final class LargeMessages {
      * String returnValueOfFunction = LargeMessages.processLargeMessage(sqsMessage, processedMsg -&gt; processOrder(processedMsg, orderId, amount));
      * </pre>
      *
-     * @param message the message to process (SQSMessage or SNSRecord)
+     * @param message  the message to process (SQSMessage or SNSRecord)
      * @param function the function to execute with the processed message
-     * @param <T> the message type
-     * @param <R> the return type of the function
+     * @param <T>      the message type
+     * @param <R>      the return type of the function
      * @return the result of the function execution
      */
     public static <T, R> R processLargeMessage(T message, Function<T, R> function) {
@@ -127,11 +144,11 @@ public final class LargeMessages {
      * String returnValueOfFunction = LargeMessages.processLargeMessage(sqsMessage, processedMsg -&gt; processOrder(processedMsg, orderId, amount), false);
      * </pre>
      *
-     * @param message the message to process (SQSMessage or SNSRecord)
-     * @param function the function to execute with the processed message
+     * @param message        the message to process (SQSMessage or SNSRecord)
+     * @param function       the function to execute with the processed message
      * @param deleteS3Object whether to delete the S3 object after processing
-     * @param <T> the message type
-     * @param <R> the return type of the function
+     * @param <T>            the message type
+     * @param <R>            the return type of the function
      * @return the result of the function execution
      */
     public static <T, R> R processLargeMessage(T message, Function<T, R> function, boolean deleteS3Object) {
@@ -152,5 +169,16 @@ public final class LargeMessages {
         } catch (Throwable t) {
             throw new LargeMessageProcessingException("Failed to process large message", t);
         }
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        init();
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }
