@@ -6,10 +6,10 @@ This module is internal and meant to be used for end-to-end (E2E) testing of Pow
 
 - An AWS account is needed as well as a local environment able to reach this account
   ([credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
-- [Java 11+](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+- [Java 17+](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/downloads-list.html)
 - [Docker](https://docs.docker.com/engine/install/) (or [Finch](https://github.com/runfinch/finch) — if using Finch, set `export CDK_DOCKER=finch` before running tests)
 
-To execute the E2E tests, use the following command: `export JAVA_VERSION=11 && mvn clean verify -Pe2e`
+To execute the E2E tests, use the following command: `export JAVA_VERSION=17 && mvn clean verify -Pe2e`
 
 ### Under the hood
 

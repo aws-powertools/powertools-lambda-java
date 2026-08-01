@@ -6,7 +6,7 @@ Description: >
 Globals:
   Function:
     Timeout: 20
-    Runtime: java11
+    Runtime: java17
     MemorySize: 512
     Tracing: Active
 

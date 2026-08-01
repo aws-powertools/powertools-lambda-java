@@ -99,7 +99,6 @@ jobs:
       max-parallel: 20
       matrix:
         java:
-          - 11
           - 17
           - 21
           - 25

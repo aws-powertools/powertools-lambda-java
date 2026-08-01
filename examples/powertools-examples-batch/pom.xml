@@ -11,8 +11,8 @@
     <name>Powertools for AWS Lambda (Java) - Examples - Batch</name>
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
         <aspectj.version>1.9.20.1</aspectj.version>
         <sdk.version>2.44.13</sdk.version>
     </properties>

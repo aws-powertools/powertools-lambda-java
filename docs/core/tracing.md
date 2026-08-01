@@ -41,9 +41,9 @@ a provides functionality to reduce the overhead of performing common tracing tas
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -89,8 +89,8 @@ a provides functionality to reduce the overhead of performing common tracing tas
             implementation 'software.amazon.lambda:powertools-tracing:{{ powertools.version }}' // Use this instead of 'aspect' when using the functional approach
         }
         
-        sourceCompatibility = 11 // or higher
-        targetCompatibility = 11 // or higher
+        sourceCompatibility = 17 // or higher
+        targetCompatibility = 17 // or higher
     ```
 
 ## Initialization
@@ -107,7 +107,7 @@ Before your use this utility, your AWS Lambda function [must have permissions](h
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java11
+            Runtime: java17
     
             Tracing: Active
             Environment:
@@ -217,7 +217,7 @@ specifying a different `captureMode` to always record response, exception, both,
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java11
+            Runtime: java17
     
             Tracing: Active
             Environment:

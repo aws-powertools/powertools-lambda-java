@@ -49,7 +49,7 @@ genrule(
             -inpath "$$BASE_JAR" \
             -aspectpath "$$POWERTOOLS_JARS" \
             -outjar $(location powertools_sam_lib_woven.jar) \
-            -source 11 -target 11 -nowarn
+            -source 17 -target 17 -nowarn
     """,
 )
 

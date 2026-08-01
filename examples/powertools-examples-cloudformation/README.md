@@ -22,7 +22,7 @@ sam deploy --guided --parameter-overrides BucketNameParam=my-unique-bucket-2.10.
 To use CDK you need the following tools.
 
 * CDK - [Install CDK](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
-* Java 11 - [Install Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+* Java 17 - [Install Java 17](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/downloads-list.html)
 * Maven - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 

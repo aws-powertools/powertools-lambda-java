@@ -9,7 +9,7 @@ Description: >
 Globals:
   Function:
     Timeout: 20
-    Runtime: java11
+    Runtime: java17
     MemorySize: 512
     Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
     Environment:
@@ -26,7 +26,7 @@ Resources:
     Properties:
       CodeUri: .
       Handler: helloworld.App::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 512
       Environment: # More info about Env Vars: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#environment-object
         Variables:
@@ -43,7 +43,7 @@ Resources:
     Properties:
       CodeUri: .
       Handler: helloworld.AppStream::handleRequest
-      Runtime: java11
+      Runtime: java17
       MemorySize: 512
       Tracing: Active
       Environment:

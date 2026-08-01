@@ -115,9 +115,9 @@ of [amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-j
                 <artifactId>aspectj-maven-plugin</artifactId>
                 <version>1.14</version>
                 <configuration>
-                    <source>11</source> <!-- or higher -->
-                    <target>11</target> <!-- or higher -->
-                    <complianceLevel>11</complianceLevel> <!-- or higher -->
+                    <source>17</source> <!-- or higher -->
+                    <target>17</target> <!-- or higher -->
+                    <complianceLevel>17</complianceLevel> <!-- or higher -->
                     <aspectLibraries>
                         <aspectLibrary>
                             <groupId>software.amazon.lambda</groupId>
@@ -162,8 +162,8 @@ of [amazon-sqs-java-extended-client-lib](https://github.com/awslabs/amazon-sqs-j
             aspect 'software.amazon.lambda:powertools-large-messages:{{ powertools.version }}' // Use 'implementation' instead of 'aspect' when using the functional approach
         }
         
-        sourceCompatibility = 11 // or higher
-        targetCompatibility = 11 // or higher
+        sourceCompatibility = 17 // or higher
+        targetCompatibility = 17 // or higher
     ```
 
 ## Permissions

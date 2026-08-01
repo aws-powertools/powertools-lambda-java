@@ -58,9 +58,9 @@ Note that you must provide the concrete parameters module you want to use below 
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <!-- TODO! Provide an aspectLibrary for each of the parameters module(s) you want to use here -->
                          <aspectLibrary>
@@ -108,8 +108,8 @@ Note that you must provide the concrete parameters module you want to use below 
             implementation 'software.amazon.lambda:powertools-parameters-secrets:{{ powertools.version }}' // Use this instead of 'aspect' when using provider classes directly
         }
         
-        sourceCompatibility = 11 // or higher
-        targetCompatibility = 11 // or higher
+        sourceCompatibility = 17 // or higher
+        targetCompatibility = 17 // or higher
     ```
 
 **IAM Permissions**
