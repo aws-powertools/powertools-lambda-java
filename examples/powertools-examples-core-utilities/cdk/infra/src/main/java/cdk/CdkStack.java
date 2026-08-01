@@ -94,13 +94,13 @@ public class CdkStack extends Stack {
         environment.put("POWERTOOLS_METRICS_NAMESPACE", "Coreutilities");
 
         return Function.Builder.create(this, "HelloWorldFunction")
-                .runtime(Runtime.JAVA_11)
+                .runtime(Runtime.JAVA_17)
                 .memorySize(512)
                 .timeout(Duration.seconds(20))
                 .tracing(Tracing.ACTIVE)
                 .code(Code.fromAsset("../app/", AssetOptions.builder()
                         .bundling(BundlingOptions.builder()
-                                .image(Runtime.JAVA_11.getBundlingImage())
+                                .image(Runtime.JAVA_17.getBundlingImage())
                                 .command(functionPackageInstructions)
                                 .build())
                         .build()))
@@ -120,13 +120,13 @@ public class CdkStack extends Stack {
         environment.put("POWERTOOLS_SERVICE_NAME", "hello");
 
         return Function.Builder.create(this, "HelloWorldStreamFunction")
-                .runtime(Runtime.JAVA_11)
+                .runtime(Runtime.JAVA_17)
                 .memorySize(512)
                 .timeout(Duration.seconds(20))
                 .tracing(Tracing.ACTIVE)
                 .code(Code.fromAsset("../app/", AssetOptions.builder()
                         .bundling(BundlingOptions.builder()
-                                .image(Runtime.JAVA_11.getBundlingImage())
+                                .image(Runtime.JAVA_17.getBundlingImage())
                                 .command(functionPackageInstructions)
                                 .build())
                         .build()))
