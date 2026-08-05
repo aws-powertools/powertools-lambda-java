@@ -52,9 +52,9 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
              <artifactId>aspectj-maven-plugin</artifactId>
              <version>1.14</version>
              <configuration>
-                 <source>11</source>
-                 <target>11</target>
-                 <complianceLevel>11</complianceLevel>
+                 <source>17</source>
+                 <target>17</target>
+                 <complianceLevel>17</complianceLevel>
                  <aspectLibraries>
                      <aspectLibrary>
                          <groupId>software.amazon.lambda</groupId>
@@ -120,14 +120,14 @@ Next, configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lam
             implementation "org.aspectj:aspectjrt:1.9.22"
         }
         
-        sourceCompatibility = 11
-        targetCompatibility = 11
+        sourceCompatibility = 17
+        targetCompatibility = 17
 ```
 </details>
 
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java versions from 11 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+Powertools for AWS Lambda (Java) supports all Java versions from 17 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 For the modules that provide annotations, Powertools for AWS Lambda (Java) leverages the **aspectj** library.
 You may need to add the appropriate version of `aspectjrt` to your dependencies based on the JDK used for building your function:
@@ -146,10 +146,10 @@ You may need to add the appropriate version of `aspectjrt` to your dependencies 
 Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/release/JavaVersionCompatibility.adoc) to understand which AspectJ version to use based on your JDK version:
 
 | JDK version | aspectj version        |
-|-------------|------------------------|
-| `11-17`     | `1.9.20.1` (or higher) |
-| `21`        | `1.9.21` (or higher)   |
-| `25`        | `1.9.25` (or higher)   |
+|-----------|------------------------|
+| `17`     | `1.9.20.1` (or higher) |
+| `21`      | `1.9.21` (or higher)   |
+| `25`      | `1.9.25` (or higher)   |
 
 </details>
 

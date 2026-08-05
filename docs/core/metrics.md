@@ -57,9 +57,9 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -105,8 +105,8 @@ Visit the AWS documentation for a complete explanation for [Amazon CloudWatch co
             implementation 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}' // Use this instead of 'aspect' when using the functional approach
         }
 
-        sourceCompatibility = 11
-        targetCompatibility = 11
+        sourceCompatibility = 17
+        targetCompatibility = 17
     ```
 
 ## Getting started
@@ -181,7 +181,7 @@ For most use-cases, we recommend using Environment variables and only overwrite 
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java11
+            Runtime: java17
             Environment:
                 Variables:
                     POWERTOOLS_SERVICE_NAME: payment

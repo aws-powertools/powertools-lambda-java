@@ -50,9 +50,9 @@ times with the same parameters**. This makes idempotent operations safe to retry
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -98,8 +98,8 @@ times with the same parameters**. This makes idempotent operations safe to retry
             implementation 'software.amazon.lambda:powertools-idempotency-dynamodb:{{ powertools.version }}'
         }
         
-        sourceCompatibility = 11 // or higher
-        targetCompatibility = 11 // or higher
+        sourceCompatibility = 17 // or higher
+        targetCompatibility = 17 // or higher
     ```
 
 ### Required resources
@@ -1256,7 +1256,7 @@ To unit test your function with DynamoDB Local, you can refer to this guide to [
         <dependency>
            <groupId>com.amazonaws</groupId>
            <artifactId>DynamoDBLocal</artifactId>
-           <!-- Use newest version if you are on Java >11 -->
+           <!-- Use newest version if you are on Java >17 -->
            <!-- https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocalHistory.html -->
            <version>2.2.0</version>
             <scope>test</scope>

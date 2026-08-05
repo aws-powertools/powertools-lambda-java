@@ -118,9 +118,9 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -183,15 +183,15 @@ Powertools for AWS Lambda (Java) dependencies are available in Maven Central. Yo
             aspect 'software.amazon.lambda:powertools-metrics:{{ powertools.version }}'
         }
         
-        sourceCompatibility = 11
-        targetCompatibility = 11
+        sourceCompatibility = 17
+        targetCompatibility = 17
     ```
 
 ???+ tip "Don't want to use AspectJ?"
     Powertools for AWS Lambda (Java) now provides a functional API that doesn't require AspectJ configuration. Learn more about the [functional approach](./usage-patterns.md#functional-approach).
 
 ### Java Compatibility
-Powertools for AWS Lambda (Java) supports all Java versions from 11 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
+Powertools for AWS Lambda (Java) supports all Java versions from 17 to 25 in line with the [corresponding Lambda runtimes](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html).
 
 In addition to the functional approach, [Logging](./core/logging.md), [Metrics](./core/metrics.md), [Tracing](./core/tracing.md), [Parameters](./utilities/parameters.md), [Idempotency](./utilities/idempotency.md), [Validation](./utilities/validation.md), and [Large Messages](./utilities/large_messages.md) utilities support annotations using AspectJ, which require configuration of the `aspectjrt` runtime library.
 
@@ -208,10 +208,10 @@ You may need to add the appropriate version of `aspectjrt` to your dependencies 
 Use the following [dependency matrix](https://github.com/eclipse-aspectj/aspectj/blob/master/docs/release/JavaVersionCompatibility.adoc) to understand which AspectJ version to use based on your JDK version:
 
 | JDK version | aspectj version        |
-|-------------|------------------------|
-| `11-17`     | `1.9.20.1` (or higher) |
-| `21`        | `1.9.21` (or higher)   |
-| `25`        | `1.9.25` (or higher)   |
+|----------|------------------------|
+| `17`     | `1.9.20.1` (or higher) |
+| `21`     | `1.9.21` (or higher)   |
+| `25`     | `1.9.25` (or higher)   |
 
 ## Environment variables
 
