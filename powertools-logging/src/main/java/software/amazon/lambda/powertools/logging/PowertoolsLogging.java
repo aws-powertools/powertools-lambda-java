@@ -69,7 +69,7 @@ public final class PowertoolsLogging implements Resource {
     private static final ThreadLocal<Random> SAMPLER = ThreadLocal.withInitial(Random::new);
     private static AtomicBoolean hasBeenInitialized = new AtomicBoolean(false);
 
-    // Dummy instance to register LargeMessages with CRaC
+    // Dummy instance to register PowertoolsLogging with CRaC
     private static final PowertoolsLogging INSTANCE = new PowertoolsLogging();
 
     static {
