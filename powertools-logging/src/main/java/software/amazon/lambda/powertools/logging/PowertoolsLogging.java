@@ -77,8 +77,10 @@ public final class PowertoolsLogging implements Resource {
         Core.getGlobalContext().register(INSTANCE);
     }
 
-    private PowertoolsLogging() {
-        // Utility class
+    public static void init() {
+        // Placeholder method used to enable SnapStart priming. Users need a direct reference to this class in order
+        // for the CRaC hooks to execute.
+        new PowertoolsLogging();
     }
 
     private static void initializeLogLevel() {
@@ -373,6 +375,7 @@ public final class PowertoolsLogging implements Resource {
 
     @Override
     public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        init();
         ClassPreLoader.preloadClasses();
     }
 
