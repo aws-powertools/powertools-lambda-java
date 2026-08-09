@@ -77,6 +77,7 @@
         <module>powertools-parameters/powertools-parameters-appconfig</module>
         <module>powertools-parameters/powertools-parameters-tests</module>
         <module>examples</module>
+        <module>powertools-tracing-opentelemetry</module>
     </modules>
 
     <properties>
@@ -119,6 +120,7 @@
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
         <native-maven-plugin.version>0.11.5</native-maven-plugin.version>
+        <opentelemetry-api.version>1.65.0</opentelemetry-api.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
