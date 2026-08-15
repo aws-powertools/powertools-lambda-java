@@ -5,6 +5,13 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Annotation to enable OpenTelemetry tracing for the annotated method.
+ * Automatically creates and manages an OpenTelemetry span for the method invocation.
+ * <p>
+ * This annotation allows configuration of the namespace, span name, and capture mode
+ * for tracing purposes. If no explicit configuration is provided, default values are used.
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface TracingOtel {
