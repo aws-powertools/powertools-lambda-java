@@ -33,9 +33,7 @@ class TracingOpenTelemetryTest {
 
         Tracer tracer = tracerProvider.get("test-tracer");
 
-        TracingOpenTelemetry tracing = TracingOpenTelemetry.builder()
-                .tracer(tracer)
-                .build();
+        TracingOpenTelemetry tracing = new TracingOpenTelemetry(tracer);
 
         try (SpanScope scope = tracing.addSpan("payment")) {
             assertThat(scope.span().getSpanContext().isValid())
@@ -56,11 +54,9 @@ class TracingOpenTelemetryTest {
 
         Tracer tracer = tracerProvider.get("test-tracer");
 
-        TracingOpenTelemetry tracing = TracingOpenTelemetry.builder()
-                .tracer(tracer)
-                .build();
+        TracingOpenTelemetry tracing = new TracingOpenTelemetry(tracer);
 
-        try (SpanScope scope = tracing.addSpan("payment")) {
+        try (SpanScope ignored = tracing.addSpan("payment")) {
             assertThat(exporter.getFinishedSpanItems())
                     .isEmpty();
         }
@@ -81,9 +77,7 @@ class TracingOpenTelemetryTest {
 
         Tracer tracer = tracerProvider.get("test-tracer");
 
-        TracingOpenTelemetry tracing = TracingOpenTelemetry.builder()
-                .tracer(tracer)
-                .build();
+        TracingOpenTelemetry tracing = new TracingOpenTelemetry(tracer);
 
         try (SpanScope outer = tracing.addSpan("outer")) {
 
@@ -107,9 +101,7 @@ class TracingOpenTelemetryTest {
 
         Tracer tracer = tracerProvider.get("test-tracer");
 
-        TracingOpenTelemetry tracing = TracingOpenTelemetry.builder()
-                .tracer(tracer)
-                .build();
+        TracingOpenTelemetry tracing = new TracingOpenTelemetry(tracer);
 
         RuntimeException exception = new RuntimeException("boom");
 
@@ -133,7 +125,7 @@ class TracingOpenTelemetryTest {
     }
 
     @Test
-    void shouldRecordExceptionWhenUsingWithSpan() throws Exception {
+    void shouldRecordExceptionWhenUsingWithSpan() {
         InMemorySpanExporter exporter = InMemorySpanExporter.create();
 
         SdkTracerProvider tracerProvider = SdkTracerProvider.builder()
@@ -142,9 +134,7 @@ class TracingOpenTelemetryTest {
 
         Tracer tracer = tracerProvider.get("test-tracer");
 
-        TracingOpenTelemetry tracing = TracingOpenTelemetry.builder()
-                .tracer(tracer)
-                .build();
+        TracingOpenTelemetry tracing = new TracingOpenTelemetry(tracer);
 
         RuntimeException exception = new RuntimeException("boom");
 

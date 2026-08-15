@@ -17,22 +17,21 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.internal;
 import io.opentelemetry.api.trace.Span;
 
 /**
- * Represents a functional interface that encapsulates an operation to be performed
- * within the context of an OpenTelemetry {@link Span}.
+ * Represents a functional interface used to execute a custom operation within
+ * the context of a given {@link Span}. This interface requires implementing a
+ * single method that performs an operation with the span and optionally
+ * returns a result.
+ *
  * <p>
- * This interface provides a contract for defining custom operations that take a
- * {@link Span} as input and execute within its context. It is used in conjunction
- * with utilities that manage OpenTelemetry spans, such as the {@code withSpan} method
- * in the {@code TracingOpenTelemetry} class.
- * <p>
- * Implementations of this interface enable the customization of behavior for spans,
- * including adding events, setting attributes, or modifying the span's status.
- * <p>
- * The operation defined by the {@code execute} method can throw an exception, which
- * allows for handling of error scenarios and proper recording of exceptions in the span.
+ * The {@code SpanOperation} interface enables tracing and manipulation of
+ * a span during its lifecycle, such as setting attributes, adding events,
+ * or updating status codes. It can be used alongside frameworks that support
+ * OpenTelemetry for distributed tracing.
+ *
+ * @param <T> the type of result returned by the custom span operation
  */
 @FunctionalInterface
-public interface SpanOperation {
+public interface SpanOperation<T> {
 
     /**
      * Executes a custom operation within the context of the provided {@link Span}.
@@ -42,5 +41,5 @@ public interface SpanOperation {
      * @param span the {@link Span} within whose context the operation will be executed
      * @throws Exception if an error occurs during the execution of the operation
      */
-    void execute(Span span) throws Exception;
+    T execute(Span span) throws Exception;
 }

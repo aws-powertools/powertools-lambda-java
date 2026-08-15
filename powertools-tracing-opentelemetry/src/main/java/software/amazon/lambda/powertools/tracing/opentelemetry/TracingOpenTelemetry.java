@@ -14,6 +14,7 @@
 
 package software.amazon.lambda.powertools.tracing.opentelemetry;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import java.util.Objects;
@@ -29,10 +30,31 @@ import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanScop
  */
 public final class TracingOpenTelemetry {
 
+    private static final String INSTRUMENTATION_NAME =
+            "aws-lambda-powertools";
+
     private final Tracer tracer;
 
-    private TracingOpenTelemetry(Builder builder) {
-        this.tracer = builder.tracer;
+    /**
+     * Creates a tracing instance using the provided tracer.
+     *
+     * <p>This constructor is primarily useful for testing.
+     *
+     * @param tracer the OpenTelemetry tracer
+     */
+    TracingOpenTelemetry(Tracer tracer) {
+        this.tracer = Objects.requireNonNull(tracer, "tracer must not be null");
+    }
+
+    /**
+     * Initializes a new instance of the {@code TracingOpenTelemetry} class, using
+     * the global OpenTelemetry tracer identified by the instrumentation name.
+     * <p>
+     * This constructor simplifies the setup process for applications by
+     * automatically leveraging the globally configured instrumentation tracer.
+     */
+    public TracingOpenTelemetry() {
+        this(GlobalOpenTelemetry.getTracer(INSTRUMENTATION_NAME));
     }
 
     /**
@@ -43,7 +65,11 @@ public final class TracingOpenTelemetry {
      * @return an instance of {@link SpanScope}, which represents the created span and its associated context
      */
     public SpanScope addSpan(String name) {
-        return new SpanScope(tracer.spanBuilder(name).startSpan());
+        Span span = tracer
+                .spanBuilder(name)
+                .startSpan();
+
+        return new SpanScope(span);
     }
 
     /**
@@ -60,14 +86,14 @@ public final class TracingOpenTelemetry {
      * The span is automatically managed and closed when the operation completes
      * or an exception is thrown.
      *
-     * @param name the name of the span to be created
+     * @param name      the name of the span to be created
      * @param operation the operation to be executed within the span's context
      * @throws Exception if the provided operation throws an exception during execution
      */
-    public void withSpan(String name, SpanOperation operation) throws Exception {
+    public <T> T withSpan(String name, SpanOperation<T> operation) throws Exception {
         try (SpanScope scope = addSpan(name)) {
             try {
-                operation.execute(scope.span());
+                return operation.execute(scope.span());
             } catch (Exception e) {
                 scope.recordException(e);
                 throw e;
@@ -76,35 +102,12 @@ public final class TracingOpenTelemetry {
     }
 
     /**
-     * Creates and returns a new instance of the {@code Builder} class for constructing
-     * instances of {@code TracingOpenTelemetry}.
+     * Creates a new tracing instance using the global OpenTelemetry tracer.
      *
-     * @return a new {@code Builder} instance for configuring and building a {@code TracingOpenTelemetry} object
+     * @return a new tracing instance
      */
-    public static Builder builder() {
-        return new Builder();
-    }
-
-    public static final class Builder {
-
-        private Tracer tracer;
-
-        public Builder tracer(Tracer tracer) {
-            this.tracer = tracer;
-            return this;
-        }
-
-        /**
-         * Builds and returns a {@code TracingOpenTelemetry} instance configured with the specified {@code Tracer}.
-         * The returned instance provides utilities for creating and managing spans.
-         *
-         * @return a fully constructed {@code TracingOpenTelemetry} object based on the builder's configuration
-         * @throws NullPointerException if the {@code tracer} has not been set
-         */
-        public TracingOpenTelemetry build() {
-            Objects.requireNonNull(tracer, "tracer must not be null");
-            return new TracingOpenTelemetry(this);
-        }
+    public static TracingOpenTelemetry create() {
+        return new TracingOpenTelemetry();
     }
 
 }

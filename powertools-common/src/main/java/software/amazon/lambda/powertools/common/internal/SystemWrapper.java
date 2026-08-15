@@ -22,6 +22,10 @@ public class SystemWrapper {
         return System.getenv(name);
     }
 
+    public static boolean containsKey(String key) {
+        return System.getenv().containsKey(key);
+    }
+
     public static String getProperty(String name) {
         return System.getProperty(name);
     }
