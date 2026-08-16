@@ -41,9 +41,7 @@ public final class TracingOpenTelemetryAspect {
             value = "callAt(tracing) && execution(@Tracing * *.*(..))",
             argNames = "pjp,tracing"
     )
-    public Object around(
-            ProceedingJoinPoint pjp,
-            Tracing tracing) throws Throwable {
+    public Object around(ProceedingJoinPoint pjp, Tracing tracing) throws Throwable {
 
         String spanName = tracing.spanName().isEmpty()
                 ? pjp.getSignature().getName()
@@ -56,12 +54,9 @@ public final class TracingOpenTelemetryAspect {
         return traceMethod(pjp, tracing, spanName);
     }
 
-    private Object traceHandler(
-            ProceedingJoinPoint pjp,
-            Tracing tracing,
-            String spanName) throws Throwable {
+    private Object traceHandler(ProceedingJoinPoint pjp, Tracing tracing, String spanName) throws Throwable {
 
-        Context parentContext = Context.current();
+        Context parentContext = extractParentContext(pjp);
 
         try (SpanScope scope = tracingOtel.addSpan(
                 spanName,
@@ -70,6 +65,10 @@ public final class TracingOpenTelemetryAspect {
                 parentContext)) {
 
             Span span = scope.span();
+
+            Object event = pjp.getArgs()[0];
+
+            tracingOtel.eventContextExtractorResolver().enrichSpan(event, span);
 
             addLambdaInvocationAttributes(pjp, span);
 
@@ -99,10 +98,7 @@ public final class TracingOpenTelemetryAspect {
         }
     }
 
-    private Object traceMethod(
-            ProceedingJoinPoint pjp,
-            Tracing tracing,
-            String spanName) throws Throwable {
+    private Object traceMethod(ProceedingJoinPoint pjp, Tracing tracing, String spanName) throws Throwable {
 
         try (SpanScope scope = tracingOtel.addSpan(
                 spanName,
@@ -132,6 +128,15 @@ public final class TracingOpenTelemetryAspect {
                 throw throwable;
             }
         }
+    }
+
+    private Context extractParentContext(ProceedingJoinPoint pjp) {
+
+        return tracingOtel.eventContextExtractorResolver().extract(
+                pjp.getArgs()[0],
+                Context.current(),
+                tracingOtel.propagator()
+        );
     }
 
     private Attributes handlerAttributes() {

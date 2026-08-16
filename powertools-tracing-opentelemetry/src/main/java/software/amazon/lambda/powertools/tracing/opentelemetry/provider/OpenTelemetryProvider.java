@@ -4,7 +4,7 @@
  * you may not use this file except in compliance with the License.
  */
 
-package software.amazon.lambda.powertools.tracing.opentelemetry.internal;
+package software.amazon.lambda.powertools.tracing.opentelemetry.provider;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -13,6 +13,7 @@ import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import java.util.concurrent.TimeUnit;
+import software.amazon.lambda.powertools.tracing.opentelemetry.internal.LambdaResource;
 
 public final class OpenTelemetryProvider {
 

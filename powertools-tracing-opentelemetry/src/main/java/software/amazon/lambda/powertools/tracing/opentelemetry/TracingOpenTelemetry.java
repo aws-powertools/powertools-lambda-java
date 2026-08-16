@@ -26,15 +26,18 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
 import java.util.Objects;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
-import software.amazon.lambda.powertools.tracing.opentelemetry.internal.OpenTelemetryProvider;
+import software.amazon.lambda.powertools.tracing.opentelemetry.context.LambdaEventContextExtractorResolver;
+import software.amazon.lambda.powertools.tracing.opentelemetry.internal.AttributesConstants;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanOperation;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanScope;
+import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTelemetryProvider;
 
 
 public final class TracingOpenTelemetry {
 
     private final Tracer tracer;
     private final TextMapPropagator propagator;
+    private final LambdaEventContextExtractorResolver eventContextExtractorResolver;
 
     private TracingOpenTelemetry(Builder builder) {
         this.tracer = Objects.requireNonNull(
@@ -45,6 +48,10 @@ public final class TracingOpenTelemetry {
                 builder.propagator,
                 "propagator must not be null"
         );
+        this.eventContextExtractorResolver = Objects.requireNonNull(
+                builder.eventContextExtractorResolver,
+                "eventContextExtractorResolver must not be null"
+        );
     }
 
     public TracingOpenTelemetry() {
@@ -53,13 +60,14 @@ public final class TracingOpenTelemetry {
 
 
     public TracingOpenTelemetry(Tracer tracer) {
-        this(tracer, createDefaultPropagator());
+        this(tracer, createDefaultPropagator(), createDefaultEventContextExtractorResolver());
     }
 
 
     public TracingOpenTelemetry(
             Tracer tracer,
-            TextMapPropagator propagator) {
+            TextMapPropagator propagator,
+            LambdaEventContextExtractorResolver eventContextExtractorResolver) {
 
         this.tracer = Objects.requireNonNull(
                 tracer,
@@ -69,6 +77,22 @@ public final class TracingOpenTelemetry {
                 propagator,
                 "propagator must not be null"
         );
+        this.eventContextExtractorResolver = Objects.requireNonNull(
+                eventContextExtractorResolver,
+                "eventContextExtractorResolver must not be null"
+        );
+    }
+
+    public TextMapPropagator propagator() {
+        return propagator;
+    }
+
+    public LambdaEventContextExtractorResolver eventContextExtractorResolver() {
+        return eventContextExtractorResolver;
+    }
+
+    public Span currentSpan() {
+        return Span.current();
     }
 
 
@@ -120,11 +144,6 @@ public final class TracingOpenTelemetry {
     }
 
 
-    public Span currentSpan() {
-        return Span.current();
-    }
-
-
     public <T> T withSpan(
             String name,
             SpanOperation<T> operation) throws Exception {
@@ -154,8 +173,8 @@ public final class TracingOpenTelemetry {
         Span span = tracer.spanBuilder(name)
                 .setParent(parentContext)
                 .setSpanKind(SpanKind.SERVER)
-                .setAttribute("faas.coldstart", LambdaHandlerProcessor.isColdStart())
-                .setAttribute("faas.invocation_id", lambdaContext.getAwsRequestId())
+                .setAttribute(AttributesConstants.AWS_LAMBDA_FUNCTION_ARN, LambdaHandlerProcessor.isColdStart())
+                .setAttribute(AttributesConstants.FAAS_INVOCATION_ID, lambdaContext.getAwsRequestId())
                 .startSpan();
 
         try (SpanScope scope = new SpanScope(span)) {
@@ -223,6 +242,10 @@ public final class TracingOpenTelemetry {
         return OpenTelemetryProvider.propagator();
     }
 
+    private static LambdaEventContextExtractorResolver createDefaultEventContextExtractorResolver() {
+        return LambdaEventContextExtractorResolver.create();
+    }
+
 
     public static TracingOpenTelemetry create() {
         return new TracingOpenTelemetry();
@@ -237,6 +260,8 @@ public final class TracingOpenTelemetry {
 
         private Tracer tracer;
         private TextMapPropagator propagator = createDefaultPropagator();
+        private LambdaEventContextExtractorResolver eventContextExtractorResolver =
+                createDefaultEventContextExtractorResolver();
 
         public Builder tracer(Tracer tracer) {
             this.tracer = tracer;
@@ -245,6 +270,12 @@ public final class TracingOpenTelemetry {
 
         public Builder propagator(TextMapPropagator propagator) {
             this.propagator = propagator;
+            return this;
+        }
+
+        public Builder eventContextExtractorResolver(
+                LambdaEventContextExtractorResolver eventContextExtractorResolver) {
+            this.eventContextExtractorResolver = eventContextExtractorResolver;
             return this;
         }
 
