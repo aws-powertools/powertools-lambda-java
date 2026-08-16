@@ -18,14 +18,38 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapGetter;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.data.SpanData;
 import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanScope;
 
 class TracingOpenTelemetryTest {
+
+    public static final TextMapGetter<Map<String, String>> MAP_GETTER = new TextMapGetter<>() {
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+            return carrier.keySet();
+        }
+
+        @Override
+        public String get(
+                Map<String, String> carrier,
+                String key) {
+            return carrier.get(key);
+        }
+    };
 
     @Test
     void shouldCreateAndMakeSpanCurrent() {
@@ -157,6 +181,145 @@ class TracingOpenTelemetryTest {
                 .isEqualTo(io.opentelemetry.api.trace.StatusCode.ERROR);
 
         tracerProvider.close();
+    }
+
+    @Test
+    void shouldExtractContext() {
+        TextMapPropagator propagator =
+                W3CTraceContextPropagator.getInstance();
+
+        SdkTracerProvider tracerProvider = SdkTracerProvider.builder().build();
+
+        Tracer tracer = tracerProvider.get("test-tracer");
+
+        TracingOpenTelemetry tracing =
+                TracingOpenTelemetry.builder()
+                        .tracer(tracer)
+                        .propagator(propagator)
+                        .build();
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(
+                "traceparent",
+                "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        );
+
+        Context context = tracing.extractContext(
+                headers,
+                MAP_GETTER
+        );
+
+        SpanContext spanContext = Span.fromContext(context).getSpanContext();
+
+        assertThat(spanContext.isValid()).isTrue();
+        assertThat(spanContext.isRemote()).isTrue();
+
+        assertThat(spanContext.getTraceId())
+                .isEqualTo("4bf92f3577b34da6a3ce929d0e0e4736");
+
+        assertThat(spanContext.getSpanId())
+                .isEqualTo("00f067aa0ba902b7");
+
+        assertThat(spanContext.getTraceFlags().isSampled())
+                .isTrue();
+    }
+
+    @Test
+    void shouldReturnInvalidContextWhenTraceparentIsMissing() {
+        TextMapPropagator propagator =
+                W3CTraceContextPropagator.getInstance();
+
+        SdkTracerProvider tracerProvider =
+                SdkTracerProvider.builder().build();
+
+        TracingOpenTelemetry tracing =
+                TracingOpenTelemetry.builder()
+                        .tracer(tracerProvider.get("test-tracer"))
+                        .propagator(propagator)
+                        .build();
+
+        Map<String, String> headers = new HashMap<>();
+
+        Context context = tracing.extractContext(
+                headers,
+                MAP_GETTER
+        );
+
+        assertThat(Span.fromContext(context).getSpanContext().isValid())
+                .isFalse();
+    }
+
+    @Test
+    void shouldCreateServerSpanWithParentContext() throws Exception {
+
+        String traceId = "4bf92f3577b34da6a3ce929d0e0e4736";
+        String parentSpanId = "00f067aa0ba902b7";
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put(
+                "traceparent",
+                "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01"
+        );
+
+        TextMapPropagator propagator =
+                W3CTraceContextPropagator.getInstance();
+
+        InMemorySpanExporter exporter =
+                InMemorySpanExporter.create();
+
+        SdkTracerProvider tracerProvider =
+                SdkTracerProvider.builder()
+                        .addSpanProcessor(
+                                SimpleSpanProcessor.create(exporter)
+                        )
+                        .build();
+
+        Tracer tracer = tracerProvider.get("test-tracer");
+
+        TracingOpenTelemetry tracing =
+                TracingOpenTelemetry.builder()
+                        .tracer(tracer)
+                        .propagator(propagator)
+                        .build();
+
+        Context parentContext = tracing.extractContext(
+                headers,
+                MAP_GETTER
+        );
+
+
+        tracing.captureLambdaHandler(
+                "lambda-handler",
+                null,
+                parentContext,
+                span -> "result"
+        );
+
+
+        List<SpanData> spans = exporter.getFinishedSpanItems();
+
+        assertThat(spans)
+                .hasSize(1);
+
+        SpanData span = spans.get(0);
+
+        assertThat(span.getName())
+                .isEqualTo("lambda-handler");
+
+        assertThat(span.getKind())
+                .isEqualTo(SpanKind.SERVER);
+
+        assertThat(span.getSpanContext().isValid())
+                .isTrue();
+
+        assertThat(span.getSpanContext().getTraceId())
+                .isEqualTo(traceId);
+
+        assertThat(span.getParentSpanId())
+                .isEqualTo(parentSpanId);
+
+        assertThat(span.getSpanId())
+                .isNotEqualTo(parentSpanId);
     }
 
 

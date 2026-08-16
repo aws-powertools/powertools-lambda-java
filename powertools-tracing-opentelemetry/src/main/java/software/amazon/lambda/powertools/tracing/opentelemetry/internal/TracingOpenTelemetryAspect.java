@@ -1,95 +1,193 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0
+ */
+
 package software.amazon.lambda.powertools.tracing.opentelemetry.internal;
 
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.coldStartDone;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isColdStart;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.isHandlerMethod;
-import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.serviceName;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
+import io.opentelemetry.context.Context;
+import java.util.Optional;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
+import software.amazon.lambda.powertools.tracing.opentelemetry.Tracing;
 import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
-import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOtel;
 
 @Aspect
 public final class TracingOpenTelemetryAspect {
-    //tracing cannot be final for testing purposes
-    private static TracingOpenTelemetry tracing =
-            TracingOpenTelemetry.create();
+
+    // Cannot be final for testing purposes
+    private static TracingOpenTelemetry tracingOtel = TracingOpenTelemetry.create();
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String COLD_START_ATTRIBUTE =
-            "aws.lambda.powertools.cold_start";
 
-    private static final String SERVICE_ATTRIBUTE =
-            "aws.lambda.powertools.service";
-
-    private static final String RESPONSE_ATTRIBUTE =
-            "aws.lambda.powertools.response";
-
-    @SuppressWarnings({"EmptyMethod"})
-    @Pointcut("@annotation(tracingOtel)")
-    public void callAt(TracingOtel tracingOtel) {
+    @SuppressWarnings("EmptyMethod")
+    @Pointcut("@annotation(tracing)")
+    public void callAt(Tracing tracing) {
     }
 
     @Around(
-            value = "callAt(tracingOtel) && execution(@TracingOtel * *.*(..))",
-            argNames = "pjp,tracingOtel"
+            value = "callAt(tracing) && execution(@Tracing * *.*(..))",
+            argNames = "pjp,tracing"
     )
-    public Object around(ProceedingJoinPoint pjp, TracingOtel tracingOtel) throws Throwable {
+    public Object around(
+            ProceedingJoinPoint pjp,
+            Tracing tracing) throws Throwable {
 
-        String spanName = tracingOtel.spanName().isEmpty()
+        String spanName = tracing.spanName().isEmpty()
                 ? pjp.getSignature().getName()
-                : tracingOtel.spanName();
+                : tracing.spanName();
 
-        String namespace = tracingOtel.namespace().isEmpty()
-                ? serviceName()
-                : tracingOtel.namespace();
+        if (isHandlerMethod(pjp)) {
+            return traceHandler(pjp, tracing, spanName);
+        }
 
-        try (SpanScope scope = tracing.addSpan(spanName)) {
+        return traceMethod(pjp, tracing, spanName);
+    }
+
+    private Object traceHandler(
+            ProceedingJoinPoint pjp,
+            Tracing tracing,
+            String spanName) throws Throwable {
+
+        Context parentContext = Context.current();
+
+        try (SpanScope scope = tracingOtel.addSpan(
+                spanName,
+                SpanKind.SERVER,
+                handlerAttributes(),
+                parentContext)) {
 
             Span span = scope.span();
 
-            if (isHandlerMethod(pjp)) {
-                span.setAttribute(COLD_START_ATTRIBUTE, isColdStart());
-                span.setAttribute(SERVICE_ATTRIBUTE, namespace);
-            }
+            addLambdaInvocationAttributes(pjp, span);
 
             try {
-
                 Object result = pjp.proceed(pjp.getArgs());
 
-                if (captureResponse(tracingOtel)) {
-                    span.setAttribute(RESPONSE_ATTRIBUTE, OBJECT_MAPPER.writeValueAsString(result));
-                }
+                captureResponse(
+                        span,
+                        tracing,
+                        result
+                );
 
-                if (isHandlerMethod(pjp)) {
-                    coldStartDone();
-                }
+                coldStartDone();
 
                 return result;
+
             } catch (Throwable throwable) {
 
-                if (captureError(tracingOtel)) {
-                    scope.recordException(throwable);
-                }
+                captureError(
+                        scope,
+                        tracing,
+                        throwable
+                );
+
                 throw throwable;
             }
         }
     }
 
-    private boolean captureResponse(TracingOtel tracing) {
+    private Object traceMethod(
+            ProceedingJoinPoint pjp,
+            Tracing tracing,
+            String spanName) throws Throwable {
+
+        try (SpanScope scope = tracingOtel.addSpan(
+                spanName,
+                SpanKind.INTERNAL,
+                Attributes.empty(),
+                Context.current())) {
+
+            Span span = scope.span();
+
+            try {
+                Object result = pjp.proceed(pjp.getArgs());
+
+                captureResponse(
+                        span,
+                        tracing,
+                        result
+                );
+
+                return result;
+            } catch (Throwable throwable) {
+                captureError(
+                        scope,
+                        tracing,
+                        throwable
+                );
+
+                throw throwable;
+            }
+        }
+    }
+
+    private Attributes handlerAttributes() {
+        return Attributes.builder()
+                .put(AttributesConstants.FAAS_COLDSTART, isColdStart())
+                .build();
+    }
+
+    private void addLambdaInvocationAttributes(ProceedingJoinPoint pjp, Span span) {
+
+        Optional.ofNullable(LambdaHandlerProcessor.extractContext(pjp))
+                .ifPresent(context ->
+                        span.setAttribute(
+                                AttributesConstants.FAAS_INVOCATION_ID,
+                                context.getAwsRequestId()
+                        )
+                );
+    }
+
+    private void captureResponse(
+            Span span,
+            Tracing tracing,
+            Object response) throws Exception {
+
+        if (!captureResponse(tracing)) {
+            return;
+        }
+
+        span.setAttribute(
+                AttributesConstants.RESPONSE_ATTRIBUTE,
+                OBJECT_MAPPER.writeValueAsString(response)
+        );
+    }
+
+    private void captureError(
+            SpanScope scope,
+            Tracing tracing,
+            Throwable throwable) {
+
+        if (captureError(tracing)) {
+            scope.recordException(throwable);
+        }
+    }
+
+    private boolean captureResponse(Tracing tracing) {
         switch (tracing.captureMode()) {
             case ENVIRONMENT_VAR:
-                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_RESPONSE")
-                        && environmentVariable("POWERTOOLS_TRACER_CAPTURE_RESPONSE");
+                return isEnvironmentVariableSet(
+                        AttributesConstants.CAPTURE_RESPONSE_ENV)
+                        && environmentVariable(
+                        AttributesConstants.CAPTURE_RESPONSE_ENV);
+
             case RESPONSE:
             case RESPONSE_AND_ERROR:
                 return true;
+
             case DISABLED:
             case ERROR:
             default:
@@ -97,14 +195,18 @@ public final class TracingOpenTelemetryAspect {
         }
     }
 
-    private boolean captureError(TracingOtel tracing) {
+    private boolean captureError(Tracing tracing) {
         switch (tracing.captureMode()) {
             case ENVIRONMENT_VAR:
-                return isEnvironmentVariableSet("POWERTOOLS_TRACER_CAPTURE_ERROR")
-                        && environmentVariable("POWERTOOLS_TRACER_CAPTURE_ERROR");
+                return isEnvironmentVariableSet(
+                        AttributesConstants.CAPTURE_ERROR_ENV)
+                        && environmentVariable(
+                        AttributesConstants.CAPTURE_ERROR_ENV);
+
             case ERROR:
             case RESPONSE_AND_ERROR:
                 return true;
+
             case DISABLED:
             case RESPONSE:
             default:
@@ -113,11 +215,12 @@ public final class TracingOpenTelemetryAspect {
     }
 
     private boolean environmentVariable(String key) {
-        return Boolean.parseBoolean(SystemWrapper.getenv(key));
+        return Boolean.parseBoolean(
+                SystemWrapper.getenv(key)
+        );
     }
 
     private boolean isEnvironmentVariableSet(String key) {
         return SystemWrapper.containsKey(key);
     }
-
 }

@@ -1,19 +1,6 @@
-/*
- * Copyright 2023 Amazon.com, Inc. or its affiliates.
- * Licensed under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *     http://www.apache.org/licenses/LICENSE-2.0
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package software.amazon.lambda.powertools.tracing.opentelemetry.internal;
 
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.context.Scope;
@@ -40,20 +27,25 @@ public final class SpanScope implements AutoCloseable {
         this.scope = span.makeCurrent();
     }
 
-    /**
-     * Retrieves the {@link Span} associated with this {@link SpanScope}.
-     *
-     * @return the {@link Span} managed by this {@link SpanScope}
-     */
     public Span span() {
         return span;
     }
 
-    /**
-     * Records an exception in the span and sets its status to {@code StatusCode.ERROR}.
-     *
-     * @param throwable the {@link Throwable} instance to be recorded as an event in the span.
-     */
+    public SpanScope setStatus(StatusCode status) {
+        span.setStatus(status);
+        return this;
+    }
+
+    public SpanScope addEvent(String name) {
+        span.addEvent(name);
+        return this;
+    }
+
+    public SpanScope addEvent(String name, Attributes attributes) {
+        span.addEvent(name, attributes);
+        return this;
+    }
+
     public void recordException(Throwable throwable) {
         span.recordException(throwable);
         span.setStatus(StatusCode.ERROR);

@@ -28,13 +28,24 @@
 
     <name>Powertools for AWS Lambda (Java) - Tracing OpenTelemetry</name>
     <description>
-        A suite of utilities for AWS Lambda Functions that makes tracing with OpenTelemetry, structured logging and creating custom metrics asynchronously easier.
+        A suite of utilities for AWS Lambda Functions that makes tracing with OpenTelemetry, structured logging and
+        creating custom metrics asynchronously easier.
     </description>
 
     <dependencies>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
+            <version>${opentelemetry-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk</artifactId>
+            <version>${opentelemetry-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
             <version>${opentelemetry-api.version}</version>
         </dependency>
         <dependency>
@@ -64,12 +75,6 @@
         </dependency>
 
         <!-- Test dependencies -->
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk</artifactId>
-            <version>${opentelemetry-api.version}</version>
-            <scope>test</scope>
-        </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-testing</artifactId>
