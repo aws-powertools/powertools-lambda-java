@@ -8,10 +8,13 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.provider;
 
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.LambdaResource;
 
@@ -28,6 +31,25 @@ public final class OpenTelemetryProvider {
     private static final SdkTracerProvider TRACER_PROVIDER =
             createTracerProvider();
 
+    private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER = new TextMapGetter<>() {
+
+        @Override
+        public Iterable<String> keys(Map<String, String> carrier) {
+
+            return carrier == null
+                    ? Collections.emptyList()
+                    : carrier.keySet();
+        }
+
+        @Override
+        public String get(Map<String, String> carrier, String key) {
+
+            return carrier == null
+                    ? null
+                    : carrier.get(key);
+        }
+    };
+
     private OpenTelemetryProvider() {
     }
 
@@ -41,6 +63,10 @@ public final class OpenTelemetryProvider {
 
     public static TextMapPropagator propagator() {
         return createPropagator();
+    }
+
+    public static TextMapGetter<Map<String, String>> textMapGetter() {
+        return TEXT_MAP_GETTER;
     }
 
     private static SdkTracerProvider createTracerProvider() {

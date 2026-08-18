@@ -17,7 +17,9 @@ public final class LambdaEventContextExtractorResolver {
     public static LambdaEventContextExtractorResolver create() {
         return new LambdaEventContextExtractorResolver(
                 List.of(
-                        new ApiGatewayTraceContextExtractor()
+                        new ApiGatewayTraceContextExtractor(),
+                        new SqsTraceContextExtractor(),
+                        new SnsTraceContextExtractor()
                 )
         );
     }

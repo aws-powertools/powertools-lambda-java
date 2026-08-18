@@ -3,34 +3,12 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
-import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
+import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTelemetryProvider;
 
 public final class ApiGatewayTraceContextExtractor implements LambdaEventContextExtractor {
-    private static final TextMapGetter<Map<String, String>> HEADER_GETTER =
-            new TextMapGetter<>() {
-
-                @Override
-                public Iterable<String> keys(Map<String, String> carrier) {
-
-                    return carrier != null
-                            ? carrier.keySet()
-                            : Collections.emptyList();
-                }
-
-                @Override
-                public String get(Map<String, String> carrier, String key) {
-
-                    if (carrier == null) {
-                        return null;
-                    }
-
-                    return carrier.get(key);
-                }
-            };
 
 
     @Override
@@ -52,7 +30,7 @@ public final class ApiGatewayTraceContextExtractor implements LambdaEventContext
         return propagator.extract(
                 parentContext,
                 headers,
-                HEADER_GETTER
+                OpenTelemetryProvider.textMapGetter()
         );
     }
 

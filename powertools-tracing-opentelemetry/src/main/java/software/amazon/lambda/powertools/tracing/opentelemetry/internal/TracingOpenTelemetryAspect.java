@@ -66,9 +66,7 @@ public final class TracingOpenTelemetryAspect {
 
             Span span = scope.span();
 
-            Object event = pjp.getArgs()[0];
-
-            tracingOtel.eventContextExtractorResolver().enrichSpan(event, span);
+            tracingOtel.eventContextExtractorResolver().enrichSpan(pjp.getArgs()[0], span);
 
             addLambdaInvocationAttributes(pjp, span);
 
@@ -161,7 +159,7 @@ public final class TracingOpenTelemetryAspect {
             Tracing tracing,
             Object response) throws Exception {
 
-        if (!captureResponse(tracing)) {
+        if (!isCaptureResponseEnabled(tracing)) {
             return;
         }
 
@@ -176,12 +174,12 @@ public final class TracingOpenTelemetryAspect {
             Tracing tracing,
             Throwable throwable) {
 
-        if (captureError(tracing)) {
+        if (isCaptureErrorEnabled(tracing)) {
             scope.recordException(throwable);
         }
     }
 
-    private boolean captureResponse(Tracing tracing) {
+    private boolean isCaptureResponseEnabled(Tracing tracing) {
         switch (tracing.captureMode()) {
             case ENVIRONMENT_VAR:
                 return isEnvironmentVariableSet(
@@ -200,7 +198,7 @@ public final class TracingOpenTelemetryAspect {
         }
     }
 
-    private boolean captureError(Tracing tracing) {
+    private boolean isCaptureErrorEnabled(Tracing tracing) {
         switch (tracing.captureMode()) {
             case ENVIRONMENT_VAR:
                 return isEnvironmentVariableSet(

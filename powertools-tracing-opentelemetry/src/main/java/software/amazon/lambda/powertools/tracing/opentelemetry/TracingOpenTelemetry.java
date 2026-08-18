@@ -101,18 +101,13 @@ public final class TracingOpenTelemetry {
     }
 
 
-    public SpanScope addSpan(
-            String name,
-            SpanKind kind) {
+    public SpanScope addSpan(String name, SpanKind kind) {
 
         return addSpan(name, kind, Attributes.empty());
     }
 
 
-    public SpanScope addSpan(
-            String name,
-            SpanKind kind,
-            Attributes attributes) {
+    public SpanScope addSpan(String name, SpanKind kind, Attributes attributes) {
 
         Objects.requireNonNull(name, "name must not be null");
         Objects.requireNonNull(kind, "kind must not be null");
@@ -126,11 +121,7 @@ public final class TracingOpenTelemetry {
         return new SpanScope(span);
     }
 
-    public SpanScope addSpan(
-            String name,
-            SpanKind kind,
-            Attributes attributes,
-            Context parentContext) {
+    public SpanScope addSpan(String name, SpanKind kind, Attributes attributes, Context parentContext) {
 
         Objects.requireNonNull(parentContext, "parentContext must not be null");
 
@@ -144,9 +135,7 @@ public final class TracingOpenTelemetry {
     }
 
 
-    public <T> T withSpan(
-            String name,
-            SpanOperation<T> operation) throws Exception {
+    public <T> T withSpan(String name, SpanOperation<T> operation) throws Exception {
 
         Objects.requireNonNull(operation, "operation must not be null");
 
@@ -164,7 +153,8 @@ public final class TracingOpenTelemetry {
             String name,
             com.amazonaws.services.lambda.runtime.Context lambdaContext,
             io.opentelemetry.context.Context parentContext,
-            SpanOperation<T> operation) throws Exception {
+            SpanOperation<T> operation
+    ) throws Exception {
 
         Objects.requireNonNull(name, "name must not be null");
         Objects.requireNonNull(parentContext, "parentContext must not be null");
@@ -191,51 +181,33 @@ public final class TracingOpenTelemetry {
         }
     }
 
-    public <T> Context extractContext(
-            T carrier,
-            TextMapGetter<T> getter) {
+    public <T> Context extractContext(T carrier, TextMapGetter<T> getter) {
 
         return extractContext(Context.current(), carrier, getter);
     }
 
 
-    public <T> Context extractContext(
-            Context context,
-            T carrier,
-            TextMapGetter<T> getter) {
+    public <T> Context extractContext(Context context, T carrier, TextMapGetter<T> getter) {
 
         Objects.requireNonNull(context, "context must not be null");
         Objects.requireNonNull(getter, "getter must not be null");
 
-        return propagator.extract(
-                context,
-                carrier,
-                getter
-        );
+        return propagator.extract(context, carrier, getter);
     }
 
 
-    public <T> void injectContext(
-            T carrier,
-            TextMapSetter<T> setter) {
+    public <T> void injectContext(T carrier, TextMapSetter<T> setter) {
 
         injectContext(Context.current(), carrier, setter);
     }
 
 
-    public <T> void injectContext(
-            Context context,
-            T carrier,
-            TextMapSetter<T> setter) {
+    public <T> void injectContext(Context context, T carrier, TextMapSetter<T> setter) {
 
         Objects.requireNonNull(context, "context must not be null");
         Objects.requireNonNull(setter, "setter must not be null");
 
-        propagator.inject(
-                context,
-                carrier,
-                setter
-        );
+        propagator.inject(context, carrier, setter);
     }
 
     private static TextMapPropagator createDefaultPropagator() {
