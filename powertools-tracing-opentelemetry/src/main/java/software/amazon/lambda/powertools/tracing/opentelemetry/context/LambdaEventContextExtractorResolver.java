@@ -19,7 +19,10 @@ public final class LambdaEventContextExtractorResolver {
                 List.of(
                         new ApiGatewayTraceContextExtractor(),
                         new SqsTraceContextExtractor(),
-                        new SnsTraceContextExtractor()
+                        new SnsTraceContextExtractor(),
+                        new KinesisTraceContextExtractor(),
+                        new DynamoDbTraceContextExtractor(),
+                        new S3TraceContextExtractor()
                 )
         );
     }

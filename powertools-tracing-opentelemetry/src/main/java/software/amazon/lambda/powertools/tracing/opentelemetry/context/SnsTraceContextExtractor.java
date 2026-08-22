@@ -24,28 +24,43 @@ public final class SnsTraceContextExtractor implements LambdaEventContextExtract
             return parentContext;
         }
 
-        SNSEvent.SNSRecord record = snsEvent.getRecords().get(0);
+        for (SNSEvent.SNSRecord record : snsEvent.getRecords()) {
 
-        Map<String, SNSEvent.MessageAttribute> attributes = record.getSNS().getMessageAttributes();
+            if (record == null || record.getSNS() == null) {
+                continue;
+            }
 
-        if (attributes == null || attributes.isEmpty()) {
-            return parentContext;
+            Map<String, SNSEvent.MessageAttribute> attributes = record.getSNS().getMessageAttributes();
+
+            if (attributes == null || attributes.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> propagationAttributes = attributes.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue() != null)
+                    .filter(entry -> entry.getValue().getValue() != null)
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().getValue()
+                    ));
+
+            if (propagationAttributes.isEmpty()) {
+                continue;
+            }
+
+            Context extractedContext = propagator.extract(
+                    parentContext,
+                    propagationAttributes,
+                    OpenTelemetryProvider.textMapGetter()
+            );
+
+            if (extractedContext != parentContext) {
+                return extractedContext;
+            }
         }
 
-        Map<String, String> propagationAttributes = attributes.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() != null)
-                .filter(entry -> entry.getValue().getValue() != null)
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().getValue()
-                ));
-
-        return propagator.extract(
-                parentContext,
-                propagationAttributes,
-                OpenTelemetryProvider.textMapGetter()
-        );
+        return parentContext;
     }
 
     @Override
@@ -57,17 +72,17 @@ public final class SnsTraceContextExtractor implements LambdaEventContextExtract
             return;
         }
 
-        SNSEvent.SNSRecord record = snsEvent.getRecords().get(0);
+        SNSEvent.SNSRecord record = snsEvent.getRecords()
+                .stream()
+                .filter(r -> r != null && r.getSNS() != null)
+                .findFirst()
+                .orElse(null);
 
-        if (record.getSNS() == null) {
+        if (record == null) {
             return;
         }
 
         span.setAttribute("messaging.system", "aws.sns");
-
-        if (record.getSNS().getMessageId() != null) {
-            span.setAttribute("messaging.message.id", record.getSNS().getMessageId());
-        }
 
         if (record.getSNS().getTopicArn() != null) {
             span.setAttribute("messaging.destination.name", extractTopicName(record.getSNS().getTopicArn()));

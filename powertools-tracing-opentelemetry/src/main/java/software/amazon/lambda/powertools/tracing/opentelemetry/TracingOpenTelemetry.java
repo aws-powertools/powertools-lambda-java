@@ -40,14 +40,8 @@ public final class TracingOpenTelemetry {
     private final LambdaEventContextExtractorResolver eventContextExtractorResolver;
 
     private TracingOpenTelemetry(Builder builder) {
-        this.tracer = Objects.requireNonNull(
-                builder.tracer,
-                "tracer must not be null"
-        );
-        this.propagator = Objects.requireNonNull(
-                builder.propagator,
-                "propagator must not be null"
-        );
+        this.tracer = Objects.requireNonNull(builder.tracer, "tracer must not be null");
+        this.propagator = Objects.requireNonNull(builder.propagator, "propagator must not be null");
         this.eventContextExtractorResolver = Objects.requireNonNull(
                 builder.eventContextExtractorResolver,
                 "eventContextExtractorResolver must not be null"
@@ -67,16 +61,11 @@ public final class TracingOpenTelemetry {
     public TracingOpenTelemetry(
             Tracer tracer,
             TextMapPropagator propagator,
-            LambdaEventContextExtractorResolver eventContextExtractorResolver) {
+            LambdaEventContextExtractorResolver eventContextExtractorResolver
+    ) {
 
-        this.tracer = Objects.requireNonNull(
-                tracer,
-                "tracer must not be null"
-        );
-        this.propagator = Objects.requireNonNull(
-                propagator,
-                "propagator must not be null"
-        );
+        this.tracer = Objects.requireNonNull(tracer, "tracer must not be null");
+        this.propagator = Objects.requireNonNull(propagator, "propagator must not be null");
         this.eventContextExtractorResolver = Objects.requireNonNull(
                 eventContextExtractorResolver,
                 "eventContextExtractorResolver must not be null"

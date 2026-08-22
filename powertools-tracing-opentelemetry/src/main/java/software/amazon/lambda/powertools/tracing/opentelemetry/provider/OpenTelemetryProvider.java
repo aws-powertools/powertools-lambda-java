@@ -6,6 +6,7 @@
 
 package software.amazon.lambda.powertools.tracing.opentelemetry.provider;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapGetter;
@@ -20,16 +21,13 @@ import software.amazon.lambda.powertools.tracing.opentelemetry.internal.LambdaRe
 
 public final class OpenTelemetryProvider {
 
-    private static final String INSTRUMENTATION_NAME =
-            "aws-lambda-powertools";
-
+    private static final String INSTRUMENTATION_NAME = "aws-lambda-powertools";
     private static final int MAX_EXPORT_BATCH_SIZE = 10;
     private static final int MAX_QUEUE_SIZE = 100;
     private static final long SCHEDULE_DELAY_MILLIS = 1_000;
     private static final long EXPORT_TIMEOUT_MILLIS = 3_000;
 
-    private static final SdkTracerProvider TRACER_PROVIDER =
-            createTracerProvider();
+    private static final SdkTracerProvider TRACER_PROVIDER = createTracerProvider();
 
     private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER = new TextMapGetter<>() {
 
@@ -50,7 +48,13 @@ public final class OpenTelemetryProvider {
         }
     };
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private OpenTelemetryProvider() {
+    }
+
+    public static ObjectMapper objectMapper() {
+        return OBJECT_MAPPER;
     }
 
     public static Tracer tracer() {

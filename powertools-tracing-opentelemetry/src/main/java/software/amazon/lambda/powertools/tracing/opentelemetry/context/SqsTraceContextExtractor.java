@@ -24,27 +24,40 @@ public final class SqsTraceContextExtractor implements LambdaEventContextExtract
             return parentContext;
         }
 
-        SQSEvent.SQSMessage message = sqsEvent.getRecords().get(0);
+        for (SQSEvent.SQSMessage message : sqsEvent.getRecords()) {
 
-        Map<String, SQSEvent.MessageAttribute> attributes = message.getMessageAttributes();
+            if (message == null || message.getMessageAttributes() == null) {
+                continue;
+            }
 
-        if (attributes == null || attributes.isEmpty()) {
-            return parentContext;
+            Map<String, SQSEvent.MessageAttribute> attributes = message.getMessageAttributes();
+
+            if (attributes.isEmpty()) {
+                continue;
+            }
+
+            Map<String, String> propagationAttributes = attributes.entrySet()
+                    .stream()
+                    .filter(entry -> entry.getValue() != null)
+                    .filter(entry -> entry.getValue().getStringValue() != null)
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            entry -> entry.getValue().getStringValue()
+                    ));
+
+            Context extractedContext = propagator.extract(
+                    parentContext,
+                    propagationAttributes,
+                    OpenTelemetryProvider.textMapGetter()
+            );
+
+            if (Span.fromContext(extractedContext).getSpanContext().isValid()) {
+
+                return extractedContext;
+            }
         }
 
-        Map<String, String> propagationAttributes = attributes.entrySet()
-                .stream()
-                .filter(entry -> entry.getValue() != null)
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        entry -> entry.getValue().getStringValue()
-                ));
-
-        return propagator.extract(
-                parentContext,
-                propagationAttributes,
-                OpenTelemetryProvider.textMapGetter()
-        );
+        return parentContext;
     }
 
     @Override
@@ -55,13 +68,11 @@ public final class SqsTraceContextExtractor implements LambdaEventContextExtract
             return;
         }
 
-        SQSEvent.SQSMessage message = sqsEvent.getRecords().get(0);
-
         span.setAttribute("messaging.system", "aws.sqs");
 
-        if (message.getMessageId() != null) {
-            span.setAttribute("messaging.message.id", message.getMessageId());
-        }
+        span.setAttribute("messaging.batch.message_count", sqsEvent.getRecords().size());
+
+        SQSEvent.SQSMessage message = sqsEvent.getRecords().get(0);
 
         if (message.getEventSourceArn() != null) {
             span.setAttribute("messaging.destination.name", extractQueueName(message.getEventSourceArn()));
