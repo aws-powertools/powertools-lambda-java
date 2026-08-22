@@ -2,6 +2,7 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
@@ -26,7 +27,7 @@ public final class DynamoDbTraceContextExtractor implements LambdaEventContextEx
          * defined by a dedicated propagation strategy if supported in
          * the future.
          */
-        return new ExtractedTraceContext(parentContext, List.of());
+        return new ExtractedTraceContext(parentContext, List.of(), SpanKind.CONSUMER);
     }
 
     @Override

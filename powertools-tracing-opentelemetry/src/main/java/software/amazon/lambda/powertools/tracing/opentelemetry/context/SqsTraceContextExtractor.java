@@ -3,6 +3,7 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanContext;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public final class SqsTraceContextExtractor implements LambdaEventContextExtract
         SQSEvent sqsEvent = (SQSEvent) event;
 
         if (sqsEvent.getRecords() == null || sqsEvent.getRecords().isEmpty()) {
-            return new ExtractedTraceContext(parentContext, List.of());
+            return new ExtractedTraceContext(parentContext, List.of(), SpanKind.CONSUMER);
         }
 
         List<SpanContext> spanContexts = new ArrayList<>();
@@ -67,7 +68,7 @@ public final class SqsTraceContextExtractor implements LambdaEventContextExtract
                 ? parentContext
                 : Context.root().with(Span.wrap(spanContexts.get(0)));
 
-        return new ExtractedTraceContext(parent, spanContexts);
+        return new ExtractedTraceContext(parent, spanContexts, SpanKind.CONSUMER);
     }
 
     @Override

@@ -90,7 +90,7 @@ public final class TracingOpenTelemetryAspect {
         if (shouldUseSpanLinks(extractedTraceContext)) {
             return tracingOtel.addSpan(
                     spanName,
-                    SpanKind.SERVER,
+                    extractedTraceContext.spanKind(),
                     handlerAttributes(),
                     Context.current(),
                     extractedTraceContext.spanContexts()
@@ -99,7 +99,7 @@ public final class TracingOpenTelemetryAspect {
 
         return tracingOtel.addSpan(
                 spanName,
-                SpanKind.SERVER,
+                extractedTraceContext.spanKind(),
                 handlerAttributes(),
                 extractedTraceContext.context()
         );

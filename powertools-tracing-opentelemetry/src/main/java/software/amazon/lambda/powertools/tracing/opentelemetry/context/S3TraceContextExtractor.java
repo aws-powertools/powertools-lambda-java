@@ -3,6 +3,7 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotification;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
@@ -26,7 +27,7 @@ public final class S3TraceContextExtractor implements LambdaEventContextExtracto
          * Do not assume that traceparent/tracestate are embedded
          * inside the S3 event payload.
          */
-        return new ExtractedTraceContext(parentContext, List.of());
+        return new ExtractedTraceContext(parentContext, List.of(), SpanKind.CONSUMER);
     }
 
     @Override
