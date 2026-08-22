@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.List;
 import java.util.Objects;
 
 public final class DynamoDbTraceContextExtractor implements LambdaEventContextExtractor {
@@ -14,7 +15,7 @@ public final class DynamoDbTraceContextExtractor implements LambdaEventContextEx
     }
 
     @Override
-    public Context extract(Object event, Context parentContext, TextMapPropagator propagator) {
+    public ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator) {
 
         /*
          * DynamoDB Streams records do not expose message attributes
@@ -25,7 +26,7 @@ public final class DynamoDbTraceContextExtractor implements LambdaEventContextEx
          * defined by a dedicated propagation strategy if supported in
          * the future.
          */
-        return parentContext;
+        return new ExtractedTraceContext(parentContext, List.of());
     }
 
     @Override

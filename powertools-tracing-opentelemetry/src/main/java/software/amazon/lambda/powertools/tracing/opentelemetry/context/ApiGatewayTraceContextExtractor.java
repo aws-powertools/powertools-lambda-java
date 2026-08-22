@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTelemetryProvider;
@@ -17,21 +18,23 @@ public final class ApiGatewayTraceContextExtractor implements LambdaEventContext
     }
 
     @Override
-    public Context extract(Object event, Context parentContext, TextMapPropagator propagator) {
+    public ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator) {
 
         APIGatewayProxyRequestEvent apiGatewayEvent = (APIGatewayProxyRequestEvent) event;
 
         Map<String, String> headers = apiGatewayEvent.getHeaders();
 
         if (headers == null || headers.isEmpty()) {
-            return parentContext;
+            return new ExtractedTraceContext(parentContext, List.of());
         }
 
-        return propagator.extract(
+        Context context = propagator.extract(
                 parentContext,
                 headers,
                 OpenTelemetryProvider.textMapGetter()
         );
+
+        return new ExtractedTraceContext(context, List.of());
     }
 
     @Override

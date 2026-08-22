@@ -8,7 +8,7 @@ public interface LambdaEventContextExtractor {
 
     boolean supports(Object event);
 
-    Context extract(Object event, Context parentContext, TextMapPropagator propagator);
-
     void enrichSpan(Object event, Span span);
+
+    ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator);
 }

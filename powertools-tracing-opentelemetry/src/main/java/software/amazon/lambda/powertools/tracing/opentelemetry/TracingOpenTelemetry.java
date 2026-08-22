@@ -18,12 +18,16 @@ package software.amazon.lambda.powertools.tracing.opentelemetry;
 
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanBuilder;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.tracing.opentelemetry.context.LambdaEventContextExtractorResolver;
@@ -101,26 +105,33 @@ public final class TracingOpenTelemetry {
         Objects.requireNonNull(name, "name must not be null");
         Objects.requireNonNull(kind, "kind must not be null");
         Objects.requireNonNull(attributes, "attributes must not be null");
-
-        Span span = tracer.spanBuilder(name)
-                .setSpanKind(kind)
-                .setAllAttributes(attributes)
-                .startSpan();
-
-        return new SpanScope(span);
+        return addSpan(name, kind, attributes, Context.current());
     }
+
 
     public SpanScope addSpan(String name, SpanKind kind, Attributes attributes, Context parentContext) {
 
         Objects.requireNonNull(parentContext, "parentContext must not be null");
+        return addSpan(name, kind, attributes, parentContext, Collections.emptyList());
+    }
 
-        Span span = tracer.spanBuilder(name)
+    public SpanScope addSpan(
+            String spanName,
+            SpanKind spanKind,
+            Attributes attributes,
+            Context parentContext,
+            List<SpanContext> spanContexts
+    ) {
+
+        SpanBuilder spanBuilder = tracer
+                .spanBuilder(spanName)
+                .setSpanKind(spanKind)
                 .setParent(parentContext)
-                .setSpanKind(kind)
-                .setAllAttributes(attributes)
-                .startSpan();
+                .setAllAttributes(attributes);
 
-        return new SpanScope(span);
+        spanContexts.forEach(spanBuilder::addLink);
+
+        return new SpanScope(spanBuilder.startSpan());
     }
 
 

@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.List;
 
 public final class KinesisTraceContextExtractor
         implements LambdaEventContextExtractor {
@@ -14,7 +15,7 @@ public final class KinesisTraceContextExtractor
     }
 
     @Override
-    public Context extract(Object event, Context parentContext, TextMapPropagator propagator) {
+    public ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator) {
 
         /*
          * Kinesis records do not expose message attributes
@@ -26,7 +27,7 @@ public final class KinesisTraceContextExtractor
          * the future.
          */
 
-        return parentContext;
+        return new ExtractedTraceContext(parentContext, List.of());
     }
 
     @Override

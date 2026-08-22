@@ -22,6 +22,8 @@ import software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.tracing.opentelemetry.Tracing;
 import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
+import software.amazon.lambda.powertools.tracing.opentelemetry.context.ExtractedTraceContext;
+import software.amazon.lambda.powertools.tracing.opentelemetry.context.TraceContextPropagationMode;
 import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTelemetryProvider;
 
 @Aspect
@@ -54,9 +56,9 @@ public final class TracingOpenTelemetryAspect {
 
     private Object traceHandler(ProceedingJoinPoint pjp, Tracing tracing, String spanName) throws Throwable {
 
-        Context parentContext = extractParentContext(pjp);
+        ExtractedTraceContext extractedTraceContext = extractTraceContext(pjp);
 
-        try (SpanScope scope = tracingOtel.addSpan(spanName, SpanKind.SERVER, handlerAttributes(), parentContext)) {
+        try (SpanScope scope = addHandlerSpan(spanName, extractedTraceContext)) {
 
             Span span = scope.span();
 
@@ -83,6 +85,32 @@ public final class TracingOpenTelemetryAspect {
         }
     }
 
+    private SpanScope addHandlerSpan(String spanName, ExtractedTraceContext extractedTraceContext) {
+
+        if (shouldUseSpanLinks(extractedTraceContext)) {
+            return tracingOtel.addSpan(
+                    spanName,
+                    SpanKind.SERVER,
+                    handlerAttributes(),
+                    Context.current(),
+                    extractedTraceContext.spanContexts()
+            );
+        }
+
+        return tracingOtel.addSpan(
+                spanName,
+                SpanKind.SERVER,
+                handlerAttributes(),
+                extractedTraceContext.context()
+        );
+    }
+
+    private boolean shouldUseSpanLinks(ExtractedTraceContext extractedTraceContext) {
+
+        return OpenTelemetryProvider.traceContextPropagationMode() == TraceContextPropagationMode.LINK
+                && !extractedTraceContext.spanContexts().isEmpty();
+    }
+
     private Object traceMethod(ProceedingJoinPoint pjp, Tracing tracing, String spanName) throws Throwable {
 
         try (SpanScope scope = tracingOtel.addSpan(spanName, SpanKind.INTERNAL, Attributes.empty(),
@@ -106,7 +134,7 @@ public final class TracingOpenTelemetryAspect {
         }
     }
 
-    private Context extractParentContext(ProceedingJoinPoint pjp) {
+    private ExtractedTraceContext extractTraceContext(ProceedingJoinPoint pjp) {
 
         return tracingOtel.eventContextExtractorResolver().extract(
                 pjp.getArgs()[0],

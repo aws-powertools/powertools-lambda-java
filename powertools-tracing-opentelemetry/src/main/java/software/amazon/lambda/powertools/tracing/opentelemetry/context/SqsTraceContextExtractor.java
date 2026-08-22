@@ -2,8 +2,11 @@ package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.SpanContext;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTelemetryProvider;
@@ -16,13 +19,15 @@ public final class SqsTraceContextExtractor implements LambdaEventContextExtract
     }
 
     @Override
-    public Context extract(Object event, Context parentContext, TextMapPropagator propagator) {
+    public ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator) {
 
         SQSEvent sqsEvent = (SQSEvent) event;
 
         if (sqsEvent.getRecords() == null || sqsEvent.getRecords().isEmpty()) {
-            return parentContext;
+            return new ExtractedTraceContext(parentContext, List.of());
         }
+
+        List<SpanContext> spanContexts = new ArrayList<>();
 
         for (SQSEvent.SQSMessage message : sqsEvent.getRecords()) {
 
@@ -46,18 +51,23 @@ public final class SqsTraceContextExtractor implements LambdaEventContextExtract
                     ));
 
             Context extractedContext = propagator.extract(
-                    parentContext,
+                    Context.root(),
                     propagationAttributes,
                     OpenTelemetryProvider.textMapGetter()
             );
 
-            if (Span.fromContext(extractedContext).getSpanContext().isValid()) {
+            SpanContext spanContext = Span.fromContext(extractedContext).getSpanContext();
 
-                return extractedContext;
+            if (spanContext.isValid()) {
+                spanContexts.add(spanContext);
             }
         }
 
-        return parentContext;
+        Context parent = spanContexts.isEmpty()
+                ? parentContext
+                : Context.root().with(Span.wrap(spanContexts.get(0)));
+
+        return new ExtractedTraceContext(parent, spanContexts);
     }
 
     @Override

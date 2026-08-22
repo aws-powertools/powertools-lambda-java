@@ -5,6 +5,7 @@ import com.amazonaws.services.lambda.runtime.events.models.s3.S3EventNotificatio
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import java.util.List;
 import java.util.Objects;
 
 public final class S3TraceContextExtractor implements LambdaEventContextExtractor {
@@ -15,7 +16,7 @@ public final class S3TraceContextExtractor implements LambdaEventContextExtracto
     }
 
     @Override
-    public Context extract(Object event, Context parentContext, TextMapPropagator propagator) {
+    public ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator) {
 
         /*
          * S3 event notifications do not expose message attributes
@@ -25,7 +26,7 @@ public final class S3TraceContextExtractor implements LambdaEventContextExtracto
          * Do not assume that traceparent/tracestate are embedded
          * inside the S3 event payload.
          */
-        return parentContext;
+        return new ExtractedTraceContext(parentContext, List.of());
     }
 
     @Override

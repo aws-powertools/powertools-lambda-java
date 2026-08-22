@@ -27,7 +27,7 @@ public final class LambdaEventContextExtractorResolver {
         );
     }
 
-    public Context extract(Object event, Context parentContext, TextMapPropagator propagator) {
+    public ExtractedTraceContext extract(Object event, Context parentContext, TextMapPropagator propagator) {
 
         return extractors.stream()
                 .filter(extractor -> extractor.supports(event))
@@ -37,7 +37,7 @@ public final class LambdaEventContextExtractorResolver {
                                 event,
                                 parentContext,
                                 propagator))
-                .orElse(parentContext);
+                .orElse(new ExtractedTraceContext(parentContext, List.of()));
     }
 
     public void enrichSpan(Object event, Span span) {
