@@ -49,6 +49,11 @@
             <version>${opentelemetry-api.version}</version>
         </dependency>
         <dependency>
+            <groupId>io.opentelemetry.contrib</groupId>
+            <artifactId>opentelemetry-aws-xray-propagator</artifactId>
+            <version>${opentelemetry.aws.xray.propagator.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjrt</artifactId>
             <scope>provided</scope>

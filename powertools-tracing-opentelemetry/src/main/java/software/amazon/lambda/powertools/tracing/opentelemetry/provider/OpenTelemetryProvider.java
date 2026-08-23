@@ -11,6 +11,7 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.contrib.awsxray.propagator.AwsXrayPropagator;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
@@ -33,6 +34,7 @@ public final class OpenTelemetryProvider {
     private static final SdkTracerProvider TRACER_PROVIDER = createTracerProvider();
     private static final TraceContextPropagationMode TRACE_CONTEXT_PROPAGATION_MODE = retrieveTraceContextMode();
     private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER = createTextMapGetter();
+    private static final TextMapPropagator PROPAGATOR = createPropagator();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private OpenTelemetryProvider() {
@@ -55,7 +57,7 @@ public final class OpenTelemetryProvider {
     }
 
     public static TextMapPropagator propagator() {
-        return createPropagator();
+        return PROPAGATOR;
     }
 
     public static TextMapGetter<Map<String, String>> textMapGetter() {
@@ -127,9 +129,11 @@ public final class OpenTelemetryProvider {
                 .addSpanProcessor(processor)
                 .build();
     }
-
-    //TODO Pending adding AWS X-RAY propagation, the library opentelemetry-aws-xray-propagator is still in alpha
+    
     private static TextMapPropagator createPropagator() {
-        return W3CTraceContextPropagator.getInstance();
+        return TextMapPropagator.composite(
+                W3CTraceContextPropagator.getInstance(),
+                AwsXrayPropagator.getInstance()
+        );
     }
 }
