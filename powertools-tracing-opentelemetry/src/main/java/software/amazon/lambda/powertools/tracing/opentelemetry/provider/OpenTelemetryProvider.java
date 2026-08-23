@@ -15,10 +15,12 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.contrib.awsxray.propagator.AwsXrayPropagator;
+import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +31,7 @@ import software.amazon.lambda.powertools.tracing.opentelemetry.internal.LambdaRe
 public final class OpenTelemetryProvider {
 
     private static final String INSTRUMENTATION_NAME = "aws-lambda-powertools";
-
+    private static final String OTEL_EXPORTER_OTLP_TRACES_PROTOCOL = "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL";
     private static final String TRACE_CONTEXT_PROPAGATION_MODE_ENV = "POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE";
 
     private static final int MAX_EXPORT_BATCH_SIZE = 10;
@@ -151,23 +153,47 @@ public final class OpenTelemetryProvider {
 
     private static SdkTracerProvider createTracerProvider() {
 
-        OtlpGrpcSpanExporter exporter =
-                OtlpGrpcSpanExporter.builder()
-                        .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                        .build();
+        String protocol = SystemWrapper.getenv(OTEL_EXPORTER_OTLP_TRACES_PROTOCOL);
 
-        BatchSpanProcessor processor =
-                BatchSpanProcessor.builder(exporter)
-                        .setMaxExportBatchSize(MAX_EXPORT_BATCH_SIZE)
-                        .setMaxQueueSize(MAX_QUEUE_SIZE)
-                        .setScheduleDelay(SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
-                        .setExporterTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
-                        .build();
+        SpanExporter exporter = createExporter(protocol);
+
+        BatchSpanProcessor processor = BatchSpanProcessor.builder(exporter)
+                .setMaxExportBatchSize(MAX_EXPORT_BATCH_SIZE)
+                .setMaxQueueSize(MAX_QUEUE_SIZE)
+                .setScheduleDelay(SCHEDULE_DELAY_MILLIS, TimeUnit.MILLISECONDS)
+                .setExporterTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                .build();
 
         return SdkTracerProvider.builder()
                 .setResource(LambdaResource.create())
                 .addSpanProcessor(processor)
                 .build();
+    }
+
+    private static SpanExporter createExporter(String protocol) {
+
+        if (protocol == null || protocol.isBlank()) {
+            return OtlpGrpcSpanExporter.builder()
+                    .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .build();
+        }
+
+        switch (protocol.trim().toLowerCase()) {
+            case "grpc":
+                return OtlpGrpcSpanExporter.builder()
+                        .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .build();
+
+            case "http/protobuf":
+                return OtlpHttpSpanExporter.builder()
+                        .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .build();
+
+            default:
+                throw new IllegalArgumentException(
+                        "Unsupported OTLP protocol: " + protocol
+                );
+        }
     }
 
     private static TextMapPropagator createPropagator() {
