@@ -317,6 +317,26 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.20.0</version>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api</artifactId>
+                <version>${opentelemetry-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk</artifactId>
+                <version>${opentelemetry-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <version>${opentelemetry-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.contrib</groupId>
+                <artifactId>opentelemetry-aws-xray-propagator</artifactId>
+                <version>${opentelemetry.aws.xray.propagator.version}</version>
+            </dependency>
 
             <!-- Test dependencies -->
             <dependency>
@@ -395,6 +415,12 @@
                 <groupId>org.wiremock</groupId>
                 <artifactId>wiremock</artifactId>
                 <version>3.13.2</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-testing</artifactId>
+                <version>${opentelemetry-api.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>

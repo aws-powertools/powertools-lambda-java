@@ -36,22 +36,18 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-api</artifactId>
-            <version>${opentelemetry-api.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk</artifactId>
-            <version>${opentelemetry-api.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-otlp</artifactId>
-            <version>${opentelemetry-api.version}</version>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.contrib</groupId>
             <artifactId>opentelemetry-aws-xray-propagator</artifactId>
-            <version>${opentelemetry.aws.xray.propagator.version}</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -87,7 +83,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-sdk-testing</artifactId>
-            <version>${opentelemetry-api.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
