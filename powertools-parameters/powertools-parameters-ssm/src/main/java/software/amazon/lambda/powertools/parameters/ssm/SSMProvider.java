@@ -16,11 +16,14 @@ package software.amazon.lambda.powertools.parameters.ssm;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.crac.Core;
+import org.crac.Resource;
 import software.amazon.awssdk.services.ssm.SsmClient;
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathRequest;
 import software.amazon.awssdk.services.ssm.model.GetParametersByPathResponse;
 import software.amazon.awssdk.utils.StringUtils;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -63,11 +66,24 @@ import software.amazon.lambda.powertools.parameters.transform.TransformationMana
  *     >>> /path/to/parameters/others/key3 -> value3
  * </pre>
  */
-public class SSMProvider extends BaseProvider {
+public class SSMProvider extends BaseProvider implements Resource {
 
     private final SsmClient client;
     private final ThreadLocal<Boolean> decrypt = ThreadLocal.withInitial(() -> false);
     private final ThreadLocal<Boolean> recursive = ThreadLocal.withInitial(() -> false);
+
+    // Dummy instance to register SSMProvider with CRaC
+    private static final SSMProvider INSTANCE =
+            new SSMProvider(new CacheManager(), new TransformationManager(), null);
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        registerWithGlobalContext();
+    }
+
+    static void registerWithGlobalContext() {
+        Core.getGlobalContext().register(INSTANCE);
+    }
 
     /**
      * Constructor with custom {@link SsmClient}. <br/>
@@ -203,6 +219,16 @@ public class SSMProvider extends BaseProvider {
     // For tests purpose only
     SsmClient getClient() {
         return client;
+    }
+
+    @Override
+    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 
 }
