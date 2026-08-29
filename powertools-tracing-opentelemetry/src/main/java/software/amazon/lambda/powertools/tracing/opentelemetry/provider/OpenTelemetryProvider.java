@@ -22,6 +22,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import software.amazon.lambda.powertools.common.internal.SystemWrapper;
@@ -32,6 +33,8 @@ public final class OpenTelemetryProvider {
 
     private static final String INSTRUMENTATION_NAME = "aws-lambda-powertools";
     private static final String OTEL_EXPORTER_OTLP_TRACES_PROTOCOL = "OTEL_EXPORTER_OTLP_TRACES_PROTOCOL";
+    private static final String OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT";
+    private static final String OTEL_EXPORTER_OTLP_TRACES_HEADERS = "OTEL_EXPORTER_OTLP_TRACES_HEADERS";
     private static final String TRACE_CONTEXT_PROPAGATION_MODE_ENV = "POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE";
 
     private static final int MAX_EXPORT_BATCH_SIZE = 10;
@@ -39,15 +42,16 @@ public final class OpenTelemetryProvider {
     private static final long SCHEDULE_DELAY_MILLIS = 1_000;
     private static final long EXPORT_TIMEOUT_MILLIS = 3_000;
 
-    private static final OpenTelemetry OPEN_TELEMETRY = initializeOpenTelemetry();
-
-    private static final TraceContextPropagationMode TRACE_CONTEXT_PROPAGATION_MODE = retrieveTraceContextMode();
-
-    private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER = createTextMapGetter();
-
     private static final TextMapPropagator PROPAGATOR = createPropagator();
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER = createTextMapGetter();
+
+    private static final TraceContextPropagationMode TRACE_CONTEXT_PROPAGATION_MODE = retrieveTraceContextMode();
+
+    private static final OpenTelemetry OPEN_TELEMETRY = initializeOpenTelemetry();
+
 
     private OpenTelemetryProvider() {
     }
@@ -84,24 +88,13 @@ public final class OpenTelemetryProvider {
      */
     private static OpenTelemetry initializeOpenTelemetry() {
 
-        OpenTelemetry globalOpenTelemetry = GlobalOpenTelemetry.get();
-
-        if (!isNoop(globalOpenTelemetry)) {
-            return globalOpenTelemetry;
+        if (GlobalOpenTelemetry.isSet()) {
+            return GlobalOpenTelemetry.get();
         }
 
         return createDefaultOpenTelemetry();
     }
 
-    /**
-     * Determines whether GlobalOpenTelemetry has been configured.
-     * <p>
-     * GlobalOpenTelemetry.get() returns OpenTelemetry.noop() when no
-     * SDK/global implementation has been registered.
-     */
-    private static boolean isNoop(OpenTelemetry openTelemetry) {
-        return openTelemetry == OpenTelemetry.noop();
-    }
 
     /**
      * Creates the Powertools default OpenTelemetry configuration.
@@ -153,9 +146,7 @@ public final class OpenTelemetryProvider {
 
     private static SdkTracerProvider createTracerProvider() {
 
-        String protocol = SystemWrapper.getenv(OTEL_EXPORTER_OTLP_TRACES_PROTOCOL);
-
-        SpanExporter exporter = createExporter(protocol);
+        SpanExporter exporter = createExporter();
 
         BatchSpanProcessor processor = BatchSpanProcessor.builder(exporter)
                 .setMaxExportBatchSize(MAX_EXPORT_BATCH_SIZE)
@@ -170,11 +161,19 @@ public final class OpenTelemetryProvider {
                 .build();
     }
 
-    private static SpanExporter createExporter(String protocol) {
+    private static SpanExporter createExporter() {
+
+        String protocol = SystemWrapper.getenv(OTEL_EXPORTER_OTLP_TRACES_PROTOCOL);
+        String endpoint = SystemWrapper.getenv(OTEL_EXPORTER_OTLP_TRACES_ENDPOINT);
+        String headers = SystemWrapper.getenv(OTEL_EXPORTER_OTLP_TRACES_HEADERS);
+
+        Map<String, String> headerMap = parseHeaders(headers);
 
         if (protocol == null || protocol.isBlank()) {
             return OtlpGrpcSpanExporter.builder()
                     .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                    .setEndpoint(endpoint)
+                    .setHeaders(() -> headerMap)
                     .build();
         }
 
@@ -182,11 +181,15 @@ public final class OpenTelemetryProvider {
             case "grpc":
                 return OtlpGrpcSpanExporter.builder()
                         .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .setEndpoint(endpoint)
+                        .setHeaders(() -> headerMap)
                         .build();
 
             case "http/protobuf":
                 return OtlpHttpSpanExporter.builder()
                         .setTimeout(EXPORT_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS)
+                        .setEndpoint(endpoint)
+                        .setHeaders(() -> headerMap)
                         .build();
 
             default:
@@ -194,6 +197,41 @@ public final class OpenTelemetryProvider {
                         "Unsupported OTLP protocol: " + protocol
                 );
         }
+    }
+
+    private static Map<String, String> parseHeaders(String headers) {
+
+        if (headers == null || headers.isBlank()) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> result = new HashMap<>();
+
+        String[] entries = headers.split(",");
+
+        for (String entry : entries) {
+
+            String[] parts = entry.split("=", 2);
+
+            if (parts.length != 2) {
+                throw new IllegalArgumentException(
+                        "Invalid OTLP header: " + entry
+                );
+            }
+
+            String key = parts[0].trim();
+            String value = parts[1].trim();
+
+            if (key.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "OTLP header name cannot be empty"
+                );
+            }
+
+            result.put(key, value);
+        }
+
+        return result;
     }
 
     private static TextMapPropagator createPropagator() {
