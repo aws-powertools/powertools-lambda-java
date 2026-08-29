@@ -26,6 +26,7 @@ import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.TextMapGetter;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.context.propagation.TextMapSetter;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -90,6 +91,9 @@ public final class TracingOpenTelemetry {
         return Span.current();
     }
 
+    public CompletableResultCode flush() {
+        return OpenTelemetryProvider.forceFlush();
+    }
 
     public SpanScope addSpan(String name) {
         return addSpan(name, SpanKind.INTERNAL);

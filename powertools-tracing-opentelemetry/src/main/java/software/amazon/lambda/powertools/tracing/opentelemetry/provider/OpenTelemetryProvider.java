@@ -18,6 +18,7 @@ import io.opentelemetry.contrib.awsxray.propagator.AwsXrayPropagator;
 import io.opentelemetry.exporter.otlp.http.trace.OtlpHttpSpanExporter;
 import io.opentelemetry.exporter.otlp.trace.OtlpGrpcSpanExporter;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.common.CompletableResultCode;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
@@ -49,6 +50,8 @@ public final class OpenTelemetryProvider {
     private static final TextMapGetter<Map<String, String>> TEXT_MAP_GETTER = createTextMapGetter();
 
     private static final TraceContextPropagationMode TRACE_CONTEXT_PROPAGATION_MODE = retrieveTraceContextMode();
+
+    private static final SdkTracerProvider SDK_TRACER_PROVIDER = createTracerProvider();
 
     private static final OpenTelemetry OPEN_TELEMETRY = initializeOpenTelemetry();
 
@@ -95,6 +98,12 @@ public final class OpenTelemetryProvider {
         return createDefaultOpenTelemetry();
     }
 
+    public static CompletableResultCode forceFlush() {
+        if (GlobalOpenTelemetry.isSet()) {
+            return CompletableResultCode.ofSuccess();
+        }
+        return SDK_TRACER_PROVIDER.forceFlush();
+    }
 
     /**
      * Creates the Powertools default OpenTelemetry configuration.
@@ -102,7 +111,7 @@ public final class OpenTelemetryProvider {
     private static OpenTelemetry createDefaultOpenTelemetry() {
 
         return OpenTelemetrySdk.builder()
-                .setTracerProvider(createTracerProvider())
+                .setTracerProvider(SDK_TRACER_PROVIDER)
                 .setPropagators(ContextPropagators.create(PROPAGATOR))
                 .build();
     }
