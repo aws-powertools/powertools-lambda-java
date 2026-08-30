@@ -30,6 +30,7 @@ import io.opentelemetry.sdk.common.CompletableResultCode;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import software.amazon.lambda.powertools.tracing.opentelemetry.context.LambdaEventContextExtractorResolver;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanOperation;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanScope;
@@ -38,6 +39,7 @@ import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTele
 
 public final class TracingOpenTelemetry {
 
+    private static final TracingOpenTelemetry DEFAULT_INSTANCE = new TracingOpenTelemetry();
     private final Tracer tracer;
     private final TextMapPropagator propagator;
     private final LambdaEventContextExtractorResolver eventContextExtractorResolver;
@@ -92,7 +94,11 @@ public final class TracingOpenTelemetry {
     }
 
     public CompletableResultCode flush() {
-        return OpenTelemetryProvider.forceFlush();
+        return flush(5, TimeUnit.SECONDS);
+    }
+
+    public CompletableResultCode flush(long timeout, TimeUnit unit) {
+        return OpenTelemetryProvider.forceFlush().join(timeout, unit);
     }
 
     public SpanScope addSpan(String name) {
@@ -201,7 +207,7 @@ public final class TracingOpenTelemetry {
     }
 
     public static TracingOpenTelemetry create() {
-        return new TracingOpenTelemetry();
+        return DEFAULT_INSTANCE;
     }
 
     public static Builder builder() {

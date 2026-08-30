@@ -13,6 +13,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.context.Context;
+import java.util.Objects;
 import java.util.Optional;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -31,6 +32,10 @@ public final class TracingOpenTelemetryAspect {
 
     // Cannot be final for testing purposes
     private static TracingOpenTelemetry tracingOtel = TracingOpenTelemetry.create();
+
+    public static void configure(TracingOpenTelemetry tracing) {
+        tracingOtel = Objects.requireNonNull(tracing);
+    }
 
     @SuppressWarnings("EmptyMethod")
     @Pointcut("@annotation(tracing)")
@@ -82,6 +87,8 @@ public final class TracingOpenTelemetryAspect {
 
                 throw throwable;
             }
+        } finally {
+            tracingOtel.flush();
         }
     }
 
