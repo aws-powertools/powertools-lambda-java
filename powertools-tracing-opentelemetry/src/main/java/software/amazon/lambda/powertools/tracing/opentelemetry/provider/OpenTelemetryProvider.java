@@ -1,7 +1,17 @@
 /*
  * Copyright 2023 Amazon.com, Inc. or its affiliates.
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package software.amazon.lambda.powertools.tracing.opentelemetry.provider;
@@ -30,6 +40,29 @@ import software.amazon.lambda.powertools.common.internal.SystemWrapper;
 import software.amazon.lambda.powertools.tracing.opentelemetry.context.TraceContextPropagationMode;
 import software.amazon.lambda.powertools.tracing.opentelemetry.internal.LambdaResource;
 
+/**
+ * Provides a managed OpenTelemetry instance tailored for AWS Lambda Powertools.
+ * This class enables easy integration of tracing capabilities using OpenTelemetry
+ * for AWS Lambda function monitoring.
+ * <p>
+ * It supports automatic instrumentation configuration through environment variables
+ * and enables customized configurations for propagators, tracing mode, exporter,
+ * and tracer provider.
+ * <p>
+ * OpenTelemetryProvider ensures compatibility with the ADOT Lambda layer and javaagent,
+ * using the configured global OpenTelemetry instance when available. If no global
+ * configuration exists, it creates and uses a Lambda-optimized configuration.
+ * <p>
+ * Key functionalities include:
+ * - Access to a pre-configured {@code Tracer}.
+ * - Support for multiple propagation formats (e.g., W3C Trace Context, AWS X-Ray).
+ * - Batch span processing with configurable export batch size, queue size, and timeouts.
+ * - Lambda-optimized default resource configuration.
+ * - Parsing environment variables for OTLP configuration (e.g., protocol, endpoint).
+ * <p>
+ * This class cannot be instantiated directly and provides its functionalities
+ * through static methods.
+ */
 public final class OpenTelemetryProvider {
 
     private static final String INSTRUMENTATION_NAME = "aws-lambda-powertools";
@@ -59,36 +92,76 @@ public final class OpenTelemetryProvider {
     private OpenTelemetryProvider() {
     }
 
+    /**
+     * Provides a pre-configured singleton instance of {@link ObjectMapper}.
+     * <p>
+     * This method is intended for consistent JSON processing across various
+     * components by returning an {@code ObjectMapper} instance that is shared
+     * across the application.
+     *
+     * @return A shared instance of {@link ObjectMapper}.
+     */
     public static ObjectMapper objectMapper() {
         return OBJECT_MAPPER;
     }
 
+    /**
+     * Retrieves the current trace context propagation mode for OpenTelemetry tracing.
+     * <p>
+     * The trace context propagation mode determines how trace context is propagated
+     * between spans, such as whether it uses a parent-child relationship or establishes
+     * links between related spans.
+     *
+     * @return The current {@link TraceContextPropagationMode}, which may be either
+     * {@code PARENT} or {@code LINK}, indicating the selected trace context
+     * propagation strategy.
+     */
     public static TraceContextPropagationMode traceContextPropagationMode() {
         return TRACE_CONTEXT_PROPAGATION_MODE;
     }
 
+    /**
+     * Retrieves a pre-configured instance of {@link Tracer} from the OpenTelemetry SDK.
+     * <p>
+     * The returned {@link Tracer} is associated with the specified instrumentation name,
+     * enabling tracing for specific operations and contexts within the application.
+     * This method leverages the global OpenTelemetry configuration, making it suitable
+     * for use in environments where consistent instrumentation is required.
+     *
+     * @return A {@link Tracer} instance for instrumenting and generating trace data.
+     */
     public static Tracer tracer() {
         return OPEN_TELEMETRY.getTracer(INSTRUMENTATION_NAME);
     }
 
+    /**
+     * Retrieves a pre-configured instance of {@link TextMapPropagator}.
+     * <p>
+     * The returned {@link TextMapPropagator} is configured to propagate
+     * tracing context information across process boundaries. This is
+     * used to encode and decode trace context in a key-value format,
+     * enabling distributed tracing in various systems.
+     *
+     * @return A pre-configured {@link TextMapPropagator} instance for trace context propagation.
+     */
     public static TextMapPropagator propagator() {
         return PROPAGATOR;
     }
 
+    /**
+     * Provides a static {@link TextMapGetter} instance for extracting trace context
+     * information from a {@link Map} containing string key-value pairs.
+     * <p>
+     * The returned {@link TextMapGetter} is used to interpret trace propagation
+     * attributes from a map structure, enabling distributed tracing functionality.
+     *
+     * @return A {@link TextMapGetter} instance that facilitates extracting trace
+     * context data from a {@link Map} of string keys and values.
+     */
     public static TextMapGetter<Map<String, String>> textMapGetter() {
         return TEXT_MAP_GETTER;
     }
 
-    /**
-     * Uses an already configured GlobalOpenTelemetry instance when one exists.
-     * <p>
-     * This is important when running with the ADOT Lambda layer/javaagent,
-     * because the agent configures the global OpenTelemetry instance with
-     * its own TracerProvider, exporters, processors, resources, etc.
-     * <p>
-     * If no global OpenTelemetry instance has been configured, Powertools
-     * creates its own Lambda-optimized default configuration.
-     */
     private static OpenTelemetry initializeOpenTelemetry() {
 
         if (GlobalOpenTelemetry.isSet()) {
@@ -98,6 +171,19 @@ public final class OpenTelemetryProvider {
         return createDefaultOpenTelemetry();
     }
 
+    /**
+     * Forces all pending telemetry data to be processed and exported, ensuring that
+     * any remaining spans or related information are handled by the OpenTelemetry
+     * SDK or the globally configured OpenTelemetry instance.
+     * <p>
+     * If a global OpenTelemetry instance is available, the operation will immediately
+     * succeed. Otherwise, it delegates the flush operation to the SDK's tracer provider.
+     *
+     * @return A {@link CompletableResultCode} indicating the success or failure of the
+     * flush operation. It may represent an immediate success if the global
+     * OpenTelemetry instance is set, or the result of flushing managed by the
+     * SDK tracer provider otherwise.
+     */
     public static CompletableResultCode forceFlush() {
         if (GlobalOpenTelemetry.isSet()) {
             return CompletableResultCode.ofSuccess();

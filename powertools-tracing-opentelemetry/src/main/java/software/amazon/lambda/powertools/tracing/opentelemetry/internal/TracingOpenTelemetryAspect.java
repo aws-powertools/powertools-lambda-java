@@ -1,6 +1,17 @@
 /*
  * Copyright 2023 Amazon.com, Inc. or its affiliates.
- * Licensed under the Apache License, Version 2.0
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  */
 
 package software.amazon.lambda.powertools.tracing.opentelemetry.internal;
@@ -27,6 +38,50 @@ import software.amazon.lambda.powertools.tracing.opentelemetry.context.Extracted
 import software.amazon.lambda.powertools.tracing.opentelemetry.context.TraceContextPropagationMode;
 import software.amazon.lambda.powertools.tracing.opentelemetry.provider.OpenTelemetryProvider;
 
+/**
+ * TracingOpenTelemetryAspect is an AspectJ aspect that facilitates tracing for methods annotated
+ * with the {@link Tracing} annotation. It integrates with OpenTelemetry to automatically create and
+ * manage spans for annotated methods, capturing execution context, responses, and errors.
+ *
+ * <h2>Functional Overview:</h2>
+ * - Creates and manages OpenTelemetry spans around methods annotated with {@link Tracing}.
+ * - Supports both handler and internal method spans.
+ * - Extracts contextual information if available to enrich spans.
+ * - Captures response data and errors based on configurable capture modes.
+ * - Flushes telemetry data upon span completion.
+ *
+ * <h2>Key Methods:</h2>
+ * <ul>
+ * <li>configure - Sets a custom {@link TracingOpenTelemetry} instance to be used.</li>
+ * <li>callAt - Defines the pointcut for methods annotated with {@link Tracing}.</li>
+ * <li>around - Core functionality that wraps the target method execution with a span.</li>
+ * </ul>
+ *
+ * <h2>Trace Context Handling:</h2>
+ * - Extracts trace context for handler methods for more seamless propagation.
+ * - Supports linking spans or connecting to existing parent spans based on configuration.
+ *
+ * <h2>Capture Modes:</h2>
+ * - The capture modes ({@link Tracing.CaptureMode}) dictate whether and how responses and errors are
+ *   recorded in spans:
+ *   - RESPONSE_AND_ERROR: Captures both responses and errors.
+ *   - RESPONSE: Captures only responses.
+ *   - ERROR: Captures only errors.
+ *   - DISABLED: Disables any capture.
+ *   - ENVIRONMENT_VAR: Determines capture based on environment variables.
+ *
+ * <h2>Span Creation:</h2>
+ * - Handler spans include additional AWS Lambda-related metadata if applicable.
+ * - Internal method spans are marked with a default {@link SpanKind#INTERNAL}.
+ *
+ * <h2>Error Handling:</h2>
+ * - Ensures exceptions are propagated while recording them in the span if enabled.
+ *
+ * <h2>Thread Safety:</h2>
+ * - The class ensures thread safety for span management in concurrent environments.
+ * <p>
+ * Note: This class requires OpenTelemetry to be properly configured in the application context.
+ */
 @Aspect
 public final class TracingOpenTelemetryAspect {
 

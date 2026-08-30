@@ -1,3 +1,19 @@
+/*
+ * Copyright 2023 Amazon.com, Inc. or its affiliates.
+ * Licensed under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License. You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
+
 package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
@@ -8,6 +24,20 @@ import io.opentelemetry.context.propagation.TextMapPropagator;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * A specialized implementation of {@link LambdaEventContextExtractor} for handling AWS DynamoDB Streams events.
+ * This class enables extraction of tracing context, enrichment of OpenTelemetry spans, and determination of
+ * compatibility with DynamoDB Streams events for distributed tracing purposes.
+ * <p>
+ * Instances of this class focus on the following:
+ * - Verifying if an event is a DynamoDB Streams event.
+ * - Extracting trace context information in scenarios where trace context propagation is applicable.
+ * - Enriching OpenTelemetry spans with metadata derived from DynamoDB Streams events, such as stream names
+ * and record batch sizes.
+ * <p>
+ * Note: Due to limitations in DynamoDB Streams metadata, W3C trace context propagation (e.g., `traceparent`)
+ * is not supported by default. Future enhancements for dedicated propagation strategies may be required.
+ */
 public final class DynamoDbTraceContextExtractor implements LambdaEventContextExtractor {
 
     @Override
