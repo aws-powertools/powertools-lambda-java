@@ -26,21 +26,21 @@ import static software.amazon.lambda.powertools.logging.internal.PowertoolsLogge
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SAMPLING_RATE;
 import static software.amazon.lambda.powertools.logging.internal.PowertoolsLoggedFields.SERVICE;
 
+import com.amazonaws.services.lambda.runtime.Context;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.burt.jmespath.Expression;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
-
+import org.crac.Core;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.event.Level;
-
-import com.amazonaws.services.lambda.runtime.Context;
-import com.fasterxml.jackson.databind.JsonNode;
-
-import io.burt.jmespath.Expression;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 import software.amazon.lambda.powertools.logging.internal.BufferManager;
 import software.amazon.lambda.powertools.logging.internal.LoggingManager;
 import software.amazon.lambda.powertools.logging.internal.LoggingManagerRegistry;
@@ -64,17 +64,23 @@ import software.amazon.lambda.powertools.utilities.JsonConfig;
  *   <li>MDC state management for structured logging</li>
  * </ul>
  */
-public final class PowertoolsLogging {
+public final class PowertoolsLogging implements Resource {
     private static final Logger LOG = LoggerFactory.getLogger(PowertoolsLogging.class);
     private static final ThreadLocal<Random> SAMPLER = ThreadLocal.withInitial(Random::new);
     private static AtomicBoolean hasBeenInitialized = new AtomicBoolean(false);
 
+    // Dummy instance to register PowertoolsLogging with CRaC
+    private static final PowertoolsLogging INSTANCE = new PowertoolsLogging();
+
     static {
         initializeLogLevel();
+        Core.getGlobalContext().register(INSTANCE);
     }
 
-    private PowertoolsLogging() {
-        // Utility class
+    public static void init() {
+        // Placeholder method used to enable SnapStart priming. Users need a direct reference to this class in order
+        // for the CRaC hooks to execute.
+        new PowertoolsLogging();
     }
 
     private static void initializeLogLevel() {
@@ -365,5 +371,16 @@ public final class PowertoolsLogging {
         } finally {
             clearState(true);
         }
+    }
+
+    @Override
+    public void beforeCheckpoint(org.crac.Context<? extends Resource> context) throws Exception {
+        init();
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(org.crac.Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }
