@@ -14,9 +14,13 @@
 
 package software.amazon.lambda.powertools.batch;
 
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
 import software.amazon.lambda.powertools.batch.builder.DynamoDbBatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.builder.KinesisBatchMessageHandlerBuilder;
 import software.amazon.lambda.powertools.batch.builder.SqsBatchMessageHandlerBuilder;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 
 /**
  * A builder-style interface we can use to build batch processing handlers for SQS, Kinesis Streams,
@@ -27,7 +31,15 @@ import software.amazon.lambda.powertools.batch.builder.SqsBatchMessageHandlerBui
  *
  * @see <a href="https://docs.powertools.aws.dev/lambda/java/utilities/batch/">Powertools for AWS Lambda (Java) Batch Documentation</a>
  **/
-public class BatchMessageHandlerBuilder {
+public class BatchMessageHandlerBuilder implements Resource {
+
+    // Dummy instance to register BatchMessageHandlerBuilder with CRaC
+    private static final BatchMessageHandlerBuilder INSTANCE = new BatchMessageHandlerBuilder();
+
+    // Static block to ensure CRaC registration happens at class loading time
+    static {
+        Core.getGlobalContext().register(INSTANCE);
+    }
 
     /**
      * Build an SQS-batch message handler.
@@ -54,5 +66,15 @@ public class BatchMessageHandlerBuilder {
      */
     public KinesisBatchMessageHandlerBuilder withKinesisBatchHandler() {
         return new KinesisBatchMessageHandlerBuilder();
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) throws Exception {
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) throws Exception {
+        // No action needed after restore
     }
 }
