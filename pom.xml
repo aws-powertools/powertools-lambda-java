@@ -14,8 +14,8 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>software.amazon.lambda</groupId>
@@ -25,7 +25,8 @@
 
     <name>Powertools for AWS Lambda (Java) - Parent</name>
     <description>
-        A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating custom metrics asynchronously easier.
+        A suite of utilities for AWS Lambda Functions that makes tracing with AWS X-Ray, structured logging and creating
+        custom metrics asynchronously easier.
     </description>
     <scm>
         <url>https://github.com/aws-powertools/powertools-lambda-java</url>
@@ -77,6 +78,7 @@
         <module>powertools-parameters/powertools-parameters-appconfig</module>
         <module>powertools-parameters/powertools-parameters-tests</module>
         <module>examples</module>
+        <module>powertools-tracing-opentelemetry</module>
     </modules>
 
     <properties>
@@ -119,6 +121,8 @@
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
         <native-maven-plugin.version>0.11.5</native-maven-plugin.version>
+        <opentelemetry-api.version>1.65.0</opentelemetry-api.version>
+        <opentelemetry.aws.xray.propagator.version>1.59.0-alpha</opentelemetry.aws.xray.propagator.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
@@ -313,6 +317,26 @@
                 <artifactId>commons-lang3</artifactId>
                 <version>3.20.0</version>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-api</artifactId>
+                <version>${opentelemetry-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk</artifactId>
+                <version>${opentelemetry-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-exporter-otlp</artifactId>
+                <version>${opentelemetry-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.contrib</groupId>
+                <artifactId>opentelemetry-aws-xray-propagator</artifactId>
+                <version>${opentelemetry.aws.xray.propagator.version}</version>
+            </dependency>
 
             <!-- Test dependencies -->
             <dependency>
@@ -393,6 +417,12 @@
                 <version>3.13.2</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-sdk-testing</artifactId>
+                <version>${opentelemetry-api.version}</version>
+                <scope>test</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -471,7 +501,8 @@
                             <enabled>true</enabled>
                             <options>
                                 <enableExperimentalPredefinedClasses>true</enableExperimentalPredefinedClasses>
-                                <enableExperimentalUnsafeAllocationTracing>true</enableExperimentalUnsafeAllocationTracing>
+                                <enableExperimentalUnsafeAllocationTracing>true
+                                </enableExperimentalUnsafeAllocationTracing>
                             </options>
                             <metadataCopy>
                                 <disabledStages>
@@ -692,7 +723,9 @@
                         <artifactId>maven-surefire-plugin</artifactId>
                         <configuration>
                             <environmentVariables>
-                                <JDK_JAVA_OPTIONS>--add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED</JDK_JAVA_OPTIONS>
+                                <JDK_JAVA_OPTIONS>--add-opens java.base/java.util=ALL-UNNAMED --add-opens
+                                    java.base/java.lang=ALL-UNNAMED
+                                </JDK_JAVA_OPTIONS>
                             </environmentVariables>
                         </configuration>
                     </plugin>
