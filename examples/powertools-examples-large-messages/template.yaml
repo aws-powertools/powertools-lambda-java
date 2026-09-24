@@ -1,0 +1,62 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Large Message Handling Example using SQS and S3 offloading
+
+Globals:
+  Function:
+    Timeout: 30
+    Runtime: java11
+    MemorySize: 512
+    Tracing: Active
+    Environment:
+      Variables:
+        JAVA_TOOL_OPTIONS: "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+        POWERTOOLS_LOG_LEVEL: INFO
+        POWERTOOLS_SERVICE_NAME: LargeMessageExample
+
+Resources:
+  LargeMessageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldMessages
+            Status: Enabled
+            ExpirationInDays: 1
+  MyLargeMessageQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 30
+  LargeMessageProcessingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: helloworld.App::handleRequest
+
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref LargeMessageBucket
+        - SQSPollerPolicy:
+            QueueName: !GetAtt MyLargeMessageQueue.QueueName
+
+      Environment:
+        Variables:
+          POWERTOOLS_LARGE_MESSAGES_BUCKET: !Ref LargeMessageBucket
+
+      Events:
+        SQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt MyLargeMessageQueue.Arn
+            BatchSize: 1
+Outputs:
+  LargeMessageBucketName:
+    Description: "S3 Bucket for large payloads"
+    Value: !Ref LargeMessageBucket
+  QueueURL:
+    Description: "SQS Queue URL"
+    Value: !Ref MyLargeMessageQueue
+  FunctionArn:
+    Description: "Lambda Function ARN"
+    Value: !GetAtt LargeMessageProcessingFunction.Arn
