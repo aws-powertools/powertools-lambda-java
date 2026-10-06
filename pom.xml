@@ -393,6 +393,22 @@
                 <version>3.13.2</version>
                 <scope>test</scope>
             </dependency>
+            <!-- WireMock 3.x pulls in vulnerable HttpComponents versions -->
+            <dependency>
+                <groupId>org.apache.httpcomponents.client5</groupId>
+                <artifactId>httpclient5</artifactId>
+                <version>5.6.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5</artifactId>
+                <version>5.4.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.httpcomponents.core5</groupId>
+                <artifactId>httpcore5-h2</artifactId>
+                <version>5.4.4</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
