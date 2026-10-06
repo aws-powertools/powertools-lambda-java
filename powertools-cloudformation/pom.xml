@@ -105,6 +105,11 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>software.amazon.lambda</groupId>
             <artifactId>powertools-common</artifactId>
             <version>${project.version}</version>

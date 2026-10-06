@@ -95,6 +95,7 @@
         <lambda.serial.version>1.4.1</lambda.serial.version>
         <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
         <aspectj.version>1.9.20.1</aspectj.version>
+        <wiremock.version>4.0.0-beta.39</wiremock.version>
         <aspectj-maven-plugin.version>1.13.1</aspectj-maven-plugin.version>
         <jacoco-maven-plugin.version>0.8.11</jacoco-maven-plugin.version>
         <nexus-staging-maven-plugin.version>1.6.13</nexus-staging-maven-plugin.version>
@@ -390,7 +391,20 @@
             <dependency>
                 <groupId>org.wiremock</groupId>
                 <artifactId>wiremock</artifactId>
-                <version>3.13.2</version>
+                <version>${wiremock.version}</version>
+                <scope>test</scope>
+                <exclusions>
+                    <!-- Handlebars uses Nashorn only for JavaScript helpers. GraalVM native image cannot compile it. -->
+                    <exclusion>
+                        <groupId>org.openjdk.nashorn</groupId>
+                        <artifactId>nashorn-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.wiremock</groupId>
+                <artifactId>wiremock-junit5</artifactId>
+                <version>${wiremock.version}</version>
                 <scope>test</scope>
             </dependency>
         </dependencies>
