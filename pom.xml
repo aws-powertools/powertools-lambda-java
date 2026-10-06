@@ -393,6 +393,13 @@
                 <artifactId>wiremock</artifactId>
                 <version>${wiremock.version}</version>
                 <scope>test</scope>
+                <exclusions>
+                    <!-- Handlebars uses Nashorn only for JavaScript helpers. GraalVM native image cannot compile it. -->
+                    <exclusion>
+                        <groupId>org.openjdk.nashorn</groupId>
+                        <artifactId>nashorn-core</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.wiremock</groupId>
