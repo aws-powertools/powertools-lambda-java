@@ -44,7 +44,7 @@ public class PowertoolsExamplesCloudformationCdkStack extends Stack {
         );
         BundlingOptions bundlingOptions = BundlingOptions.builder()
                 .command(functionPackagingInstructions)
-                .image(Runtime.JAVA_11.getBundlingImage())
+                .image(Runtime.JAVA_17.getBundlingImage())
                 .volumes(singletonList(
                         // Mount local .m2 repo to avoid download all the dependencies again inside the container
                         DockerVolume.builder()
@@ -57,7 +57,7 @@ public class PowertoolsExamplesCloudformationCdkStack extends Stack {
                 .build();
 
         Function helloWorldFunction = new Function(this, "HelloWorldFunction", FunctionProps.builder()
-                .runtime(Runtime.JAVA_11)
+                .runtime(Runtime.JAVA_17)
                 .code(Code.fromAsset("../../", AssetOptions.builder().bundling(bundlingOptions)
                         .build()))
                 .handler("helloworld.App::handleRequest")

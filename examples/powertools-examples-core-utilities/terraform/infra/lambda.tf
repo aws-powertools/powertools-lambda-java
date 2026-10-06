@@ -1,5 +1,5 @@
 resource "aws_lambda_function" "hello_world_lambda" {
-  runtime           = "java11"
+  runtime           = "java17"
   filename          = "target/helloworld-lambda.jar"
   source_code_hash  = filebase64sha256("target/helloworld-lambda.jar")
   function_name     = "hello_world_lambda"
@@ -16,7 +16,7 @@ resource "aws_lambda_function" "hello_world_lambda" {
 }
 
 resource "aws_lambda_function" "hello_world_stream_lambda" {
-  runtime           = "java11"
+  runtime           = "java17"
   filename          = "target/helloworld-lambda.jar"
   source_code_hash  = filebase64sha256("target/helloworld-lambda.jar")
   function_name     = "hello_world_stream_lambda"

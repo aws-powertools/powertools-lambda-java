@@ -8,7 +8,7 @@
 #   - push: when code is pushed to a specified branch
 #
 # Notes:
-#   Builds against Java 11, 17, and 21 which are the supported versions.
+#   Builds against Java 17, 21, and 25 which are the supported versions.
 
 on:
   workflow_dispatch:
@@ -72,7 +72,6 @@ jobs:
     strategy:
       matrix:
         java:
-          - 11
           - 17
           - 21
           - 25

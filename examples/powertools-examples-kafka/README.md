@@ -15,7 +15,7 @@ Each format has its own Lambda function handler that demonstrates how to use the
 
 ### Prerequisites
 - [AWS SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-- Java 11+
+- Java 17+
 - Maven
 
 ### Build
