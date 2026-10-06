@@ -15,6 +15,17 @@
         <protobuf.version>4.35.0</protobuf.version>
     </properties>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- kafka-clients 4.2.0 pulls in lz4-java 1.10.1, affected by CVE-2026-59949 -->
+            <dependency>
+                <groupId>at.yawk.lz4</groupId>
+                <artifactId>lz4-java</artifactId>
+                <version>1.11.2</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>software.amazon.lambda</groupId>
