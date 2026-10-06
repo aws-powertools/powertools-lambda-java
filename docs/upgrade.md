@@ -12,6 +12,13 @@ description: Guide to update between major Powertools for AWS Lambda (Java) vers
 
 Given our commitment to all of our customers using Powertools for AWS Lambda (Java), we will keep [Maven Central](https://central.sonatype.com/search?q=powertools){target="\_blank"} `v1` releases and a `v1` documentation archive to prevent any disruption.
 
+## Java 17 minimum version
+
+<!-- prettier-ignore-start -->
+!!! warning "End of support for Java 11"
+    Starting with the next v2 minor release, Powertools for AWS Lambda (Java) requires Java 17 or later. Java 11 is no longer supported. Upgrade your functions to the `java17`, `java21`, or `java25` [Lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="\_blank"}. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2457) for details.
+<!-- prettier-ignore-end -->
+
 ## Migrate to v2 from v1
 
 !!! info "We strongly encourage you to migrate to `v2`. Refer to our [versioning policy](./processes/versioning.md) to learn more about our version support process."
@@ -44,7 +51,7 @@ The following table shows a summary of the changes made in `v2` and whether code
 
 Before you start, we suggest making a copy of your current working project or create a new branch with `git`.
 
-1. **Upgrade** Java to at least version 11. While version 11 is supported, we recommend using the [newest available LTS version](https://downloads.corretto.aws/#/downloads){target="\_blank"} of Java.
+1. **Upgrade** Java to at least version 17. While version 17 is supported, we recommend using the [newest available LTS version](https://downloads.corretto.aws/#/downloads){target="\_blank"} of Java.
 2. **Review** the following section to confirm if you need to make changes to your code.
 
 ## Redesigned Logging Utility

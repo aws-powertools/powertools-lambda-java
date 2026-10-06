@@ -7,7 +7,7 @@ Description: >
 Globals:
   Function:
     Timeout: 20
-    Runtime: java11
+    Runtime: java17
     MemorySize: 512
     Tracing: Active # https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html
     Environment:
