@@ -17,10 +17,10 @@ This file defines the Lambda function to be deployed as well as API Gateway for 
 The build of the project is managed by Gradle, and configured in [build.gradle](build.gradle). 
 
 ## Deploy the sample application
-To get started, you can use the Gradle wrapper to bootstrap Gradle and run the build:
+This example requires [Gradle](https://gradle.org/install/) 8.5 or later. Run the build:
 
 ```bash
-./gradlew build
+gradle build
 ```
 
 Once this is done to deploy the example, check out the instructions for getting started with SAM in 
