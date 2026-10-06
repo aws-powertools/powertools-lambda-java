@@ -17,7 +17,7 @@ The build of the project is managed by Gradle, and configured in [build.gradle.k
 . 
 
 ## Deploy the sample application
-To get started, you can use the included template with SAM to run the build and deploy to your AWS environment:
+This example requires [Gradle](https://gradle.org/install/) 8.5 or later. Use the included template with SAM to run the build and deploy to your AWS environment:
 
 ```bash
 sam build && sam deploy --guided
