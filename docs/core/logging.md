@@ -54,9 +54,9 @@ Depending on preference, you must choose to use either _log4j2_ or _logback_ as 
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -113,9 +113,9 @@ Depending on preference, you must choose to use either _log4j2_ or _logback_ as 
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -163,8 +163,8 @@ Depending on preference, you must choose to use either _log4j2_ or _logback_ as 
             implementation 'software.amazon.lambda:powertools-logging-log4j:{{ powertools.version }}'
         }
         
-        sourceCompatibility = 11
-        targetCompatibility = 11
+        sourceCompatibility = 17
+        targetCompatibility = 17
     ```
 
 === "logback"
@@ -184,8 +184,8 @@ Depending on preference, you must choose to use either _log4j2_ or _logback_ as 
             implementation 'software.amazon.lambda:powertools-logging-logback:{{ powertools.version }}'
         }
         
-        sourceCompatibility = 11
-        targetCompatibility = 11
+        sourceCompatibility = 17
+        targetCompatibility = 17
     ```
 
 

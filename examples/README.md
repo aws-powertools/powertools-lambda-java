@@ -34,7 +34,7 @@ Many of the examples use [AWS Serverless Application Model](https://aws.amazon.c
 To use the SAM CLI, you need the following tools.
 
 * SAM CLI - [Install the SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html)
-* Java11 - [Install the Java 11](https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html)
+* Java17 - [Install the Java 17](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/downloads-list.html)
 * Maven - [Install Maven](https://maven.apache.org/install.html)
 * Docker - [Install Docker community edition](https://hub.docker.com/search/?type=edition&offering=community)
 
@@ -67,7 +67,6 @@ If you're not using SAM, you can look for examples for other tools under [powert
 
 You can find more examples in the https://github.com/aws/aws-sam-cli-app-templates project:
 
-* [Java 11 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java11/hello-pt-maven)
 * [Java 17 + Maven](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java17/hello-pt-maven)
 * [Java 17 + Gradle](https://github.com/aws/aws-sam-cli-app-templates/tree/master/java17/hello-pt-gradle)
 
