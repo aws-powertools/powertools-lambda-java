@@ -4,6 +4,383 @@
 <a name="unreleased"></a>
 # Unreleased
 
+## Maintenance
+
+
+
+<a name="v2.11.0"></a>
+## [v2.11.0] - 2026-10-06
+## Bug Fixes
+
+* **common:** strip leading whitespace in ClassPreLoader ([#2560](https://github.com/aws-powertools/powertools-lambda-java/issues/2560))
+* **tracing:** declare jackson-core and bump X-Ray SDK to 2.21.1 ([#2653](https://github.com/aws-powertools/powertools-lambda-java/issues/2653))
+
+## Features
+
+* Support CRaC and priming of powertools large messages ([#2533](https://github.com/aws-powertools/powertools-lambda-java/issues/2533))
+* **large-messages:** add optional allowedBuckets allowlist ([#2555](https://github.com/aws-powertools/powertools-lambda-java/issues/2555))
+* **logging:** add automatic TenantId logging to Logger default properties ([#2471](https://github.com/aws-powertools/powertools-lambda-java/issues/2471))
+
+## Maintenance
+
+* bump github/codeql-action from 4.35.5 to 4.36.0 ([#2515](https://github.com/aws-powertools/powertools-lambda-java/issues/2515))
+* bump graalvm/setup-graalvm from 1.5.4 to 1.5.6 ([#2536](https://github.com/aws-powertools/powertools-lambda-java/issues/2536))
+* bump org.codehaus.mojo:versions-maven-plugin ([#2426](https://github.com/aws-powertools/powertools-lambda-java/issues/2426))
+* bump org.apache.maven.plugins:maven-jar-plugin ([#2427](https://github.com/aws-powertools/powertools-lambda-java/issues/2427))
+* bump release-drafter/release-drafter from 7.1.0 to 7.1.1 ([#2428](https://github.com/aws-powertools/powertools-lambda-java/issues/2428))
+* bump org.graalvm.buildtools:native-maven-plugin ([#2425](https://github.com/aws-powertools/powertools-lambda-java/issues/2425))
+* bump github/codeql-action from 4.33.0 to 4.34.1 ([#2435](https://github.com/aws-powertools/powertools-lambda-java/issues/2435))
+* bump sam/build-java25 ([#2628](https://github.com/aws-powertools/powertools-lambda-java/issues/2628))
+* bump github/codeql-action/upload-sarif from 4.37.8 to 4.38.2 ([#2634](https://github.com/aws-powertools/powertools-lambda-java/issues/2634))
+* bump gitpython from 3.1.58 to 3.1.62 in /docs ([#2627](https://github.com/aws-powertools/powertools-lambda-java/issues/2627))
+* bump aws.sdk.version from 2.49.5 to 2.54.6 ([#2617](https://github.com/aws-powertools/powertools-lambda-java/issues/2617))
+* bump aws-actions/configure-aws-credentials from 6.2.3 to 6.3.0 ([#2632](https://github.com/aws-powertools/powertools-lambda-java/issues/2632))
+* bump graalvm/setup-graalvm from 1.6.4 to 1.6.7 ([#2637](https://github.com/aws-powertools/powertools-lambda-java/issues/2637))
+* bump release-drafter/release-drafter from 7.7.0 to 7.9.0 ([#2638](https://github.com/aws-powertools/powertools-lambda-java/issues/2638))
+* bump soupsieve from 2.8.4 to 2.9 in /docs ([#2631](https://github.com/aws-powertools/powertools-lambda-java/issues/2631))
+* bump actions/setup-java from 6.0.0 to 6.0.1 ([#2630](https://github.com/aws-powertools/powertools-lambda-java/issues/2630))
+* bump com.amazonaws:aws-lambda-java-serialization ([#2601](https://github.com/aws-powertools/powertools-lambda-java/issues/2601))
+* bump gitpython from 3.1.57 to 3.1.58 in /docs ([#2606](https://github.com/aws-powertools/powertools-lambda-java/issues/2606))
+* bump graalvm/setup-graalvm from 1.6.3 to 1.6.4 ([#2608](https://github.com/aws-powertools/powertools-lambda-java/issues/2608))
+* bump org.apache.logging.log4j:log4j-api from 2.26.0 to 2.26.1 ([#2610](https://github.com/aws-powertools/powertools-lambda-java/issues/2610))
+* bump github/codeql-action/upload-sarif from 4.37.4 to 4.37.8 ([#2615](https://github.com/aws-powertools/powertools-lambda-java/issues/2615))
+* bump actions/setup-java from 5.7.0 to 6.0.0 ([#2616](https://github.com/aws-powertools/powertools-lambda-java/issues/2616))
+* bump aws.sdk.version from 2.48.0 to 2.49.5 ([#2594](https://github.com/aws-powertools/powertools-lambda-java/issues/2594))
+* bump release-drafter/release-drafter from 7.6.0 to 7.7.0 ([#2595](https://github.com/aws-powertools/powertools-lambda-java/issues/2595))
+* bump github/codeql-action/upload-sarif from 4.37.3 to 4.37.4 ([#2596](https://github.com/aws-powertools/powertools-lambda-java/issues/2596))
+* bump actions/setup-java from 5.6.0 to 5.7.0 ([#2598](https://github.com/aws-powertools/powertools-lambda-java/issues/2598))
+* bump sam/build-java25 ([#2599](https://github.com/aws-powertools/powertools-lambda-java/issues/2599))
+* bump gitpython from 3.1.54 to 3.1.57 in /docs ([#2600](https://github.com/aws-powertools/powertools-lambda-java/issues/2600))
+* bump gitpython from 3.1.50 to 3.1.54 in /docs ([#2592](https://github.com/aws-powertools/powertools-lambda-java/issues/2592))
+* bump org.junit.jupiter:junit-jupiter from 5.14.3 to 5.14.4 ([#2584](https://github.com/aws-powertools/powertools-lambda-java/issues/2584))
+* bump aws-actions/configure-aws-credentials from 6.2.2 to 6.2.3 ([#2586](https://github.com/aws-powertools/powertools-lambda-java/issues/2586))
+* bump github/codeql-action/upload-sarif from 4.37.1 to 4.37.3 ([#2587](https://github.com/aws-powertools/powertools-lambda-java/issues/2587))
+* bump ossf/scorecard-action from 2.4.3 to 2.4.4 ([#2589](https://github.com/aws-powertools/powertools-lambda-java/issues/2589))
+* bump software.amazon.awscdk:aws-cdk-lib ([#2591](https://github.com/aws-powertools/powertools-lambda-java/issues/2591))
+* bump sam/build-java25 ([#2593](https://github.com/aws-powertools/powertools-lambda-java/issues/2593))
+* bump aws.sdk.version from 2.47.4 to 2.48.0 ([#2575](https://github.com/aws-powertools/powertools-lambda-java/issues/2575))
+* bump graalvm/setup-graalvm from 1.6.2 to 1.6.3 ([#2578](https://github.com/aws-powertools/powertools-lambda-java/issues/2578))
+* bump actions/setup-java from 5.5.0 to 5.6.0 ([#2579](https://github.com/aws-powertools/powertools-lambda-java/issues/2579))
+* bump github/codeql-action/upload-sarif from 4.37.0 to 4.37.1 ([#2580](https://github.com/aws-powertools/powertools-lambda-java/issues/2580))
+* bump squidfunk/mkdocs-material in /docs ([#2581](https://github.com/aws-powertools/powertools-lambda-java/issues/2581))
+* bump release-drafter/release-drafter from 7.5.1 to 7.6.0 ([#2582](https://github.com/aws-powertools/powertools-lambda-java/issues/2582))
+* bump actions/checkout from 7.0.0 to 7.0.1 ([#2583](https://github.com/aws-powertools/powertools-lambda-java/issues/2583))
+* bump sam/build-java25 ([#2434](https://github.com/aws-powertools/powertools-lambda-java/issues/2434))
+* bump soupsieve from 2.6 to 2.8.4 in /docs ([#2571](https://github.com/aws-powertools/powertools-lambda-java/issues/2571))
+* bump sam/build-java25 ([#2572](https://github.com/aws-powertools/powertools-lambda-java/issues/2572))
+* bump aws.sdk.version from 2.47.3 to 2.47.4 ([#2573](https://github.com/aws-powertools/powertools-lambda-java/issues/2573))
+* bump aws.sdk.version from 2.47.0 to 2.47.3 ([#2568](https://github.com/aws-powertools/powertools-lambda-java/issues/2568))
+* bump github/codeql-action/upload-sarif from 4.36.3 to 4.37.0 ([#2569](https://github.com/aws-powertools/powertools-lambda-java/issues/2569))
+* bump aws.sdk.version from 2.46.21 to 2.47.0 ([#2564](https://github.com/aws-powertools/powertools-lambda-java/issues/2564))
+* bump actions/setup-java from 5.4.0 to 5.5.0 ([#2565](https://github.com/aws-powertools/powertools-lambda-java/issues/2565))
+* bump aws-actions/configure-aws-credentials from 6.2.1 to 6.2.2 ([#2566](https://github.com/aws-powertools/powertools-lambda-java/issues/2566))
+* bump graalvm/setup-graalvm from 1.6.0 to 1.6.2 ([#2567](https://github.com/aws-powertools/powertools-lambda-java/issues/2567))
+* bump aws.sdk.version from 2.46.18 to 2.46.21 ([#2561](https://github.com/aws-powertools/powertools-lambda-java/issues/2561))
+* bump graalvm/setup-graalvm from 1.5.6 to 1.6.0 ([#2562](https://github.com/aws-powertools/powertools-lambda-java/issues/2562))
+* bump aws.sdk.version from 2.46.14 to 2.46.18 ([#2549](https://github.com/aws-powertools/powertools-lambda-java/issues/2549))
+* bump sam/build-java25 ([#2557](https://github.com/aws-powertools/powertools-lambda-java/issues/2557))
+* bump github/codeql-action/upload-sarif from 4.36.2 to 4.36.3 ([#2558](https://github.com/aws-powertools/powertools-lambda-java/issues/2558))
+* bump actions/checkout from 6.0.3 to 7.0.0 ([#2542](https://github.com/aws-powertools/powertools-lambda-java/issues/2542))
+* bump release-drafter/release-drafter from 7.4.0 to 7.5.1 ([#2546](https://github.com/aws-powertools/powertools-lambda-java/issues/2546))
+* bump actions/setup-java from 5.3.0 to 5.4.0 ([#2547](https://github.com/aws-powertools/powertools-lambda-java/issues/2547))
+* bump aws.sdk.version from 2.46.13 to 2.46.14 ([#2543](https://github.com/aws-powertools/powertools-lambda-java/issues/2543))
+* bump aws-actions/configure-aws-credentials from 6.2.0 to 6.2.1 ([#2548](https://github.com/aws-powertools/powertools-lambda-java/issues/2548))
+* bump sam/build-java25 ([#2514](https://github.com/aws-powertools/powertools-lambda-java/issues/2514))
+* bump aws.sdk.version from 2.46.3 to 2.46.13 ([#2539](https://github.com/aws-powertools/powertools-lambda-java/issues/2539))
+* bump com.google.protobuf:protobuf-java from 4.34.1 to 4.35.0 ([#2531](https://github.com/aws-powertools/powertools-lambda-java/issues/2531))
+* bump sam/build-java25 ([#2534](https://github.com/aws-powertools/powertools-lambda-java/issues/2534))
+* bump release-drafter/release-drafter from 7.3.1 to 7.4.0 ([#2537](https://github.com/aws-powertools/powertools-lambda-java/issues/2537))
+* bump actions/setup-java from 5.2.0 to 5.3.0 ([#2538](https://github.com/aws-powertools/powertools-lambda-java/issues/2538))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.250.0 to 2.258.0 ([#2530](https://github.com/aws-powertools/powertools-lambda-java/issues/2530))
+* bump aws.sdk.version from 2.46.0 to 2.46.3 ([#2528](https://github.com/aws-powertools/powertools-lambda-java/issues/2528))
+* bump github/codeql-action from 4.36.1 to 4.36.2 ([#2529](https://github.com/aws-powertools/powertools-lambda-java/issues/2529))
+* bump github/codeql-action from 4.36.0 to 4.36.1 ([#2525](https://github.com/aws-powertools/powertools-lambda-java/issues/2525))
+* bump actions/checkout from 6.0.2 to 6.0.3 ([#2526](https://github.com/aws-powertools/powertools-lambda-java/issues/2526))
+* bump aws-actions/configure-aws-credentials from 6.1.3 to 6.2.0 ([#2524](https://github.com/aws-powertools/powertools-lambda-java/issues/2524))
+* bump aws.sdk.version from 2.44.14 to 2.46.0 ([#2522](https://github.com/aws-powertools/powertools-lambda-java/issues/2522))
+* bump sam/build-java25 ([#2523](https://github.com/aws-powertools/powertools-lambda-java/issues/2523))
+* bump graalvm/setup-graalvm from 1.5.3 to 1.5.4 ([#2527](https://github.com/aws-powertools/powertools-lambda-java/issues/2527))
+* bump aws.sdk.version from 2.44.10 to 2.44.14 ([#2520](https://github.com/aws-powertools/powertools-lambda-java/issues/2520))
+* bump aws-actions/configure-aws-credentials from 6.1.2 to 6.1.3 ([#2521](https://github.com/aws-powertools/powertools-lambda-java/issues/2521))
+* bump aws.sdk.version from 2.44.9 to 2.44.13 ([#2518](https://github.com/aws-powertools/powertools-lambda-java/issues/2518))
+* bump graalvm/setup-graalvm from 1.5.1 to 1.5.2 ([#2451](https://github.com/aws-powertools/powertools-lambda-java/issues/2451))
+* bump squidfunk/mkdocs-material in /docs ([#2433](https://github.com/aws-powertools/powertools-lambda-java/issues/2433))
+* bump aws-actions/configure-aws-credentials from 6.1.1 to 6.1.2 ([#2517](https://github.com/aws-powertools/powertools-lambda-java/issues/2517))
+* bump release-drafter/release-drafter from 7.3.0 to 7.3.1 ([#2516](https://github.com/aws-powertools/powertools-lambda-java/issues/2516))
+* add CODEOWNERS file ([#2658](https://github.com/aws-powertools/powertools-lambda-java/issues/2658))
+* bump aws.sdk.version from 2.44.7 to 2.44.9 ([#2511](https://github.com/aws-powertools/powertools-lambda-java/issues/2511))
+* bump sam/build-java25 ([#2512](https://github.com/aws-powertools/powertools-lambda-java/issues/2512))
+* bump aws.sdk.version from 2.42.34 to 2.44.9 ([#2508](https://github.com/aws-powertools/powertools-lambda-java/issues/2508))
+* bump sam/build-java25 ([#2509](https://github.com/aws-powertools/powertools-lambda-java/issues/2509))
+* bump aws.sdk.version from 2.44.4 to 2.44.7 ([#2505](https://github.com/aws-powertools/powertools-lambda-java/issues/2505))
+* bump sam/build-java25 ([#2506](https://github.com/aws-powertools/powertools-lambda-java/issues/2506))
+* bump github/codeql-action from 4.35.4 to 4.35.5 ([#2507](https://github.com/aws-powertools/powertools-lambda-java/issues/2507))
+* bump co.elastic.logging:logback-ecs-encoder from 1.7.0 to 1.8.0 ([#2504](https://github.com/aws-powertools/powertools-lambda-java/issues/2504))
+* bump log4j.version from 2.25.4 to 2.26.0 ([#2503](https://github.com/aws-powertools/powertools-lambda-java/issues/2503))
+* bump aws.sdk.version from 2.43.2 to 2.44.4 ([#2500](https://github.com/aws-powertools/powertools-lambda-java/issues/2500))
+* bump actions/dependency-review-action from 4.9.0 to 5.0.0 ([#2502](https://github.com/aws-powertools/powertools-lambda-java/issues/2502))
+* bump aws.sdk.version from 2.43.1 to 2.43.2 ([#2493](https://github.com/aws-powertools/powertools-lambda-java/issues/2493))
+* bump aws-actions/configure-aws-credentials from 6.1.0 to 6.1.1 ([#2495](https://github.com/aws-powertools/powertools-lambda-java/issues/2495))
+* bump graalvm/setup-graalvm from 1.5.2 to 1.5.3 ([#2496](https://github.com/aws-powertools/powertools-lambda-java/issues/2496))
+* bump github/codeql-action from 4.35.2 to 4.35.4 ([#2497](https://github.com/aws-powertools/powertools-lambda-java/issues/2497))
+* bump release-drafter/release-drafter from 7.2.1 to 7.3.0 ([#2498](https://github.com/aws-powertools/powertools-lambda-java/issues/2498))
+* bump gitpython from 3.1.47 to 3.1.50 in /docs ([#2499](https://github.com/aws-powertools/powertools-lambda-java/issues/2499))
+* bump aws.sdk.version from 2.43.0 to 2.43.1 ([#2491](https://github.com/aws-powertools/powertools-lambda-java/issues/2491))
+* bump release-drafter/release-drafter from 7.2.0 to 7.2.1 ([#2492](https://github.com/aws-powertools/powertools-lambda-java/issues/2492))
+* bump commons-io:commons-io from 2.21.0 to 2.22.0 ([#2490](https://github.com/aws-powertools/powertools-lambda-java/issues/2490))
+* bump aws.sdk.version from 2.42.40 to 2.43.0 ([#2487](https://github.com/aws-powertools/powertools-lambda-java/issues/2487))
+* bump aws.sdk.version from 2.42.38 to 2.42.40 ([#2483](https://github.com/aws-powertools/powertools-lambda-java/issues/2483))
+* bump gitpython from 3.1.44 to 3.1.47 in /docs ([#2486](https://github.com/aws-powertools/powertools-lambda-java/issues/2486))
+* bump aws.sdk.version from 2.42.35 to 2.42.38 ([#2481](https://github.com/aws-powertools/powertools-lambda-java/issues/2481))
+* bump org.apache.maven.plugins:maven-source-plugin ([#2482](https://github.com/aws-powertools/powertools-lambda-java/issues/2482))
+* bump com.fasterxml.jackson:jackson-bom from 2.21.1 to 2.21.2 ([#2480](https://github.com/aws-powertools/powertools-lambda-java/issues/2480))
+* bump org.apache.maven.plugins:maven-compiler-plugin ([#2478](https://github.com/aws-powertools/powertools-lambda-java/issues/2478))
+* bump tj-actions/changed-files from 47.0.5 to 47.0.6 ([#2479](https://github.com/aws-powertools/powertools-lambda-java/issues/2479))
+* bump aws.sdk.version from 2.42.34 to 2.42.35 ([#2475](https://github.com/aws-powertools/powertools-lambda-java/issues/2475))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#2476](https://github.com/aws-powertools/powertools-lambda-java/issues/2476))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.248.0 to 2.250.0 ([#2472](https://github.com/aws-powertools/powertools-lambda-java/issues/2472))
+* bump aws.sdk.version from 2.41.11 to 2.42.34 ([#2473](https://github.com/aws-powertools/powertools-lambda-java/issues/2473))
+* bump github/codeql-action from 4.35.1 to 4.35.2 ([#2474](https://github.com/aws-powertools/powertools-lambda-java/issues/2474))
+* bump aws.sdk.version from 2.42.32 to 2.42.34 ([#2469](https://github.com/aws-powertools/powertools-lambda-java/issues/2469))
+* bump org.junit.jupiter:junit-jupiter from 5.14.1 to 5.14.3 ([#2470](https://github.com/aws-powertools/powertools-lambda-java/issues/2470))
+* bump org.apache.kafka:kafka-clients ([#2468](https://github.com/aws-powertools/powertools-lambda-java/issues/2468))
+* bump aws.sdk.version from 2.42.29 to 2.42.32 ([#2463](https://github.com/aws-powertools/powertools-lambda-java/issues/2463))
+* bump org.codehaus.mojo:exec-maven-plugin from 3.6.2 to 3.6.3 ([#2464](https://github.com/aws-powertools/powertools-lambda-java/issues/2464))
+* bump sam/build-java25 ([#2465](https://github.com/aws-powertools/powertools-lambda-java/issues/2465))
+* bump release-drafter/release-drafter from 7.1.1 to 7.2.0 ([#2466](https://github.com/aws-powertools/powertools-lambda-java/issues/2466))
+* bump actions/upload-artifact from 7.0.0 to 7.0.1 ([#2467](https://github.com/aws-powertools/powertools-lambda-java/issues/2467))
+* bump mockito.version from 5.21.0 to 5.23.0 ([#2432](https://github.com/aws-powertools/powertools-lambda-java/issues/2432))
+* bump org.apache.maven.plugins:maven-shade-plugin ([#2461](https://github.com/aws-powertools/powertools-lambda-java/issues/2461))
+* bump com.amazonaws:aws-lambda-java-runtime-interface-client ([#2462](https://github.com/aws-powertools/powertools-lambda-java/issues/2462))
+* bump org.mockito:mockito-junit-jupiter from 5.21.0 to 5.23.0 ([#2458](https://github.com/aws-powertools/powertools-lambda-java/issues/2458))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.243.0 to 2.248.0 ([#2459](https://github.com/aws-powertools/powertools-lambda-java/issues/2459))
+* bump com.google.protobuf:protobuf-java from 4.33.4 to 4.34.1 ([#2454](https://github.com/aws-powertools/powertools-lambda-java/issues/2454))
+* bump aws.sdk.version from 2.42.27 to 2.42.29 ([#2455](https://github.com/aws-powertools/powertools-lambda-java/issues/2455))
+* bump aws-actions/configure-aws-credentials from 6.0.0 to 6.1.0 ([#2456](https://github.com/aws-powertools/powertools-lambda-java/issues/2456))
+* bump org.apache.kafka:kafka-clients from 4.1.1 to 4.2.0 ([#2452](https://github.com/aws-powertools/powertools-lambda-java/issues/2452))
+* bump aws.sdk.version from 2.42.24 to 2.42.27 ([#2453](https://github.com/aws-powertools/powertools-lambda-java/issues/2453))
+* bump com.amazonaws:aws-lambda-java-serialization ([#2450](https://github.com/aws-powertools/powertools-lambda-java/issues/2450))
+* bump aws.xray.recorder.version from 2.20.0 to 2.21.0 ([#2449](https://github.com/aws-powertools/powertools-lambda-java/issues/2449))
+* bump aws.sdk.version from 2.44.9 to 2.44.10 ([#2513](https://github.com/aws-powertools/powertools-lambda-java/issues/2513))
+* bump graalvm/setup-graalvm from 1.5.0 to 1.5.1 ([#2448](https://github.com/aws-powertools/powertools-lambda-java/issues/2448))
+* bump aws.sdk.version from 2.42.23 to 2.42.24 ([#2445](https://github.com/aws-powertools/powertools-lambda-java/issues/2445))
+* bump log4j.version from 2.25.3 to 2.25.4 ([#2446](https://github.com/aws-powertools/powertools-lambda-java/issues/2446))
+* bump com.github.spotbugs:spotbugs-maven-plugin ([#2441](https://github.com/aws-powertools/powertools-lambda-java/issues/2441))
+* bump aws.sdk.version from 2.42.22 to 2.42.23 ([#2442](https://github.com/aws-powertools/powertools-lambda-java/issues/2442))
+* bump org.apache.maven.plugins:maven-source-plugin ([#2443](https://github.com/aws-powertools/powertools-lambda-java/issues/2443))
+* bump github/codeql-action from 4.34.1 to 4.35.1 ([#2444](https://github.com/aws-powertools/powertools-lambda-java/issues/2444))
+* bump sam/build-java25 ([#2438](https://github.com/aws-powertools/powertools-lambda-java/issues/2438))
+* bump software.constructs:constructs from 10.4.3 to 10.6.0 ([#2439](https://github.com/aws-powertools/powertools-lambda-java/issues/2439))
+* bump org.sonatype.central:central-publishing-maven-plugin ([#2436](https://github.com/aws-powertools/powertools-lambda-java/issues/2436))
+* bump aws.sdk.version from 2.42.17 to 2.42.22 ([#2437](https://github.com/aws-powertools/powertools-lambda-java/issues/2437))
+* bump aws.sdk.version from 2.42.15 to 2.42.17 ([#2430](https://github.com/aws-powertools/powertools-lambda-java/issues/2430))
+* bump org.yaml:snakeyaml from 2.5 to 2.6 ([#2431](https://github.com/aws-powertools/powertools-lambda-java/issues/2431))
+* **deps:** upgrade WireMock to 4.0.0-beta.39 ([#2664](https://github.com/aws-powertools/powertools-lambda-java/issues/2664))
+* **deps:** bump jackson to address CVE-2026-54513 ([#2574](https://github.com/aws-powertools/powertools-lambda-java/issues/2574))
+* **deps:** bump AWS SDK in batch example to 2.54.6 to address Netty CVEs ([#2642](https://github.com/aws-powertools/powertools-lambda-java/issues/2642))
+* **deps:** bump logback-classic to 1.5.38 to address logback-core CVEs ([#2644](https://github.com/aws-powertools/powertools-lambda-java/issues/2644))
+* **deps:** bump jackson to 2.22.3 to address CVE-2026-89425 and CVE-2026-89407 ([#2640](https://github.com/aws-powertools/powertools-lambda-java/issues/2640))
+* **deps:** pin lz4-java to 1.11.2 in Kafka utility and example ([#2656](https://github.com/aws-powertools/powertools-lambda-java/issues/2656))
+* **e2e:** widen CloudWatch query window in MetricsE2ET to fix flaky test ([#2460](https://github.com/aws-powertools/powertools-lambda-java/issues/2460))
+* **examples:** pin Jackson in CDK infra and Kotlin examples ([#2654](https://github.com/aws-powertools/powertools-lambda-java/issues/2654))
+* **examples:** remove committed Gradle wrapper from Gradle examples ([#2657](https://github.com/aws-powertools/powertools-lambda-java/issues/2657))
+* **examples:** rename sdk.version to aws.sdk.version in batch example ([#2645](https://github.com/aws-powertools/powertools-lambda-java/issues/2645))
+* **v2:** drop java 11 support ([#2597](https://github.com/aws-powertools/powertools-lambda-java/issues/2597))
+
+
+<a name="v2.10.0"></a>
+## [v2.10.0] - 2026-03-19
+## Documentation
+
+* Announce end-of-life of version 1.x.x ([#2333](https://github.com/aws-powertools/powertools-lambda-java/issues/2333))
+
+## Features
+
+* **crac:** Support CRaC and priming of powertools tracing ([#2345](https://github.com/aws-powertools/powertools-lambda-java/issues/2345))
+* **lmds:** Add support for Lambda Metadata Service ([#2424](https://github.com/aws-powertools/powertools-lambda-java/issues/2424))
+* **logging:** add support for key-value pairs in using SLF4J fluent API and Logback backend ([#2377](https://github.com/aws-powertools/powertools-lambda-java/issues/2377))
+
+## Maintenance
+
+* modernize native maven profiles to using <agent> configuration and move to root pom. Update CI removing unnecessary metadata generation step. ([#2419](https://github.com/aws-powertools/powertools-lambda-java/issues/2419))
+* bump release-drafter/release-drafter from 7.0.0 to 7.1.0 ([#2423](https://github.com/aws-powertools/powertools-lambda-java/issues/2423))
+* bump aws.sdk.version from 2.42.14 to 2.42.15 ([#2421](https://github.com/aws-powertools/powertools-lambda-java/issues/2421))
+* bump com.amazonaws:aws-lambda-java-runtime-interface-client ([#2420](https://github.com/aws-powertools/powertools-lambda-java/issues/2420))
+* bump aws.sdk.version from 2.41.10 to 2.42.5 ([#2400](https://github.com/aws-powertools/powertools-lambda-java/issues/2400))
+* bump org.assertj:assertj-core in /powertools-tracing ([#2417](https://github.com/aws-powertools/powertools-lambda-java/issues/2417))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.224.0 to 2.243.0 ([#2418](https://github.com/aws-powertools/powertools-lambda-java/issues/2418))
+* bump com.fasterxml.jackson:jackson-bom from 2.20.1 to 2.21.1 ([#2403](https://github.com/aws-powertools/powertools-lambda-java/issues/2403))
+* bump sam/build-java25 ([#2406](https://github.com/aws-powertools/powertools-lambda-java/issues/2406))
+* bump release-drafter/release-drafter from 6.2.0 to 7.0.0 ([#2415](https://github.com/aws-powertools/powertools-lambda-java/issues/2415))
+* bump github/codeql-action from 4.32.5 to 4.33.0 ([#2414](https://github.com/aws-powertools/powertools-lambda-java/issues/2414))
+* bump actions/download-artifact from 8.0.0 to 8.0.1 ([#2411](https://github.com/aws-powertools/powertools-lambda-java/issues/2411))
+* bump squidfunk/mkdocs-material in /docs ([#2410](https://github.com/aws-powertools/powertools-lambda-java/issues/2410))
+* bump markdown from 3.7 to 3.8.1 in /docs ([#2405](https://github.com/aws-powertools/powertools-lambda-java/issues/2405))
+* bump graalvm/setup-graalvm from 1.4.5 to 1.5.0 ([#2412](https://github.com/aws-powertools/powertools-lambda-java/issues/2412))
+* bump squidfunk/mkdocs-material in /docs ([#2401](https://github.com/aws-powertools/powertools-lambda-java/issues/2401))
+* bump actions/dependency-review-action from 4.8.3 to 4.9.0 ([#2402](https://github.com/aws-powertools/powertools-lambda-java/issues/2402))
+* bump actions/dependency-review-action from 4.8.2 to 4.8.3 ([#2390](https://github.com/aws-powertools/powertools-lambda-java/issues/2390))
+* bump squidfunk/mkdocs-material in /docs ([#2392](https://github.com/aws-powertools/powertools-lambda-java/issues/2392))
+* bump actions/download-artifact from 7.0.0 to 8.0.0 ([#2393](https://github.com/aws-powertools/powertools-lambda-java/issues/2393))
+* bump com.google.protobuf:protobuf-java from 4.33.2 to 4.33.4 ([#2360](https://github.com/aws-powertools/powertools-lambda-java/issues/2360))
+* bump aws.sdk.version from 2.39.3 to 2.41.11 ([#2359](https://github.com/aws-powertools/powertools-lambda-java/issues/2359))
+* bump tj-actions/changed-files from 47.0.4 to 47.0.5 ([#2399](https://github.com/aws-powertools/powertools-lambda-java/issues/2399))
+* bump actions/upload-artifact from 6.0.0 to 7.0.0 ([#2394](https://github.com/aws-powertools/powertools-lambda-java/issues/2394))
+* bump github/codeql-action from 4.32.3 to 4.32.5 ([#2396](https://github.com/aws-powertools/powertools-lambda-java/issues/2396))
+* bump aws-actions/configure-aws-credentials from 5.1.1 to 6.0.0 ([#2382](https://github.com/aws-powertools/powertools-lambda-java/issues/2382))
+* bump sam/build-java25 ([#2385](https://github.com/aws-powertools/powertools-lambda-java/issues/2385))
+* bump org.apache.avro:avro ([#2386](https://github.com/aws-powertools/powertools-lambda-java/issues/2386))
+* bump tj-actions/changed-files from 47.0.1 to 47.0.4 ([#2388](https://github.com/aws-powertools/powertools-lambda-java/issues/2388))
+* bump github/codeql-action from 4.32.0 to 4.32.3 ([#2387](https://github.com/aws-powertools/powertools-lambda-java/issues/2387))
+* bump release-drafter/release-drafter from 6.1.1 to 6.2.0 ([#2362](https://github.com/aws-powertools/powertools-lambda-java/issues/2362))
+* bump actions/setup-java from 5.1.0 to 5.2.0 ([#2363](https://github.com/aws-powertools/powertools-lambda-java/issues/2363))
+* bump actions/checkout from 6.0.1 to 6.0.2 ([#2365](https://github.com/aws-powertools/powertools-lambda-java/issues/2365))
+* bump github/codeql-action from 4.31.10 to 4.32.0 ([#2369](https://github.com/aws-powertools/powertools-lambda-java/issues/2369))
+* bump release-drafter/release-drafter from 6.1.0 to 6.1.1 ([#2357](https://github.com/aws-powertools/powertools-lambda-java/issues/2357))
+* bump aws.sdk.version from 2.40.13 to 2.41.10 ([#2354](https://github.com/aws-powertools/powertools-lambda-java/issues/2354))
+* bump org.codehaus.mojo:aspectj-maven-plugin from 1.15.0 to 1.16.0 ([#2353](https://github.com/aws-powertools/powertools-lambda-java/issues/2353))
+* bump mockito.version from 5.18.0 to 5.21.0 ([#2352](https://github.com/aws-powertools/powertools-lambda-java/issues/2352))
+* bump graalvm/setup-graalvm from 1.4.4 to 1.4.5 ([#2349](https://github.com/aws-powertools/powertools-lambda-java/issues/2349))
+* bump github/codeql-action from 4.31.9 to 4.31.10 ([#2350](https://github.com/aws-powertools/powertools-lambda-java/issues/2350))
+* bump aws.sdk.version from 2.40.9 to 2.40.13 ([#2346](https://github.com/aws-powertools/powertools-lambda-java/issues/2346))
+* bump com.google.protobuf:protobuf-java from 4.33.1 to 4.33.2 ([#2347](https://github.com/aws-powertools/powertools-lambda-java/issues/2347))
+* bump squidfunk/mkdocs-material in /docs ([#2341](https://github.com/aws-powertools/powertools-lambda-java/issues/2341))
+* bump org.apache.logging.log4j:log4j-core from 2.25.2 to 2.25.3 ([#2344](https://github.com/aws-powertools/powertools-lambda-java/issues/2344))
+* bump sam/build-java25 ([#2342](https://github.com/aws-powertools/powertools-lambda-java/issues/2342))
+* bump github/codeql-action from 4.31.8 to 4.31.9 ([#2340](https://github.com/aws-powertools/powertools-lambda-java/issues/2340))
+* bump actions/download-artifact from 6.0.0 to 7.0.0 ([#2339](https://github.com/aws-powertools/powertools-lambda-java/issues/2339))
+* bump actions/upload-artifact from 5.0.0 to 6.0.0 ([#2338](https://github.com/aws-powertools/powertools-lambda-java/issues/2338))
+* bump org.mockito:mockito-junit-jupiter from 5.20.0 to 5.21.0 ([#2336](https://github.com/aws-powertools/powertools-lambda-java/issues/2336))
+* bump aws.sdk.version from 2.39.1 to 2.40.9 ([#2335](https://github.com/aws-powertools/powertools-lambda-java/issues/2335))
+* **ci:** Run E2E tests in a per-test matrix ([#2398](https://github.com/aws-powertools/powertools-lambda-java/issues/2398))
+* **ci:** harden GitHub Actions workflow permissions ([#2370](https://github.com/aws-powertools/powertools-lambda-java/issues/2370))
+
+
+<a name="v2.9.0"></a>
+## [v2.9.0] - 2025-12-16
+## Bug Fixes
+
+* **metrics:** Clear custom dimensions when flushing. ([#2328](https://github.com/aws-powertools/powertools-lambda-java/issues/2328))
+
+## Features
+
+* **cold-start-detection:** Suppress cold start detection for non ON-DEMAND invocations ([#2329](https://github.com/aws-powertools/powertools-lambda-java/issues/2329))
+
+## Maintenance
+
+* bump github/codeql-action from 4.31.5 to 4.31.8 ([#2331](https://github.com/aws-powertools/powertools-lambda-java/issues/2331))
+* bump tj-actions/changed-files from 47.0.0 to 47.0.1 ([#2330](https://github.com/aws-powertools/powertools-lambda-java/issues/2330))
+* bump actions/setup-java from 5.0.0 to 5.1.0 ([#2325](https://github.com/aws-powertools/powertools-lambda-java/issues/2325))
+* bump sam/build-java25 ([#2324](https://github.com/aws-powertools/powertools-lambda-java/issues/2324))
+* bump actions/checkout from 6.0.0 to 6.0.1 ([#2323](https://github.com/aws-powertools/powertools-lambda-java/issues/2323))
+* bump graalvm/setup-graalvm from 1.4.2 to 1.4.4 ([#2322](https://github.com/aws-powertools/powertools-lambda-java/issues/2322))
+* bump org.codehaus.mojo:versions-maven-plugin ([#2315](https://github.com/aws-powertools/powertools-lambda-java/issues/2315))
+* bump com.google.protobuf:protobuf-java from 4.33.0 to 4.33.1 ([#2314](https://github.com/aws-powertools/powertools-lambda-java/issues/2314))
+* bump aws.sdk.version from 2.38.7 to 2.39.3 ([#2313](https://github.com/aws-powertools/powertools-lambda-java/issues/2313))
+* bump aws-actions/configure-aws-credentials from 5.1.0 to 5.1.1 ([#2316](https://github.com/aws-powertools/powertools-lambda-java/issues/2316))
+* bump github/codeql-action from 4.31.4 to 4.31.5 ([#2312](https://github.com/aws-powertools/powertools-lambda-java/issues/2312))
+* bump sam/build-java25 ([#2309](https://github.com/aws-powertools/powertools-lambda-java/issues/2309))
+* bump actions/checkout from 5.0.0 to 6.0.0 ([#2308](https://github.com/aws-powertools/powertools-lambda-java/issues/2308))
+* bump org.apache.commons:commons-lang3 from 3.19.0 to 3.20.0 ([#2304](https://github.com/aws-powertools/powertools-lambda-java/issues/2304))
+* bump aws.sdk.version from 2.38.6 to 2.39.1 ([#2305](https://github.com/aws-powertools/powertools-lambda-java/issues/2305))
+* bump org.wiremock:wiremock from 3.13.1 to 3.13.2 ([#2306](https://github.com/aws-powertools/powertools-lambda-java/issues/2306))
+* **ci:** Remove branch protection workflow. ([#2311](https://github.com/aws-powertools/powertools-lambda-java/issues/2311))
+
+
+<a name="v2.8.0"></a>
+## [v2.8.0] - 2025-11-21
+## Maintenance
+
+* bump aws.sdk.version from 2.38.2 to 2.38.7 ([#2295](https://github.com/aws-powertools/powertools-lambda-java/issues/2295))
+* bump github/codeql-action from 4.31.3 to 4.31.4 ([#2301](https://github.com/aws-powertools/powertools-lambda-java/issues/2301))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.223.0 to 2.224.0 ([#2297](https://github.com/aws-powertools/powertools-lambda-java/issues/2297))
+* bump io.github.ascopes:protobuf-maven-plugin ([#2296](https://github.com/aws-powertools/powertools-lambda-java/issues/2296))
+* bump github/codeql-action from 4.31.2 to 4.31.3 ([#2293](https://github.com/aws-powertools/powertools-lambda-java/issues/2293))
+* bump sam/build-java21 ([#2292](https://github.com/aws-powertools/powertools-lambda-java/issues/2292))
+* bump org.apache.kafka:kafka-clients from 4.1.0 to 4.1.1 ([#2291](https://github.com/aws-powertools/powertools-lambda-java/issues/2291))
+* bump aws.sdk.version from 2.38.5 to 2.38.6 ([#2290](https://github.com/aws-powertools/powertools-lambda-java/issues/2290))
+* bump commons-io:commons-io from 2.20.0 to 2.21.0 ([#2288](https://github.com/aws-powertools/powertools-lambda-java/issues/2288))
+* bump aws.sdk.version from 2.38.3 to 2.38.5 ([#2287](https://github.com/aws-powertools/powertools-lambda-java/issues/2287))
+* **ci:** Enable Java 25 E2E tests on Java 25 Lambda runtime and upgrade to GraalVM 25. ([#2298](https://github.com/aws-powertools/powertools-lambda-java/issues/2298))
+
+
+<a name="v2.7.0"></a>
+## [v2.7.0] - 2025-11-13
+## Documentation
+
+* Document new functional API ([#2282](https://github.com/aws-powertools/powertools-lambda-java/issues/2282))
+
+## Maintenance
+
+* bump aws.sdk.version from 2.37.5 to 2.38.2 ([#2276](https://github.com/aws-powertools/powertools-lambda-java/issues/2276))
+* bump actions/dependency-review-action from 4.8.1 to 4.8.2 ([#2281](https://github.com/aws-powertools/powertools-lambda-java/issues/2281))
+* bump squidfunk/mkdocs-material in /docs ([#2280](https://github.com/aws-powertools/powertools-lambda-java/issues/2280))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.222.0 to 2.223.0 ([#2279](https://github.com/aws-powertools/powertools-lambda-java/issues/2279))
+* bump aws.sdk.version from 2.37.5 to 2.38.3 ([#2278](https://github.com/aws-powertools/powertools-lambda-java/issues/2278))
+* bump software.constructs:constructs from 10.4.2 to 10.4.3 ([#2277](https://github.com/aws-powertools/powertools-lambda-java/issues/2277))
+* bump sam/build-java21 ([#2275](https://github.com/aws-powertools/powertools-lambda-java/issues/2275))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.221.1 to 2.222.0 ([#2274](https://github.com/aws-powertools/powertools-lambda-java/issues/2274))
+* bump aws.sdk.version from 2.37.2 to 2.37.5 ([#2273](https://github.com/aws-powertools/powertools-lambda-java/issues/2273))
+* bump aws.sdk.version from 2.37.4 to 2.37.5 ([#2271](https://github.com/aws-powertools/powertools-lambda-java/issues/2271))
+* bump com.amazonaws:aws-lambda-java-runtime-interface-client ([#2272](https://github.com/aws-powertools/powertools-lambda-java/issues/2272))
+* **ci:** Enable Java 25 builds. ([#2285](https://github.com/aws-powertools/powertools-lambda-java/issues/2285))
+
+
+<a name="v2.6.0"></a>
+## [v2.6.0] - 2025-11-05
+## Bug Fixes
+
+* **idempotency:** Validate payload for optimistic idempotent writes. ([#2261](https://github.com/aws-powertools/powertools-lambda-java/issues/2261))
+* **logging:** Fix bug where correlation_id field was missing in JSON structured output ([#2256](https://github.com/aws-powertools/powertools-lambda-java/issues/2256))
+* **serialization:** Fix Joda time serialization for AWS events. ([#2252](https://github.com/aws-powertools/powertools-lambda-java/issues/2252))
+
+## Features
+
+* **idempotency:** Add functional `Idempotency` API ([#2244](https://github.com/aws-powertools/powertools-lambda-java/issues/2244))
+* **large-messages:** Add function interface for Large Messages Utility ([#2257](https://github.com/aws-powertools/powertools-lambda-java/issues/2257))
+* **logging:** Support functional interface in addition to AspectJ `[@Logging](https://github.com/Logging)` annotation ([#2205](https://github.com/aws-powertools/powertools-lambda-java/issues/2205))
+
+## Maintenance
+
+* bump io.github.ascopes:protobuf-maven-plugin ([#2269](https://github.com/aws-powertools/powertools-lambda-java/issues/2269))
+* bump aws.sdk.version from 2.37.3 to 2.37.4 ([#2264](https://github.com/aws-powertools/powertools-lambda-java/issues/2264))
+* bump org.junit.jupiter:junit-jupiter from 5.14.0 to 5.14.1 ([#2265](https://github.com/aws-powertools/powertools-lambda-java/issues/2265))
+* bump aws.sdk.version from 2.36.3 to 2.37.3 ([#2258](https://github.com/aws-powertools/powertools-lambda-java/issues/2258))
+* bump squidfunk/mkdocs-material in /docs ([#2259](https://github.com/aws-powertools/powertools-lambda-java/issues/2259))
+* bump github/codeql-action from 4.31.1 to 4.31.2 ([#2255](https://github.com/aws-powertools/powertools-lambda-java/issues/2255))
+* bump com.fasterxml.jackson:jackson-bom from 2.20.0 to 2.20.1 ([#2254](https://github.com/aws-powertools/powertools-lambda-java/issues/2254))
+* bump aws.sdk.version from 2.36.3 to 2.37.2 ([#2253](https://github.com/aws-powertools/powertools-lambda-java/issues/2253))
+* bump aws.sdk.version from 2.36.2 to 2.36.3 ([#2242](https://github.com/aws-powertools/powertools-lambda-java/issues/2242))
+* bump github/codeql-action from 4.31.0 to 4.31.1 ([#2249](https://github.com/aws-powertools/powertools-lambda-java/issues/2249))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.221.0 to 2.221.1 ([#2248](https://github.com/aws-powertools/powertools-lambda-java/issues/2248))
+* bump aws.sdk.version from 2.36.2 to 2.37.1 ([#2246](https://github.com/aws-powertools/powertools-lambda-java/issues/2246))
+* bump aws.sdk.version from 2.36.1 to 2.36.2 ([#2240](https://github.com/aws-powertools/powertools-lambda-java/issues/2240))
+* bump graalvm/setup-graalvm from 1.4.1 to 1.4.2 ([#2236](https://github.com/aws-powertools/powertools-lambda-java/issues/2236))
+* bump actions/download-artifact from 5.0.0 to 6.0.0 ([#2234](https://github.com/aws-powertools/powertools-lambda-java/issues/2234))
+* bump github/codeql-action from 4.30.9 to 4.31.0 ([#2239](https://github.com/aws-powertools/powertools-lambda-java/issues/2239))
+* bump actions/upload-artifact from 4.6.2 to 5.0.0 ([#2238](https://github.com/aws-powertools/powertools-lambda-java/issues/2238))
+* bump aws.sdk.version from 2.32.31 to 2.36.2 ([#2237](https://github.com/aws-powertools/powertools-lambda-java/issues/2237))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.220.0 to 2.221.0 ([#2235](https://github.com/aws-powertools/powertools-lambda-java/issues/2235))
+* bump org.apache.maven.plugins:maven-javadoc-plugin ([#2223](https://github.com/aws-powertools/powertools-lambda-java/issues/2223))
+* bump sam/build-java21 ([#2233](https://github.com/aws-powertools/powertools-lambda-java/issues/2233))
+* bump org.junit.jupiter:junit-jupiter from 5.13.4 to 5.14.0 ([#2232](https://github.com/aws-powertools/powertools-lambda-java/issues/2232))
+* bump aws.sdk.version from 2.36.0 to 2.36.1 ([#2231](https://github.com/aws-powertools/powertools-lambda-java/issues/2231))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#2228](https://github.com/aws-powertools/powertools-lambda-java/issues/2228))
+* bump aws.sdk.version from 2.35.11 to 2.36.0 ([#2227](https://github.com/aws-powertools/powertools-lambda-java/issues/2227))
+* bump org.apache.maven.plugins:maven-shade-plugin ([#2230](https://github.com/aws-powertools/powertools-lambda-java/issues/2230))
+* bump org.junit:junit-bom from 5.13.4 to 5.14.0 ([#2199](https://github.com/aws-powertools/powertools-lambda-java/issues/2199))
+* bump org.jacoco:jacoco-maven-plugin from 0.8.13 to 0.8.14 ([#2224](https://github.com/aws-powertools/powertools-lambda-java/issues/2224))
+* bump aws.sdk.version from 2.35.10 to 2.35.11 ([#2222](https://github.com/aws-powertools/powertools-lambda-java/issues/2222))
+* bump sam/build-java21 ([#2226](https://github.com/aws-powertools/powertools-lambda-java/issues/2226))
+* bump org.graalvm.buildtools:native-maven-plugin ([#2225](https://github.com/aws-powertools/powertools-lambda-java/issues/2225))
+* bump org.apache.maven.plugins:maven-compiler-plugin ([#2217](https://github.com/aws-powertools/powertools-lambda-java/issues/2217))
+* bump com.github.spotbugs:spotbugs-maven-plugin ([#2216](https://github.com/aws-powertools/powertools-lambda-java/issues/2216))
+* bump avro.version from 1.12.0 to 1.12.1 ([#2215](https://github.com/aws-powertools/powertools-lambda-java/issues/2215))
+* bump aws.sdk.version from 2.35.8 to 2.35.10 ([#2214](https://github.com/aws-powertools/powertools-lambda-java/issues/2214))
+
+
+<a name="v2.5.0"></a>
+## [v2.5.0] - 2025-10-21
 ## Documentation
 
 * **logger:** Fix logging environment variables names in documentation ([#2161](https://github.com/aws-powertools/powertools-lambda-java/issues/2161))
@@ -15,27 +392,37 @@
 
 ## Maintenance
 
+* bump aws-actions/configure-aws-credentials from 5.0.0 to 5.1.0 ([#2177](https://github.com/aws-powertools/powertools-lambda-java/issues/2177))
+* bump org.sonatype.central:central-publishing-maven-plugin ([#2196](https://github.com/aws-powertools/powertools-lambda-java/issues/2196))
+* bump org.codehaus.mojo:exec-maven-plugin from 3.5.1 to 3.6.2 ([#2208](https://github.com/aws-powertools/powertools-lambda-java/issues/2208))
+* bump aws.sdk.version from 2.33.2 to 2.33.5 ([#2132](https://github.com/aws-powertools/powertools-lambda-java/issues/2132))
+* bump github/codeql-action from 4.30.8 to 4.30.9 ([#2209](https://github.com/aws-powertools/powertools-lambda-java/issues/2209))
+* bump sam/build-java21 ([#2201](https://github.com/aws-powertools/powertools-lambda-java/issues/2201))
+* bump com.google.protobuf:protobuf-java from 4.32.0 to 4.32.1 ([#2175](https://github.com/aws-powertools/powertools-lambda-java/issues/2175))
+* bump aws.sdk.version from 2.35.7 to 2.35.8 ([#2197](https://github.com/aws-powertools/powertools-lambda-java/issues/2197))
+* bump com.google.protobuf:protobuf-java from 4.32.1 to 4.33.0 ([#2198](https://github.com/aws-powertools/powertools-lambda-java/issues/2198))
+* update contributing.md ([#2203](https://github.com/aws-powertools/powertools-lambda-java/issues/2203))
 * bump aws.sdk.version from 2.35.6 to 2.35.7 ([#2190](https://github.com/aws-powertools/powertools-lambda-java/issues/2190))
-* bump com.networknt:json-schema-validator from 1.5.8 to 1.5.9 ([#2189](https://github.com/aws-powertools/powertools-lambda-java/issues/2189))
+* bump aws.sdk.version from 2.34.5 to 2.34.9 ([#2174](https://github.com/aws-powertools/powertools-lambda-java/issues/2174))
 * bump sam/build-java21 ([#2195](https://github.com/aws-powertools/powertools-lambda-java/issues/2195))
 * bump squidfunk/mkdocs-material in /docs ([#2194](https://github.com/aws-powertools/powertools-lambda-java/issues/2194))
 * bump com.github.spotbugs:spotbugs-maven-plugin ([#2192](https://github.com/aws-powertools/powertools-lambda-java/issues/2192))
 * bump software.amazon.awscdk:aws-cdk-lib from 2.214.0 to 2.220.0 ([#2191](https://github.com/aws-powertools/powertools-lambda-java/issues/2191))
 * bump io.github.ascopes:protobuf-maven-plugin ([#2193](https://github.com/aws-powertools/powertools-lambda-java/issues/2193))
 * bump aws.xray.recorder.version from 2.19.0 to 2.20.0 ([#2185](https://github.com/aws-powertools/powertools-lambda-java/issues/2185))
-* bump aws.sdk.version from 2.33.2 to 2.33.5 ([#2132](https://github.com/aws-powertools/powertools-lambda-java/issues/2132))
+* bump org.apache.kafka:kafka-clients from 4.0.0 to 4.1.0 ([#2134](https://github.com/aws-powertools/powertools-lambda-java/issues/2134))
 * bump org.apache.maven.plugins:maven-javadoc-plugin ([#2186](https://github.com/aws-powertools/powertools-lambda-java/issues/2186))
-* bump org.assertj:assertj-core from 3.27.4 to 3.27.6 ([#2184](https://github.com/aws-powertools/powertools-lambda-java/issues/2184))
+* bump com.amazonaws:aws-lambda-java-core from 1.3.0 to 1.4.0 ([#2135](https://github.com/aws-powertools/powertools-lambda-java/issues/2135))
 * bump aws.sdk.version from 2.34.9 to 2.35.6 ([#2183](https://github.com/aws-powertools/powertools-lambda-java/issues/2183))
 * bump actions/dependency-review-action from 4.8.0 to 4.8.1 ([#2180](https://github.com/aws-powertools/powertools-lambda-java/issues/2180))
 * bump github/codeql-action from 3.30.5 to 4.30.8 ([#2179](https://github.com/aws-powertools/powertools-lambda-java/issues/2179))
-* bump aws-actions/configure-aws-credentials from 5.0.0 to 5.1.0 ([#2177](https://github.com/aws-powertools/powertools-lambda-java/issues/2177))
-* bump com.google.protobuf:protobuf-java from 4.32.0 to 4.32.1 ([#2175](https://github.com/aws-powertools/powertools-lambda-java/issues/2175))
-* bump aws.sdk.version from 2.34.5 to 2.34.9 ([#2174](https://github.com/aws-powertools/powertools-lambda-java/issues/2174))
+* bump org.assertj:assertj-core from 3.27.4 to 3.27.6 ([#2184](https://github.com/aws-powertools/powertools-lambda-java/issues/2184))
+* bump sam/build-java21 ([#2141](https://github.com/aws-powertools/powertools-lambda-java/issues/2141))
+* bump com.networknt:json-schema-validator from 1.5.8 to 1.5.9 ([#2189](https://github.com/aws-powertools/powertools-lambda-java/issues/2189))
 * bump org.apache.commons:commons-lang3 from 3.18.0 to 3.19.0 ([#2172](https://github.com/aws-powertools/powertools-lambda-java/issues/2172))
 * bump org.apache.maven.plugins:maven-artifact-plugin ([#2171](https://github.com/aws-powertools/powertools-lambda-java/issues/2171))
 * Add User-Agent execution interceptors  ([#2166](https://github.com/aws-powertools/powertools-lambda-java/issues/2166))
-* bump org.apache.kafka:kafka-clients from 4.0.0 to 4.1.0 ([#2134](https://github.com/aws-powertools/powertools-lambda-java/issues/2134))
+* bump tj-actions/changed-files from 46.0.5 to 47.0.0 ([#2143](https://github.com/aws-powertools/powertools-lambda-java/issues/2143))
 * bump graalvm/setup-graalvm from 1.3.6 to 1.4.1 ([#2168](https://github.com/aws-powertools/powertools-lambda-java/issues/2168))
 * bump ossf/scorecard-action from 2.4.2 to 2.4.3 ([#2165](https://github.com/aws-powertools/powertools-lambda-java/issues/2165))
 * bump squidfunk/mkdocs-material in /docs ([#2164](https://github.com/aws-powertools/powertools-lambda-java/issues/2164))
@@ -48,9 +435,9 @@
 * bump aws.sdk.version from 2.33.2 to 2.34.5 ([#2156](https://github.com/aws-powertools/powertools-lambda-java/issues/2156))
 * bump org.codehaus.mojo:versions-maven-plugin ([#2148](https://github.com/aws-powertools/powertools-lambda-java/issues/2148))
 * bump squidfunk/mkdocs-material in /docs ([#2144](https://github.com/aws-powertools/powertools-lambda-java/issues/2144))
-* bump tj-actions/changed-files from 46.0.5 to 47.0.0 ([#2143](https://github.com/aws-powertools/powertools-lambda-java/issues/2143))
-* bump sam/build-java21 ([#2141](https://github.com/aws-powertools/powertools-lambda-java/issues/2141))
-* bump com.amazonaws:aws-lambda-java-core from 1.3.0 to 1.4.0 ([#2135](https://github.com/aws-powertools/powertools-lambda-java/issues/2135))
+* **ci:** Fix sha256 formatting in git-chglog docker image reference ([#2218](https://github.com/aws-powertools/powertools-lambda-java/issues/2218))
+* **ci:** Move tag step before changelog generation. ([#2219](https://github.com/aws-powertools/powertools-lambda-java/issues/2219))
+* **ci:** fix changelog generation ([#2207](https://github.com/aws-powertools/powertools-lambda-java/issues/2207))
 * **deps:** Use mockito 5.20.0 ([#2181](https://github.com/aws-powertools/powertools-lambda-java/issues/2181))
 * **docs:** Add AWS docs meta tags ([#2170](https://github.com/aws-powertools/powertools-lambda-java/issues/2170))
 
@@ -77,21 +464,21 @@
 
 ## Maintenance
 
-* bump dev.aspectj:aspectj-maven-plugin from 1.13.1 to 1.14.1 ([#2099](https://github.com/aws-powertools/powertools-lambda-java/issues/2099))
-* bump dev.aspectj:aspectj-maven-plugin from 1.14 to 1.14.1 ([#2037](https://github.com/aws-powertools/powertools-lambda-java/issues/2037))
+* bump squidfunk/mkdocs-material in /docs ([#2074](https://github.com/aws-powertools/powertools-lambda-java/issues/2074))
 * bump github/codeql-action from 3.29.8 to 3.29.9 ([#2038](https://github.com/aws-powertools/powertools-lambda-java/issues/2038))
+* bump dev.aspectj:aspectj-maven-plugin from 1.14 to 1.14.1 ([#2037](https://github.com/aws-powertools/powertools-lambda-java/issues/2037))
 * bump org.apache.maven.plugins:maven-deploy-plugin ([#2040](https://github.com/aws-powertools/powertools-lambda-java/issues/2040))
 * bump org.yaml:snakeyaml from 2.4 to 2.5 ([#2111](https://github.com/aws-powertools/powertools-lambda-java/issues/2111))
 * bump io.github.ascopes:protobuf-maven-plugin from 3.8.1 to 3.9.0 ([#2114](https://github.com/aws-powertools/powertools-lambda-java/issues/2114))
 * bump aws.sdk.version from 2.32.31 to 2.33.1 ([#2115](https://github.com/aws-powertools/powertools-lambda-java/issues/2115))
-* bump graalvm/setup-graalvm from 1.3.5 to 1.3.6 ([#2116](https://github.com/aws-powertools/powertools-lambda-java/issues/2116))
+* bump sam/build-java21 ([#2075](https://github.com/aws-powertools/powertools-lambda-java/issues/2075))
 * bump software.amazon.awscdk:aws-cdk-lib from 2.213.0 to 2.214.0 ([#2117](https://github.com/aws-powertools/powertools-lambda-java/issues/2117))
 * bump aws-actions/configure-aws-credentials from 4.3.1 to 5.0.0 ([#2120](https://github.com/aws-powertools/powertools-lambda-java/issues/2120))
 * bump com.github.spotbugs:spotbugs-maven-plugin ([#2125](https://github.com/aws-powertools/powertools-lambda-java/issues/2125))
 * bump github/codeql-action from 3.30.0 to 3.30.1 ([#2126](https://github.com/aws-powertools/powertools-lambda-java/issues/2126))
 * bump squidfunk/mkdocs-material in /docs ([#2127](https://github.com/aws-powertools/powertools-lambda-java/issues/2127))
 * bump jackson.version from 2.19.2 to 2.20 ([#2097](https://github.com/aws-powertools/powertools-lambda-java/issues/2097))
-* bump aws.sdk.version from 2.32.18 to 2.32.21 ([#2041](https://github.com/aws-powertools/powertools-lambda-java/issues/2041))
+* bump dev.aspectj:aspectj-maven-plugin from 1.13.1 to 1.14.1 ([#2099](https://github.com/aws-powertools/powertools-lambda-java/issues/2099))
 * bump aws.sdk.version from 2.32.26 to 2.32.31 ([#2098](https://github.com/aws-powertools/powertools-lambda-java/issues/2098))
 * bump github/codeql-action from 3.29.11 to 3.30.0 ([#2106](https://github.com/aws-powertools/powertools-lambda-java/issues/2106))
 * bump software.amazon.awscdk:aws-cdk-lib from 2.212.0 to 2.213.0 ([#2100](https://github.com/aws-powertools/powertools-lambda-java/issues/2100))
@@ -104,12 +491,12 @@
 * bump aws.sdk.version from 2.32.30 to 2.32.31 ([#2093](https://github.com/aws-powertools/powertools-lambda-java/issues/2093))
 * bump actions/dependency-review-action from 4.7.2 to 4.7.3 ([#2092](https://github.com/aws-powertools/powertools-lambda-java/issues/2092))
 * bump aws.sdk.version from 2.32.28 to 2.32.30 ([#2089](https://github.com/aws-powertools/powertools-lambda-java/issues/2089))
+* bump aws.sdk.version from 2.32.18 to 2.32.21 ([#2041](https://github.com/aws-powertools/powertools-lambda-java/issues/2041))
 * bump software.amazon.awscdk:aws-cdk-lib from 2.210.0 to 2.211.0 ([#2042](https://github.com/aws-powertools/powertools-lambda-java/issues/2042))
 * bump aws.sdk.version from 2.32.21 to 2.32.22 ([#2046](https://github.com/aws-powertools/powertools-lambda-java/issues/2046))
-* bump com.google.protobuf:protobuf-java from 4.31.1 to 4.32.0 ([#2050](https://github.com/aws-powertools/powertools-lambda-java/issues/2050))
-* bump aws.sdk.version from 2.32.23 to 2.32.25 ([#2054](https://github.com/aws-powertools/powertools-lambda-java/issues/2054))
-* bump squidfunk/mkdocs-material in /docs ([#2074](https://github.com/aws-powertools/powertools-lambda-java/issues/2074))
 * bump github/codeql-action from 3.29.10 to 3.29.11 ([#2073](https://github.com/aws-powertools/powertools-lambda-java/issues/2073))
+* bump com.google.protobuf:protobuf-java from 4.31.1 to 4.32.0 ([#2050](https://github.com/aws-powertools/powertools-lambda-java/issues/2050))
+* bump graalvm/setup-graalvm from 1.3.5 to 1.3.6 ([#2116](https://github.com/aws-powertools/powertools-lambda-java/issues/2116))
 * bump log4j.version from 2.25.1 to 2.25.1 ([#2072](https://github.com/aws-powertools/powertools-lambda-java/issues/2072))
 * bump org.apache.maven.plugins:maven-shade-plugin ([#2071](https://github.com/aws-powertools/powertools-lambda-java/issues/2071))
 * bump org.graalvm.buildtools:native-maven-plugin ([#2070](https://github.com/aws-powertools/powertools-lambda-java/issues/2070))
@@ -123,18 +510,18 @@
 * bump squidfunk/mkdocs-material in /docs ([#2058](https://github.com/aws-powertools/powertools-lambda-java/issues/2058))
 * bump org.apache.maven.plugins:maven-javadoc-plugin ([#2059](https://github.com/aws-powertools/powertools-lambda-java/issues/2059))
 * bump io.github.ascopes:protobuf-maven-plugin from 3.7.0 to 3.8.0 ([#2057](https://github.com/aws-powertools/powertools-lambda-java/issues/2057))
-* bump actions/checkout from 4.2.2 to 5.0.0 ([#2036](https://github.com/aws-powertools/powertools-lambda-java/issues/2036))
-* bump actions/dependency-review-action from 4.7.1 to 4.7.2 ([#2055](https://github.com/aws-powertools/powertools-lambda-java/issues/2055))
-* bump sam/build-java21 ([#2075](https://github.com/aws-powertools/powertools-lambda-java/issues/2075))
-* bump aws.sdk.version from 2.32.19 to 2.32.26 ([#2060](https://github.com/aws-powertools/powertools-lambda-java/issues/2060))
 * bump github/codeql-action from 3.29.9 to 3.29.10 ([#2056](https://github.com/aws-powertools/powertools-lambda-java/issues/2056))
+* bump actions/dependency-review-action from 4.7.1 to 4.7.2 ([#2055](https://github.com/aws-powertools/powertools-lambda-java/issues/2055))
+* bump aws.sdk.version from 2.32.23 to 2.32.25 ([#2054](https://github.com/aws-powertools/powertools-lambda-java/issues/2054))
+* bump aws.sdk.version from 2.32.19 to 2.32.26 ([#2060](https://github.com/aws-powertools/powertools-lambda-java/issues/2060))
+* bump actions/checkout from 4.2.2 to 5.0.0 ([#2036](https://github.com/aws-powertools/powertools-lambda-java/issues/2036))
 * **ci:** Add powertools-e2e-tests/handlers as module to capture it in GitHub actions version upgrades. ([#2063](https://github.com/aws-powertools/powertools-lambda-java/issues/2063))
+* **ci:** Set mockito SNAPSHOT version only for Graal profiles. ([#2138](https://github.com/aws-powertools/powertools-lambda-java/issues/2138))
 * **ci:** Fix bug where docs were released with old version during release workflow. ([#2076](https://github.com/aws-powertools/powertools-lambda-java/issues/2076))
-* **ci:** Run unit tests for GraalVM as well during build. ([#2047](https://github.com/aws-powertools/powertools-lambda-java/issues/2047))
 * **ci:** Remove non-PR triggers for verify dependencies workflow. ([#2044](https://github.com/aws-powertools/powertools-lambda-java/issues/2044))
+* **ci:** Run unit tests for GraalVM as well during build. ([#2047](https://github.com/aws-powertools/powertools-lambda-java/issues/2047))
 * **ci:** Fix circular dependency in dynamodb-local and maven packaging phases. ([#2129](https://github.com/aws-powertools/powertools-lambda-java/issues/2129))
 * **ci:** Do not use Mockito SNAPSHOT version for release. ([#2137](https://github.com/aws-powertools/powertools-lambda-java/issues/2137))
-* **ci:** Set mockito SNAPSHOT version only for Graal profiles. ([#2138](https://github.com/aws-powertools/powertools-lambda-java/issues/2138))
 * **gitignore:** add .kiro, .claude, .amazonq to prevent deletion ([#2078](https://github.com/aws-powertools/powertools-lambda-java/issues/2078))
 
 
@@ -152,25 +539,25 @@
 
 ## Maintenance
 
-* bump github/codeql-action from 3.29.4 to 3.29.5 ([#1992](https://github.com/aws-powertools/powertools-lambda-java/issues/1992))
-* bump org.assertj:assertj-core from 3.27.3 to 3.27.4 ([#2031](https://github.com/aws-powertools/powertools-lambda-java/issues/2031))
-* bump software.amazon.awscdk:aws-cdk-lib from 2.208.0 to 2.210.0 ([#2030](https://github.com/aws-powertools/powertools-lambda-java/issues/2030))
+* bump org.junit.jupiter:junit-jupiter from 5.11.1 to 5.13.4 ([#2023](https://github.com/aws-powertools/powertools-lambda-java/issues/2023))
+* bump org.apache.maven.plugins:maven-surefire-plugin ([#2013](https://github.com/aws-powertools/powertools-lambda-java/issues/2013))
+* bump org.codehaus.mojo:exec-maven-plugin from 3.3.0 to 3.5.1 ([#2015](https://github.com/aws-powertools/powertools-lambda-java/issues/2015))
 * bump aws.sdk.version from 2.32.18 to 2.32.19 ([#2029](https://github.com/aws-powertools/powertools-lambda-java/issues/2029))
 * bump co.elastic.logging:logback-ecs-encoder from 1.6.0 to 1.7.0 ([#2028](https://github.com/aws-powertools/powertools-lambda-java/issues/2028))
 * bump com.github.spotbugs:spotbugs-maven-plugin from 4.8.4.0 to 4.9.3.2 ([#2010](https://github.com/aws-powertools/powertools-lambda-java/issues/2010))
 * bump com.amazonaws:aws-lambda-java-runtime-interface-client ([#2026](https://github.com/aws-powertools/powertools-lambda-java/issues/2026))
 * bump github/codeql-action from 3.29.7 to 3.29.8 ([#2027](https://github.com/aws-powertools/powertools-lambda-java/issues/2027))
 * bump org.crac:crac from 1.4.0 to 1.5.0 ([#2025](https://github.com/aws-powertools/powertools-lambda-java/issues/2025))
-* bump aws.sdk.version from 2.32.6 to 2.32.18 ([#2024](https://github.com/aws-powertools/powertools-lambda-java/issues/2024))
-* bump org.junit.jupiter:junit-jupiter from 5.11.1 to 5.13.4 ([#2023](https://github.com/aws-powertools/powertools-lambda-java/issues/2023))
-* bump org.codehaus.mojo:exec-maven-plugin from 3.3.0 to 3.5.1 ([#2015](https://github.com/aws-powertools/powertools-lambda-java/issues/2015))
 * bump aws.sdk.version from 2.32.10 to 2.32.16 ([#2014](https://github.com/aws-powertools/powertools-lambda-java/issues/2014))
+* bump software.amazon.awscdk:aws-cdk-lib from 2.208.0 to 2.210.0 ([#2030](https://github.com/aws-powertools/powertools-lambda-java/issues/2030))
+* bump squidfunk/mkdocs-material in /docs ([#1984](https://github.com/aws-powertools/powertools-lambda-java/issues/1984))
+* bump aws.sdk.version from 2.32.6 to 2.32.18 ([#2024](https://github.com/aws-powertools/powertools-lambda-java/issues/2024))
 * bump io.github.ascopes:protobuf-maven-plugin from 3.6.1 to 3.7.0 ([#2016](https://github.com/aws-powertools/powertools-lambda-java/issues/2016))
 * bump actions/download-artifact from 4.3.0 to 5.0.0 ([#2017](https://github.com/aws-powertools/powertools-lambda-java/issues/2017))
-* bump squidfunk/mkdocs-material in /docs ([#1984](https://github.com/aws-powertools/powertools-lambda-java/issues/1984))
-* bump org.apache.maven.plugins:maven-surefire-plugin ([#2013](https://github.com/aws-powertools/powertools-lambda-java/issues/2013))
-* bump aws-actions/configure-aws-credentials from 4.2.1 to 4.3.1 ([#2011](https://github.com/aws-powertools/powertools-lambda-java/issues/2011))
 * bump software.amazon.awscdk:aws-cdk-lib from 2.162.1 to 2.208.0 ([#1990](https://github.com/aws-powertools/powertools-lambda-java/issues/1990))
+* bump org.assertj:assertj-core from 3.27.3 to 3.27.4 ([#2031](https://github.com/aws-powertools/powertools-lambda-java/issues/2031))
+* bump aws-actions/configure-aws-credentials from 4.2.1 to 4.3.1 ([#2011](https://github.com/aws-powertools/powertools-lambda-java/issues/2011))
+* bump github/codeql-action from 3.29.4 to 3.29.5 ([#1992](https://github.com/aws-powertools/powertools-lambda-java/issues/1992))
 * **ci:** Make E2E tests compatible with latest CDK lib version. Improve retry implementation. ([#2008](https://github.com/aws-powertools/powertools-lambda-java/issues/2008))
 * **ci:** Improve reliability of retries in TracingE2ET ([#2018](https://github.com/aws-powertools/powertools-lambda-java/issues/2018))
 
@@ -183,25 +570,25 @@
 
 ## Maintenance
 
-* bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 ([#1954](https://github.com/aws-powertools/powertools-lambda-java/issues/1954))
-* bump github/codeql-action from 3.29.3 to 3.29.4 ([#1978](https://github.com/aws-powertools/powertools-lambda-java/issues/1978))
-* bump org.apache.logging.log4j:log4j-transform-maven-shade-plugin-extensions ([#1977](https://github.com/aws-powertools/powertools-lambda-java/issues/1977))
+* bump actions/dependency-review-action from 4.5.0 to 4.7.1 ([#1968](https://github.com/aws-powertools/powertools-lambda-java/issues/1968))
+* bump sam/build-java21 ([#1962](https://github.com/aws-powertools/powertools-lambda-java/issues/1962))
+* bump actions/checkout from 3.5.3 to 4.2.2 ([#1963](https://github.com/aws-powertools/powertools-lambda-java/issues/1963))
 * bump aws.sdk.version from 2.31.78 to 2.32.6 ([#1976](https://github.com/aws-powertools/powertools-lambda-java/issues/1976))
 * bump com.amazonaws:aws-lambda-java-events from 3.16.0 to 3.16.1 ([#1975](https://github.com/aws-powertools/powertools-lambda-java/issues/1975))
 * bump com.networknt:json-schema-validator from 1.5.1 to 1.5.8 ([#1974](https://github.com/aws-powertools/powertools-lambda-java/issues/1974))
-* bump ossf/scorecard-action from 2.4.0 to 2.4.2 ([#1950](https://github.com/aws-powertools/powertools-lambda-java/issues/1950))
+* bump github/codeql-action from 3.29.3 to 3.29.4 ([#1978](https://github.com/aws-powertools/powertools-lambda-java/issues/1978))
 * bump org.apache.maven.plugins:maven-compiler-plugin ([#1972](https://github.com/aws-powertools/powertools-lambda-java/issues/1972))
 * bump actions/download-artifact from 4.2.1 to 4.3.0 ([#1967](https://github.com/aws-powertools/powertools-lambda-java/issues/1967))
+* bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 ([#1954](https://github.com/aws-powertools/powertools-lambda-java/issues/1954))
+* bump org.apache.logging.log4j:log4j-transform-maven-shade-plugin-extensions ([#1977](https://github.com/aws-powertools/powertools-lambda-java/issues/1977))
+* bump ossf/scorecard-action from 2.4.0 to 2.4.2 ([#1950](https://github.com/aws-powertools/powertools-lambda-java/issues/1950))
 * bump aws-actions/configure-aws-credentials from 2.2.0 to 4.2.1 ([#1965](https://github.com/aws-powertools/powertools-lambda-java/issues/1965))
-* bump actions/dependency-review-action from 4.5.0 to 4.7.1 ([#1968](https://github.com/aws-powertools/powertools-lambda-java/issues/1968))
-* bump actions/checkout from 3.5.3 to 4.2.2 ([#1963](https://github.com/aws-powertools/powertools-lambda-java/issues/1963))
-* bump sam/build-java21 ([#1962](https://github.com/aws-powertools/powertools-lambda-java/issues/1962))
 * bump squidfunk/mkdocs-material in /docs ([#1961](https://github.com/aws-powertools/powertools-lambda-java/issues/1961))
 * bump actions/upload-artifact from 4.5.0 to 4.6.2 ([#1953](https://github.com/aws-powertools/powertools-lambda-java/issues/1953))
 * bump github/codeql-action from 3.27.9 to 3.29.3 ([#1958](https://github.com/aws-powertools/powertools-lambda-java/issues/1958))
 * bump actions/setup-java from 3.11.0 to 4.7.1 ([#1957](https://github.com/aws-powertools/powertools-lambda-java/issues/1957))
-* **ci:** Add Docker paths via globs to dependabot and update Dockerfiles to pin sha256 ([#1960](https://github.com/aws-powertools/powertools-lambda-java/issues/1960))
 * **ci:** Remove osv workflow. ([#1973](https://github.com/aws-powertools/powertools-lambda-java/issues/1973))
+* **ci:** Add Docker paths via globs to dependabot and update Dockerfiles to pin sha256 ([#1960](https://github.com/aws-powertools/powertools-lambda-java/issues/1960))
 * **ci:** add new dependabot package ecosystems ([#1948](https://github.com/aws-powertools/powertools-lambda-java/issues/1948))
 * **ci:** Add GraalVM E2E tests and GH workflows ([#1945](https://github.com/aws-powertools/powertools-lambda-java/issues/1945))
 
@@ -268,12 +655,12 @@
 
 * workflow paths for examples v2 builds
 * add aspectj-rt to batch e2e ([#1410](https://github.com/aws-powertools/powertools-lambda-java/issues/1410))
+* **ci:** Checkout repo on doc release ([#1869](https://github.com/aws-powertools/powertools-lambda-java/issues/1869))
 * **ci:** Fix failing E2E tests and temporarily exclude TracingE2E ([#1847](https://github.com/aws-powertools/powertools-lambda-java/issues/1847))
 * **ci:** add user/pass to javasetup ([#1832](https://github.com/aws-powertools/powertools-lambda-java/issues/1832))
 * **ci:** Update control flow to allow for better skipping of things ([#1831](https://github.com/aws-powertools/powertools-lambda-java/issues/1831))
-* **ci:** Checkout repo on doc release ([#1869](https://github.com/aws-powertools/powertools-lambda-java/issues/1869))
-* **logging:** Prevent accidental overwriting of reserved keys via structured arguments
 * **logging:** Escape double-quotes when serializing strings into JSON. ([#1845](https://github.com/aws-powertools/powertools-lambda-java/issues/1845))
+* **logging:** Prevent accidental overwriting of reserved keys via structured arguments
 * **v2:** Fix params builder to provide default transformation manager ([#1549](https://github.com/aws-powertools/powertools-lambda-java/issues/1549))
 
 ## Documentation
@@ -300,28 +687,28 @@
 
 ## Maintenance
 
-* Support spotbugs running anywhere ([#1537](https://github.com/aws-powertools/powertools-lambda-java/issues/1537))
-* V2 update from main ([#1365](https://github.com/aws-powertools/powertools-lambda-java/issues/1365))
-* remove Java 8 from v2 examples ([#1531](https://github.com/aws-powertools/powertools-lambda-java/issues/1531))
-* fix end 2 end build ([#1534](https://github.com/aws-powertools/powertools-lambda-java/issues/1534))
-* cleanup poms and reduce warning noise ([#1535](https://github.com/aws-powertools/powertools-lambda-java/issues/1535))
-* [V2] rename 'core' module to 'common' ([#1364](https://github.com/aws-powertools/powertools-lambda-java/issues/1364))
-* update v2 ([#1409](https://github.com/aws-powertools/powertools-lambda-java/issues/1409))
 * remove aspectj-rt from the library ([#1408](https://github.com/aws-powertools/powertools-lambda-java/issues/1408))
 * Start V2 branch ([#1346](https://github.com/aws-powertools/powertools-lambda-java/issues/1346))
+* V2 update from main ([#1365](https://github.com/aws-powertools/powertools-lambda-java/issues/1365))
+* [V2] rename 'core' module to 'common' ([#1364](https://github.com/aws-powertools/powertools-lambda-java/issues/1364))
+* update v2 ([#1409](https://github.com/aws-powertools/powertools-lambda-java/issues/1409))
+* cleanup poms and reduce warning noise ([#1535](https://github.com/aws-powertools/powertools-lambda-java/issues/1535))
+* remove Java 8 from v2 examples ([#1531](https://github.com/aws-powertools/powertools-lambda-java/issues/1531))
+* fix end 2 end build ([#1534](https://github.com/aws-powertools/powertools-lambda-java/issues/1534))
+* Support spotbugs running anywhere ([#1537](https://github.com/aws-powertools/powertools-lambda-java/issues/1537))
 * **automation:** Update automation workflows ([#1779](https://github.com/aws-powertools/powertools-lambda-java/issues/1779)) ([#1830](https://github.com/aws-powertools/powertools-lambda-java/issues/1830))
 * **ci:** Set snapshot repository to "central" server ID
 * **ci:** Publish to Maven Central instead of OSSRH instance ([#1858](https://github.com/aws-powertools/powertools-lambda-java/issues/1858))
-* **v2:** Merge down from main ([#1574](https://github.com/aws-powertools/powertools-lambda-java/issues/1574))
+* **v2:** remove deprecated code ([#1624](https://github.com/aws-powertools/powertools-lambda-java/issues/1624))
 * **v2:** Split parameters module up by parameter provider ([#1403](https://github.com/aws-powertools/powertools-lambda-java/issues/1403))
+* **v2:** Split powertools idempotency module (without redis impl) ([#1559](https://github.com/aws-powertools/powertools-lambda-java/issues/1559))
+* **v2:** Merge down from main ([#1574](https://github.com/aws-powertools/powertools-lambda-java/issues/1574))
+* **v2:** clean examples ([#1495](https://github.com/aws-powertools/powertools-lambda-java/issues/1495))
 * **v2:** Fix IaC lint ([#1576](https://github.com/aws-powertools/powertools-lambda-java/issues/1576))
 * **v2:** e2e tests ([#1571](https://github.com/aws-powertools/powertools-lambda-java/issues/1571))
-* **v2:** clean examples ([#1495](https://github.com/aws-powertools/powertools-lambda-java/issues/1495))
 * **v2:** document use of aws-crt-client ([#1092](https://github.com/aws-powertools/powertools-lambda-java/issues/1092)) ([#1605](https://github.com/aws-powertools/powertools-lambda-java/issues/1605))
 * **v2:** remove java 1.8 relics from the code ([#1659](https://github.com/aws-powertools/powertools-lambda-java/issues/1659))
-* **v2:** remove deprecated code ([#1624](https://github.com/aws-powertools/powertools-lambda-java/issues/1624))
 * **v2:** Remove rule preventing production release of 2.0.0 ([#1867](https://github.com/aws-powertools/powertools-lambda-java/issues/1867))
-* **v2:** Split powertools idempotency module (without redis impl) ([#1559](https://github.com/aws-powertools/powertools-lambda-java/issues/1559))
 
 ## Pull Requests
 
@@ -400,21 +787,21 @@
 
 ## Maintenance
 
-* deprecate java1.8 al1 ([#1706](https://github.com/aws-powertools/powertools-lambda-java/issues/1706))
+* add openssf to repo
+* Remove empty CDK test ([#1542](https://github.com/aws-powertools/powertools-lambda-java/issues/1542))
+* remove auto-merge
 * Testing java21 aspectj pre-release ([#1519](https://github.com/aws-powertools/powertools-lambda-java/issues/1519))
-* Remove build cruft
-* SAM and Terraform IaC extracted from pr_build and simplified approach. ([#1533](https://github.com/aws-powertools/powertools-lambda-java/issues/1533))
 * Update netty version ([#1768](https://github.com/aws-powertools/powertools-lambda-java/issues/1768))
 * Set versions of transitive dependencies  ([#1767](https://github.com/aws-powertools/powertools-lambda-java/issues/1767))
 * update Jackson
-* Remove empty CDK test ([#1542](https://github.com/aws-powertools/powertools-lambda-java/issues/1542))
-* add openssf to repo
-* remove auto-merge
-* remove unecessary creds acquisition ([#1572](https://github.com/aws-powertools/powertools-lambda-java/issues/1572))
+* Remove build cruft
 * update version to next snapshot: 1-19.0-SNAPSHOT ([#1516](https://github.com/aws-powertools/powertools-lambda-java/issues/1516))
-* **ci:** update permissions ([#1764](https://github.com/aws-powertools/powertools-lambda-java/issues/1764))
+* SAM and Terraform IaC extracted from pr_build and simplified approach. ([#1533](https://github.com/aws-powertools/powertools-lambda-java/issues/1533))
+* remove unecessary creds acquisition ([#1572](https://github.com/aws-powertools/powertools-lambda-java/issues/1572))
+* deprecate java1.8 al1 ([#1706](https://github.com/aws-powertools/powertools-lambda-java/issues/1706))
 * **ci:** Add release environment
 * **ci:** Remove RELEASE variable ([#1772](https://github.com/aws-powertools/powertools-lambda-java/issues/1772))
+* **ci:** update permissions ([#1764](https://github.com/aws-powertools/powertools-lambda-java/issues/1764))
 * **deps:** update JSII to 1.108 ([#1791](https://github.com/aws-powertools/powertools-lambda-java/issues/1791))
 * **deps:** Update deps for jackson ([#1793](https://github.com/aws-powertools/powertools-lambda-java/issues/1793))
 * **docs:** load self hosted mermaid.js
@@ -433,11 +820,11 @@
 
 ## Documentation
 
-* Update gradle configuration readme ([#1359](https://github.com/aws-powertools/powertools-lambda-java/issues/1359))
 * Adding Kotlin example. ([#1454](https://github.com/aws-powertools/powertools-lambda-java/issues/1454))
 * apply line highlight only for default light mode ([#1453](https://github.com/aws-powertools/powertools-lambda-java/issues/1453))
 * Add Serveless Framework example ([#1363](https://github.com/aws-powertools/powertools-lambda-java/issues/1363))
 * Fix link to SQS large message migration guide ([#1422](https://github.com/aws-powertools/powertools-lambda-java/issues/1422))
+* Update gradle configuration readme ([#1359](https://github.com/aws-powertools/powertools-lambda-java/issues/1359))
 * Change link to absolute versioned path for examples ([#1374](https://github.com/aws-powertools/powertools-lambda-java/issues/1374))
 * **customer-reference:** add Vertex Pharmaceuticals as a customer reference ([#1486](https://github.com/aws-powertools/powertools-lambda-java/issues/1486))
 * **logging:** align example cloudwatch example to correct output from code: lambda_request_id --> function_request_id ([#1411](https://github.com/aws-powertools/powertools-lambda-java/issues/1411))
@@ -715,11 +1102,11 @@
 * Fix docs layout
 
 
-<a name="v1.8.3"></a>
-## [v1.8.3] - 2021-12-21
-
 <a name="v1.9.0"></a>
 ## [v1.9.0] - 2021-12-21
+
+<a name="v1.8.3"></a>
+## [v1.8.3] - 2021-12-21
 ## Features
 
 * **tracing:** add service annotation ([#655](https://github.com/aws-powertools/powertools-lambda-java/issues/655))
@@ -1060,7 +1447,14 @@
 * Merge pull request [#1](https://github.com/aws-powertools/powertools-lambda-java/issues/1) from stevehouel/master
 
 
-[Unreleased]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.11.0...HEAD
+[v2.11.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.10.0...v2.11.0
+[v2.10.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.9.0...v2.10.0
+[v2.9.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.8.0...v2.9.0
+[v2.8.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.7.0...v2.8.0
+[v2.7.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.6.0...v2.7.0
+[v2.6.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.5.0...v2.6.0
+[v2.5.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.4.0...v2.5.0
 [v2.4.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.3.0...v2.4.0
 [v2.3.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.2.1...v2.3.0
 [v2.2.1]: https://github.com/aws-powertools/powertools-lambda-java/compare/v2.2.0...v2.2.1
@@ -1089,9 +1483,9 @@
 [v1.10.2]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.10.1...v1.10.2
 [v1.10.1]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.10.0...v1.10.1
 [v1.10.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.9.1...v1.10.0
-[v1.9.1]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.8.3...v1.9.1
-[v1.8.3]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.9.0...v1.8.3
-[v1.9.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.8.2...v1.9.0
+[v1.9.1]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.9.0...v1.9.1
+[v1.9.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.8.3...v1.9.0
+[v1.8.3]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.8.2...v1.8.3
 [v1.8.2]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.8.1...v1.8.2
 [v1.8.1]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.8.0...v1.8.1
 [v1.8.0]: https://github.com/aws-powertools/powertools-lambda-java/compare/v1.7.3...v1.8.0
