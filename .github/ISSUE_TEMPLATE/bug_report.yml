@@ -60,9 +60,9 @@ body:
       label: AWS Lambda function runtime
       options:
         - "Java 8"
-        - "Java 11"
         - "Java 17"
         - "Java 21"
+        - "Java 25"
         - "provided.al2023"
     validations:
       required: true
