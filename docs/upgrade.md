@@ -12,6 +12,13 @@ description: Guide to update between major Powertools for AWS Lambda (Java) vers
 
 Given our commitment to all of our customers using Powertools for AWS Lambda (Java), we will keep [Maven Central](https://central.sonatype.com/search?q=powertools){target="\_blank"} `v1` releases and a `v1` documentation archive to prevent any disruption.
 
+## Java 17 minimum version
+
+<!-- prettier-ignore-start -->
+!!! warning "End of support for Java 11"
+    Starting with the next v2 minor release, Powertools for AWS Lambda (Java) requires Java 17 or later. Java 11 is no longer supported. Upgrade your functions to the `java17`, `java21`, or `java25` [Lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="\_blank"}. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2457) for details.
+<!-- prettier-ignore-end -->
+
 ## Migrate to v2 from v1
 
 !!! info "We strongly encourage you to migrate to `v2`. Refer to our [versioning policy](./processes/versioning.md) to learn more about our version support process."
@@ -22,23 +29,23 @@ We've made minimal breaking changes to make your transition to `v2` as smooth as
 
 The following table shows a summary of the changes made in `v2` and whether code changes are necessary. Each change that requires a code change links to a section below explaining more details.
 
-| Area                 | Change                                                                                                                                                                                 | Code change required |
-| -------------------- |----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| -------------------- |
-| **Logging**          | The [logging module was re-designed](#redesigned-logging-utility) from scratch to support popular Java logging paradigms and libraries like `log4j2`, `logback`, and `slf4j`.          | Yes                  |
-| **Metrics**          | [Changed public interface](#updated-metrics-utility-interface) to remove direct coupling with `aws-embedded-metrics-java`.                                                             | Yes                  |
-| **Tracing**          | [Removed deprecated `captureResponse` and `captureError` options](#deprecated-capture-mode-related-tracing-annotation-parameters) on `@Tracing` annotation.                            | Yes                  |
-| **Idempotency**      | The [`powertools-idempotency` module was split by provider](#idempotency-utility-split-into-sub-modules-by-provider) to improve modularity and reduce the deployment package size.     | Yes                  |
-| **Idempotency**      | Updated `IdempotencyConfig` interface to support addition of response hooks.                                                                                                           | No                   |
-| **Parameters**       | The [`powertools-parameters` module was split by provider](#parameters-utility-split-into-sub-modules-by-provider) to improve modularity and reduce the deployment package size.       | Yes                  |
+| Area                 | Change                                                                                                                                                                                   | Code change required |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **Logging**          | The [logging module was re-designed](#redesigned-logging-utility) from scratch to support popular Java logging paradigms and libraries like `log4j2`, `logback`, and `slf4j`.            | Yes                  |
+| **Metrics**          | [Changed public interface](#updated-metrics-utility-interface) to remove direct coupling with `aws-embedded-metrics-java`.                                                               | Yes                  |
+| **Tracing**          | [Removed deprecated `captureResponse` and `captureError` options](#deprecated-capture-mode-related-tracing-annotation-parameters) on `@Tracing` annotation.                              | Yes                  |
+| **Idempotency**      | The [`powertools-idempotency` module was split by provider](#idempotency-utility-split-into-sub-modules-by-provider) to improve modularity and reduce the deployment package size.       | Yes                  |
+| **Idempotency**      | Updated `IdempotencyConfig` interface to support addition of response hooks.                                                                                                             | No                   |
+| **Parameters**       | The [`powertools-parameters` module was split by provider](#parameters-utility-split-into-sub-modules-by-provider) to improve modularity and reduce the deployment package size.         | Yes                  |
 | **Batch Processing** | [Removed deprecated `powertools-sqs` module](#removed-powertools-sqs-module-in-favor-of-powertools-batch) in favor of the more generic [Batch Processing](./utilities/batch.md) utility. | Yes                  |
-| **Batch Processing** | Updated Batch Processing `BatchMessageHandler` interface to add support for parallel processing.                                                                                       | No                   |
-| **Validation**       | The `@Validation` utility returns 4xx error codes instead of 5xx error codes when used with API Gateway now.                                                                           | No                   |
-| **Validation**       | Validating batch event sources now adds failed events as partial batch failures and does not fail the whole batch anymore.                                                             | No                   |
-| **Custom Resources** | [Removed deprecated `Response.failed()` and `Response.success()` methods](#custom-resources-updates-the-response-class).                                                               | Yes                  |
-| **Custom Resources** | Changed interface of `Response` class to add an optional `reason` field.                                                                                                               | No                   |
-| **Dependencies**     | Renamed `powertools-core` to `powertools-common`. This module should not be used as direct dependency and is listed here for completeness.                                             | No                   |
-| **Dependencies**     | [Removed `org.aspectj.aspectjrt` as project dependency](#aspectj-runtime-not-included-by-default-anymore) in favor of consumers including the version they prefer.                     | Yes                  |
-| **Language support** | Removed support for Java 11. The minimum required Java version is Java 17.                                                                                                             | N/A                  |
+| **Batch Processing** | Updated Batch Processing `BatchMessageHandler` interface to add support for parallel processing.                                                                                         | No                   |
+| **Validation**       | The `@Validation` utility returns 4xx error codes instead of 5xx error codes when used with API Gateway now.                                                                             | No                   |
+| **Validation**       | Validating batch event sources now adds failed events as partial batch failures and does not fail the whole batch anymore.                                                               | No                   |
+| **Custom Resources** | [Removed deprecated `Response.failed()` and `Response.success()` methods](#custom-resources-updates-the-response-class).                                                                 | Yes                  |
+| **Custom Resources** | Changed interface of `Response` class to add an optional `reason` field.                                                                                                                 | No                   |
+| **Dependencies**     | Renamed `powertools-core` to `powertools-common`. This module should not be used as direct dependency and is listed here for completeness.                                               | No                   |
+| **Dependencies**     | [Removed `org.aspectj.aspectjrt` as project dependency](#aspectj-runtime-not-included-by-default-anymore) in favor of consumers including the version they prefer.                       | Yes                  |
+| **Language support** | Removed support for Java 8. The minimum required Java version is Java 11.                                                                                                                | N/A                  |
 
 ### First Steps
 

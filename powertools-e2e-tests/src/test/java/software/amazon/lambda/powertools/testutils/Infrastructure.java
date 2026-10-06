@@ -16,7 +16,6 @@ package software.amazon.lambda.powertools.testutils;
 
 import static java.util.Collections.singletonList;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -25,9 +24,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
+
+import com.fasterxml.jackson.databind.JsonNode;
+
 import software.amazon.awscdk.App;
 import software.amazon.awscdk.BundlingOptions;
 import software.amazon.awscdk.CfnOutput;

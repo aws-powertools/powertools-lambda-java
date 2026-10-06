@@ -91,7 +91,7 @@ jobs:
         name: Build matrix (v2)
         if: ${{ steps.base.outputs.build_version == 'v2' }}
         run: |
-          echo build_matrix='["11", "17", "21"]'>> "$GITHUB_OUTPUT"
+          echo build_matrix='["17", "21", "25"]'>> "$GITHUB_OUTPUT"
 
   version_seal:
     runs-on: ubuntu-latest
