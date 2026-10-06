@@ -43,6 +43,7 @@
     </build>
     <dependencyManagement>
         <dependencies>
+            <!-- aws-cdk-lib pulls in vulnerable Jackson versions through jsii-runtime -->
             <dependency>
                 <groupId>com.fasterxml.jackson</groupId>
                 <artifactId>jackson-bom</artifactId>
