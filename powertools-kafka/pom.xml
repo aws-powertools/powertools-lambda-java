@@ -42,7 +42,7 @@
 
     <dependencyManagement>
         <dependencies>
-            <!-- kafka-clients 4.2.0 pulls in lz4-java 1.10.1, affected by CVE-2026-59949 -->
+            <!-- kafka-clients 4.3.1 pulls in lz4-java 1.10.2, affected by CVE-2026-59949 (fixed in 1.11.1) -->
             <dependency>
                 <groupId>at.yawk.lz4</groupId>
                 <artifactId>lz4-java</artifactId>
