@@ -224,7 +224,7 @@
                         </goals>
                         <phase>generate-test-sources</phase>
                         <configuration>
-                            <protocVersion>${protobuf.version}</protocVersion>
+                            <protoc>${protobuf.version}</protoc>
                             <sourceDirectories>
                                 <sourceDirectory>${project.basedir}/src/test/proto</sourceDirectory>
                             </sourceDirectories>

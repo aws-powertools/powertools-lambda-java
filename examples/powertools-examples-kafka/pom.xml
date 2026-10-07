@@ -160,12 +160,13 @@
                         </goals>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <protocVersion>${protobuf.version}</protocVersion>
+                            <protoc>${protobuf.version}</protoc>
                             <sourceDirectories>
                                 <sourceDirectory>${project.basedir}/src/main/proto</sourceDirectory>
                             </sourceDirectories>
                             <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-                            <clearOutputDirectory>false</clearOutputDirectory>
+                            <cleanOutputDirectories>false</cleanOutputDirectories>
+                            <embedSourcesInClassOutputs>false</embedSourcesInClassOutputs>
                         </configuration>
                     </execution>
                 </executions>
