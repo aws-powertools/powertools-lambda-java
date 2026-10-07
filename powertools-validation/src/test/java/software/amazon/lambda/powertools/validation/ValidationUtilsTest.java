@@ -22,9 +22,14 @@ import static software.amazon.lambda.powertools.validation.ValidationUtils.getJs
 import static software.amazon.lambda.powertools.validation.ValidationUtils.validate;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.SpecVersion;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SpecificationVersion;
+import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,24 +41,24 @@ import software.amazon.lambda.powertools.validation.model.Product;
 public class ValidationUtilsTest {
 
     private String schemaString = "classpath:/schema_v7.json";
-    private JsonSchema schema = getJsonSchema(schemaString);
+    private Schema schema = getJsonSchema(schemaString);
 
     @BeforeEach
     public void setup() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_7);
     }
 
     @Test
     public void testLoadSchemaV7OK() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/schema_v7.json", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_7);
+        Schema jsonSchema = getJsonSchema("classpath:/schema_v7.json", true);
         assertThat(jsonSchema).isNotNull();
         assertThat(jsonSchema.getId()).isEqualTo("http://example.com/product.json");
     }
 
     @Test
     public void testLoadSchemaV7KO() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_7);
         assertThatThrownBy(() -> getJsonSchema("classpath:/schema_v7_ko.json", true))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(
@@ -62,7 +67,7 @@ public class ValidationUtilsTest {
 
     @Test
     public void testLoadMetaSchema_NoValidation() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_7);
 
         assertThatNoException().isThrownBy(() ->
         {
@@ -72,43 +77,43 @@ public class ValidationUtilsTest {
 
     @Test
     public void testLoadMetaSchemaV2019() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V201909);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/draft/2019-09/schema", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_2019_09);
+        Schema jsonSchema = getJsonSchema("classpath:/draft/2019-09/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV2020() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V202012);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/draft/2020-12/schema", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_2020_12);
+        Schema jsonSchema = getJsonSchema("classpath:/draft/2020-12/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV7() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V7);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/draft-07/schema", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_7);
+        Schema jsonSchema = getJsonSchema("classpath:/draft-07/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV6() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V6);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/draft-06/schema", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_6);
+        Schema jsonSchema = getJsonSchema("classpath:/draft-06/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadMetaSchemaV4() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/draft-04/schema", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_4);
+        Schema jsonSchema = getJsonSchema("classpath:/draft-04/schema", true);
         assertThat(jsonSchema).isNotNull();
     }
 
     @Test
     public void testLoadSchemaV4OK() {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
-        JsonSchema jsonSchema = getJsonSchema("classpath:/schema_v4.json", true);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_4);
+        Schema jsonSchema = getJsonSchema("classpath:/schema_v4.json", true);
         assertThat(jsonSchema).isNotNull();
     }
 
@@ -184,6 +189,62 @@ public class ValidationUtilsTest {
         String json = "{\n  \"id\": 43242,\n  \"name\": \"FooBar XY\",\n  \"price\": 0\n}";
 
         assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> validate(json, schema));
+    }
+
+    @Test
+    public void testValidateStringKO_shouldReturnValidationErrorsAsJson() {
+        String json = "{\n  \"id\": 43242,\n  \"name\": \"FooBar XY\",\n  \"price\": 0\n}";
+
+        assertThatExceptionOfType(ValidationException.class)
+                .isThrownBy(() -> validate(json, schema))
+                .withMessage("{\"validationErrors\":[{\"keyword\":\"exclusiveMinimum\",\"instanceLocation\":\"/price\","
+                        + "\"message\":\"must have an exclusive minimum value of 0\","
+                        + "\"evaluationPath\":\"/properties/price/exclusiveMinimum\","
+                        + "\"schemaLocation\":\"http://example.com/product.json#/properties/price/exclusiveMinimum\","
+                        + "\"messageKey\":\"exclusiveMinimum\",\"arguments\":[\"0\"]}]}");
+    }
+
+    @Test
+    public void testValidateFormat_draft7_shouldAssertFormat() {
+        Schema emailSchema = getJsonSchema("{\"type\":\"string\",\"format\":\"email\"}");
+
+        assertThatNoException().isThrownBy(() -> validate("\"john@example.com\"", emailSchema));
+        assertThatExceptionOfType(ValidationException.class)
+                .isThrownBy(() -> validate("\"not-an-email\"", emailSchema));
+    }
+
+    @Test
+    public void testValidateFormat_draft2020_12_shouldAssertFormat() {
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_2020_12);
+        Schema dateSchema = getJsonSchema("{\"$id\":\"urn:test:format-2020-12\","
+                + "\"type\":\"string\",\"format\":\"date\"}");
+
+        assertThatNoException().isThrownBy(() -> validate("\"2026-10-07\"", dateSchema));
+        assertThatExceptionOfType(ValidationException.class)
+                .isThrownBy(() -> validate("\"not-a-date\"", dateSchema));
+    }
+
+    @Test
+    public void testValidateRemoteRef_shouldFetchRemoteSchema() throws IOException {
+        HttpServer server = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        byte[] remoteSchema = "{\"type\":\"integer\",\"minimum\":10}".getBytes(StandardCharsets.UTF_8);
+        server.createContext("/remote.json", exchange -> {
+            exchange.getResponseHeaders().add("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, remoteSchema.length);
+            try (OutputStream body = exchange.getResponseBody()) {
+                body.write(remoteSchema);
+            }
+        });
+        server.start();
+        try {
+            String remoteUri = "http://localhost:" + server.getAddress().getPort() + "/remote.json";
+            Schema refSchema = getJsonSchema("{\"$ref\":\"" + remoteUri + "\"}");
+
+            assertThatNoException().isThrownBy(() -> validate("42", refSchema));
+            assertThatExceptionOfType(ValidationException.class).isThrownBy(() -> validate("5", refSchema));
+        } finally {
+            server.stop(0);
+        }
     }
 
     @Test

@@ -14,10 +14,10 @@
 
 package software.amazon.lambda.powertools.validation;
 
-import static com.networknt.schema.SpecVersion.VersionFlag.V7;
+import static com.networknt.schema.SpecificationVersion.DRAFT_7;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.networknt.schema.SpecVersion.VersionFlag;
+import com.networknt.schema.SpecificationVersion;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.ElementType;
@@ -102,7 +102,7 @@ public @interface Validation {
     String envelope() default "";
 
     /**
-     * json schema specification version (default is 2019-09)
+     * json schema specification version (default is draft 7)
      */
-    VersionFlag schemaVersion() default V7;
+    SpecificationVersion schemaVersion() default DRAFT_7;
 }

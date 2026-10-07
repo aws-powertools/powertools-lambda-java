@@ -96,7 +96,12 @@ You can validate inbound and outbound events using either the `@Validation` anno
 
 We support JSON schema version 4, 6, 7, 2019-09 and 2020-12 using the [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator) ([Compatibility with JSON Schema versions](https://github.com/networknt/json-schema-validator/blob/master/doc/compatibility.md)).
 
-The validator is configured to enable format assertions by default even for 2019-09 and 2020-12.
+The validator is configured to enable format assertions by default even for 2019-09 and 2020-12. Schemas referenced with a remote `$ref` (for example `https://example.com/schema.json`) are fetched over the network.
+
+!!! warning "Powertools now uses NetworkNT JSON Schema Validator 2.x"
+    This changes some types in the public API and the format of validation errors. See [Migrating to json-schema-validator 2.x](#migrating-to-json-schema-validator-2x).
+
+When validation fails, the `ValidationException` message contains the validation errors serialized as JSON. See [Validation error format](#validation-error-format) for an example.
 
 ### Validation annotation
 
@@ -246,19 +251,20 @@ and [function](https://jmespath.org/tutorial.html#functions) expressions, where 
 
 
 ## Change the schema version
-By default, powertools-validation is configured to use [V7](https://json-schema.org/draft-07/json-schema-release-notes.html) as the default dialect if [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is not explicitly specified within the schema. If [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is explicitly specified within the schema, the validator will use the specified dialect.
+By default, powertools-validation is configured to use [draft 7](https://json-schema.org/draft-07/json-schema-release-notes.html) (`SpecificationVersion.DRAFT_7`) as the default dialect if [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is not explicitly specified within the schema. If [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is explicitly specified within the schema, the validator will use the specified dialect.
 
 You can use the `ValidationConfig` to change that behaviour.
 
 === "Handler with custom schema version"
 
-    ```java hl_lines="6"
+    ```java hl_lines="7"
     ...
+    import com.networknt.schema.SpecificationVersion;
     import software.amazon.lambda.powertools.validation.ValidationConfig;
     import software.amazon.lambda.powertools.validation.Validation;
 
     static {
-        ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_4);
     }
 
     public class MyXMLEventHandler implements RequestHandler<MyEventWithXML, String> {
@@ -295,6 +301,118 @@ If you need to configure the Jackson ObjectMapper, you can use the `ValidationCo
        }
     }
     ```
+
+## Migrating to json-schema-validator 2.x
+
+Powertools upgraded [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator){target="_blank"} from 1.x to 2.x, because upstream no longer releases 1.x. Version 2.0.0 renamed most public types ([upstream migration guide](https://github.com/networknt/json-schema-validator/blob/master/doc/migration-2.0.0.md){target="_blank"}). This change ships in a v2 minor release, in line with our [dependency lifecycle policy](https://docs.aws.amazon.com/powertools/java/latest/processes/versioning/#dependency-lifecycle){target="_blank"}.
+
+You need to change your code only if you:
+
+- reference `com.networknt.schema` types directly, or set `@Validation(schemaVersion = ...)`;
+- call `ValidationConfig.get().getSchemaVersion()`, `setSchemaVersion(...)` or `getFactory()`;
+- call `ValidationUtils.getJsonSchema(...)` or a `ValidationUtils.validate(...)` overload that takes a schema;
+- read `ValidationUtils.ValidationErrors` or catch `JsonSchemaException`;
+- parse the `ValidationException` message or the API Gateway 400 response body.
+
+Everyone else needs no changes.
+
+### Renamed types
+
+| Before (1.x)                                      | After (2.x)                                               |
+| ------------------------------------------------- | --------------------------------------------------------- |
+| `SpecVersion.VersionFlag`                         | `SpecificationVersion`                                    |
+| `V4`, `V6`, `V7`, `V201909`, `V202012`            | `DRAFT_4`, `DRAFT_6`, `DRAFT_7`, `DRAFT_2019_09`, `DRAFT_2020_12` |
+| `JsonSchemaFactory` (`ValidationConfig.getFactory()`) | `SchemaRegistry`                                      |
+| `JsonSchema`                                      | `Schema`                                                  |
+| `Set<ValidationMessage>` (`ValidationErrors.getValidationErrors()`) | `List<Error>`                           |
+| `JsonSchemaException`                             | `SchemaException`                                         |
+
+=== "Before"
+
+    ```java hl_lines="1 5 10"
+    import com.networknt.schema.SpecVersion;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        static {
+            ValidationConfig.get().setSchemaVersion(SpecVersion.VersionFlag.V4);
+        }
+
+        @Override
+        @Validation(inboundSchema = "classpath:/schema_in.json",
+                    schemaVersion = SpecVersion.VersionFlag.V202012)
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+        }
+    }
+    ```
+
+=== "After"
+
+    ```java hl_lines="1 5 10"
+    import com.networknt.schema.SpecificationVersion;
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        static {
+            ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_4);
+        }
+
+        @Override
+        @Validation(inboundSchema = "classpath:/schema_in.json",
+                    schemaVersion = SpecificationVersion.DRAFT_2020_12)
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            // ...
+        }
+    }
+    ```
+
+### Validation error format
+
+The `ValidationException` message is also the body of the 400 response that `@Validation` returns for API Gateway events. In 2.x, `keyword` replaces the `type` and `code` fields, and `message` no longer starts with the instance location. The location is still available in `instanceLocation`.
+
+=== "Before"
+
+    ```json hl_lines="4-6"
+    {
+      "validationErrors": [
+        {
+          "type": "exclusiveMinimum",
+          "code": "1039",
+          "message": "/price: must have an exclusive minimum value of 0",
+          "instanceLocation": "/price",
+          "evaluationPath": "/properties/price/exclusiveMinimum",
+          "schemaLocation": "http://example.com/product.json#/properties/price/exclusiveMinimum",
+          "messageKey": "exclusiveMinimum",
+          "arguments": ["0"]
+        }
+      ]
+    }
+    ```
+
+=== "After"
+
+    ```json hl_lines="4 6"
+    {
+      "validationErrors": [
+        {
+          "keyword": "exclusiveMinimum",
+          "instanceLocation": "/price",
+          "message": "must have an exclusive minimum value of 0",
+          "evaluationPath": "/properties/price/exclusiveMinimum",
+          "schemaLocation": "http://example.com/product.json#/properties/price/exclusiveMinimum",
+          "messageKey": "exclusiveMinimum",
+          "arguments": ["0"]
+        }
+      ]
+    }
+    ```
+
+### Unchanged behavior
+
+Powertools keeps the 1.x defaults where 2.x changed them:
+
+- Draft 7 remains the default schema version.
+- Format assertions remain enabled, including for 2019-09 and 2020-12.
+- Remote `$ref` fetching remains enabled.
 
 ## Advanced
 

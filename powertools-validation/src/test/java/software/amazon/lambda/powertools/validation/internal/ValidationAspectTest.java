@@ -42,7 +42,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
-import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecificationVersion;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -113,7 +113,7 @@ class ValidationAspectTest {
     @ParameterizedTest
     @ArgumentsSource(ResponseEventsArgumentsProvider.class)
     void testValidateOutboundJsonSchemaWithExceptions(Object object) throws Throwable {
-        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
         Object[] args = {new Object(), context};
@@ -131,7 +131,7 @@ class ValidationAspectTest {
     @ParameterizedTest
     @ArgumentsSource(HandledResponseEventsArgumentsProvider.class)
     void testValidateOutboundJsonSchemaWithHandledExceptions(Object object) throws Throwable {
-        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
         Object[] args = {new Object(), context};
@@ -171,7 +171,7 @@ class ValidationAspectTest {
 
     @Test
     void testValidateOutboundJsonSchema_APIGWV2() throws Throwable {
-        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
         Object[] args = {new Object(), context};
