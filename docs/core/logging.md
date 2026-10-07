@@ -1646,6 +1646,8 @@ Use the `LambdaEcsEncoder` rather than the `LambdaJsonEncoder` when configuring 
     </configuration>
     ```
 
+## Advanced
+
 ### Lambda SnapStart priming
 
 The PowertoolsLogging class integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart
@@ -1654,24 +1656,28 @@ library to register before SnapStart takes a memory snapshot. Learn more about w
 this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/)
 {target="_blank"}.
 
-If you don't set a custom `PowertoolsLogging` in your code yet, make sure to reference `PowertoolsLogging` in your Lambda handler
-initialization code. This can be done by adding one of the following lines to your handler class:
+Make sure to call `PowertoolsLogging.init()` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
 
 === "Constructor"
 
-    ```java hl_lines="7"
-    import software.amazon.lambda.powertools.validation.Validation;
-    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    ```java hl_lines="11"
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import software.amazon.lambda.powertools.logging.Logging;
+    // ... other imports
     
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
+        private static final Logger LOGGER = LoggerFactory.getLogger(MyFunctionHandler.class);
+
         public MyFunctionHandler() {
             PowertoolsLogging.init(); // Ensure PowertoolsLogging is loaded for SnapStart
         }
     
         @Override
-        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
+        @Logging
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            LOGGER.info("Example logging");
             // ...
             return something;
         }
@@ -1680,19 +1686,24 @@ initialization code. This can be done by adding one of the following lines to yo
 
 === "Static Initializer"
 
-    ```java hl_lines="7"
-    import software.amazon.lambda.powertools.validation.Validation;
-    import software.amazon.lambda.powertools.validation.ValidationConfig;
+    ```java hl_lines="11"
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import software.amazon.lambda.powertools.logging.Logging;
+    // ... other imports
 
     public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        
+        private static final Logger LOGGER = LoggerFactory.getLogger(MyFunctionHandler.class);
 
         static {
             PowertoolsLogging.init(); // Ensure PowertoolsLogging is loaded for SnapStart
         }
 
         @Override
-        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
+        @Logging
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            LOGGER.info("Example logging");
             // ...
             return something;
         }
