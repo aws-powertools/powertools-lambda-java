@@ -43,8 +43,8 @@ Lambda Metadata provides idiomatic access to the Lambda Metadata Endpoint (LMDS)
             implementation 'software.amazon.lambda:powertools-lambda-metadata:{{ powertools.version }}'
         }
 
-        sourceCompatibility = 11
-        targetCompatibility = 11
+        sourceCompatibility = 17
+        targetCompatibility = 17
     ```
 
 ### IAM Permissions
