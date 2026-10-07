@@ -215,7 +215,7 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>3.10.3</version>
+                <version>5.1.11</version>
                 <executions>
                     <execution>
                         <id>generate-test-sources</id>
@@ -224,7 +224,7 @@
                         </goals>
                         <phase>generate-test-sources</phase>
                         <configuration>
-                            <protocVersion>${protobuf.version}</protocVersion>
+                            <protoc>${protobuf.version}</protoc>
                             <sourceDirectories>
                                 <sourceDirectory>${project.basedir}/src/test/proto</sourceDirectory>
                             </sourceDirectories>
