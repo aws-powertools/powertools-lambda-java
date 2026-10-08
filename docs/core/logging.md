@@ -1339,6 +1339,70 @@ sequenceDiagram
 8. **What happens if Lambda times out without flushing the buffer?** Logs that are still in the buffer will be lost.
 9. **How does the `BufferingAppender` work with different appenders?** The `BufferingAppender` is designed to wrap arbitrary appenders, providing maximum flexibility. You can wrap console appenders, file appenders, or any custom appenders with buffering functionality.
 
+### Lambda SnapStart priming
+
+The PowertoolsLogging class integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart
+priming logic of this class runs correctly, you need an explicit reference to `PowertoolsLogging` in your code to allow the
+library to register before SnapStart takes a memory snapshot. Learn more about what priming is in
+this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/)
+{target="_blank"}.
+
+Make sure to call `PowertoolsLogging.init()` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
+
+=== "Constructor"
+
+    ```java hl_lines="12"
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import software.amazon.lambda.powertools.logging.Logging;
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+    // ... other imports
+    
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+    
+        private static final Logger LOGGER = LoggerFactory.getLogger(MyFunctionHandler.class);
+
+        public MyFunctionHandler() {
+            PowertoolsLogging.init(); // Ensure PowertoolsLogging is loaded for SnapStart
+        }
+    
+        @Override
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            LOGGER.info("Example logging");
+            // ...
+            return something;
+        }
+    }
+    ```
+
+=== "Static Initializer"
+
+    ```java hl_lines="12"
+    import org.slf4j.Logger;
+    import org.slf4j.LoggerFactory;
+    import software.amazon.lambda.powertools.logging.Logging;
+    import software.amazon.lambda.powertools.logging.PowertoolsLogging;
+    // ... other imports
+
+    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
+        
+        private static final Logger LOGGER = LoggerFactory.getLogger(MyFunctionHandler.class);
+
+        static {
+            PowertoolsLogging.init(); // Ensure PowertoolsLogging is loaded for SnapStart
+        }
+
+        @Override
+        @Logging
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+            LOGGER.info("Example logging");
+            // ...
+            return something;
+        }
+    }
+    ```
+
 ## Sampling debug logs
 
 You can dynamically set a percentage of your logs to`DEBUG` level to be included in the logger output, regardless of configured log level, using the`POWERTOOLS_LOGGER_SAMPLE_RATE` environment variable,
@@ -1644,68 +1708,4 @@ Use the `LambdaEcsEncoder` rather than the `LambdaJsonEncoder` when configuring 
             <appender-ref ref="console" />
         </root>
     </configuration>
-    ```
-
-## Advanced
-
-### Lambda SnapStart priming
-
-The PowertoolsLogging class integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart
-priming logic of this class runs correctly, you need an explicit reference to `PowertoolsLogging` in your code to allow the
-library to register before SnapStart takes a memory snapshot. Learn more about what priming is in
-this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/)
-{target="_blank"}.
-
-Make sure to call `PowertoolsLogging.init()` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
-
-=== "Constructor"
-
-    ```java hl_lines="11"
-    import org.slf4j.Logger;
-    import org.slf4j.LoggerFactory;
-    import software.amazon.lambda.powertools.logging.Logging;
-    // ... other imports
-    
-    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-    
-        private static final Logger LOGGER = LoggerFactory.getLogger(MyFunctionHandler.class);
-
-        public MyFunctionHandler() {
-            PowertoolsLogging.init(); // Ensure PowertoolsLogging is loaded for SnapStart
-        }
-    
-        @Override
-        @Logging
-        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            LOGGER.info("Example logging");
-            // ...
-            return something;
-        }
-    }
-    ```
-
-=== "Static Initializer"
-
-    ```java hl_lines="11"
-    import org.slf4j.Logger;
-    import org.slf4j.LoggerFactory;
-    import software.amazon.lambda.powertools.logging.Logging;
-    // ... other imports
-
-    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-        
-        private static final Logger LOGGER = LoggerFactory.getLogger(MyFunctionHandler.class);
-
-        static {
-            PowertoolsLogging.init(); // Ensure PowertoolsLogging is loaded for SnapStart
-        }
-
-        @Override
-        @Logging
-        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            LOGGER.info("Example logging");
-            // ...
-            return something;
-        }
-    }
     ```
