@@ -304,7 +304,7 @@ If you need to configure the Jackson ObjectMapper, you can use the `ValidationCo
 
 ## Migrating to json-schema-validator 2.x
 
-Powertools upgraded [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator){target="_blank"} from 1.x to 2.x, because upstream no longer releases 1.x. Version 2.0.0 renamed most public types ([upstream migration guide](https://github.com/networknt/json-schema-validator/blob/master/doc/migration-2.0.0.md){target="_blank"}). This change ships in a v2 minor release, in line with our [dependency lifecycle policy](https://docs.aws.amazon.com/powertools/java/latest/processes/versioning/#dependency-lifecycle){target="_blank"}.
+Powertools upgraded [NetworkNT JSON Schema Validator](https://github.com/networknt/json-schema-validator){target="_blank"} from 1.x to 2.x, because upstream no longer releases 1.x. Version 2.0.0 renamed most public types ([upstream migration guide](https://github.com/networknt/json-schema-validator/blob/master/doc/migration-2.0.0.md){target="_blank"}). This change ships in version 2.12.0, in line with our [dependency lifecycle policy](https://docs.aws.amazon.com/powertools/java/latest/processes/versioning/#dependency-lifecycle){target="_blank"}.
 
 You need to change your code only if you:
 

@@ -23,7 +23,7 @@ Given our commitment to all of our customers using Powertools for AWS Lambda (Ja
 
 <!-- prettier-ignore-start -->
 !!! warning "End of support for NetworkNT JSON Schema Validator 1.x"
-    Starting with the next v2 minor release, the [Validation utility](./utilities/validation.md) uses NetworkNT JSON Schema Validator 2.x, in line with our [dependency lifecycle policy](./processes/versioning.md#dependency-lifecycle). Version 2.x renamed the types exposed by `ValidationConfig`, `ValidationUtils` and `@Validation`, and changed the `ValidationException` JSON format. Refer to [Migrating to json-schema-validator 2.x](./utilities/validation.md#migrating-to-json-schema-validator-2x) for the required code changes. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2670) for details.
+    Starting with version 2.12.0, the [Validation utility](./utilities/validation.md) uses NetworkNT JSON Schema Validator 2.x, in line with our [dependency lifecycle policy](./processes/versioning.md#dependency-lifecycle). Version 2.x renamed the types exposed by `ValidationConfig`, `ValidationUtils` and `@Validation`, and changed the `ValidationException` JSON format. Refer to [Migrating to json-schema-validator 2.x](./utilities/validation.md#migrating-to-json-schema-validator-2x) for the required code changes. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2670) for details.
 <!-- prettier-ignore-end -->
 
 ## Migrate to v2 from v1
