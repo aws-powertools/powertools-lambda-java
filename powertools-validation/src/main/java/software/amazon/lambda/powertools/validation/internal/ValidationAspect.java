@@ -70,6 +70,7 @@ public class ValidationAspect {
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(validation)")
     public void callAt(Validation validation) {
+        // Pointcut method - body intentionally empty
     }
 
     @Around(value = "callAt(validation) && execution(@Validation * *.*(..))", argNames = "pjp,validation")

@@ -34,12 +34,13 @@ import java.util.stream.Collectors;
 /**
  * Validation utility, used to manually validate Json against Json Schema
  */
-public class ValidationUtils {
+public final class ValidationUtils {
     private static final String CLASSPATH = "classpath:";
 
-    private static final ConcurrentHashMap<String, Schema> schemas = new ConcurrentHashMap<>();
+    private static final Map<String, Schema> schemas = new ConcurrentHashMap<>();
 
     private ValidationUtils() {
+        // Utility class
     }
 
     /**
@@ -282,7 +283,7 @@ public class ValidationUtils {
     /**
      *
      */
-    public static class ValidationErrors {
+    public static final class ValidationErrors {
 
         private final List<Error> validationErrors;
 

@@ -37,7 +37,7 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
  * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
  * is just a wrapper of {@link JsonConfig}.
  */
-public class ValidationConfig implements Resource {
+public final class ValidationConfig implements Resource {
     private static final SchemaRegistryConfig SCHEMA_REGISTRY_CONFIG = SchemaRegistryConfig.builder()
             .formatAssertionsEnabled(true).build();
 
@@ -143,7 +143,7 @@ public class ValidationConfig implements Resource {
         // No action needed after restore
     }
 
-    private static class ConfigHolder {
+    private static final class ConfigHolder {
         private static final ValidationConfig instance = new ValidationConfig();
     }
 }
