@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.validation.internal;
 
-import static com.networknt.schema.SpecVersion.VersionFlag.V201909;
+import static com.networknt.schema.SpecificationVersion.DRAFT_2019_09;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
@@ -44,7 +44,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
-import com.networknt.schema.JsonSchema;
+import com.networknt.schema.Schema;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +70,7 @@ public class ValidationAspect {
     @SuppressWarnings({"EmptyMethod"})
     @Pointcut("@annotation(validation)")
     public void callAt(Validation validation) {
+        // Pointcut method - body intentionally empty
     }
 
     @Around(value = "callAt(validation) && execution(@Validation * *.*(..))", argNames = "pjp,validation")
@@ -78,7 +79,7 @@ public class ValidationAspect {
         Object[] proceedArgs = pjp.getArgs();
         boolean validationNeeded = false;
 
-        if (validation.schemaVersion() != V201909) {
+        if (validation.schemaVersion() != DRAFT_2019_09) {
             ValidationConfig.get().setSchemaVersion(validation.schemaVersion());
         }
 
@@ -92,7 +93,7 @@ public class ValidationAspect {
             validationNeeded = true;
 
             if (!validation.inboundSchema().isEmpty()) {
-                JsonSchema inboundJsonSchema = getJsonSchema(validation.inboundSchema(), true);
+                Schema inboundJsonSchema = getJsonSchema(validation.inboundSchema(), true);
 
                 Object obj = pjp.getArgs()[0];
                 if (validation.envelope() != null && !validation.envelope().isEmpty()) {
@@ -191,7 +192,7 @@ public class ValidationAspect {
             }
 
             if (result != null && validationNeeded && !validation.outboundSchema().isEmpty()) {
-                JsonSchema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
+                Schema outboundJsonSchema = getJsonSchema(validation.outboundSchema(), true);
 
                 Object overridenResponse = null;
                 // The normal behavior of @Validation is to throw an exception if response's validation fails.
@@ -242,7 +243,7 @@ public class ValidationAspect {
      * @return the stream response with items in failure
      */
     private StreamsEventResponse validateKinesisEventRecords(List<KinesisEvent.KinesisEventRecord> records,
-                                                             JsonSchema inboundJsonSchema) {
+                                                             Schema inboundJsonSchema) {
         StreamsEventResponse response = StreamsEventResponse.builder().withBatchItemFailures(new ArrayList<>()).build();
 
         ListIterator<KinesisEvent.KinesisEventRecord> listIterator = records.listIterator(); // using iterator to remove while browsing
@@ -269,7 +270,7 @@ public class ValidationAspect {
      * @return the SQS batch response
      */
     private SQSBatchResponse validateSQSEventMessages(List<SQSEvent.SQSMessage> messages,
-                                                      JsonSchema inboundJsonSchema) {
+                                                      Schema inboundJsonSchema) {
         SQSBatchResponse response = SQSBatchResponse.builder().withBatchItemFailures(new ArrayList<>()).build();
         ListIterator<SQSEvent.SQSMessage> listIterator = messages.listIterator(); // using iterator to remove while browsing
         while (listIterator.hasNext()) {
@@ -295,7 +296,7 @@ public class ValidationAspect {
      * @param jsonSchema validation schema
      * @return null if validation passed, or a 400 response object otherwise
      */
-    private APIGatewayProxyResponseEvent validateAPIGatewayProxyBody(final String body, final JsonSchema jsonSchema,
+    private APIGatewayProxyResponseEvent validateAPIGatewayProxyBody(final String body, final Schema jsonSchema,
                                                                      final Map<String, String> headers,
                                                                      Map<String, List<String>> multivalueHeaders) {
         APIGatewayProxyResponseEvent result = null;
@@ -321,7 +322,7 @@ public class ValidationAspect {
      * @param jsonSchema validation schema
      * @return null if validation passed, or a 400 response object otherwise
      */
-    private APIGatewayV2HTTPResponse validateAPIGatewayV2HTTPBody(final String body, final JsonSchema jsonSchema,
+    private APIGatewayV2HTTPResponse validateAPIGatewayV2HTTPBody(final String body, final Schema jsonSchema,
                                                                   final Map<String, String> headers,
                                                                   Map<String, List<String>> multivalueHeaders) {
         APIGatewayV2HTTPResponse result = null;

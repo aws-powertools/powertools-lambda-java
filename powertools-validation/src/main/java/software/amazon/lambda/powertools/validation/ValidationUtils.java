@@ -20,27 +20,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.NullNode;
-import com.networknt.schema.JsonSchema;
+import com.networknt.schema.Error;
+import com.networknt.schema.Schema;
 import com.networknt.schema.SchemaLocation;
-import com.networknt.schema.SchemaValidatorsConfig;
-import com.networknt.schema.ValidationMessage;
 import io.burt.jmespath.Expression;
 import java.io.ByteArrayOutputStream;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
  * Validation utility, used to manually validate Json against Json Schema
  */
-public class ValidationUtils {
+public final class ValidationUtils {
     private static final String CLASSPATH = "classpath:";
 
-    private static final ConcurrentHashMap<String, JsonSchema> schemas = new ConcurrentHashMap<>();
+    private static final Map<String, Schema> schemas = new ConcurrentHashMap<>();
 
     private ValidationUtils() {
+        // Utility class
     }
 
     /**
@@ -61,7 +61,7 @@ public class ValidationUtils {
      * @param jsonSchema The schema used to validate
      * @param envelope   a path to a sub object within obj
      */
-    public static void validate(Object obj, JsonSchema jsonSchema, String envelope) throws ValidationException {
+    public static void validate(Object obj, Schema jsonSchema, String envelope) throws ValidationException {
         if (envelope == null || envelope.isEmpty()) {
             validate(obj, jsonSchema);
             return;
@@ -116,7 +116,7 @@ public class ValidationUtils {
      * @param jsonSchema The schema used to validate
      * @throws ValidationException if validation fails
      */
-    public static void validate(Object obj, JsonSchema jsonSchema) throws ValidationException {
+    public static void validate(Object obj, Schema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
             jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(obj);
@@ -145,7 +145,7 @@ public class ValidationUtils {
      * @param jsonSchema the schema used to validate json string
      * @throws ValidationException if validation fails
      */
-    public static void validate(String json, JsonSchema jsonSchema) throws ValidationException {
+    public static void validate(String json, Schema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
             jsonNode = ValidationConfig.get().getObjectMapper().readTree(json);
@@ -174,7 +174,7 @@ public class ValidationUtils {
      * @param jsonSchema the schema used to validate json map
      * @throws ValidationException if validation fails
      */
-    public static void validate(Map<String, Object> map, JsonSchema jsonSchema) throws ValidationException {
+    public static void validate(Map<String, Object> map, Schema jsonSchema) throws ValidationException {
         JsonNode jsonNode;
         try {
             jsonNode = ValidationConfig.get().getObjectMapper().valueToTree(map);
@@ -205,15 +205,15 @@ public class ValidationUtils {
      * @param jsonSchema the schema to validate json node
      * @throws ValidationException if validation fails
      */
-    public static void validate(JsonNode jsonNode, JsonSchema jsonSchema) throws ValidationException {
-        Set<ValidationMessage> validationMessages = jsonSchema.validate(jsonNode);
+    public static void validate(JsonNode jsonNode, Schema jsonSchema) throws ValidationException {
+        List<Error> validationMessages = jsonSchema.validate(jsonNode);
         if (!validationMessages.isEmpty()) {
             String message;
             try {
                 message = ValidationConfig.get().getObjectMapper()
                         .writeValueAsString(new ValidationErrors(validationMessages));
             } catch (JsonProcessingException e) {
-                message = validationMessages.stream().map(ValidationMessage::getMessage)
+                message = validationMessages.stream().map(Error::toString)
                         .collect(Collectors.joining(", "));
             }
             throw new ValidationException(message);
@@ -221,19 +221,19 @@ public class ValidationUtils {
     }
 
     /**
-     * Retrieve {@link JsonSchema} from string (either the schema itself, either from the classpath).<br/>
+     * Retrieve {@link Schema} from string (either the schema itself, either from the classpath).<br/>
      * No validation of the schema will be performed (equivalent to <pre>getJsonSchema(schema, false)</pre><br/>
      * Store it in memory to avoid reloading it.<br/>
      *
      * @param schema either the schema itself of a "classpath:/path/to/schema.json"
      * @return the loaded json schema
      */
-    public static JsonSchema getJsonSchema(String schema) {
+    public static Schema getJsonSchema(String schema) {
         return getJsonSchema(schema, false);
     }
 
     /**
-     * Retrieve {@link JsonSchema} from string (either the schema itself, either from the classpath).<br/>
+     * Retrieve {@link Schema} from string (either the schema itself, either from the classpath).<br/>
      * Optional: validate the schema against the version specifications.<br/>
      * Store it in memory to avoid reloading it.<br/>
      *
@@ -241,8 +241,8 @@ public class ValidationUtils {
      * @param validateSchema specify if the schema itself must be validated against specifications
      * @return the loaded json schema
      */
-    public static JsonSchema getJsonSchema(String schema, boolean validateSchema) {
-        JsonSchema jsonSchema = schemas.computeIfAbsent(schema, ValidationUtils::createJsonSchema);
+    public static Schema getJsonSchema(String schema, boolean validateSchema) {
+        Schema jsonSchema = schemas.computeIfAbsent(schema, ValidationUtils::createJsonSchema);
 
         if (validateSchema) {
             validateSchema(schema, jsonSchema);
@@ -251,27 +251,25 @@ public class ValidationUtils {
         return jsonSchema;
     }
 
-    private static JsonSchema createJsonSchema(String schema) {
-        JsonSchema jsonSchema;
-        SchemaValidatorsConfig config = SchemaValidatorsConfig.builder().formatAssertionsEnabled(true)
-                .preloadJsonSchemaRefMaxNestingDepth(10).build();
+    private static Schema createJsonSchema(String schema) {
+        Schema jsonSchema;
         if (schema.startsWith(CLASSPATH)) {
             try {
-                jsonSchema = ValidationConfig.get().getFactory().getSchema(SchemaLocation.of(schema), config);
+                jsonSchema = ValidationConfig.get().getFactory().getSchema(SchemaLocation.of(schema));
             } catch (Exception e) {
                 String filePath = schema.substring(CLASSPATH.length());
                 throw new IllegalArgumentException(
                         "'" + schema + "' is invalid, verify '" + filePath + "' is in your classpath", e);
             }
         } else {
-            jsonSchema = ValidationConfig.get().getFactory().getSchema(schema, config);
+            jsonSchema = ValidationConfig.get().getFactory().getSchema(schema);
         }
 
         return jsonSchema;
     }
 
-    private static void validateSchema(String schema, JsonSchema jsonSchema) {
-        String schemaId = jsonSchema.getValidationContext().getMetaSchema().getIri()
+    private static void validateSchema(String schema, Schema jsonSchema) {
+        String schemaId = jsonSchema.getSchemaContext().getDialect().getId()
                 .replace("https://json-schema.org", "").replace("http://json-schema.org", "");
         try {
             validate(jsonSchema.getSchemaNode(),
@@ -285,16 +283,16 @@ public class ValidationUtils {
     /**
      *
      */
-    public static class ValidationErrors {
+    public static final class ValidationErrors {
 
-        private final Set<ValidationMessage> validationErrors;
+        private final List<Error> errors;
 
-        private ValidationErrors(Set<ValidationMessage> validationErrors) {
-            this.validationErrors = validationErrors;
+        private ValidationErrors(List<Error> errors) {
+            this.errors = errors;
         }
 
-        public Set<ValidationMessage> getValidationErrors() {
-            return Collections.unmodifiableSet(validationErrors);
+        public List<Error> getValidationErrors() {
+            return Collections.unmodifiableList(errors);
         }
     }
 }

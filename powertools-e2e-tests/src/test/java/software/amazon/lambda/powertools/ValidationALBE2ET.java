@@ -85,7 +85,13 @@ class ValidationALBE2ET {
             // THEN
             // invocation should fail inbound validation and return an error message
             JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-            assertThat(validJsonNode.get("errorMessage").asText()).contains(": required property 'price' not found");
+            JsonNode validationErrors = objectMapper.readTree(validJsonNode.get("errorMessage").asText())
+                    .get("validationErrors");
+            assertThat(validationErrors).hasSize(1);
+            JsonNode error = validationErrors.get(0);
+            assertThat(error.get("keyword").asText()).isEqualTo("required");
+            assertThat(error.get("instanceLocation").asText()).isEmpty();
+            assertThat(error.get("message").asText()).isEqualTo("required property 'price' not found");
         }
     }
 
@@ -100,8 +106,13 @@ class ValidationALBE2ET {
             // THEN
             // invocation should fail outbound validation and return 400
             JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
-            assertThat(validJsonNode.get("errorMessage").asText())
-                    .contains("/price: must have an exclusive maximum value of 1000");
+            JsonNode validationErrors = objectMapper.readTree(validJsonNode.get("errorMessage").asText())
+                    .get("validationErrors");
+            assertThat(validationErrors).hasSize(1);
+            JsonNode error = validationErrors.get(0);
+            assertThat(error.get("keyword").asText()).isEqualTo("exclusiveMaximum");
+            assertThat(error.get("instanceLocation").asText()).isEqualTo("/price");
+            assertThat(error.get("message").asText()).isEqualTo("must have an exclusive maximum value of 1000");
         }
     }
 }

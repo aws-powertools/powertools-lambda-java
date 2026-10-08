@@ -16,7 +16,14 @@ Given our commitment to all of our customers using Powertools for AWS Lambda (Ja
 
 <!-- prettier-ignore-start -->
 !!! warning "End of support for Java 11"
-    Starting with the next v2 minor release, Powertools for AWS Lambda (Java) requires Java 17 or later. Java 11 is no longer supported. Upgrade your functions to the `java17`, `java21`, or `java25` [Lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="\_blank"}. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2457) for details.
+    Starting with version 2.11.0, Powertools for AWS Lambda (Java) requires Java 17 or later. Java 11 is no longer supported. Upgrade your functions to the `java17`, `java21`, or `java25` [Lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="\_blank"}. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2457) for details.
+<!-- prettier-ignore-end -->
+
+## NetworkNT JSON Schema Validator 2.x in Validation
+
+<!-- prettier-ignore-start -->
+!!! warning "End of support for NetworkNT JSON Schema Validator 1.x"
+    Starting with version 2.12.0, the [Validation utility](./utilities/validation.md) uses NetworkNT JSON Schema Validator 2.x, in line with our [dependency lifecycle policy](./processes/versioning.md#dependency-lifecycle). Version 2.x renamed the types exposed by `ValidationConfig`, `ValidationUtils` and `@Validation`, and changed the `ValidationException` JSON format. Refer to [Migrating to json-schema-validator 2.x](./utilities/validation.md#migrating-to-json-schema-validator-2x) for the required code changes. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2670) for details.
 <!-- prettier-ignore-end -->
 
 ## Migrate to v2 from v1
