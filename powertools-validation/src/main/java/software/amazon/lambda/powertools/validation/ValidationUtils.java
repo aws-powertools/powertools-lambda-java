@@ -285,14 +285,14 @@ public final class ValidationUtils {
      */
     public static final class ValidationErrors {
 
-        private final List<Error> validationErrors;
+        private final List<Error> errors;
 
-        private ValidationErrors(List<Error> validationErrors) {
-            this.validationErrors = validationErrors;
+        private ValidationErrors(List<Error> errors) {
+            this.errors = errors;
         }
 
         public List<Error> getValidationErrors() {
-            return Collections.unmodifiableList(validationErrors);
+            return Collections.unmodifiableList(errors);
         }
     }
 }
