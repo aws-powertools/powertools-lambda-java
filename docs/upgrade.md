@@ -16,7 +16,7 @@ Given our commitment to all of our customers using Powertools for AWS Lambda (Ja
 
 <!-- prettier-ignore-start -->
 !!! warning "End of support for Java 11"
-    Starting with the next v2 minor release, Powertools for AWS Lambda (Java) requires Java 17 or later. Java 11 is no longer supported. Upgrade your functions to the `java17`, `java21`, or `java25` [Lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="\_blank"}. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2457) for details.
+    Starting with version 2.11.0, Powertools for AWS Lambda (Java) requires Java 17 or later. Java 11 is no longer supported. Upgrade your functions to the `java17`, `java21`, or `java25` [Lambda runtime](https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html){target="\_blank"}. Refer to [our announcement](https://github.com/aws-powertools/powertools-lambda-java/issues/2457) for details.
 <!-- prettier-ignore-end -->
 
 ## NetworkNT JSON Schema Validator 2.x in Validation
