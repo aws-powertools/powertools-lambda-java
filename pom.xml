@@ -702,8 +702,9 @@
             The native profile configures surefire to pass add-opens flags via JDK_JAVA_OPTIONS.
             When -Dagent=true is set, the native-maven-plugin's NativeExtension appends the tracing agent to the
             existing surefire argLine, so the add-opens flags from the jdk16 profile are kept. native-maven-plugin
-            0.11.x replaced the argLine instead and dropped them. JDK_JAVA_OPTIONS is picked up by the JVM
-            automatically, so the tests get the add-opens flags regardless of how the argLine is built.
+            0.11.x replaced the argLine instead and dropped them. JDK_JAVA_OPTIONS is no longer required with 1.x,
+            but it is kept as a safeguard: the JVM picks it up automatically, so the tests get the add-opens flags
+            regardless of how the argLine is built.
 
             The native profile also skips JaCoCo. Because the tracing agent is appended to the existing argLine,
             the JaCoCo agent would instrument classes that Byte Buddy defines at runtime before the tracing agent
