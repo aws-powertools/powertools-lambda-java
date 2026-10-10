@@ -119,7 +119,7 @@
         <mockito-junit-jupiter.version>5.23.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
-        <native-maven-plugin.version>0.11.5</native-maven-plugin.version>
+        <native-maven-plugin.version>1.1.14</native-maven-plugin.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
@@ -502,6 +502,14 @@
                             <buildArg>--native-image-info</buildArg>
                             <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
                             <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                            <!--
+                                Byte Buddy loads the Mockito mock classes with Class.forName on its own class loader.
+                                Since GraalVM 25.1, Class.forName ignores the class loader by default, so the
+                                predefined mock classes are never defined. This option restores the class loader
+                                delegation. It is equivalent to the class-for-name-respects-class-loader future default,
+                                which GraalVM 25.0 does not support.
+                            -->
+                            <buildArg>-H:+ClassForNameRespectsClassLoader</buildArg>
                         </buildArgs>
                     </configuration>
                 </plugin>
@@ -691,44 +699,23 @@
             </build>
         </profile>
         <!--
-            On GraalVM for JDK 21 and earlier, the junit-platform-native feature initializes a hardcoded list of
-            JUnit classes at build time. native-maven-plugin 0.11.5 does not list the following JUnit 6 classes,
-            which breaks native test image builds. Newer native-build-tools releases include them
-            (graalvm/native-build-tools#794). Remove this profile after modernizing the GraalVM native-image test
-            infrastructure and upgrading native-maven-plugin to 1.x:
-            - https://github.com/aws-powertools/powertools-lambda-java/issues/2416
-            - https://github.com/aws-powertools/powertools-lambda-java/pull/2661
-        -->
-        <profile>
-            <id>native-junit6-jdk21</id>
-            <activation>
-                <jdk>(,22)</jdk>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.graalvm.buildtools</groupId>
-                            <artifactId>native-maven-plugin</artifactId>
-                            <configuration>
-                                <buildArgs combine.children="append">
-                                    <buildArg>--initialize-at-build-time=org.junit.jupiter.engine.discovery.MethodSegmentResolver,org.junit.platform.launcher.core.DiscoveryIssueReportingDiscoveryListener</buildArg>
-                                </buildArgs>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-        <!--
             The native profile configures surefire to pass add-opens flags via JDK_JAVA_OPTIONS.
-            This is necessary because the native-maven-plugin's NativeExtension overwrites surefire's
-            argLine when -Dagent=true is set (it adds its own argLine element for the tracing agent),
-            which causes the add-opens flags from the jdk16 profile to be lost.
-            JDK_JAVA_OPTIONS is picked up by the JVM automatically, bypassing the argLine override.
+            When -Dagent=true is set, the native-maven-plugin's NativeExtension appends the tracing agent to the
+            existing surefire argLine, so the add-opens flags from the jdk16 profile are kept. native-maven-plugin
+            0.11.x replaced the argLine instead and dropped them. JDK_JAVA_OPTIONS is no longer required with 1.x,
+            but it is kept as a safeguard: the JVM picks it up automatically, so the tests get the add-opens flags
+            regardless of how the argLine is built.
+
+            The native profile also skips JaCoCo. Because the tracing agent is appended to the existing argLine,
+            the JaCoCo agent would instrument classes that Byte Buddy defines at runtime before the tracing agent
+            records them as predefined classes. The native test image then rejects the uninstrumented classes at
+            runtime because their hash does not match.
         -->
         <profile>
             <id>native</id>
+            <properties>
+                <jacoco.skip>true</jacoco.skip>
+            </properties>
             <build>
                 <plugins>
                     <plugin>

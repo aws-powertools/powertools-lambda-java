@@ -34,6 +34,19 @@ class ClassPreLoaderTest {
         }
     }
 
+    /**
+     * Dummy class whose static initializer fails. The class name is referenced before {@link DummyClass} in
+     * <i>powertools-common/src/test/resources/classesloaded.txt</i>.
+     * This class is used to verify that the ClassPreLoader continues after a class fails to initialize.
+     */
+    static class FailingInitializerDummyClass {
+        static final Object VALUE = fail();
+
+        private static Object fail() {
+            throw new IllegalStateException("Failing static initializer");
+        }
+    }
+
     @Test
     void preloadClasses_shouldIgnoreInvalidClassesAndLoadValidClasses() {
 
@@ -43,6 +56,8 @@ class ClassPreLoaderTest {
         // preloadClasses once and asserts on all classes listed in classesloaded.txt together.
         // powertools-common/src/test/resources/classesloaded.txt has a class that does not exist.
         // Verify that the missing class did not throw any exception
+        // It also has a class whose static initializer fails. Verify that the ExceptionInInitializerError
+        // did not stop the preloading of the following classes
         assertDoesNotThrow(ClassPreLoader::preloadClasses);
 
         // When the classloaded.txt is a mixed bag of valid and invalid classes, valid classes must load

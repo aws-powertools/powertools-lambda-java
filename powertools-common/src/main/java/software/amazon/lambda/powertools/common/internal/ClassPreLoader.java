@@ -96,6 +96,11 @@ public final class ClassPreLoader {
         } catch (ClassNotFoundException e) {
             // No action is required if the class with given name cannot be found
             return false;
+        } catch (LinkageError e) {
+            // A class can fail to link or initialize in the current runtime, e.g. a JDK class that needs a native
+            // library that is not available in a GraalVM native image. Skip it and continue with the next class.
+            LOG.debug("SnapStart priming: failed to preload class {}", className, e);
+            return false;
         }
     }
 }
