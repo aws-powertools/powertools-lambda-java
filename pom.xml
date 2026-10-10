@@ -119,7 +119,7 @@
         <mockito-junit-jupiter.version>5.23.0</mockito-junit-jupiter.version>
         <junit-pioneer.version>2.3.0</junit-pioneer.version>
         <crac.version>1.5.0</crac.version>
-        <native-maven-plugin.version>0.11.5</native-maven-plugin.version>
+        <native-maven-plugin.version>1.1.14</native-maven-plugin.version>
 
         <!-- As we have a .mvn directory at the root of the project, this will evaluate to the root directory
             regardless of where maven is run - sub-module, or root. -->
@@ -688,36 +688,6 @@
                         </configuration>
                     </plugin>
                 </plugins>
-            </build>
-        </profile>
-        <!--
-            On GraalVM for JDK 21 and earlier, the junit-platform-native feature initializes a hardcoded list of
-            JUnit classes at build time. native-maven-plugin 0.11.5 does not list the following JUnit 6 classes,
-            which breaks native test image builds. Newer native-build-tools releases include them
-            (graalvm/native-build-tools#794). Remove this profile after modernizing the GraalVM native-image test
-            infrastructure and upgrading native-maven-plugin to 1.x:
-            - https://github.com/aws-powertools/powertools-lambda-java/issues/2416
-            - https://github.com/aws-powertools/powertools-lambda-java/pull/2661
-        -->
-        <profile>
-            <id>native-junit6-jdk21</id>
-            <activation>
-                <jdk>(,22)</jdk>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.graalvm.buildtools</groupId>
-                            <artifactId>native-maven-plugin</artifactId>
-                            <configuration>
-                                <buildArgs combine.children="append">
-                                    <buildArg>--initialize-at-build-time=org.junit.jupiter.engine.discovery.MethodSegmentResolver,org.junit.platform.launcher.core.DiscoveryIssueReportingDiscoveryListener</buildArg>
-                                </buildArgs>
-                            </configuration>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
             </build>
         </profile>
         <!--

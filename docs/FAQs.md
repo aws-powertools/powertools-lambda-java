@@ -218,7 +218,7 @@ Use the `native-maven-plugin` to build the native image. You can do this by addi
                 <plugin>
                     <groupId>org.graalvm.buildtools</groupId>
                     <artifactId>native-maven-plugin</artifactId>
-                    <version>0.10.1</version>
+                    <version>1.1.14</version>
                     <extensions>true</extensions>
                     <executions>
                         <execution>
