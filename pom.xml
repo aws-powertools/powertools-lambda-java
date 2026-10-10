@@ -700,15 +700,15 @@
         </profile>
         <!--
             The native profile configures surefire to pass add-opens flags via JDK_JAVA_OPTIONS.
-            This is necessary because the native-maven-plugin's NativeExtension overwrites surefire's
-            argLine when -Dagent=true is set (it adds its own argLine element for the tracing agent),
-            which causes the add-opens flags from the jdk16 profile to be lost.
-            JDK_JAVA_OPTIONS is picked up by the JVM automatically, bypassing the argLine override.
+            When -Dagent=true is set, the native-maven-plugin's NativeExtension appends the tracing agent to the
+            existing surefire argLine, so the add-opens flags from the jdk16 profile are kept. native-maven-plugin
+            0.11.x replaced the argLine instead and dropped them. JDK_JAVA_OPTIONS is picked up by the JVM
+            automatically, so the tests get the add-opens flags regardless of how the argLine is built.
 
-            The native profile also skips JaCoCo. native-maven-plugin 1.x appends the tracing agent to the existing
-            argLine, so the JaCoCo agent would instrument classes that Byte Buddy defines at runtime before the
-            tracing agent records them as predefined classes. The native test image then rejects the uninstrumented
-            classes at runtime because their hash does not match.
+            The native profile also skips JaCoCo. Because the tracing agent is appended to the existing argLine,
+            the JaCoCo agent would instrument classes that Byte Buddy defines at runtime before the tracing agent
+            records them as predefined classes. The native test image then rejects the uninstrumented classes at
+            runtime because their hash does not match.
         -->
         <profile>
             <id>native</id>
