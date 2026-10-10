@@ -11,7 +11,8 @@
 This documentation provides guidance for adding GraalVM support for AWS Lambda Powertools Java modules and using the modules in Lambda functions.
 
 ## Prerequisites
-- GraalVM 25 installation. To run the native tests of modules that use Mockito, use a GraalVM 25 innovation release (see [Known Issues and Solutions](#known-issues-and-solutions))
+- GraalVM 25 installation. To run the native tests of modules that use Mockito, use a GraalVM 25 innovation release (see [Known Issues and Solutions](#known-issues-and-solutions)). The CI `graalvm-build` job in [check-build.yml](.github/workflows/check-build.yml) runs the native tests on Oracle GraalVM 25.4.4.1.1.
+- The `sam-graalvm` example Dockerfiles use the GraalVM for JDK 25 LTS release from `https://download.oracle.com/graalvm/25/latest/`. They only build native images of the example functions and do not run the native tests with the tracing agent, so the known issue does not affect them.
 - Maven 3.x
 
 ## General Implementation Steps
@@ -62,7 +63,7 @@ mvn -Pnative test
 
 3. **Predefined Classes on GraalVM 25.0**
    - **Issue**: On GraalVM 25.0.x, native test image builds fail with `Unsupported class file major version 69` in `ClassPredefinitionFeature`. The tracing agent records the classes that Byte Buddy generates for Mockito mocks at runtime (`enableExperimentalPredefinedClasses`). On JDK 25, these classes use class file version 69, which the ASM version shaded in GraalVM 25.0 cannot read ([oracle/graal#12723](https://github.com/oracle/graal/issues/12723)).
-   - **Solution**: Use a GraalVM 25 innovation release (25.1 or later), which reads class files with the Java Class-File API. The CI `graalvm-build` job uses the latest GraalVM 25 innovation release.
+   - **Solution**: Use a GraalVM 25 innovation release (25.1 or later), which reads class files with the Java Class-File API. The CI `graalvm-build` job is pinned to GraalVM 25.4.4.1.1.
 
 4. **Log4j Compatibility**
    - Version 2.22.1 fails with this error
