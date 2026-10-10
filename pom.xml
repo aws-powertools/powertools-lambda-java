@@ -502,6 +502,14 @@
                             <buildArg>--native-image-info</buildArg>
                             <buildArg>-H:+UnlockExperimentalVMOptions</buildArg>
                             <buildArg>-H:+ReportExceptionStackTraces</buildArg>
+                            <!--
+                                Byte Buddy loads the Mockito mock classes with Class.forName on its own class loader.
+                                Since GraalVM 25.1, Class.forName ignores the class loader by default, so the
+                                predefined mock classes are never defined. This option restores the class loader
+                                delegation. It is equivalent to the class-for-name-respects-class-loader future default,
+                                which GraalVM 25.0 does not support.
+                            -->
+                            <buildArg>-H:+ClassForNameRespectsClassLoader</buildArg>
                         </buildArgs>
                     </configuration>
                 </plugin>
