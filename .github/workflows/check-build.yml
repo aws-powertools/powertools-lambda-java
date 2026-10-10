@@ -109,9 +109,10 @@ jobs:
         uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
           java-version: "25"
-          # GraalVM 25.0 LTS cannot read Java 25 class files for predefined classes (oracle/graal#12723).
-          # Innovation releases include the fix. See #2416
-          version: "25i-latest"
+          # Pinned to the GraalVM 25.4.4.1.1 innovation release. GraalVM 25.0 LTS cannot read Java 25 class files
+          # for predefined classes (oracle/graal#12723). Move back to the LTS release once the fix is backported.
+          # See #2416
+          version: "25.4.4.1.1"
           distribution: "graalvm"
           cache: maven
       - id: graalvm-native-test
