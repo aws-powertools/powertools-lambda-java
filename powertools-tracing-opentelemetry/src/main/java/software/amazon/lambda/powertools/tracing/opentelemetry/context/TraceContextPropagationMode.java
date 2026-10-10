@@ -2,8 +2,10 @@
  * Copyright 2023 Amazon.com, Inc. or its affiliates.
  * Licensed under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
+ * with the License. You may obtain a copy of the License at
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -12,21 +14,15 @@
  *
  */
 
-package software.amazon.lambda.powertools.common.internal;
+package software.amazon.lambda.powertools.tracing.opentelemetry.context;
 
-public class SystemWrapper {
-    private SystemWrapper() {
-    }
-
-    public static String getenv(String name) {
-        return System.getenv(name);
-    }
-
-    public static boolean containsKey(String key) {
-        return System.getenv().containsKey(key);
-    }
-
-    public static String getProperty(String name) {
-        return System.getProperty(name);
-    }
+/**
+ * Enum representing different modes of trace context propagation.
+ * <p>
+ * Trace context propagation defines how tracing information is passed
+ * between distributed systems to capture the relationship between trace spans.
+ */
+public enum TraceContextPropagationMode {
+    PARENT,
+    LINK
 }
