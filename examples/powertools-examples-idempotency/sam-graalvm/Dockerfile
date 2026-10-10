@@ -1,9 +1,9 @@
-# Use the official AWS SAM base image for Java 21
-FROM public.ecr.aws/sam/build-java21@sha256:a5554d68374e19450c6c88448516ac95a9acedc779f318040f5c230134b4e461
+# Use the official AWS SAM base image for Java 25
+FROM public.ecr.aws/sam/build-java25@sha256:35c398d9eaadd173262573be05ba7e1c3eda552a5bd320659b7b1442632b47df
 
 # Install GraalVM dependencies
-RUN curl -4 -L curl https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz | tar -xvz
-RUN mv graalvm-jdk-21.* /usr/lib/graalvm
+RUN curl -4 -L curl https://download.oracle.com/graalvm/25/latest/graalvm-jdk-25_linux-x64_bin.tar.gz | tar -xvz
+RUN mv graalvm-jdk-25.* /usr/lib/graalvm
 
 # Make native image and mvn available on CLI
 RUN ln -s /usr/lib/graalvm/bin/native-image /usr/bin/native-image

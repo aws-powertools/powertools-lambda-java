@@ -108,8 +108,10 @@ jobs:
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@27b360dbb857524eaf0b4c4cef364d38e5b4f173 # v1.6.7
         with:
-          # Pinned to 21.0.8 due to unsafeAllocated enforcement in 21.0.10+. See #2416
-          java-version: "21.0.8"
+          java-version: "25"
+          # GraalVM 25.0 LTS cannot read Java 25 class files for predefined classes (oracle/graal#12723).
+          # Innovation releases include the fix. See #2416
+          version: "25i-latest"
           distribution: "graalvm"
           cache: maven
       - id: graalvm-native-test
