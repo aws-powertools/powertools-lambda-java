@@ -72,27 +72,18 @@ public class KafkaAvroDeserializer extends AbstractKafkaDeserializer {
 
     private void collectNamedTypes(Schema schema) {
         switch (schema.getType()) {
-            case RECORD:
+            case RECORD -> {
                 // Skip records we have already seen to stop on recursive schemas
                 if (trustedClassNames.add(SpecificData.getClassName(schema))) {
                     schema.getFields().forEach(field -> collectNamedTypes(field.schema()));
                 }
-                break;
-            case ENUM:
-            case FIXED:
-                trustedClassNames.add(SpecificData.getClassName(schema));
-                break;
-            case ARRAY:
-                collectNamedTypes(schema.getElementType());
-                break;
-            case MAP:
-                collectNamedTypes(schema.getValueType());
-                break;
-            case UNION:
-                schema.getTypes().forEach(this::collectNamedTypes);
-                break;
-            default:
-                break;
+            }
+            case ENUM, FIXED -> trustedClassNames.add(SpecificData.getClassName(schema));
+            case ARRAY -> collectNamedTypes(schema.getElementType());
+            case MAP -> collectNamedTypes(schema.getValueType());
+            case UNION -> schema.getTypes().forEach(this::collectNamedTypes);
+            default -> {
+            }
         }
     }
 }
