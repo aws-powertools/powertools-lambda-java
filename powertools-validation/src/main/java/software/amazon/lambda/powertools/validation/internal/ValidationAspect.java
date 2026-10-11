@@ -14,7 +14,7 @@
 
 package software.amazon.lambda.powertools.validation.internal;
 
-import static com.networknt.schema.SpecificationVersion.DRAFT_2019_09;
+import static com.networknt.schema.SpecificationVersion.DRAFT_7;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static software.amazon.lambda.powertools.common.internal.LambdaHandlerProcessor.placedOnRequestHandler;
 import static software.amazon.lambda.powertools.utilities.jmespath.Base64Function.decode;
@@ -79,7 +79,7 @@ public class ValidationAspect {
         Object[] proceedArgs = pjp.getArgs();
         boolean validationNeeded = false;
 
-        if (validation.schemaVersion() != DRAFT_2019_09) {
+        if (validation.schemaVersion() != DRAFT_7) {
             ValidationConfig.get().setSchemaVersion(validation.schemaVersion());
         }
 

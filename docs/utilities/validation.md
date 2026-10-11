@@ -253,7 +253,7 @@ and [function](https://jmespath.org/tutorial.html#functions) expressions, where 
 ## Change the schema version
 By default, powertools-validation is configured to use [draft 7](https://json-schema.org/draft-07/json-schema-release-notes.html) (`SpecificationVersion.DRAFT_7`) as the default dialect if [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is not explicitly specified within the schema. If [`$schema`](https://json-schema.org/understanding-json-schema/reference/schema#schema) is explicitly specified within the schema, the validator will use the specified dialect.
 
-You can use the `ValidationConfig` to change that behaviour.
+You can use the `ValidationConfig` to change that behaviour. If `@Validation` sets a `schemaVersion` other than the default `DRAFT_7`, the annotation version takes precedence.
 
 === "Handler with custom schema version"
 
