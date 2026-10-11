@@ -83,6 +83,7 @@ public class KafkaAvroDeserializer extends AbstractKafkaDeserializer {
             case MAP -> collectNamedTypes(schema.getValueType());
             case UNION -> schema.getTypes().forEach(this::collectNamedTypes);
             default -> {
+                // Primitive types have no generated class to trust
             }
         }
     }
