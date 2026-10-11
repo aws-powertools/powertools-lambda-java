@@ -1,0 +1,23 @@
+{
+  "namespace": "software.amazon.lambda.powertools.kafka.serializers.test.avro",
+  "type": "record",
+  "name": "TestOrder",
+  "fields": [
+    {"name": "id", "type": "string"},
+    {
+      "name": "customer",
+      "type": ["null", {
+        "type": "record",
+        "name": "TestCustomer",
+        "fields": [
+          {"name": "name", "type": "string"}
+        ]
+      }],
+      "default": null
+    },
+    {
+      "name": "status",
+      "type": {"type": "enum", "name": "TestOrderStatus", "symbols": ["PENDING", "SHIPPED"]}
+    }
+  ]
+}

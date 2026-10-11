@@ -13,23 +13,38 @@
 package software.amazon.lambda.powertools.kafka.serializers;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static software.amazon.lambda.powertools.kafka.testutils.TestUtils.serializeAvro;
 
 import java.io.IOException;
 
+import org.apache.avro.util.ClassSecurityValidator;
+import org.apache.avro.util.ClassSecurityValidator.ClassSecurityPredicate;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import software.amazon.lambda.powertools.kafka.serializers.test.avro.TestCustomer;
+import software.amazon.lambda.powertools.kafka.serializers.test.avro.TestOrder;
+import software.amazon.lambda.powertools.kafka.serializers.test.avro.TestOrderStatus;
 import software.amazon.lambda.powertools.kafka.serializers.test.avro.TestProduct;
+import software.amazon.lambda.powertools.kafka.testutils.TestProductPojo;
 
 class KafkaAvroDeserializerTest {
 
     private KafkaAvroDeserializer deserializer;
+    private ClassSecurityPredicate originalValidator;
 
     @BeforeEach
     void setUp() {
+        originalValidator = ClassSecurityValidator.getGlobal();
         deserializer = new KafkaAvroDeserializer();
+    }
+
+    @AfterEach
+    void tearDown() {
+        ClassSecurityValidator.setGlobal(originalValidator);
     }
 
     @Test
@@ -71,6 +86,51 @@ class KafkaAvroDeserializerTest {
                 AbstractKafkaDeserializer.SchemaRegistryType.NONE))
                         .isInstanceOf(IOException.class)
                         .hasMessageContaining("Failed to deserialize Avro data");
+    }
+
+    @Test
+    void shouldDeserializeRecordWithNestedRecordAndEnum() throws IOException {
+        // Given
+        TestOrder order = new TestOrder("order-1", new TestCustomer("Jane"), TestOrderStatus.SHIPPED);
+        byte[] avroData = serializeAvro(order);
+
+        // When
+        TestOrder result = deserializer.deserializeObject(avroData, TestOrder.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.NONE);
+
+        // Then
+        assertThat(result).isEqualTo(order);
+    }
+
+    @Test
+    void shouldNotTrustClassesOutsideDeclaredSchema() throws IOException {
+        // Given
+        byte[] avroData = serializeAvro(new TestProduct(123, "Test Product", 99.99));
+
+        // When
+        deserializer.deserializeObject(avroData, TestProduct.class, AbstractKafkaDeserializer.SchemaRegistryType.NONE);
+
+        // Then
+        assertThatThrownBy(() -> ClassSecurityValidator.validate(TestProductPojo.class))
+                .isInstanceOf(SecurityException.class);
+    }
+
+    @Test
+    void shouldKeepValidatorConfiguredBeforeFirstUse() throws IOException {
+        // Given
+        ClassSecurityValidator.setGlobal(ClassSecurityValidator.builder().add(TestProductPojo.class).build());
+        byte[] avroData = serializeAvro(new TestProduct(123, "Test Product", 99.99));
+
+        // When
+        TestProduct result = deserializer.deserializeObject(avroData, TestProduct.class,
+                AbstractKafkaDeserializer.SchemaRegistryType.NONE);
+
+        // Then
+        assertThat(result.getId()).isEqualTo(123);
+        assertThatCode(() -> {
+            ClassSecurityValidator.validate(TestProductPojo.class);
+            ClassSecurityValidator.validate(TestProduct.class);
+        }).doesNotThrowAnyException();
     }
 
 }

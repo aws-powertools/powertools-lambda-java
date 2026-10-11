@@ -11,7 +11,7 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <avro.version>1.12.1</avro.version>
+        <avro.version>1.12.2</avro.version>
         <protobuf.version>4.31.0</protobuf.version>
         <kafka-clients.version>4.0.2</kafka-clients.version>
     </properties>
