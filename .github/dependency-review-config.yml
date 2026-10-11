@@ -29,4 +29,9 @@ allow-licenses:
   - 'BSD-3-Clause-Open-MPI'
   # TT: D290816995
   - 'UPL-1.0'
+allow-dependencies-licenses:
+  # UPL-1.0: https://github.com/graalvm/native-build-tools/blob/1.1.14/LICENSE
+  - 'pkg:maven/org.graalvm.buildtools/native-maven-plugin'
+  # EPL-2.0 (test scope only): https://github.com/junit-team/junit-framework/blob/r6.1.3/LICENSE.md
+  - 'pkg:maven/org.junit/junit-bom'
 comment-summary-in-pr: on-failure
