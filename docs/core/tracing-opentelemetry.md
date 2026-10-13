@@ -1,20 +1,22 @@
 ---
-title: Tracing Opentelemetry
+title: Tracing OpenTelemetry
 description: Core utility
 ---
 
-The Tracing Opentelemetry utility is an opinionated thin wrapper for [AWS X-Ray Java SDK](https://github.com/aws/aws-xray-sdk-java/)
- provides functionality to reduce the overhead of performing common tracing tasks.
+The Tracing OpenTelemetry utility provides an opinionated integration with [OpenTelemetry](https://opentelemetry.io/) for AWS Lambda. It reduces the overhead of performing distributed tracing tasks by automatically creating spans, extracting trace context from various AWS Lambda event sources, capturing cold starts, responses, and errors, and exporting traces to OpenTelemetry Protocol (OTLP) collectors or AWS Distro for OpenTelemetry (ADOT).
 
 ![Tracing showcase](../media/tracing_utility_showcase.png)
 
  **Key Features**
 
- * Capture cold start as annotation, and responses as well as full exceptions as metadata
- * Helper methods to improve the developer experience of creating new X-Ray subsegments.
- * Better developer experience when developing with multiple threads.
- * Auto patch supported modules by AWS X-Ray
- * GraalVM support
+ * Automatic span lifecycle management for Lambda handlers and arbitrary methods using the `@Tracing` annotation or programmatic API.
+ * Capture cold start as attribute (`faas.coldstart`), Lambda invocation ID (`faas.invocation_id`), responses, and full exceptions.
+ * Built-in trace context extraction and span enrichment for major AWS Lambda event sources (API Gateway, SQS, SNS, Kinesis, DynamoDB Streams, S3).
+ * Flexible context propagation modes (`PARENT` and `LINK`) supporting W3C Trace Context and AWS X-Ray formats.
+ * Automatic configuration for OTLP exporters (gRPC and HTTP/Protobuf) and seamless compatibility with Global OpenTelemetry (e.g. ADOT Java agent / Lambda layer).
+ * Programmatic tracing API (`TracingOpenTelemetry`) for custom spans, scopes, and manual context injection/extraction.
+ * Automatic User-Agent tagging for AWS SDK for Java 2.x clients.
+ * GraalVM support.
 
 ## Install
 
@@ -32,7 +34,7 @@ The Tracing Opentelemetry utility is an opinionated thin wrapper for [AWS X-Ray 
     </dependencies>
     ...
     <!-- configure the aspectj-maven-plugin to compile-time weave (CTW) the aws-lambda-powertools-java aspects into your project -->
-    <!-- Note: This AspectJ configuration is not needed when using the functional approach -->
+    <!-- Note: This AspectJ configuration is not needed when using the programmatic approach -->
     <build>
         <plugins>
             ...
@@ -41,9 +43,9 @@ The Tracing Opentelemetry utility is an opinionated thin wrapper for [AWS X-Ray 
                  <artifactId>aspectj-maven-plugin</artifactId>
                  <version>1.14</version>
                  <configuration>
-                     <source>11</source> <!-- or higher -->
-                     <target>11</target> <!-- or higher -->
-                     <complianceLevel>11</complianceLevel> <!-- or higher -->
+                     <source>17</source> <!-- or higher -->
+                     <target>17</target> <!-- or higher -->
+                     <complianceLevel>17</complianceLevel> <!-- or higher -->
                      <aspectLibraries>
                          <aspectLibrary>
                              <groupId>software.amazon.lambda</groupId>
@@ -77,7 +79,7 @@ The Tracing Opentelemetry utility is an opinionated thin wrapper for [AWS X-Ray 
     ```groovy hl_lines="3 11 12"
         plugins {
             id 'java'
-            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the functional approach
+            id 'io.freefair.aspectj.post-compile-weaving' version '8.1.0' // Not needed when using the programmatic approach
         }
         
         repositories {
@@ -85,46 +87,58 @@ The Tracing Opentelemetry utility is an opinionated thin wrapper for [AWS X-Ray 
         }
         
         dependencies {
-            aspect 'software.amazon.lambda:powertools-tracing-opentelemetry:{{ powertools.version }}' // Not needed when using the functional approach
-            implementation 'software.amazon.lambda:powertools-tracing-opentelemetry:{{ powertools.version }}' // Use this instead of 'aspect' when using the functional approach
+            aspect 'software.amazon.lambda:powertools-tracing-opentelemetry:{{ powertools.version }}' // Not needed when using the programmatic approach
+            implementation 'software.amazon.lambda:powertools-tracing-opentelemetry:{{ powertools.version }}' // Use this instead of 'aspect' when using the programmatic approach
         }
         
-        sourceCompatibility = 11 // or higher
-        targetCompatibility = 11 // or higher
+        sourceCompatibility = 17 // or higher
+        targetCompatibility = 17 // or higher
     ```
 
 ## Initialization
 
-Before your use this utility, your AWS Lambda function [must have permissions](https://docs.aws.amazon.com/lambda/latest/dg/services-xray.html#services-xray-permissions) to send traces to AWS X-Ray.
+Before using this utility, ensure your environment is configured to export OpenTelemetry traces (such as using an OpenTelemetry Collector, AWS Distro for OpenTelemetry (ADOT), or a generic OTLP backend).
 
 > Example using AWS Serverless Application Model (SAM)
 
 === "template.yaml"
 
-    ```yaml hl_lines="8 11"
+    ```yaml hl_lines="8 10-14"
     Resources:
         HelloWorldFunction:
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java11
+            Runtime: java17
     
             Tracing: Active
             Environment:
                 Variables:
                     POWERTOOLS_SERVICE_NAME: example
+                    POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE: PARENT
+                    OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: grpc
+                    OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: http://localhost:4317
     ```
 
-The Powertools for AWS Lambda (Java) service name is used as the X-Ray namespace. This can be set using the environment variable
-`POWERTOOLS_SERVICE_NAME`
+The following environment variables can be configured:
+
+| Environment Variable | Description | Default |
+| --- | --- | --- |
+| **`POWERTOOLS_SERVICE_NAME`** | Service name associated with the Lambda function resource | `""` |
+| **`POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE`** | Propagation strategy: `PARENT` or `LINK` | `PARENT` |
+| **`POWERTOOLS_TRACER_CAPTURE_RESPONSE`** | Capture method response in span attribute | `false` |
+| **`POWERTOOLS_TRACER_CAPTURE_ERROR`** | Capture thrown exception in span | `false` |
+| **`OTEL_EXPORTER_OTLP_TRACES_PROTOCOL`** | Exporter protocol: `grpc` or `http/protobuf` | `grpc` |
+| **`OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`** | Target OTLP endpoint (e.g., `http://localhost:4317`) | Collector default |
+| **`OTEL_EXPORTER_OTLP_TRACES_HEADERS`** | Comma-separated list of headers (`key=value,key2=value2`) | `""` |
 
 ### Lambda handler
 
-You can enable tracing using either the `@Tracing` annotation or the functional API.
+You can enable tracing using either the `@Tracing` annotation or the programmatic API.
 
-**With the `@Tracing` annotation**, add it to your `handleRequest` method or any method to capture it as a separate subsegment automatically. You can optionally customize the segment name that appears in traces.
+**With the `@Tracing` annotation**, add it to your `handleRequest` method or any internal method to capture it as a separate span automatically. You can optionally customize the span name and namespace.
 
-**With the functional API**, use `TracingUtils.withSubsegment()` to manually create subsegments without AspectJ configuration.
+**With the programmatic API**, use `TracingOpenTelemetry.create()` to manually manage spans without AspectJ configuration.
 
 === "@Tracing annotation"
 
@@ -150,60 +164,67 @@ You can enable tracing using either the `@Tracing` annotation or the functional 
     }
     ```
 
-=== "Functional API"
+=== "Programmatic API"
 
     ```java hl_lines="1 6 7 8 10 11 12"
-    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingUtils;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
 
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            TracingUtils.withSubsegment("businessLogic1", subsegment -> {
+            TracingOpenTelemetry.create().withSpan("businessLogic1", span -> {
                 // Business logic 1
+                return null;
             });
     
-            TracingUtils.withSubsegment("businessLogic2", subsegment -> {
+            TracingOpenTelemetry.create().withSpan("businessLogic2", span -> {
                 // Business logic 2
+                return null;
             });
         }
     }
     ```
 
-=== "Custom Segment names"
+=== "Custom Span names"
 
     ```java hl_lines="3"
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        @Tracing(segmentName="yourCustomName")
+        @Tracing(spanName="yourCustomSpanName")
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         ...
         }
     ```
 
-When using the `@Tracing` annotation, the utility performs these additional tasks to ease operations:
+When using the `@Tracing` annotation on a Lambda handler, the utility performs these additional tasks:
 
-  * Creates a `ColdStart` annotation to easily filter traces that have had an initialization overhead.
-  * Creates a `Service` annotation if service parameter or `POWERTOOLS_SERVICE_NAME` is set.
-  * Captures any response, or full exceptions generated by the handler, and include as tracing metadata.
+  * Creates a `faas.coldstart` attribute to easily identify cold starts.
+  * Adds the `faas.invocation_id` attribute containing the AWS Request ID.
+  * Automatically extracts incoming trace context from supported Lambda event sources (API Gateway, SQS, SNS, Kinesis, DynamoDB, S3) and enriches the span with event details.
+  * Captures responses and full exceptions based on the configured capture mode.
+  * Automatically flushes telemetry data when handler execution finishes.
 
-By default, the `@Tracing` annotation uses `captureMode=ENVIRONMENT_VAR`, which means it will only record method responses and exceptions if you set
-the environment variables `POWERTOOLS_TRACER_CAPTURE_RESPONSE` and `POWERTOOLS_TRACER_CAPTURE_ERROR` to `true`. You can override this behavior by
-specifying a different `captureMode` to always record response, exception, both, or neither.
+By default, the `@Tracing` annotation uses `captureMode = CaptureMode.ENVIRONMENT_VAR`, which means it will record method responses and exceptions only if you set the environment variables `POWERTOOLS_TRACER_CAPTURE_RESPONSE` and `POWERTOOLS_TRACER_CAPTURE_ERROR` to `true`. You can override this behavior by specifying a different `captureMode`:
+
+* `CaptureMode.ENVIRONMENT_VAR` (default): Uses environment variables.
+* `CaptureMode.RESPONSE`: Always captures the response.
+* `CaptureMode.ERROR`: Always captures exceptions.
+* `CaptureMode.RESPONSE_AND_ERROR`: Captures both response and exceptions.
+* `CaptureMode.DISABLED`: Disables response and exception capture.
 
 !!! note
-    When using the functional API with `TracingUtils.withSubsegment()`, response and exception capture is not automatic. You can manually add metadata using `TracingUtils.putMetadata()` as needed.
+    When using the programmatic API with `TracingOpenTelemetry`, response capture is manual, while `withSpan` automatically records thrown exceptions on the span before propagating them.
 
 !!! warning "Returning sensitive information from your Lambda handler or functions?"
-    When using the `@Tracing` annotation, you can disable it from capturing responses and exceptions as tracing metadata with **`captureMode=DISABLED`**
+    When using the `@Tracing` annotation, you can disable response and exception capture with **`captureMode = CaptureMode.DISABLED`**
     or globally by setting the environment variables **`POWERTOOLS_TRACER_CAPTURE_RESPONSE`** and **`POWERTOOLS_TRACER_CAPTURE_ERROR`** to **`false`**.
-    When using the functional API, you have full control over what metadata is captured.
 
 === "@Tracing annotation - Disable on method"
 
     ```java hl_lines="3"
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        @Tracing(captureMode=CaptureMode.DISABLED)
+        @Tracing(captureMode = CaptureMode.DISABLED)
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
         ...
         }
@@ -217,7 +238,7 @@ specifying a different `captureMode` to always record response, exception, both,
             Type: AWS::Serverless::Function
             Properties:
             ...
-            Runtime: java11
+            Runtime: java17
     
             Tracing: Active
             Environment:
@@ -226,112 +247,180 @@ specifying a different `captureMode` to always record response, exception, both,
                     POWERTOOLS_TRACER_CAPTURE_ERROR: false
     ```
 
-=== "Functional API"
+=== "Programmatic API"
 
     ```java hl_lines="6 7 8"
-    import software.amazon.lambda.powertools.tracing.TracingUtils;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
 
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            TracingUtils.withSubsegment("businessLogic", subsegment -> {
-                // With functional API, you control what metadata is captured
+            TracingOpenTelemetry.create().withSpan("businessLogic", span -> {
+                // You have full control over what attributes are set on the span
+                return null;
             });
         }
     ```
 
-### Annotations & Metadata
+### Attributes & Events
 
-**Annotations** are key-values associated with traces and indexed by AWS X-Ray. You can use them to filter traces and to
-create [Trace Groups](https://aws.amazon.com/about-aws/whats-new/2018/11/aws-xray-adds-the-ability-to-group-traces/) to slice and dice your transactions.
+In OpenTelemetry, **Attributes** are key-value pairs associated with spans used for querying and filtering traces. **Events** are timestamped annotations within a span representing specific moments during execution.
 
-**Metadata** are key-values also associated with traces but not indexed by AWS X-Ray. You can use them to add additional 
-context for an operation using any native object.
+=== "Attributes"
 
-=== "Annotations"
-
-    You can add annotations using `putAnnotation()` method from TracingUtils
-    ```java hl_lines="8"
-    import software.amazon.lambda.powertools.tracing.Tracing;
-    import software.amazon.lambda.powertools.tracing.TracingUtils;
+    You can add attributes directly to the active span using OpenTelemetry API:
+    ```java hl_lines="2 8"
+    import io.opentelemetry.api.trace.Span;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.Tracing;
 
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         @Tracing
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            TracingUtils.putAnnotation("annotation", "value");
+            Span.current().setAttribute("customer.id", "12345");
+            Span.current().setAttribute("order.amount", 99.99);
         }
     }
     ```
 
-=== "Metadata"
+=== "Events"
 
-    You can add metadata using `putMetadata()` method from TracingUtils
-    ```java hl_lines="8"
-    import software.amazon.lambda.powertools.tracing.Tracing;
-    import software.amazon.lambda.powertools.tracing.TracingUtils;
+    You can record events on the active span using `addEvent()`:
+    ```java hl_lines="2 8 9"
+    import io.opentelemetry.api.trace.Span;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.Tracing;
 
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
         @Tracing
         public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            TracingUtils.putMetadata("content", "value");
+            Span.current().addEvent("processing_started");
+            // Perform operations...
+            Span.current().addEvent("processing_finished");
         }
     }
     ```
 
-## Override default object mapper
+## Event Source Context Extraction
 
-You can optionally choose to override default object mapper which is used to serialize method response and exceptions when enabled. You might
-want to supply custom object mapper in order to control how serialisation is done, for example, when you want to log only
-specific fields from received event due to security.
+Powertools for AWS Lambda OpenTelemetry Tracing automatically inspects incoming Lambda events and extracts trace context across distributed boundaries using W3C Trace Context and AWS X-Ray headers.
 
-=== "App.java"
+Supported event sources include:
 
-    ```java hl_lines="10-14"
-    import software.amazon.lambda.powertools.tracing.Tracing;
-    import software.amazon.lambda.powertools.tracing.TracingUtils;
-    import static software.amazon.lambda.powertools.tracing.CaptureMode.RESPONSE;
+* **API Gateway** (`APIGatewayProxyRequestEvent`, `APIGatewayV2HTTPEvent`): Extracts `traceparent`, `tracestate`, or `X-Amzn-Trace-Id` headers and enriches span with HTTP method, path, and status code.
+* **Amazon SQS** (`SQSEvent`): Extracts trace headers from message attributes and system attributes.
+* **Amazon SNS** (`SNSEvent`): Extracts trace headers from message attributes.
+* **Amazon Kinesis** (`KinesisEvent`): Extracts trace context from record data.
+* **Amazon DynamoDB Streams** (`DynamodbEvent`): Extracts trace context from stream records.
+* **Amazon S3** (`S3Event`): Extracts and enriches span with bucket and object metadata.
 
-    /**
-     * Handler for requests to Lambda function.
-     */
-    public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> { 
-        static {
-            ObjectMapper objectMapper = new ObjectMapper();
-            SimpleModule simpleModule = new SimpleModule();
-            objectMapper.registerModule(simpleModule);
+### Propagation Modes
 
-            TracingUtils.defaultObjectMapper(objectMapper);
-        }
-    
-        @Tracing(captureMode = RESPONSE)
-        public APIGatewayProxyResponseEvent handleRequest(final APIGatewayProxyRequestEvent input, final Context context) {
-            ...
-        }
-    }
+You can control how trace contexts are connected using the `POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE` environment variable:
+
+* **`PARENT` (Default)**: Creates the handler span as a child of the extracted trace context.
+* **`LINK`**: Creates the handler span in the current context and links it to extracted trace contexts. This is particularly useful for batch event sources (such as SQS or Kinesis) where a single batch contains messages from multiple independent traces.
+
+=== "PARENT Mode"
+
+    ```yaml hl_lines="4"
+    Environment:
+        Variables:
+            POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE: PARENT
+    ```
+
+=== "LINK Mode"
+
+    ```yaml hl_lines="4"
+    Environment:
+        Variables:
+            POWERTOOLS_TRACE_CONTEXT_PROPAGATION_MODE: LINK
     ```
 
 ## Advanced usage
 
+### Programmatic Tracing with TracingOpenTelemetry
+
+You can use `TracingOpenTelemetry` to manually create and manage spans with full control over span lifecycle, kinds, attributes, and context scoping.
+
+=== "Span with SpanScope"
+
+    ```java hl_lines="1 6 7 11"
+    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.internal.SpanScope;
+
+    public class OrderService {
+        public void processOrder(String orderId) {
+            TracingOpenTelemetry tracing = TracingOpenTelemetry.create();
+            try (SpanScope scope = tracing.addSpan("processOrder")) {
+                scope.span().setAttribute("order.id", orderId);
+                scope.addEvent("validating_order");
+                // Business logic
+            }
+        }
+    }
+    ```
+
+=== "Custom Builder Configuration"
+
+    ```java hl_lines="1 4-8"
+    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
+
+    TracingOpenTelemetry customTracing = TracingOpenTelemetry.builder()
+            .tracer(customTracer)
+            .propagator(customPropagator)
+            .eventContextExtractorResolver(customResolver)
+            .build();
+    ```
+
+### Context Injection & Extraction
+
+When communicating across distributed systems or custom protocols, you can inject and extract trace context directly:
+
+=== "Context Propagation"
+
+    ```java hl_lines="1 2 7 13"
+    import io.opentelemetry.context.propagation.TextMapSetter;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
+
+    public class MessageSender {
+        public void sendMessage(Map<String, String> carrier) {
+            TracingOpenTelemetry tracing = TracingOpenTelemetry.create();
+            tracing.injectContext(carrier, (map, key, value) -> map.put(key, value));
+        }
+
+        public void receiveMessage(Map<String, String> carrier) {
+            TracingOpenTelemetry tracing = TracingOpenTelemetry.create();
+            io.opentelemetry.context.Context context = tracing.extractContext(carrier, (map, key) -> map.get(key));
+        }
+    }
+    ```
+
 ### Multi-threaded programming
 
-When working with multiple threads, you need to pass the trace entity to ensure proper trace context propagation.
+When spawning multiple threads, ensure the OpenTelemetry context is propagated to the new thread using `Context.makeCurrent()`:
 
 === "Multi-threaded example"
 
-    ```java hl_lines="7 9 10 11"
-    import static software.amazon.lambda.powertools.tracing.TracingUtils.withEntitySubsegment;
+    ```java hl_lines="1 2 8 10 11"
+    import io.opentelemetry.context.Context;
+    import io.opentelemetry.context.Scope;
+    import software.amazon.lambda.powertools.tracing.opentelemetry.TracingOpenTelemetry;
 
     public class App implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
     
-        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            // Extract existing trace data
-            Entity traceEntity = AWSXRay.getTraceEntity();
+        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, com.amazonaws.services.lambda.runtime.Context lambdaContext) {
+            Context parentContext = Context.current();
     
-            Thread anotherThread = new Thread(() -> withEntitySubsegment("inlineLog", traceEntity, subsegment -> {
-                // Business logic in separate thread
-            }));
+            Thread anotherThread = new Thread(() -> {
+                try (Scope scope = parentContext.makeCurrent()) {
+                    TracingOpenTelemetry.create().withSpan("asyncTask", span -> {
+                        // Business logic in separate thread with preserved context
+                        return null;
+                    });
+                }
+            });
+            anotherThread.start();
         }
     }
     ```
@@ -340,159 +429,70 @@ When working with multiple threads, you need to pass the trace entity to ensure 
 
 ### AWS SDK for Java 2.x
 
-Powertools for AWS Lambda (Java) includes the `aws-xray-recorder-sdk-aws-sdk-v2-instrumentor` library, which **automatically instruments all AWS SDK v2 clients** when you add the `powertools-tracing` dependency to your project. This means downstream calls to AWS services are traced without any additional configuration.
+Powertools for AWS Lambda (Java) OpenTelemetry module includes `TracingUserAgentInterceptor`, which automatically tags AWS SDK v2 client requests with the Powertools user-agent header without any additional code required.
 
-If you need more control over which clients are instrumented, you can manually add the `TracingInterceptor` to specific clients:
-
-=== "Manual instrumentation (optional)"
-
-    ```java hl_lines="1 2 3 8 9 10 11"
-    import com.amazonaws.xray.interceptors.TracingInterceptor;
-    import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-    import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-
-    public class LambdaHandler {
-        private DynamoDbClient client = DynamoDbClient.builder()
-            .region(Region.US_WEST_2)
-            .overrideConfiguration(ClientOverrideConfiguration.builder()
-                .addExecutionInterceptor(new TracingInterceptor())
-                .build()
-            )
-            .build();
-        // ...
-    }
-    ```
-
-For more details, refer to the [AWS X-Ray documentation on tracing AWS SDK calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-awssdkclients.html) and [outgoing HTTP calls](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java-httpclients.html).
+For tracing outgoing AWS SDK calls, you can use the OpenTelemetry AWS SDK Instrumentation library or the [AWS Distro for OpenTelemetry (ADOT)](https://aws-otel.github.io/) Java agent / Lambda layer, which automatically instruments AWS SDK clients and outgoing HTTP calls.
 
 ## Testing your code
 
-When using `@Tracing` annotation, your Junit test cases needs to be configured to create parent Segment required by [AWS X-Ray SDK for Java](https://docs.aws.amazon.com/xray/latest/devguide/xray-sdk-java.html).
+When testing code instrumented with `@Tracing` or `TracingOpenTelemetry`, you can configure unit tests using OpenTelemetry testing utilities like `InMemorySpanExporter` or configure custom `TracingOpenTelemetry` instances.
 
-Below are two ways in which you can configure your tests.
+=== "JUnit 5 Test (InMemorySpanExporter)"
 
-#### Configure environment variable on project level (Recommended)
+    ```java hl_lines="1 2 11 12 13 14 15 22 23"
+    import io.opentelemetry.sdk.testing.exporter.InMemorySpanExporter;
+    import io.opentelemetry.sdk.trace.SdkTracerProvider;
+    import io.opentelemetry.sdk.trace.export.SimpleSpanProcessor;
+    import org.junit.jupiter.api.AfterEach;
+    import org.junit.jupiter.api.BeforeEach;
+    import org.junit.jupiter.api.Test;
 
-You can choose to configure environment variable on project level for your test cases run. This is recommended approach as it will avoid the need of configuring each test case specifically.
+    public class AppTest {
+        private InMemorySpanExporter exporter;
+        private SdkTracerProvider tracerProvider;
 
-Below are examples configuring your maven/gradle projects. You can choose to configure it differently as well as long as you are making sure that environment variable `LAMBDA_TASK_ROOT` is set. This variable is 
-used internally via AWS X-Ray SDK to configure itself properly for lambda runtime.
+        @BeforeEach
+        public void setup() {
+            exporter = InMemorySpanExporter.create();
+            tracerProvider = SdkTracerProvider.builder()
+                    .addSpanProcessor(SimpleSpanProcessor.create(exporter))
+                    .build();
+        }
+
+        @AfterEach
+        public void tearDown() {
+            tracerProvider.close();
+        }
+
+        @Test
+        public void successfulResponse() {
+            // Execute handler and assert captured spans from exporter.getFinishedSpanItems()
+        }
+    }
+    ```
 
 === "Maven (pom.xml)"
 
     ```xml
     <build>
-        ...
       <plugins>
-        <!--  Configures environment variable to avoid initialization of AWS X-Ray segments for each tests-->
           <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-surefire-plugin</artifactId>
               <configuration>
                   <environmentVariables>
-                      <LAMBDA_TASK_ROOT>handler</LAMBDA_TASK_ROOT>
+                      <AWS_LAMBDA_INITIALIZATION_TYPE>on-demand</AWS_LAMBDA_INITIALIZATION_TYPE>
                   </environmentVariables>
               </configuration>
           </plugin>
       </plugins>
     </build>
-    
     ```
 
 === "Gradle (build.gradle)"
     
-    ```json
-    // Configures environment variable to avoid initialization of AWS X-Ray segments for each tests
+    ```groovy
     test {
-        environment "LAMBDA_TASK_ROOT", "handler"
-    }
-    ```
-
-#### Configure test cases (Not Recommended)
-
-You can choose to configure each of your test case instead as well if you choose not to configure environment variable on project level. 
-Below is an example configuration needed for each test case.
-
-=== "AppTest.java"
-
-    ```java hl_lines="10 11 12 17 18 19 20 21 22 23 24"
-    import com.amazonaws.xray.AWSXRay;
-    import org.junit.After;
-    import org.junit.Before;
-    import org.junit.Test;
-
-    public class AppTest {
-
-        @Before
-        public void setup() {
-            if(null == System.getenv("LAMBDA_TASK_ROOT")) {
-                AWSXRay.beginSegment("test");
-            }
-        }
-        
-        @After
-        public void tearDown() {
-            // Needed when using sam build --use-container
-            if (AWSXRay.getCurrentSubsegmentOptional().isPresent()) {
-                AWSXRay.endSubsegment();
-            }
-
-            if(null == System.getenv("LAMBDA_TASK_ROOT")) {
-              AWSXRay.endSegment();
-            }
-        }
-
-        @Test
-        public void successfulResponse() {
-            // test logic
-        }
-    ```
-## Advanced
-
-### Lambda SnapStart priming
-
-The Tracing utility integrates with AWS Lambda SnapStart to improve restore durations. To make sure the SnapStart priming logic of this utility runs correctly, you need an explicit reference to `TracingUtils` in your code to allow the library to register before SnapStart takes a memory snapshot. Learn more about what priming is in this [blog post](https://aws.amazon.com/blogs/compute/optimizing-cold-start-performance-of-aws-lambda-using-advanced-priming-strategies-with-snapstart/){target="_blank"}.
-
-If you don't set a custom `TracingUtils` in your code yet, make sure to reference `TracingUtils` in your Lambda handler initialization code. This can be done by adding one of the following lines to your handler class:
-
-=== "Constructor"
-
-    ```java hl_lines="7"
-    import software.amazon.lambda.powertools.validation.Validation;
-    import software.amazon.lambda.powertools.validation.ValidationConfig;
-
-    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-
-        public MyFunctionHandler() {
-            TracingUtils.init(); // Ensure TracingUtils is loaded for SnapStart
-        }
-
-        @Override
-        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
-        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            // ...
-            return something;
-        }
-    }
-    ```
-
-=== "Static Initializer"
-
-    ```java hl_lines="7"
-    import software.amazon.lambda.powertools.validation.Validation;
-    import software.amazon.lambda.powertools.validation.ValidationConfig;
-
-    public class MyFunctionHandler implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
-
-        static {
-            TracingUtils.init(); // Ensure TracingUtils is loaded for SnapStart
-        }
-
-        @Override
-        @Validation(inboundSchema = "classpath:/schema_in.json", outboundSchema = "classpath:/schema_out.json")
-        public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
-            // ...
-            return something;
-        }
+        environment "AWS_LAMBDA_INITIALIZATION_TYPE", "on-demand"
     }
     ```
