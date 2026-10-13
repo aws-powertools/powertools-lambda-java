@@ -1,0 +1,52 @@
+# Build Changelog
+#
+# Description:
+#   Regenerates CHANGELOG.md from all commits and tags and opens a PR with the result
+#
+# Triggers:
+#   - workflow_dispatch
+
+on:
+  workflow_dispatch:
+
+name: Build Changelog
+run-name: Build Changelog
+
+permissions: {}
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write      # create branch
+      pull-requests: write # create PR
+    steps:
+      - id: checkout
+        name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # git-chglog needs all commits and tags to generate the full changelog
+      - id: setup-git
+        name: Git client setup
+        run: |
+          git config user.name "Powertools for AWS Lambda (Java) Bot"
+          git config user.email "151832416+aws-powertools-bot@users.noreply.github.com"
+      - id: changelog
+        name: Generate changelog
+        run: |
+          docker run -v "${PWD}":/workdir quay.io/git-chglog/git-chglog@sha256:c791b1e8264387690cce4ce32e18b4f59ca3ffd8d55cb4093dc6de74529493f4 > CHANGELOG.md
+      - id: create_pr
+        name: Create PR
+        run: |
+          if git diff --quiet -- CHANGELOG.md; then
+            echo "CHANGELOG.md is up to date"
+            exit 0
+          fi
+          git checkout -b ci-changelog-${{ github.run_id }}
+          git commit -am "chore(ci): rebuild changelog"
+          git push origin ci-changelog-${{ github.run_id }}
+          gh pr create \
+            --title "chore(ci): rebuild changelog" \
+            --body "This is an automated PR created from the following workflow: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

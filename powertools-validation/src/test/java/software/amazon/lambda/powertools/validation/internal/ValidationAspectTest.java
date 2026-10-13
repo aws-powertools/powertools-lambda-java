@@ -42,7 +42,7 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.events.ScheduledEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
-import com.networknt.schema.SpecVersion;
+import com.networknt.schema.SpecificationVersion;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.Signature;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -110,10 +111,15 @@ class ValidationAspectTest {
         MockitoAnnotations.openMocks(this);
     }
 
+    @AfterEach
+    void tearDown() {
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_7);
+    }
+
     @ParameterizedTest
     @ArgumentsSource(ResponseEventsArgumentsProvider.class)
     void testValidateOutboundJsonSchemaWithExceptions(Object object) throws Throwable {
-        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
         Object[] args = {new Object(), context};
@@ -131,7 +137,7 @@ class ValidationAspectTest {
     @ParameterizedTest
     @ArgumentsSource(HandledResponseEventsArgumentsProvider.class)
     void testValidateOutboundJsonSchemaWithHandledExceptions(Object object) throws Throwable {
-        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
         Object[] args = {new Object(), context};
@@ -171,7 +177,7 @@ class ValidationAspectTest {
 
     @Test
     void testValidateOutboundJsonSchema_APIGWV2() throws Throwable {
-        when(validation.schemaVersion()).thenReturn(SpecVersion.VersionFlag.V7);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
         when(pjp.getSignature()).thenReturn(signature);
         when(pjp.getSignature().getDeclaringType()).thenReturn(RequestHandler.class);
         Object[] args = {new Object(), context};
@@ -187,6 +193,29 @@ class ValidationAspectTest {
         when(validation.outboundSchema()).thenReturn("classpath:/schema_v7.json");
 
         assertThatNoException().isThrownBy(() -> validationAspect.around(pjp, validation));
+    }
+
+    @Test
+    void testDefaultAnnotationSchemaVersion_shouldKeepSchemaVersionFromConfig() throws Throwable {
+        ValidationConfig.get().setSchemaVersion(SpecificationVersion.DRAFT_4);
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_7);
+        when(pjp.getSignature()).thenReturn(signature);
+        when(pjp.getSignature().getDeclaringType()).thenReturn(Object.class);
+
+        validationAspect.around(pjp, validation);
+
+        assertThat(ValidationConfig.get().getSchemaVersion()).isEqualTo(SpecificationVersion.DRAFT_4);
+    }
+
+    @Test
+    void testExplicitAnnotationSchemaVersion_shouldOverrideSchemaVersionFromConfig() throws Throwable {
+        when(validation.schemaVersion()).thenReturn(SpecificationVersion.DRAFT_2019_09);
+        when(pjp.getSignature()).thenReturn(signature);
+        when(pjp.getSignature().getDeclaringType()).thenReturn(Object.class);
+
+        validationAspect.around(pjp, validation);
+
+        assertThat(ValidationConfig.get().getSchemaVersion()).isEqualTo(SpecificationVersion.DRAFT_2019_09);
     }
 
     @Test

@@ -62,7 +62,7 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>3.10.2</version>
+                <version>5.1.11</version>
                 <executions>
                     <execution>
                         <goals>
@@ -70,12 +70,13 @@
                         </goals>
                         <phase>generate-sources</phase>
                         <configuration>
-                            <protocVersion>${protobuf.version}</protocVersion>
+                            <protoc>${protobuf.version}</protoc>
                             <sourceDirectories>
                                 <sourceDirectory>${project.basedir}/../src/main/proto</sourceDirectory>
                             </sourceDirectories>
                             <outputDirectory>${project.basedir}/src/main/java</outputDirectory>
-                            <clearOutputDirectory>false</clearOutputDirectory>
+                            <cleanOutputDirectories>false</cleanOutputDirectories>
+                            <embedSourcesInClassOutputs>false</embedSourcesInClassOutputs>
                         </configuration>
                     </execution>
                 </executions>

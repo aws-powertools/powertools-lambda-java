@@ -16,9 +16,10 @@ package software.amazon.lambda.powertools.validation;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
+import com.networknt.schema.Schema;
+import com.networknt.schema.SchemaRegistry;
+import com.networknt.schema.SchemaRegistryConfig;
+import com.networknt.schema.SpecificationVersion;
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.function.BaseFunction;
 import org.crac.Context;
@@ -36,9 +37,12 @@ import software.amazon.lambda.powertools.utilities.jmespath.Base64GZipFunction;
  * For everything but the validation features (factory, schemaVersion), {@link ValidationConfig}
  * is just a wrapper of {@link JsonConfig}.
  */
-public class ValidationConfig implements Resource {
-    private SpecVersion.VersionFlag jsonSchemaVersion = SpecVersion.VersionFlag.V7;
-    private JsonSchemaFactory factory = JsonSchemaFactory.getInstance(jsonSchemaVersion);
+public final class ValidationConfig implements Resource {
+    private static final SchemaRegistryConfig SCHEMA_REGISTRY_CONFIG = SchemaRegistryConfig.builder()
+            .formatAssertionsEnabled(true).build();
+
+    private SpecificationVersion jsonSchemaVersion = SpecificationVersion.DRAFT_7;
+    private SchemaRegistry factory = createSchemaRegistry(jsonSchemaVersion);
 
     // Static block to ensure CRaC registration happens at class loading time
     static {
@@ -52,7 +56,14 @@ public class ValidationConfig implements Resource {
         return ConfigHolder.instance;
     }
 
-    public SpecVersion.VersionFlag getSchemaVersion() {
+    private static SchemaRegistry createSchemaRegistry(SpecificationVersion version) {
+        // Remote $ref fetching is opt-in since json-schema-validator 2.0.0, enable it to keep the previous behavior
+        return SchemaRegistry.withDefaultDialect(version,
+                builder -> builder.schemaRegistryConfig(SCHEMA_REGISTRY_CONFIG)
+                        .schemaLoader(schemaLoader -> schemaLoader.fetchRemoteResources()));
+    }
+
+    public SpecificationVersion getSchemaVersion() {
         return jsonSchemaVersion;
     }
 
@@ -62,15 +73,15 @@ public class ValidationConfig implements Resource {
      * explicitly specified within the schema is explicitly specified within the
      * schema, the validator will use the specified dialect.
      *
-     * @param version May be V4, V6, V7, V201909 or V202012
+     * @param version May be DRAFT_4, DRAFT_6, DRAFT_7, DRAFT_2019_09 or DRAFT_2020_12
      * @see <a href=
      *      "https://json-schema.org/understanding-json-schema/reference/schema#declaring-a-dialect">Declaring
      *      a Dialect</a>
      */
-    public void setSchemaVersion(SpecVersion.VersionFlag version) {
+    public void setSchemaVersion(SpecificationVersion version) {
         if (version != jsonSchemaVersion) {
             jsonSchemaVersion = version;
-            factory = JsonSchemaFactory.getInstance(version);
+            factory = createSchemaRegistry(version);
         }
     }
 
@@ -86,11 +97,11 @@ public class ValidationConfig implements Resource {
     }
 
     /**
-     * Return the Json Schema Factory, used to load schemas
+     * Return the Json Schema Registry, used to load schemas
      *
-     * @return the Json Schema Factory
+     * @return the Json Schema Registry
      */
-    public JsonSchemaFactory getFactory() {
+    public SchemaRegistry getFactory() {
         return factory;
     }
 
@@ -121,7 +132,7 @@ public class ValidationConfig implements Resource {
 
         // Dummy validation
         String sampleSchema = "{\"type\":\"object\"}";
-        JsonSchema schema = ValidationUtils.getJsonSchema(sampleSchema);
+        Schema schema = ValidationUtils.getJsonSchema(sampleSchema);
         ValidationUtils.validate("{\"test\":\"dummy\"}", schema);
 
         ClassPreLoader.preloadClasses();
@@ -132,7 +143,7 @@ public class ValidationConfig implements Resource {
         // No action needed after restore
     }
 
-    private static class ConfigHolder {
+    private static final class ConfigHolder {
         private static final ValidationConfig instance = new ValidationConfig();
     }
 }

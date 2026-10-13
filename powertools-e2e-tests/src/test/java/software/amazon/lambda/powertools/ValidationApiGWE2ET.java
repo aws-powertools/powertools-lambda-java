@@ -87,7 +87,13 @@ class ValidationApiGWE2ET {
             // invocation should fail inbound validation and return 400
             JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
             assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-            assertThat(validJsonNode.get("body").asText()).contains(": required property 'price' not found");
+            JsonNode validationErrors = objectMapper.readTree(validJsonNode.get("body").asText())
+                    .get("validationErrors");
+            assertThat(validationErrors).hasSize(1);
+            JsonNode error = validationErrors.get(0);
+            assertThat(error.get("keyword").asText()).isEqualTo("required");
+            assertThat(error.get("instanceLocation").asText()).isEmpty();
+            assertThat(error.get("message").asText()).isEqualTo("required property 'price' not found");
         }
     }
 
@@ -103,8 +109,13 @@ class ValidationApiGWE2ET {
             // invocation should fail outbound validation and return 400
             JsonNode validJsonNode = objectMapper.readTree(invocationResult.getResult());
             assertThat(validJsonNode.get("statusCode").asInt()).isEqualTo(400);
-            assertThat(validJsonNode.get("body").asText())
-                    .contains("/price: must have an exclusive maximum value of 1000");
+            JsonNode validationErrors = objectMapper.readTree(validJsonNode.get("body").asText())
+                    .get("validationErrors");
+            assertThat(validationErrors).hasSize(1);
+            JsonNode error = validationErrors.get(0);
+            assertThat(error.get("keyword").asText()).isEqualTo("exclusiveMaximum");
+            assertThat(error.get("instanceLocation").asText()).isEqualTo("/price");
+            assertThat(error.get("message").asText()).isEqualTo("must have an exclusive maximum value of 1000");
         }
     }
 }
