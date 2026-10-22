@@ -560,6 +560,35 @@ Handle errors gracefully when processing Kafka messages to ensure your applicati
     }
     ```
 
+### Trusted Avro classes
+
+Starting with version 1.12.2, Apache Avro only loads classes that its JVM-wide `ClassSecurityValidator` trusts. By default, Avro trusts a small set of JDK types and no application classes.
+
+Powertools trusts the Avro class you declare in your handler signature, for example `Order` in `ConsumerRecords<String, Order>`, and the records, enums and fixed types nested in its compiled schema. Powertools trusts no other classes. This is safe because Powertools never reads a schema from the Kafka record. It always decodes with the schema compiled into your declared class, so a producer cannot make Avro load any other class.
+
+To trust additional classes, add them in a static initializer of your handler class:
+
+```java
+import org.apache.avro.util.ClassSecurityValidator;
+
+public class OrderHandler implements RequestHandler<ConsumerRecords<String, Order>, String> {
+
+    static {
+        ClassSecurityValidator.setGlobal(ClassSecurityValidator.composite(
+                ClassSecurityValidator.getGlobal(),
+                ClassSecurityValidator.builder().add(MyClass.class).build()));
+    }
+
+    // ...
+}
+```
+
+<!-- prettier-ignore -->
+!!! warning "Always compose with `ClassSecurityValidator.getGlobal()`"
+    Calling `ClassSecurityValidator.setGlobal` without composing `ClassSecurityValidator.getGlobal()` replaces the Powertools allowlist, and Avro rejects your declared classes.
+
+You can also list trusted classes or packages with the `org.apache.avro.SERIALIZABLE_CLASSES` and `org.apache.avro.SERIALIZABLE_PACKAGES` system properties, for example `JAVA_TOOL_OPTIONS=-Dorg.apache.avro.SERIALIZABLE_PACKAGES=com.example.model`. Setting `SERIALIZABLE_PACKAGES` to `*` turns off the protection for the whole JVM.
+
 ### Integrating with Idempotency
 
 When processing Kafka messages in Lambda, failed batches can result in message reprocessing. The idempotency utility prevents duplicate processing by tracking which messages have already been handled, ensuring each message is processed exactly once.
