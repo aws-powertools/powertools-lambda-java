@@ -11,7 +11,8 @@
 This documentation provides guidance for adding GraalVM support for AWS Lambda Powertools Java modules and using the modules in Lambda functions.
 
 ## Prerequisites
-- GraalVM 21+ installation
+- GraalVM 25 installation. To run the native tests of modules that use Mockito, use a GraalVM 25 innovation release (see [Known Issues and Solutions](#known-issues-and-solutions)). The CI `graalvm-build` job in [check-build.yml](.github/workflows/check-build.yml) runs the native tests on Oracle GraalVM 25.4.4.1.1.
+- The `sam-graalvm` example Dockerfiles use the GraalVM for JDK 25 LTS release from `https://download.oracle.com/graalvm/25/latest/`. They only build native images of the example functions and do not run the native tests with the tracing agent, so the known issue does not affect them.
 - Maven 3.x
 
 ## General Implementation Steps
@@ -57,17 +58,21 @@ mvn -Pnative test
    - Subclass mock maker does not support testing static methods. Tests have therefore been modified to use [JUnit Pioneer](https://junit-pioneer.org/docs/environment-variables/) to inject the environment variables in the scope of the test's execution.
 
 2. **Unsafe Allocation Tracing**
-   - GraalVM 21.0.10+ requires `"unsafeAllocated": true` in `reflect-config.json` for classes instantiated via `Unsafe.allocateInstance()`. Mockito uses Objenesis which relies on this.
+   - GraalVM 21.0.10 and later, including GraalVM 25, require `"unsafeAllocated": true` in the reachability metadata for classes instantiated via `Unsafe.allocateInstance()`. Mockito uses Objenesis which relies on this.
    - The `enableExperimentalUnsafeAllocationTracing` option is enabled in the root `pluginManagement` agent configuration to address this.
 
-3. **Log4j Compatibility**
+3. **Predefined Classes on GraalVM 25.0**
+   - **Issue**: On GraalVM 25.0.x, native test image builds fail with `Unsupported class file major version 69` in `ClassPredefinitionFeature`. The tracing agent records the classes that Byte Buddy generates for Mockito mocks at runtime (`enableExperimentalPredefinedClasses`). On JDK 25, these classes use class file version 69, which the ASM version shaded in GraalVM 25.0 cannot read ([oracle/graal#12723](https://github.com/oracle/graal/issues/12723)).
+   - **Solution**: Use a GraalVM 25 innovation release (25.1 or later), which reads class files with the Java Class-File API. The CI `graalvm-build` job is pinned to GraalVM 25.4.4.1.1.
+
+4. **Log4j Compatibility**
    - Version 2.22.1 fails with this error
 ```
 java.lang.InternalError: com.oracle.svm.core.jdk.UnsupportedFeatureError: Defining hidden classes at runtime is not supported.
 ```
    - This has been [fixed](https://github.com/apache/logging-log4j2/discussions/2364#discussioncomment-8950077) in Log4j 2.24.x. PT has been updated to use this version of Log4j 
 
-4. **Test Class Organization**
+5. **Test Class Organization**
    - **Issue**: Anonymous inner classes and lambda expressions in Mockito matchers cause `NoSuchMethodError` in GraalVM native tests
    - **Solution**: 
      - Extract static inner test classes to separate concrete classes in the same package as the class under test
@@ -83,12 +88,12 @@ java.lang.InternalError: com.oracle.svm.core.jdk.UnsupportedFeatureError: Defini
    })
    ```
 
-5. **Package Visibility Issues**
+6. **Package Visibility Issues**
    - **Issue**: Test handler classes cannot access package-private methods when placed in subpackages
    - **Solution**: Place test handler classes in the same package as the class under test, not in subpackages like `handlers/`
    - **Example**: Use `software.amazon.lambda.powertools.cloudformation` instead of `software.amazon.lambda.powertools.cloudformation.handlers`
 
-6. **Test Stubs Best Practice**
+7. **Test Stubs Best Practice**
    - **Best Practice**: Avoid mocking where possible and use concrete test stubs provided by `powertools-common` package
    - **Solution**: Use `TestLambdaContext` and other test stubs from `powertools-common` test-jar instead of Mockito mocks
    - **Implementation**: Add `powertools-common` test-jar dependency and replace `mock(Context.class)` with `new TestLambdaContext()`
