@@ -14,9 +14,9 @@
 
 package software.amazon.lambda.powertools.batch.internal;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -29,7 +29,7 @@ public class MultiThreadMDC {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MultiThreadMDC.class);
 
-    private final List<String> mdcAwareThreads = new ArrayList<>();
+    private final Set<String> mdcAwareThreads = ConcurrentHashMap.newKeySet();
     private final Map<String, String> contextMap;
     
     public MultiThreadMDC() {
@@ -38,17 +38,15 @@ public class MultiThreadMDC {
     }
     
     public void copyMDCToThread(String thread) {
-        if (!mdcAwareThreads.contains(thread)) {
+        if (mdcAwareThreads.add(thread)) {
             LOGGER.debug("Copy MDC to thread {}", thread);
             MDC.setContextMap(contextMap);
-            mdcAwareThreads.add(thread);
         }
     }
 
     public void removeThread(String thread) {
-        if (mdcAwareThreads.contains(thread)) {
-            LOGGER.debug("Removing thread {}", thread);
-            mdcAwareThreads.remove(thread);
+        if (mdcAwareThreads.remove(thread)) {
+            LOGGER.debug("Removed thread {}", thread);
         }
     }
 }
