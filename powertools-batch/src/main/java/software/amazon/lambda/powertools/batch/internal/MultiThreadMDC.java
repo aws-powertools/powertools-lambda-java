@@ -37,16 +37,20 @@ public class MultiThreadMDC {
         contextMap = MDC.getCopyOfContextMap();
     }
     
-    public void copyMDCToThread(String thread) {
+    public boolean copyMDCToThread(String thread) {
         if (mdcAwareThreads.add(thread)) {
             LOGGER.debug("Copy MDC to thread {}", thread);
             MDC.setContextMap(contextMap);
+            return true;
         }
+        return false;
     }
 
-    public void removeThread(String thread) {
+    public boolean removeThread(String thread) {
         if (mdcAwareThreads.remove(thread)) {
             LOGGER.debug("Removed thread {}", thread);
+            return true;
         }
+        return false;
     }
 }

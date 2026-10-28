@@ -23,9 +23,36 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 class MultiThreadMDCTest {
+
+    @Test
+    void copyMDCToThread_givenMdcNotCopiedToThread_shouldCopyMdcToThread() {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        assertThat(multiThreadMDC.copyMDCToThread("test")).isTrue();
+    }
+
+    @Test
+    void copyMDCToThread_givenMdcAlreadyCopiedToThread_shouldNotCopyMdcToThread() {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        multiThreadMDC.copyMDCToThread("test");
+        assertThat(multiThreadMDC.copyMDCToThread("test")).isFalse();
+    }
+
+    @Test
+    void removeThread_givenMdcAlreadyCopiedToThread_shouldRemoveThread() {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        multiThreadMDC.copyMDCToThread("test");
+        assertThat(multiThreadMDC.removeThread("test")).isTrue();
+    }
+
+    @Test
+    void removeThread_givenMdcNotCopiedToThread_shouldNotRemoveThread() {
+        MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
+        assertThat(multiThreadMDC.removeThread("test")).isFalse();
+    }
 
     @Nested
     class ConcurrencyTests {
