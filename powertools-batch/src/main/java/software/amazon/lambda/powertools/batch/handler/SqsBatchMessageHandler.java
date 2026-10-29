@@ -147,22 +147,22 @@ public class SqsBatchMessageHandler<M> implements BatchMessageHandler<SQSEvent, 
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
         Object capturedSubsegment = XRayTraceEntityPropagator.captureTraceEntity();
 
-        List<SQSBatchResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
-        List<CompletableFuture<Void>> futures = event.getRecords().stream()
-                .map(eventRecord -> CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Optional<SQSBatchResponse.BatchItemFailure>>> futures = event.getRecords().stream()
+                .map(eventRecord -> CompletableFuture.supplyAsync(() -> {
+                    AtomicReference<Optional<SQSBatchResponse.BatchItemFailure>> result = new AtomicReference<>();
                     XRayTraceEntityPropagator.runWithEntity(capturedSubsegment, () -> {
                         multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
                         try {
-                            Optional<SQSBatchResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord,
-                                    context);
-                            failureOpt.ifPresent(batchItemFailures::add);
+                            result.set(processBatchItem(eventRecord, context));
                         } finally {
                             multiThreadMDC.removeThread(Thread.currentThread().getName());
                         }
                     });
+                    return result.get();
                 }, executor))
                 .collect(Collectors.toList());
-        futures.forEach(CompletableFuture::join);
+        List<SQSBatchResponse.BatchItemFailure> batchItemFailures = futures.stream().map(
+                CompletableFuture::join).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
 
         return SQSBatchResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }

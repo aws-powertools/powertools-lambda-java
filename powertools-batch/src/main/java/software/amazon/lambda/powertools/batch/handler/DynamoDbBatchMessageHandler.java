@@ -14,7 +14,6 @@
 
 package software.amazon.lambda.powertools.batch.handler;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -99,22 +98,22 @@ public class DynamoDbBatchMessageHandler implements BatchMessageHandler<Dynamodb
         MultiThreadMDC multiThreadMDC = new MultiThreadMDC();
         Object capturedSubsegment = XRayTraceEntityPropagator.captureTraceEntity();
 
-        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = new ArrayList<>();
-        List<CompletableFuture<Void>> futures = event.getRecords().stream()
-                .map(eventRecord -> CompletableFuture.runAsync(() -> {
+        List<CompletableFuture<Optional<StreamsEventResponse.BatchItemFailure>>> futures = event.getRecords().stream()
+                .map(eventRecord -> CompletableFuture.supplyAsync(() -> {
+                    AtomicReference<Optional<StreamsEventResponse.BatchItemFailure>> result = new AtomicReference<>();
                     XRayTraceEntityPropagator.runWithEntity(capturedSubsegment, () -> {
                         multiThreadMDC.copyMDCToThread(Thread.currentThread().getName());
                         try {
-                            Optional<StreamsEventResponse.BatchItemFailure> failureOpt = processBatchItem(eventRecord,
-                                    context);
-                            failureOpt.ifPresent(batchItemFailures::add);
+                            result.set(processBatchItem(eventRecord, context));
                         } finally {
                             multiThreadMDC.removeThread(Thread.currentThread().getName());
                         }
                     });
+                    return result.get();
                 }, executor))
                 .collect(Collectors.toList());
-        futures.forEach(CompletableFuture::join);
+        List<StreamsEventResponse.BatchItemFailure> batchItemFailures = futures.stream().map(
+                CompletableFuture::join).filter(Optional::isPresent).map(Optional::get).collect(Collectors.toList());
         return StreamsEventResponse.builder().withBatchItemFailures(batchItemFailures).build();
     }
 

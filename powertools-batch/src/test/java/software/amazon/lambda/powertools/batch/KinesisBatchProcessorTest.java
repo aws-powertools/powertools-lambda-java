@@ -20,6 +20,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.KinesisEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,12 +30,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.model.Product;
+import software.amazon.lambda.powertools.batch.testutils.BatchMessageHandlerTestUtils;
 
 class KinesisBatchProcessorTest {
 
@@ -89,9 +93,17 @@ class KinesisBatchProcessorTest {
     private StreamsEventResponse testParallelBatchExecution(KinesisEvent event,
                                                             BiConsumer<KinesisEvent.KinesisEventRecord, Context> messageHandler,
                                                             Executor executor) {
+        return testParallelBatchExecution(event, messageHandler, null, executor);
+    }
+
+    private StreamsEventResponse testParallelBatchExecution(KinesisEvent event,
+                                                            BiConsumer<KinesisEvent.KinesisEventRecord, Context> messageHandler,
+                                                            BiConsumer<KinesisEvent.KinesisEventRecord, Throwable> failureHandler,
+                                                            Executor executor) {
         // Arrange
         BatchMessageHandler<KinesisEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
                 .withKinesisBatchHandler()
+                .withFailureHandler(failureHandler)
                 .buildWithRawMessageHandler(messageHandler);
 
         // Act
@@ -268,4 +280,23 @@ class KinesisBatchProcessorTest {
         assertThat(threadList).hasSizeGreaterThan(1);
     }
 
+    @ParameterizedTest
+    @Event(value = "kinesis_event_big.json", type = KinesisEvent.class)
+    void parallelBatchProcessing_whenCollectingBatchItemFailures_shouldBeThreadSafe(KinesisEvent event) {
+        int nThreads = 8;
+        List<String> batchItemFailureIds;
+        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+        try {
+            StreamsEventResponse kinesisBatchResponse = testParallelBatchExecution(event, (message, ctx) -> {
+                throw new RuntimeException("fake exception");
+            }, BatchMessageHandlerTestUtils.spinGateFailureHandler(nThreads, Duration.ofSeconds(5)), executor);
+            batchItemFailureIds = kinesisBatchResponse.getBatchItemFailures().stream().map(
+                    StreamsEventResponse.BatchItemFailure::getItemIdentifier).collect(Collectors.toList());
+        } finally {
+            executor.shutdown();
+        }
+        List<String> sequenceNumbers = event.getRecords().stream().map(KinesisEvent.KinesisEventRecord::getKinesis).map(
+                KinesisEvent.Record::getSequenceNumber).collect(Collectors.toList());
+        assertThat(batchItemFailureIds).containsExactlyInAnyOrderElementsOf(sequenceNumbers);
+    }
 }
