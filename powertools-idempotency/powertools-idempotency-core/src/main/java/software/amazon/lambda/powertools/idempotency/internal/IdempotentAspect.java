@@ -83,6 +83,7 @@ public class IdempotentAspect {
                 () -> pjp.proceed(pjp.getArgs()),
                 method.getReturnType(),
                 method.getName(),
+                idempotent.keyPrefix(),
                 payload,
                 lambdaContext);
         return idempotencyHandler.handle();

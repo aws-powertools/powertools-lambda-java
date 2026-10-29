@@ -60,14 +60,24 @@ public class IdempotencyHandler {
         this(function, JsonConfig.toTypeReference(returnType), functionName, payload, lambdaContext);
     }
 
+    public IdempotencyHandler(IdempotentFunction<?> function, Class<?> returnType, String functionName,
+            String keyPrefix, JsonNode payload, Context lambdaContext) {
+        this(function, JsonConfig.toTypeReference(returnType), functionName, keyPrefix, payload, lambdaContext);
+    }
+
     public IdempotencyHandler(IdempotentFunction<?> function, TypeReference<?> returnTypeRef, String functionName,
             JsonNode payload, Context lambdaContext) {
+        this(function, returnTypeRef, functionName, null, payload, lambdaContext);
+    }
+
+    public IdempotencyHandler(IdempotentFunction<?> function, TypeReference<?> returnTypeRef, String functionName,
+            String keyPrefix, JsonNode payload, Context lambdaContext) {
         this.function = function;
         this.returnTypeRef = returnTypeRef;
         this.data = payload;
         this.lambdaContext = lambdaContext;
         persistenceStore = Idempotency.getInstance().getPersistenceStore();
-        persistenceStore.configure(Idempotency.getInstance().getConfig(), functionName);
+        persistenceStore.configure(Idempotency.getInstance().getConfig(), functionName, keyPrefix);
     }
 
     /**

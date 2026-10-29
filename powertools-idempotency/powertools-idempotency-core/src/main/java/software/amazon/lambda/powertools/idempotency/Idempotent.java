@@ -40,5 +40,11 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Idempotent {
-
+    /**
+     * Prefix for the idempotency key. A non-empty value replaces the default
+     * {@code <lambda function name>.<method name>} prefix in full.
+     *
+     * @return the custom prefix, or an empty string to use the default
+     */
+    String keyPrefix() default "";
 }

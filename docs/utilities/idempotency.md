@@ -357,6 +357,80 @@ You can make any synchronous Java function idempotent, not only the `handleReque
     }
     ```
 
+### Using a custom key prefix
+
+By default, idempotency keys start with `{lambdaFunctionName}.{functionName}`. Use `keyPrefix` to replace this
+entire prefix with a stable identifier, so renaming a Lambda function or method does not change its idempotency scope.
+The payload hash is unchanged: a custom prefix of `create-order` produces keys such as `create-order#<payload hash>`.
+
+=== "@Idempotent annotation"
+
+    ```java
+    import java.util.UUID;
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.idempotency.Idempotency;
+    import software.amazon.lambda.powertools.idempotency.Idempotent;
+    import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
+
+    public class OrderFunction implements RequestHandler<String, String> {
+        public OrderFunction() {
+            Idempotency.config()
+                    .withPersistenceStore(DynamoDBPersistenceStore.builder()
+                            .withTableName(System.getenv("TABLE_NAME"))
+                            .build())
+                    .configure();
+        }
+
+        @Idempotent(keyPrefix = "create-order")
+        public String handleRequest(String order, Context context) {
+            return UUID.randomUUID().toString();
+        }
+    }
+    ```
+
+=== "Functional API"
+
+    ```java
+    import java.util.UUID;
+    import com.amazonaws.services.lambda.runtime.Context;
+    import com.amazonaws.services.lambda.runtime.RequestHandler;
+    import software.amazon.lambda.powertools.idempotency.Idempotency;
+    import software.amazon.lambda.powertools.idempotency.persistence.dynamodb.DynamoDBPersistenceStore;
+
+    public class OrderFunction implements RequestHandler<String, String> {
+        public OrderFunction() {
+            Idempotency.config()
+                    .withPersistenceStore(DynamoDBPersistenceStore.builder()
+                            .withTableName(System.getenv("TABLE_NAME"))
+                            .build())
+                    .configure();
+        }
+
+        public String handleRequest(String order, Context context) {
+            Idempotency.registerLambdaContext(context);
+            return Idempotency.makeIdempotent(this::createOrder, order, String.class, "create-order");
+        }
+
+        private String createOrder(String order) {
+            return UUID.randomUUID().toString();
+        }
+    }
+    ```
+
+The functional API accepts `keyPrefix` as the last argument for all existing forms: `Function`, `Supplier`,
+and a named `Supplier`, with either `Class` or `TypeReference` return types. For example, a generic result can use
+`Idempotency.makeIdempotent(order, () -> Map.of("orderId", UUID.randomUUID().toString()),
+new TypeReference<Map<String, String>>() {}, "create-order")` with imports from `java.util` and Jackson's
+`com.fasterxml.jackson.core.type` package.
+
+Omitting the prefix, passing `null` to the functional API, or using an empty string keeps the default prefix.
+Non-empty prefixes are used as supplied, without trimming whitespace.
+
+!!! warning "Choose a prefix for each operation"
+    Methods or Lambda functions using the same custom prefix and payload share idempotency records and cached responses.
+    Use different prefixes for unrelated operations. Changing a prefix does not migrate existing records.
+
 ### Choosing a payload subset for idempotency
 
 !!! tip "Tip: Dealing with always changing payloads"
