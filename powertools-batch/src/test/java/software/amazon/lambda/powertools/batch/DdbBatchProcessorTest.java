@@ -19,7 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.DynamodbEvent;
 import com.amazonaws.services.lambda.runtime.events.StreamsEventResponse;
+import com.amazonaws.services.lambda.runtime.events.models.dynamodb.StreamRecord;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,11 +31,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
+import software.amazon.lambda.powertools.batch.testutils.BatchMessageHandlerTestUtils;
 
 class DdbBatchProcessorTest {
 
@@ -88,9 +93,17 @@ class DdbBatchProcessorTest {
     private StreamsEventResponse testParallelBatchExecution(DynamodbEvent event,
                                                             BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> messageHandler,
                                                             Executor executor) {
+        return testParallelBatchExecution(event, messageHandler, null, executor);
+    }
+
+    private StreamsEventResponse testParallelBatchExecution(DynamodbEvent event,
+                                                            BiConsumer<DynamodbEvent.DynamodbStreamRecord, Context> messageHandler,
+                                                            BiConsumer<DynamodbEvent.DynamodbStreamRecord, Throwable> failureHandler,
+                                                            Executor executor) {
         // Arrange
         BatchMessageHandler<DynamodbEvent, StreamsEventResponse> handler = new BatchMessageHandlerBuilder()
                 .withDynamoDbBatchHandler()
+                .withFailureHandler(failureHandler)
                 .buildWithRawMessageHandler(messageHandler);
 
         // Act
@@ -238,4 +251,23 @@ class DdbBatchProcessorTest {
         assertThat(threadList).hasSizeGreaterThan(1);
     }
 
+    @ParameterizedTest
+    @Event(value = "dynamo_event_big.json", type = DynamodbEvent.class)
+    void parallelBatchProcessing_whenCollectingBatchItemFailures_shouldBeThreadSafe(DynamodbEvent event) {
+        int nThreads = 8;
+        List<String> batchItemFailureIds;
+        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+        try {
+            StreamsEventResponse dynamodbBatchResponse = testParallelBatchExecution(event, (message, ctx) -> {
+                throw new RuntimeException("fake exception");
+            }, BatchMessageHandlerTestUtils.spinGateFailureHandler(nThreads, Duration.ofSeconds(5)), executor);
+            batchItemFailureIds = dynamodbBatchResponse.getBatchItemFailures().stream().map(
+                    StreamsEventResponse.BatchItemFailure::getItemIdentifier).collect(Collectors.toList());
+        } finally {
+            executor.shutdown();
+        }
+        List<String> sequenceNumbers = event.getRecords().stream().map(DynamodbEvent.DynamodbStreamRecord::getDynamodb)
+                .map(StreamRecord::getSequenceNumber).collect(Collectors.toList());
+        assertThat(batchItemFailureIds).containsExactlyInAnyOrderElementsOf(sequenceNumbers);
+    }
 }

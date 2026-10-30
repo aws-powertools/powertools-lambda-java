@@ -20,6 +20,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.SQSBatchResponse;
 import com.amazonaws.services.lambda.runtime.events.SQSEvent;
 import com.amazonaws.services.lambda.runtime.tests.annotations.Event;
+
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,12 +30,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.mockito.Mock;
 import software.amazon.lambda.powertools.batch.handler.BatchMessageHandler;
 import software.amazon.lambda.powertools.batch.model.Product;
+import software.amazon.lambda.powertools.batch.testutils.BatchMessageHandlerTestUtils;
 
 class SQSBatchProcessorTest {
     @Mock
@@ -94,9 +98,17 @@ class SQSBatchProcessorTest {
     private SQSBatchResponse testParallelBatchExecution(SQSEvent event,
                                                         BiConsumer<SQSEvent.SQSMessage, Context> messageHandler,
                                                         Executor executor) {
+        return testParallelBatchExecution(event, messageHandler, null, executor);
+    }
+
+    private SQSBatchResponse testParallelBatchExecution(SQSEvent event,
+                                                        BiConsumer<SQSEvent.SQSMessage, Context> messageHandler,
+                                                        BiConsumer<SQSEvent.SQSMessage, Throwable> failureHandler,
+                                                        Executor executor) {
         // Arrange
         BatchMessageHandler<SQSEvent, SQSBatchResponse> handler = new BatchMessageHandlerBuilder()
                 .withSqsBatchHandler()
+                .withFailureHandler(failureHandler)
                 .buildWithRawMessageHandler(messageHandler);
 
         // Act
@@ -276,5 +288,23 @@ class SQSBatchProcessorTest {
         assertThat(threadList).hasSizeGreaterThan(1);
     }
 
-
+    @ParameterizedTest
+    @Event(value = "sqs_event_big.json", type = SQSEvent.class)
+    void parallelBatchProcessing_whenCollectingBatchItemFailures_shouldBeThreadSafe(SQSEvent event) {
+        int nThreads = 8;
+        List<String> batchItemFailureIds;
+        ExecutorService executor = Executors.newFixedThreadPool(nThreads);
+        try {
+            SQSBatchResponse sqsBatchResponse = testParallelBatchExecution(event, (message, ctx) -> {
+                throw new RuntimeException("fake exception");
+            }, BatchMessageHandlerTestUtils.spinGateFailureHandler(nThreads, Duration.ofSeconds(5)), executor);
+            batchItemFailureIds = sqsBatchResponse.getBatchItemFailures().stream().map(
+                    SQSBatchResponse.BatchItemFailure::getItemIdentifier).collect(Collectors.toList());
+        } finally {
+            executor.shutdown();
+        }
+        List<String> messageIds = event.getRecords().stream().map(SQSEvent.SQSMessage::getMessageId)
+                .collect(Collectors.toList());
+        assertThat(batchItemFailureIds).containsExactlyInAnyOrderElementsOf(messageIds);
+    }
 }
