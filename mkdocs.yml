@@ -2,6 +2,9 @@ site_name: Powertools for AWS Lambda (Java)
 site_description: Powertools for AWS Lambda (Java)
 site_author: Amazon Web Services
 site_url: https://docs.aws.amazon.com/powertools/java/latest/
+exclude_docs: |
+  /Dockerfile
+  /requirements.*
 nav:
   - Homepage: index.md
   - Usage patterns: usage-patterns.md
