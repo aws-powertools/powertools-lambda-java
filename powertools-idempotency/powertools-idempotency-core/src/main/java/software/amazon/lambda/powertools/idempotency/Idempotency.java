@@ -278,9 +278,25 @@ public final class Idempotency {
      * @param <T> the return type of the function
      * @return the result of the function execution (either fresh or cached)
      */
-    @SuppressWarnings("unchecked")
     public static <T> T makeIdempotent(String functionName, Object idempotencyKey, Supplier<T> function,
             TypeReference<T> typeRef) {
+        return makeIdempotent(functionName, idempotencyKey, function, typeRef, null);
+    }
+
+    /**
+     * Makes a named function idempotent with an optional custom key prefix and generic return type.
+     *
+     * @param functionName the function name used when keyPrefix is null or empty
+     * @param idempotencyKey the key used for idempotency (will be converted to JSON)
+     * @param function the function to make idempotent
+     * @param typeRef the TypeReference for deserialization of generic types
+     * @param keyPrefix replaces the entire default prefix when non-empty; null or empty uses the default
+     * @param <T> the return type of the function
+     * @return the result of the function execution (either fresh or cached)
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T makeIdempotent(String functionName, Object idempotencyKey, Supplier<T> function,
+            TypeReference<T> typeRef, String keyPrefix) {
         try {
             JsonNode payload = JsonConfig.get().getObjectMapper().valueToTree(idempotencyKey);
             Context lambdaContext = Idempotency.getInstance().getConfig().getLambdaContext();
@@ -289,6 +305,7 @@ public final class Idempotency {
                     function::get,
                     typeRef,
                     functionName,
+                    keyPrefix,
                     payload,
                     lambdaContext);
 
@@ -323,6 +340,82 @@ public final class Idempotency {
      */
     public static <T, R> R makeIdempotent(Function<T, R> function, T arg, TypeReference<R> typeRef) {
         return makeIdempotent(DEFAULT_FUNCTION_NAME, arg, () -> function.apply(arg), typeRef);
+    }
+
+    /**
+     * Makes a function idempotent with an optional custom key prefix.
+     *
+     * @param idempotencyKey the key used for idempotency (will be converted to JSON)
+     * @param function the function to make idempotent
+     * @param returnType the class of the return type for deserialization
+     * @param keyPrefix replaces the entire default prefix when non-empty; null or empty uses the default
+     * @param <T> the return type of the function
+     * @return the result of the function execution (either fresh or cached)
+     */
+    public static <T> T makeIdempotent(Object idempotencyKey, Supplier<T> function, Class<T> returnType,
+            String keyPrefix) {
+        return makeIdempotent(DEFAULT_FUNCTION_NAME, idempotencyKey, function, returnType, keyPrefix);
+    }
+
+    /**
+     * Makes a named function idempotent with an optional custom key prefix.
+     *
+     * @param functionName the function name used when keyPrefix is null or empty
+     * @param idempotencyKey the key used for idempotency (will be converted to JSON)
+     * @param function the function to make idempotent
+     * @param returnType the class of the return type for deserialization
+     * @param keyPrefix replaces the entire default prefix when non-empty; null or empty uses the default
+     * @param <T> the return type of the function
+     * @return the result of the function execution (either fresh or cached)
+     */
+    public static <T> T makeIdempotent(String functionName, Object idempotencyKey, Supplier<T> function,
+            Class<T> returnType, String keyPrefix) {
+        return makeIdempotent(functionName, idempotencyKey, function, JsonConfig.toTypeReference(returnType), keyPrefix);
+    }
+
+    /**
+     * Makes a single-parameter function idempotent with an optional custom key prefix.
+     *
+     * @param function the function to make idempotent
+     * @param arg the argument to pass to the function (also used as idempotency key)
+     * @param returnType the class of the return type for deserialization
+     * @param keyPrefix replaces the entire default prefix when non-empty; null or empty uses the default
+     * @param <T> the argument type
+     * @param <R> the return type
+     * @return the result of the function execution (either fresh or cached)
+     */
+    public static <T, R> R makeIdempotent(Function<T, R> function, T arg, Class<R> returnType, String keyPrefix) {
+        return makeIdempotent(DEFAULT_FUNCTION_NAME, arg, () -> function.apply(arg), returnType, keyPrefix);
+    }
+
+    /**
+     * Makes a function idempotent with a custom key prefix and generic return type.
+     *
+     * @param idempotencyKey the key used for idempotency (will be converted to JSON)
+     * @param function the function to make idempotent
+     * @param typeRef the TypeReference for deserialization of generic types
+     * @param keyPrefix replaces the entire default prefix when non-empty; null or empty uses the default
+     * @param <T> the return type of the function
+     * @return the result of the function execution (either fresh or cached)
+     */
+    public static <T> T makeIdempotent(Object idempotencyKey, Supplier<T> function, TypeReference<T> typeRef,
+            String keyPrefix) {
+        return makeIdempotent(DEFAULT_FUNCTION_NAME, idempotencyKey, function, typeRef, keyPrefix);
+    }
+
+    /**
+     * Makes a single-parameter function idempotent with a custom key prefix and generic return type.
+     *
+     * @param function the function to make idempotent
+     * @param arg the argument to pass to the function (also used as idempotency key)
+     * @param typeRef the TypeReference for deserialization of generic types
+     * @param keyPrefix replaces the entire default prefix when non-empty; null or empty uses the default
+     * @param <T> the argument type
+     * @param <R> the return type
+     * @return the result of the function execution (either fresh or cached)
+     */
+    public static <T, R> R makeIdempotent(Function<T, R> function, T arg, TypeReference<R> typeRef, String keyPrefix) {
+        return makeIdempotent(DEFAULT_FUNCTION_NAME, arg, () -> function.apply(arg), typeRef, keyPrefix);
     }
 
 }

@@ -104,6 +104,24 @@ public abstract class BasePersistenceStore implements PersistenceStore {
     }
 
     /**
+     * Initialize the persistence layer with an optional custom idempotency key prefix.
+     * Overrides of {@link #configure(IdempotencyConfig, String)} should call that method's
+     * super implementation, not this overload, to avoid recursive dispatch.
+     *
+     * @param config       Idempotency configuration settings
+     * @param functionName The name of the function being decorated
+     * @param keyPrefix    Replaces the default prefix when non-empty; null or empty uses the default
+     */
+    public void configure(IdempotencyConfig config, String functionName, String keyPrefix) {
+        // Preserve initialization performed by subclasses overriding the original public method.
+        configure(config, functionName);
+        if (keyPrefix != null && !keyPrefix.isEmpty()) {
+            this.functionName = keyPrefix;
+        }
+    }
+
+
+    /**
      * Save record of function's execution completing successfully
      *
      * @param data   Payload
