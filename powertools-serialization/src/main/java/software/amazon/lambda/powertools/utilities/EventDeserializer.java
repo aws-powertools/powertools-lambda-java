@@ -41,16 +41,51 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.crac.Context;
+import org.crac.Core;
+import org.crac.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import software.amazon.lambda.powertools.common.internal.ClassPreLoader;
 
 /**
  * Class that can be used to extract the meaningful part of an event and deserialize it into a Java object.<br/>
  * For example, extract the body of an API Gateway event, or messages from an SQS event.
  */
-public class EventDeserializer {
+public class EventDeserializer implements Resource {
 
     private static final Logger LOG = LoggerFactory.getLogger(EventDeserializer.class);
+    private static final EventDeserializer INSTANCE = new EventDeserializer();
+
+    static {
+        Core.getGlobalContext().register(INSTANCE);
+    }
+
+    public EventDeserializer() {
+    }
+
+    /**
+     * Ensures this class is loaded so CRaC hooks register before SnapStart takes a snapshot.
+     */
+    public static void init() {
+        // Referencing this method loads the class and runs the static CRaC registration.
+    }
+
+    @Override
+    public void beforeCheckpoint(Context<? extends Resource> context) {
+        try {
+            int primed = EventDeserializerPriming.prime().size();
+            LOG.debug("SnapStart invoke priming completed for {} event types", primed);
+        } catch (RuntimeException e) {
+            LOG.debug("SnapStart invoke priming failed", e);
+        }
+        ClassPreLoader.preloadClasses();
+    }
+
+    @Override
+    public void afterRestore(Context<? extends Resource> context) {
+        // No action needed after restore
+    }
 
     /**
      * Extract the meaningful part of a Lambda Event object. Main events are built-in:
