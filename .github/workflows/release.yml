@@ -137,7 +137,7 @@ jobs:
         with:
           name: source
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: corretto
           java-version: 21
@@ -174,7 +174,7 @@ jobs:
         with:
           name: source
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: corretto
           java-version: ${{ matrix.java }}
@@ -199,7 +199,7 @@ jobs:
         with:
           name: source
       - name: Setup Java
-        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad
+        uses: actions/setup-java@77dd5b2ce225ea11469928ac317850245a74ae78
         with:
           distribution: corretto
           java-version: 21
