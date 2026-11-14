@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.ByteBuffer;
 
-import org.apache.kafka.common.utils.ByteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +37,7 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProtobufDeserializer.class);
     private static final String PROTOBUF_PARSER_METHOD = "parser";
+    private static final int MAX_VARINT_BYTES = 5;
 
     @Override
     protected <T> T deserializeObject(byte[] data, Class<T> type, SchemaRegistryType schemaRegistryType)
@@ -81,13 +81,13 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
         LOGGER.debug("Using Confluent Deserializer");
         Parser<Message> parser = (Parser<Message>) type.getMethod(PROTOBUF_PARSER_METHOD).invoke(null);
         ByteBuffer buffer = ByteBuffer.wrap(data);
-        int size = ByteUtils.readVarint(buffer);
+        int size = readVarint(buffer);
 
         // Only if the size is greater than zero, continue reading varInt.
         // https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format
         if (size > 0) {
             for (int i = 0; i < size; i++) {
-                ByteUtils.readVarint(buffer);
+                readVarint(buffer);
             }
         }
         Message message = parser.parseFrom(buffer);
@@ -106,5 +106,32 @@ public class KafkaProtobufDeserializer extends AbstractKafkaDeserializer {
 
         Message message = parser.parseFrom(codedInputStream);
         return type.cast(message);
+    }
+
+    /**
+     * Reads a zig-zag encoded variable-length integer as used by the Confluent Protobuf wire format for message
+     * indexes. Behaves identically to Kafka's {@code ByteUtils.readVarint(ByteBuffer)}, which moved to an internal
+     * package in kafka-clients 4.4.0 (KAFKA-20297) and is no longer part of the public API.
+     *
+     * @param buffer the buffer to read from
+     * @return the decoded integer
+     * @throws IllegalArgumentException if the varint does not terminate within 5 bytes
+     */
+    static int readVarint(ByteBuffer buffer) {
+        int value = readUnsignedVarint(buffer);
+        return (value >>> 1) ^ -(value & 1);
+    }
+
+    private static int readUnsignedVarint(ByteBuffer buffer) {
+        int result = 0;
+        for (int shift = 0; shift < MAX_VARINT_BYTES * 7; shift += 7) {
+            byte b = buffer.get();
+            result |= (b & 0x7F) << shift;
+            if (b >= 0) {
+                return result;
+            }
+        }
+        throw new IllegalArgumentException("Varint is too long, the most significant bit in the 5th byte is set, "
+                + "converted value: " + Integer.toHexString(result));
     }
 }
