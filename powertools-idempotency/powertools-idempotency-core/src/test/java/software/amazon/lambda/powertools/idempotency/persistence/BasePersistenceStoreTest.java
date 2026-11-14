@@ -16,6 +16,7 @@ package software.amazon.lambda.powertools.idempotency.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -24,6 +25,7 @@ import java.util.OptionalInt;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junitpioneer.jupiter.SetEnvironmentVariable;
 
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.tests.EventLoader;
@@ -79,6 +81,82 @@ class BasePersistenceStoreTest {
                 status = 3;
             }
         };
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = LAMBDA_FUNCTION_NAME_ENV, value = "orders")
+    void configure_customPrefixReplacesEntireDefaultAndPreservesWhitespace() {
+        IdempotencyConfig config = IdempotencyConfig.builder().build();
+        JsonNode payload = new TextNode("Lambda rocks");
+        Instant now = Instant.now();
+
+        persistenceStore.configure(config, "process", "payments");
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo("payments#70c24d88041893f7fbab4105b76fd9e1");
+        persistenceStore.saveSuccess(payload, "paid", now);
+        assertThat(dr.getIdempotencyKey()).isEqualTo("payments#70c24d88041893f7fbab4105b76fd9e1");
+
+        persistenceStore.configure(config, "renamed", " ");
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo(" #70c24d88041893f7fbab4105b76fd9e1");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = LAMBDA_FUNCTION_NAME_ENV, value = "orders")
+    void configure_emptyNullAndOmittedPrefixRestoreDefaultNamespace() {
+        IdempotencyConfig config = IdempotencyConfig.builder().build();
+        JsonNode payload = new TextNode("Lambda rocks");
+        Instant now = Instant.now();
+
+        persistenceStore.configure(config, "process", "payments");
+        persistenceStore.configure(config, "process", "");
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo("orders.process#70c24d88041893f7fbab4105b76fd9e1");
+
+        persistenceStore.configure(config, "renamed", (String) null);
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo("orders.renamed#70c24d88041893f7fbab4105b76fd9e1");
+
+        persistenceStore.configure(config, "legacy");
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo("orders.legacy#70c24d88041893f7fbab4105b76fd9e1");
+
+        persistenceStore.configure(config, "", "");
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo("orders#70c24d88041893f7fbab4105b76fd9e1");
+
+        persistenceStore.configure(config, null, (String) null);
+        persistenceStore.saveInProgress(payload, now, OptionalInt.empty());
+        assertThat(dr.getIdempotencyKey()).isEqualTo("orders#70c24d88041893f7fbab4105b76fd9e1");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = LAMBDA_FUNCTION_NAME_ENV, value = "orders")
+    void configure_multiplePrefixesPreserveCacheAndOriginalSettings() {
+        JsonNode payload = new TextNode("Lambda rocks");
+        Instant now = Instant.now();
+        persistenceStore.configure(IdempotencyConfig.builder().withUseLocalCache(true).build(), "process", "payments");
+        persistenceStore.saveSuccess(payload, "paid", now);
+
+        // Later configuration changes the namespace, not the initialized settings or cache.
+        IdempotencyConfig laterConfig = IdempotencyConfig.builder().withEventKeyJMESPath("missing").build();
+        persistenceStore.configure(laterConfig, "process", "refunds");
+        persistenceStore.saveSuccess(payload, "refunded", now);
+        assertThat(dr.getIdempotencyKey()).isEqualTo("refunds#70c24d88041893f7fbab4105b76fd9e1");
+        persistenceStore.configure(laterConfig, "process", "");
+        persistenceStore.saveSuccess(payload, "default", now);
+        assertThat(dr.getIdempotencyKey()).isEqualTo("orders.process#70c24d88041893f7fbab4105b76fd9e1");
+
+        status = -1;
+        persistenceStore.configure(laterConfig, "renamed", "payments");
+        assertThat(persistenceStore.getRecord(payload, now).getResponseData()).isEqualTo("paid");
+        assertThatThrownBy(() -> persistenceStore.saveInProgress(payload, now, OptionalInt.empty()))
+                .isInstanceOf(IdempotencyItemAlreadyExistsException.class);
+        persistenceStore.configure(laterConfig, "renamed", "refunds");
+        assertThat(persistenceStore.getRecord(payload, now).getResponseData()).isEqualTo("refunded");
+        persistenceStore.configure(laterConfig, "process");
+        assertThat(persistenceStore.getRecord(payload, now).getResponseData()).isEqualTo("default");
+        assertThat(status).isEqualTo(-1);
     }
 
     @Test

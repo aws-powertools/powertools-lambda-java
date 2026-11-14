@@ -24,6 +24,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
+import static software.amazon.lambda.powertools.common.internal.LambdaConstants.LAMBDA_FUNCTION_NAME_ENV;
 
 import java.time.Instant;
 import java.util.OptionalInt;
@@ -44,6 +45,7 @@ import software.amazon.lambda.powertools.common.stubs.TestLambdaContext;
 import software.amazon.lambda.powertools.idempotency.Constants;
 import software.amazon.lambda.powertools.idempotency.Idempotency;
 import software.amazon.lambda.powertools.idempotency.IdempotencyConfig;
+import software.amazon.lambda.powertools.idempotency.Idempotent;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyAlreadyInProgressException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyConfigurationException;
 import software.amazon.lambda.powertools.idempotency.exceptions.IdempotencyInconsistentStateException;
@@ -59,6 +61,7 @@ import software.amazon.lambda.powertools.idempotency.model.Basket;
 import software.amazon.lambda.powertools.idempotency.model.Product;
 import software.amazon.lambda.powertools.idempotency.persistence.BasePersistenceStore;
 import software.amazon.lambda.powertools.idempotency.persistence.DataRecord;
+import software.amazon.lambda.powertools.idempotency.testutils.InMemoryPersistenceStore;
 import software.amazon.lambda.powertools.utilities.JsonConfig;
 
 @ExtendWith(MockitoExtension.class)
@@ -68,6 +71,73 @@ class IdempotencyAspectTest {
 
     @Mock
     private BasePersistenceStore store;
+
+    @Test
+    @SetEnvironmentVariable(key = LAMBDA_FUNCTION_NAME_ENV, value = "orders")
+    void customPrefix_reusesPersistedResponseAcrossRenamedMethods() {
+        InMemoryPersistenceStore persistenceStore = new InMemoryPersistenceStore();
+        Idempotency.config().withPersistenceStore(persistenceStore).configure();
+        Idempotency.registerLambdaContext(context);
+        PrefixFunctions functions = new PrefixFunctions();
+
+        assertThat(functions.original("Lambda rocks")).isEqualTo("result-1");
+        assertThat(functions.renamed("Lambda rocks")).isEqualTo("result-1");
+        assertThat(functions.refund("Lambda rocks")).isEqualTo("result-2");
+        assertThat(functions.executions).isEqualTo(2);
+        assertThat(persistenceStore.getRecord("payments#70c24d88041893f7fbab4105b76fd9e1").getResponseData())
+                .isEqualTo("result-1");
+        assertThat(persistenceStore.getRecord("refunds#70c24d88041893f7fbab4105b76fd9e1").getResponseData())
+                .isEqualTo("result-2");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = LAMBDA_FUNCTION_NAME_ENV, value = "orders")
+    void emptyAndOmittedPrefixes_preserveDefaultMethodNamespaces() {
+        InMemoryPersistenceStore persistenceStore = new InMemoryPersistenceStore();
+        Idempotency.config().withPersistenceStore(persistenceStore).configure();
+        Idempotency.registerLambdaContext(context);
+        PrefixFunctions functions = new PrefixFunctions();
+
+        assertThat(functions.original("Lambda rocks")).isEqualTo("result-1");
+        assertThat(functions.empty("Lambda rocks")).isEqualTo("result-2");
+        assertThat(functions.empty("Lambda rocks")).isEqualTo("result-2");
+        assertThat(functions.omitted("Lambda rocks")).isEqualTo("result-3");
+        assertThat(functions.omitted("Lambda rocks")).isEqualTo("result-3");
+        assertThat(functions.executions).isEqualTo(3);
+        assertThat(persistenceStore.getRecord("orders.empty#70c24d88041893f7fbab4105b76fd9e1").getResponseData())
+                .isEqualTo("result-2");
+        assertThat(persistenceStore.getRecord("orders.omitted#70c24d88041893f7fbab4105b76fd9e1").getResponseData())
+                .isEqualTo("result-3");
+    }
+
+    public static class PrefixFunctions {
+        private int executions;
+
+        @Idempotent(keyPrefix = "payments")
+        public String original(String input) {
+            return "result-" + ++executions;
+        }
+
+        @Idempotent(keyPrefix = "payments")
+        public String renamed(String input) {
+            return "result-" + ++executions;
+        }
+
+        @Idempotent(keyPrefix = "refunds")
+        public String refund(String input) {
+            return "result-" + ++executions;
+        }
+
+        @Idempotent(keyPrefix = "")
+        public String empty(String input) {
+            return "result-" + ++executions;
+        }
+
+        @Idempotent
+        public String omitted(String input) {
+            return "result-" + ++executions;
+        }
+    }
 
     @Test
     void firstCall_shouldPutInStore() {
