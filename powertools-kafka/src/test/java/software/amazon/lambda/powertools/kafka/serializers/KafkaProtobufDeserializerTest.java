@@ -17,9 +17,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
-import org.apache.kafka.common.utils.ByteUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -180,21 +180,60 @@ class KafkaProtobufDeserializerTest {
     private byte[] createProtobufDataWithComplexMessageIndexConfluent(TestProduct product) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        // Write complex message index array [1,0] using ByteUtils
+        // Write complex message index array [1,0] as zig-zag varints
         // https://docs.confluent.io/platform/current/schema-registry/fundamentals/serdes-develop/index.html#wire-format
-        ByteBuffer buffer = ByteBuffer.allocate(1024);
-        ByteUtils.writeVarint(2, buffer); // Array length
-        ByteUtils.writeVarint(1, buffer); // First index value
-        ByteUtils.writeVarint(0, buffer); // Second index value
-
-        buffer.flip();
-        byte[] indexData = new byte[buffer.remaining()];
-        buffer.get(indexData);
-        baos.write(indexData);
+        baos.write(zigZagVarints(2, 1, 0)); // Array length, first index value, second index value
 
         // Write the protobuf data
         baos.write(product.toByteArray());
 
+        return baos.toByteArray();
+    }
+
+    @Test
+    void shouldReadZigZagVarintsLikeKafkaByteUtils() throws IOException {
+        // Given
+        int[] values = { 0, 1, -1, 2, -2, 63, -64, 64, 300, -300, 16384, 2097151, 268435456,
+                Integer.MAX_VALUE, Integer.MIN_VALUE };
+        ByteBuffer buffer = ByteBuffer.wrap(zigZagVarints(values));
+
+        // When/Then
+        for (int value : values) {
+            assertThat(KafkaProtobufDeserializer.readVarint(buffer)).isEqualTo(value);
+        }
+        assertThat(buffer.hasRemaining()).isFalse();
+    }
+
+    @Test
+    void shouldThrowWhenVarintExceedsFiveBytes() {
+        // Given
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[] { (byte) 0x80, (byte) 0x80, (byte) 0x80, (byte) 0x80,
+                (byte) 0x80, 0x01 });
+
+        // When/Then
+        assertThatThrownBy(() -> KafkaProtobufDeserializer.readVarint(buffer))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Varint is too long");
+    }
+
+    @Test
+    void shouldThrowWhenVarintIsTruncated() {
+        // Given
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[] { (byte) 0x80 });
+
+        // When/Then
+        assertThatThrownBy(() -> KafkaProtobufDeserializer.readVarint(buffer))
+                .isInstanceOf(BufferUnderflowException.class);
+    }
+
+    private byte[] zigZagVarints(int... values) throws IOException {
+        // Protobuf sint32 encoding is the same zig-zag varint encoding Confluent uses for message indexes
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        CodedOutputStream codedOutput = CodedOutputStream.newInstance(baos);
+        for (int value : values) {
+            codedOutput.writeSInt32NoTag(value);
+        }
+        codedOutput.flush();
         return baos.toByteArray();
     }
 }
