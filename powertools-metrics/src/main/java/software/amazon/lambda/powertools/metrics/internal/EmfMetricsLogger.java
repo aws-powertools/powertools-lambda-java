@@ -160,7 +160,7 @@ public class EmfMetricsLogger implements Metrics {
             if (raiseOnEmptyMetrics.get()) {
                 throw new IllegalStateException("No metrics were emitted");
             } else {
-                LOGGER.warn("No metrics were emitted");
+                LOGGER.warn("No application metrics to publish. The cold-start metric may be published if enabled.");
             }
         } else {
             emfLogger.flush();

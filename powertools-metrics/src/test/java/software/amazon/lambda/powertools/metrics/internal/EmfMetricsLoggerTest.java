@@ -18,11 +18,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.time.Instant;
 import java.util.stream.Stream;
 
@@ -391,20 +388,25 @@ class EmfMetricsLoggerTest {
     }
 
     @Test
-    void shouldLogWarningOnEmptyMetrics() throws Exception {
-        // Given
-        File logFile = new File("target/metrics-test.log");
-
-        // When
-        // Flushing without adding metrics
+    void shouldNotPublishEmptyApplicationMetrics() {
         metrics.flush();
 
-        // Then
-        // Read the log file and check for the warning
-        String logContent = Files.readString(logFile.toPath(), StandardCharsets.UTF_8);
-        assertThat(logContent).contains("No metrics were emitted");
-        // No EMF output should be generated
         assertThat(outputStreamCaptor.toString().trim()).isEmpty();
+    }
+
+    @Test
+    void shouldRejectEmptyApplicationMetricsAfterPublishingColdStart() throws Exception {
+        metrics.setRaiseOnEmptyMetrics(true);
+        metrics.captureColdStartMetric();
+
+        String coldStartOutput = outputStreamCaptor.toString().trim();
+        JsonNode coldStartMetric = objectMapper.readTree(coldStartOutput);
+        assertThat(coldStartMetric.get("ColdStart").asDouble()).isEqualTo(1.0);
+
+        assertThatThrownBy(metrics::flush)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("No metrics were emitted");
+        assertThat(outputStreamCaptor.toString().trim()).isEqualTo(coldStartOutput);
     }
 
     @Test

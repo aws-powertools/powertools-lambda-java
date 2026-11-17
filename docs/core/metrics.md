@@ -303,9 +303,11 @@ You can add dimensions to your metrics using the `addDimension` method. You can 
 
 ### Flushing metrics
 
-The `@FlushMetrics` annotation **validates**, **serializes**, and **flushes** all your metrics. During metrics validation,
-if no metrics are provided no exception will be raised. If metrics are provided, and any of the following criteria are
-not met, `IllegalStateException` or `IllegalArgumentException` exceptions will be raised.
+The `@FlushMetrics` annotation **validates**, **serializes**, and **flushes** all your application metrics.
+When no application metrics are provided, it logs a warning instead of publishing an empty EMF document.
+The `ColdStart` metric may still be published separately when enabled.
+If metrics are provided, and any of the following criteria are not met, `IllegalStateException` or
+`IllegalArgumentException` exceptions will be raised.
 
 <!-- prettier-ignore-start -->
 !!! tip "Metric validation"
@@ -314,7 +316,7 @@ not met, `IllegalStateException` or `IllegalArgumentException` exceptions will b
     - Metric values must be valid numbers
 <!-- prettier-ignore-end -->
 
-If you want to ensure that at least one metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the `@FlushMetrics` annotation:
+If you want to ensure that at least one application metric is emitted, you can pass `raiseOnEmptyMetrics = true` to the `@FlushMetrics` annotation. The separately published `ColdStart` metric does not satisfy this check:
 
 === "MetricsRaiseOnEmpty.java"
 
