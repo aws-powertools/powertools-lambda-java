@@ -17,9 +17,15 @@ package software.amazon.lambda.powertools.parameters.secrets;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.util.Base64;
+import java.util.List;
 import java.util.Map;
+import java.util.Collections;
+import java.util.stream.Collectors;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
+import software.amazon.awssdk.services.secretsmanager.model.Filter;
 import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.BatchGetSecretValueRequest;
+import software.amazon.awssdk.services.secretsmanager.model.SecretValueEntry;
 import software.amazon.lambda.powertools.parameters.BaseProvider;
 import software.amazon.lambda.powertools.parameters.cache.CacheManager;
 import software.amazon.lambda.powertools.parameters.transform.TransformationManager;
@@ -103,9 +109,28 @@ public class SecretsProvider extends BaseProvider {
      */
     @Override
     protected Map<String, String> getMultipleValues(String path) {
-        throw new UnsupportedOperationException("Impossible to get multiple values from AWS Secrets Manager");
+        throw new UnsupportedOperationException("Impossible to get multiple values from AWS Secrets Manager via path. Use getMultiple(List<String> names) instead.");
     }
 
+    public Map<String,String> getMultiple(List<String> names){
+        BatchGetSecretValueRequest request = BatchGetSecretValueRequest.builder()
+                .secretIdList(Collections.emptyList())
+                .filters(Filter.builder()
+                        .key("name")
+                        .values(names)
+                        .build())
+                .build();
+        return client.batchGetSecretValue(request).secretValues().stream()
+                .collect(Collectors.toMap(SecretValueEntry::name, entry -> {
+                    String secretValue = entry.secretString();
+                    if (secretValue == null) {
+                        secretValue =
+                                new String(Base64.getDecoder().decode(entry.secretBinary().asByteArray()),
+                                        UTF_8);
+                    }
+                    return secretValue;
+                }));
+    }
 
     // For test purpose only
     SecretsManagerClient getClient() {
