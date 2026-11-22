@@ -248,7 +248,8 @@ public final class PowertoolsLogging implements Resource {
         }
 
         float sample = SAMPLER.get().nextFloat();
-        if (effectiveSamplingRate > sample) {
+        // only change the log level if it is less verbose than DEBUG, i.e. don't change from e.g. TRACE to DEBUG
+        if (effectiveSamplingRate > sample && !LOG.isTraceEnabled()) {
             LoggingManager loggingManager = LoggingManagerRegistry.getLoggingManager();
             loggingManager.setLogLevel(Level.DEBUG);
             LOG.debug(
