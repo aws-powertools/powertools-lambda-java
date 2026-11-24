@@ -300,6 +300,34 @@ class PowertoolsLoggingTest {
     }
 
     @Test
+    void initializeLogging_withSamplingRate_whenLogLevelIsTrace_shouldNotLowerLevelToDebug() throws IllegalAccessException {
+        // GIVEN
+        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "TRACE", true);
+        reinitializeLogLevel();
+        assertThat(LOG.isTraceEnabled()).isTrue();
+
+        // WHEN
+        PowertoolsLogging.initializeLogging(context, 1.0);
+
+        // THEN
+        assertThat(LOG.isTraceEnabled()).isTrue();
+    }
+
+    @Test
+    void initializeLogging_withSamplingRate_whenLogLevelIsInfo_shouldRaiseLevelToDebug() throws IllegalAccessException {
+        // GIVEN
+        writeStaticField(LoggingConstants.class, "POWERTOOLS_LOG_LEVEL", "INFO", true);
+        reinitializeLogLevel();
+        assertThat(LOG.isDebugEnabled()).isFalse();
+
+        // WHEN
+        PowertoolsLogging.initializeLogging(context, 1.0);
+
+        // THEN
+        assertThat(LOG.isDebugEnabled()).isTrue();
+    }
+
+    @Test
     void initializeLogging_withEnvVarAndParameter_shouldUseEnvVarPrecedence() throws IllegalAccessException {
         // GIVEN
         writeStaticField(LoggingConstants.class, "POWERTOOLS_SAMPLING_RATE", "0.8", true);
