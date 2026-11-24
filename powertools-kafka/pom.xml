@@ -215,7 +215,7 @@
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
-                <version>5.1.11</version>
+                <version>5.1.12</version>
                 <executions>
                     <execution>
                         <id>generate-test-sources</id>
