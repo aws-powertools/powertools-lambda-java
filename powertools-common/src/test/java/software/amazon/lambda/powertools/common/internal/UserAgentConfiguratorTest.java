@@ -140,6 +140,26 @@ class UserAgentConfiguratorTest {
     }
 
     @Test
+    @SetEnvironmentVariable(key = "AWS_SDK_UA_APP_ID", value = "UserEnvABC123")
+    void testConfigureUserAgent_WithExistingEnvVariable() {
+        System.clearProperty("sdk.ua.appId");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("UserEnvABC123/PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
+    @SetEnvironmentVariable(key = "AWS_SDK_UA_APP_ID", value = "UserEnvValue")
+    void testConfigureUserAgent_SystemPropertyTakesPrecedenceOverEnv() {
+        System.setProperty("sdk.ua.appId", "UserPropValue");
+        UserAgentConfigurator.configureUserAgent("test-feature");
+
+        assertThat(System.getProperty("sdk.ua.appId"))
+                .isEqualTo("UserPropValue/PT/TEST-FEATURE/" + VERSION + " PTENV/NA");
+    }
+
+    @Test
     void testConfigureUserAgent_ReplacePowertoolsUserAgent() {
         System.setProperty("sdk.ua.appId", "PT/BATCH/" + VERSION + " PTENV/NA");
         UserAgentConfigurator.configureUserAgent("logging-log4j");

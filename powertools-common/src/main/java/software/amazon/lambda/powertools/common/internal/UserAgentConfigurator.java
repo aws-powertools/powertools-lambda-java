@@ -35,6 +35,7 @@ public final class UserAgentConfigurator {
     public static final String VERSION_PROPERTIES_FILENAME = "version.properties";
     public static final String AWS_EXECUTION_ENV = "AWS_EXECUTION_ENV";
     private static final String SDK_USER_AGENT_APP_ID = "sdk.ua.appId";
+    private static final String SDK_USER_AGENT_APP_ID_ENV = "AWS_SDK_UA_APP_ID";
     private static final Logger LOG = LoggerFactory.getLogger(UserAgentConfigurator.class);
     private static final String NO_OP = "no-op";
     private static final String POWERTOOLS_VERSION = getProjectVersion();
@@ -82,13 +83,17 @@ public final class UserAgentConfigurator {
 
     /**
      * Configures the AWS SDK to use Powertools user agent by setting the sdk.ua.appId system property.
-     * Preserves any user-provided value and replaces any existing Powertools user agent.
+     * Preserves any user-provided value (from the sdk.ua.appId system property or, if unset, the AWS_SDK_UA_APP_ID
+     * environment variable) and replaces any existing Powertools user agent.
      * Enforces a 50 character limit to comply with AWS SDK recommendations.
      * This should be called during library initialization to ensure the user agent is properly configured.
      */
     public static void configureUserAgent(String ptFeature) {
         try {
             String existingValue = System.getProperty(SDK_USER_AGENT_APP_ID);
+            if (existingValue == null || existingValue.isEmpty()) {
+                existingValue = System.getenv(SDK_USER_AGENT_APP_ID_ENV);
+            }
             String powertoolsUserAgent = getUserAgent(ptFeature);
             String newValue;
 
