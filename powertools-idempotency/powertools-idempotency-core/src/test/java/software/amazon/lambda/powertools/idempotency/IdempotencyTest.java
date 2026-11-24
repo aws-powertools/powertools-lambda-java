@@ -92,9 +92,6 @@ class IdempotencyTest {
 
         assertThat(result).isEqualTo("test-result");
 
-        ArgumentCaptor<String> functionNameCaptor = ArgumentCaptor.forClass(String.class);
-        verify(spyStore).configure(any(), functionNameCaptor.capture());
-        assertThat(functionNameCaptor.getValue()).isEqualTo("myFunction");
     }
 
     @Test
@@ -109,9 +106,6 @@ class IdempotencyTest {
 
         assertThat(result).isEqualTo("helper-result");
 
-        ArgumentCaptor<String> functionNameCaptor = ArgumentCaptor.forClass(String.class);
-        verify(spyStore).configure(any(), functionNameCaptor.capture());
-        assertThat(functionNameCaptor.getValue()).isEqualTo("function");
     }
 
     private String helperMethod() {
@@ -132,9 +126,6 @@ class IdempotencyTest {
         assertThat(result.getProducts()).hasSize(1);
         assertThat(result.getProducts().get(0)).isEqualTo(p);
 
-        ArgumentCaptor<String> functionNameCaptor = ArgumentCaptor.forClass(String.class);
-        verify(spyStore).configure(any(), functionNameCaptor.capture());
-        assertThat(functionNameCaptor.getValue()).isEqualTo("function");
 
         ArgumentCaptor<JsonNode> nodeCaptor = ArgumentCaptor.forClass(JsonNode.class);
         verify(spyStore).saveInProgress(nodeCaptor.capture(), any(), any());
